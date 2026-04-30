@@ -7,10 +7,10 @@ This file briefs reviewers on what to look at, what kinds of feedback are most u
 ## What's in v0.1
 
 - **14 Tactics** — operator-behaviour kill chain (T1-T8) + T9 Smart-Contract Exploit + T10 Bridge & Cross-Chain + T11 Custody and Signing Infrastructure + T12 NFT-Specific + T13 Account Abstraction + T14 Validator/Staking/Restaking.
-- **58 Techniques** with description, observed indicators, detection signals, real-world examples, reference implementations, mitigations, and citations.
+- **62 Techniques** with description, observed indicators, detection signals, real-world examples, reference implementations, mitigations, and citations.
 - **40 Mitigations**, **40 Software** entries, **18 Threat Actors**, **142 worked examples**, **12 Data Sources**, **416 machine-readable relationships** in `tools/oak.json`.
-- **960 citations** in `citations.bib`, every entry classified `verified` / `verified-with-caveat` / `url-not-pinned` / `url-broken` per a v0.1 audit.
-- **STIX 2.1 export** in `tools/oak-stix.json` (597 SDOs/SROs).
+- **964 citations** in `citations.bib`, every entry classified `verified` / `verified-with-caveat` / `url-not-pinned` / `url-broken` per a v0.1 audit.
+- **STIX 2.1 export** in `tools/oak-stix.json` (601 SDOs/SROs).
 
 ## Where review effort would compound most
 

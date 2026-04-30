@@ -8,7 +8,7 @@ This document explicitly enumerates what OAK v0.1 does *not* cover and why. It i
 
 OAK v0.1 covers six populated axes:
 
-- **Tactics × Techniques** (the matrix): 14 Tactics covering the operator-behaviour kill chain (T1-T8), smart-contract exploits (T9), bridge and cross-chain (T10), custody and signing infrastructure (T11), NFT-specific patterns (T12), account abstraction (T13), and validator/staking/restaking (T14). 58 Techniques across the matrix.
+- **Tactics × Techniques** (the matrix): 14 Tactics covering the operator-behaviour kill chain (T1-T8), smart-contract exploits (T9), bridge and cross-chain (T10), custody and signing infrastructure (T11), NFT-specific patterns (T12), account abstraction (T13), and validator/staking/restaking (T14). 62 Techniques across the matrix.
 - **Mitigations** (`OAK-MNN`): 40 reusable defences across five classes (detection, architecture, operational, venue, wallet-UX), each mapping many-to-many to Techniques.
 - **Software** (`OAK-SNN`): 40 named tools, kits, and malware families (drainer kits, DPRK macOS family, ransomware binaries, commodity loaders and post-exploitation, infostealers, crypto-specific tooling).
 - **Threat Actors / Groups** (`OAK-Gnn`): 18 tracked operator clusters with explicit attribution-strength language (DPRK clusters, Russian-cybercrime ecosystem, drainer-as-a-service, Iranian financially-motivated, affiliate-collectives).
@@ -140,9 +140,9 @@ The cited datasets (`[solrpds]`, `[tmrugpull2026]`, `[frp2025]`, `[xia2021mintdu
 
 Tracked at the repository level rather than the per-axis level:
 
-- **~520 vendor-side citation stubs** marked `OAK v0.1 — pending verification` in `citations.bib` require pre-launch URL audit. Government anchors (CISA AAs, OFAC, DOJ, FBI, HHS, foreign-government joint advisories, court records) are verified at submission time. Industry-vendor citations (BlockSec, Halborn, PeckShield, SlowMist, Mandiant, Microsoft, Symantec, Sophos, Trend Micro, Unit 42, etc.) need confirmation that the canonical URL points to the actual cited piece rather than a 404.
-- **Site MVP per-Technique detail page** rendering the relationship graph — high-leverage UX work item described in `ROADMAP.md`.
-- **README / CONTRIBUTING / COVERAGE / CHANGELOG** are kept current with each phase commit; pre-launch sanity check is a minor task.
+- ~~**~520 vendor-side citation stubs** marked `OAK v0.1 — pending verification`~~ — **resolved at v0.1**. Bulk URL audit completed via `tools/verify_citations.py`; all 964 entries now carry an explicit status (`verified` / `verified-with-caveat` / `url-not-pinned` / `url-broken`); 0 entries remain in `pending verification`. The residual `url-not-pinned` set (entries where the canonical URL was not findable at v0.1 audit) is community-paced post-launch sweep work.
+- ~~**Site MVP per-Technique detail page** rendering the relationship graph~~ — **delivered at v0.1**. See `src/App.tsx`.
+- **README / CONTRIBUTING / COVERAGE / CHANGELOG** kept current with each phase commit.
 
 ---
 

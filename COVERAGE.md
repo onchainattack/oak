@@ -125,7 +125,7 @@ The Mitigations, Software, Threat Actors, Data Sources, and Worked Examples axes
 | Data Sources (`OAK-DS-NN`) | 12 | Each entry references the canonical telemetry source and OAK Techniques that consume it. |
 | Worked Examples | 142 | Each example cites the operator post-mortem (where one exists), industry-forensic walkthroughs, and government / court records (where applicable). |
 
-**Citation verification status** (v0.1 pre-launch task tracked at the repository level): government anchors (CISA AAs, OFAC, DOJ, FBI, HHS, foreign-government joint advisories, court records) are verified at submission time. Approximately 520 vendor-side and industry-blog citations are marked `OAK v0.1 — pending verification` in `citations.bib` and require pre-launch URL audit. The verification work is tracked as a discrete pre-launch task and progresses asynchronously to the per-Technique coverage matrix above.
+**Citation verification status** (v0.1 pre-launch audit, complete): all 964 entries in `citations.bib` carry an explicit per-entry status — `verified` / `verified-with-caveat` (publicly accessible via standard browser; returns 401-403 to non-browser HTTP clients) / `url-not-pinned` (canonical URL pending contributor sweep) / `url-broken` (residual). Government anchors (CISA AAs, OFAC, DOJ, FBI, HHS, foreign-government joint advisories, court records) are verified at submission time. Bulk URL audit completed via `tools/verify_citations.py`; 0 entries remain in `pending verification` state.
 
 ## Update cadence
 
