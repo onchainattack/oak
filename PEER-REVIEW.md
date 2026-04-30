@@ -1,6 +1,6 @@
 # Peer-review request — OAK v0.1
 
-OAK (OnChain Attack Knowledge) is a v0.1 draft of an open, vendor-neutral knowledge base of adversary Tactics and Techniques observed against on-chain assets. It is structurally inspired by adversary-behaviour frameworks used in traditional infosec, adapted for the realities of public-ledger systems (EVM, Solana, Tron, cross-chain bridges). Independently authored — not affiliated with MITRE Corporation or the ATT&CK® framework (see `DISCLAIMER.md`).
+OAK (OnChain Attack Knowledge) is a v0.1 draft of an open, vendor-neutral knowledge base of adversary Tactics and Techniques observed against on-chain assets. The threat surface is fundamentally different from traditional IT infosec — public-ledger finality, anonymous adversaries, money-and-laundering as the primary objective, smart contracts as the attack surface, no patchable endpoints — so vocabulary built for crypto's threat model is needed, not borrowed from elsewhere.
 
 This file briefs reviewers on what to look at, what kinds of feedback are most useful, and how to send it.
 

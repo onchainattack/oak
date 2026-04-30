@@ -2,13 +2,11 @@
   <img src="./public/oak-banner.svg" alt="OAK — OnChain Attack Knowledge" width="100%"/>
 </p>
 
-> **OAK is independently authored. Not affiliated with, endorsed by, or derived from MITRE Corporation or the ATT&CK® framework.** ATT&CK® is a registered trademark of MITRE Corporation. See [DISCLAIMER.md](./DISCLAIMER.md).
-
 # OAK — OnChain Attack Knowledge
 
 > *A common language for on-chain adversary behavior.*
 
-OAK is an open, vendor-neutral knowledge base of adversary **Tactics** and **Techniques** observed against on-chain assets — tokens, liquidity, custody, and the wallets and protocols that interact with them. It is modeled in spirit on adversary-behavior frameworks used in traditional infosec, adapted for the realities of public-ledger systems (EVM, Solana, Tron, cross-chain bridges).
+OAK is an open, vendor-neutral knowledge base of adversary **Tactics** and **Techniques** observed against on-chain assets — tokens, liquidity, custody, and the wallets and protocols that interact with them. The threat surface is fundamentally different from traditional IT infosec: public-ledger finality, anonymous adversaries, money-and-laundering as the primary objective, smart-contract code as the attack surface, no patchable endpoints. OAK exists because crypto needs vocabulary built for crypto's threat model, not borrowed from elsewhere.
 
 This is **v0.1 — a draft for community comment.** Coverage spans 14 Tactics and 62 Techniques, biased toward techniques with at least one production reference implementation in [`mg-detectors-rs`](https://github.com/MeatGrinder-MG/mg-detectors-rs). Gaps are documented honestly, not papered over.
 
@@ -60,7 +58,7 @@ The site is fully static: `npm run build` writes a self-contained GitHub Pages a
 ```
 oak/
 ├── README.md
-├── DISCLAIMER.md            # explicit non-affiliation with MITRE / ATT&CK®
+├── DISCLAIMER.md            # legal-positioning disclaimer
 ├── LICENSE-content          # CC-BY-SA 4.0 — applies to tactics/, techniques/, examples/
 ├── LICENSE-code             # MIT — applies to tools/, .github/, scripts
 ├── CONTRIBUTING.md          # PR-based Technique submission process
@@ -116,7 +114,9 @@ Co-maintainers will be invited from the contributor community by v0.5.
 
 OAK v0.1 covers the full operator-behaviour kill chain (T1–T8), the smart-contract-exploit class (T9), the bridge-and-cross-chain class (T10), custody-and-signing-infrastructure compromise (T11; the off-chain entry vector behind incidents like Bybit Feb 2025, DMM Bitcoin May 2024, Radiant Capital Sep 2024), NFT-specific patterns (T12), account-abstraction attacks (T13; ERC-4337), and validator/staking/restaking attacks (T14). Six axes are populated: Tactics × Techniques (the matrix), Mitigations (40 reusable defences), Software (40 named tools and malware families), Threat Actors (18 tracked operator clusters with explicit attribution-strength language), Data Sources (12 telemetry-input identifiers), and the relationship graph (416 machine-readable edges connecting them). See [`TAXONOMY-GAPS.md`](./TAXONOMY-GAPS.md) for the residual gap inventory and [`ROADMAP.md`](./ROADMAP.md) for the planned trajectory.
 
-OAK is structurally inspired by MITRE ATT&CK but is not affiliated with it (see [`DISCLAIMER.md`](./DISCLAIMER.md)). The closest existing framework, OWASP Smart Contract Top 10, occupies the contract-vulnerability layer and is **complementary** — OAK now overlaps with it directly at T9 Smart-Contract Exploit, and the planned v0.x cross-walk between OAK Techniques and OWASP SC Top 10 categories is the canonical alignment surface. See [`PRIOR-ART.md`](./PRIOR-ART.md) for how OAK positions relative to ATT&CK, OWASP SC Top 10, the academic SoK literature (Zhou et al. 2023), and the canonical industry intelligence sources (Chainalysis, TRM Labs, SlowMist, EigenPhi, Elliptic).
+**On segment.** Crypto's threat surface is not a subset of traditional IT infosec. Public-ledger finality means lost funds are unrecoverable without operator-side action; adversaries are pseudonymous-by-default with money-and-laundering as the primary objective; smart contracts are the attack surface and there is no patchable endpoint; the laundering rails (mixers, bridges, privacy chains, CEX deposit-address layering, NFT wash-trading) are themselves part of the attack chain. Existing IT-security frameworks describe corporate-network adversary behaviour and adapt poorly. OAK is purpose-built for this segment.
+
+**On adjacent work.** OAK's matrix shape (tactics-as-columns, techniques-as-cells) is a well-established taxonomy structure used widely across the security industry. The closest existing framework adjacent to OAK is **OWASP Smart Contract Top 10** — which occupies the contract-vulnerability layer and is **complementary**, not overlapping. OAK overlaps with it directly only at T9 (Smart-Contract Exploit); a v0.x cross-walk between OAK Techniques and OWASP SC Top 10 categories is the planned alignment surface. See [`PRIOR-ART.md`](./PRIOR-ART.md) for the broader landscape (academic SoK literature, industry intelligence sources from Chainalysis / TRM Labs / SlowMist / EigenPhi / Elliptic).
 
 ## Status
 

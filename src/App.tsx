@@ -2640,10 +2640,6 @@ function App() {
           <p className="overview-disclaimer">
             Not a scanner. Not a threat feed. Not a vendor scorecard. The shared language
             underneath those tools.
-            {" "}
-            <a href="#" onClick={(e) => { e.preventDefault(); openDoc("DISCLAIMER.md"); }}>
-              Independently authored — not affiliated with MITRE.
-            </a>
           </p>
         </section>
       )}
