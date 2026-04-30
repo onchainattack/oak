@@ -39,6 +39,7 @@ For terms that have a dedicated Technique or Data Source page, the entry here is
 **Hard rug / hard LP drain** — a single-event removal of substantial pool liquidity by the LP-controlling party (OAK-T5.001). Distinguished from slow rug / OAK-T5.002.
 
 **Honeypot (token-level)** — colloquial umbrella term for tokens whose transfer logic prevents holders from selling (or sells at attacker-favourable rates). OAK splits "honeypot" by mechanic across several Techniques because detection signals differ:
+
 - OAK-T1.001 **Modifiable Tax Function** — settable sell-tax can be raised to 99% by deployer (the canonical "honeypot tax" pattern).
 - OAK-T1.002 **Token-2022 Permanent Delegate Authority** — Solana SPL Token-2022 burn-on-buy / drain-on-sell via the permanent-delegate extension.
 - OAK-T1.004 **Blacklist / Pausable Transfer Weaponization** — admin-controlled blacklist or pausable predicate gates transfers per-address.
@@ -68,6 +69,7 @@ Detection tools (Token Sniffer, GoPlus, Honeypot.is, RugCheck) typically test al
 **Reference implementation** — in OAK, a tool / detector / dataset that implements detection of one or more OAK Techniques and is publicly documented. The `Reference implementations` section of each Technique page lists known coverage. `mg-detectors-rs` is the first reference implementation; the `COVERAGE.md` matrix tracks coverage status per Technique.
 
 **Rug pull / rug** — colloquial umbrella term for operator-driven exit-scam incidents. OAK splits "rug" by mechanic because mitigations differ:
+
 - OAK-T5.001 **Hard LP Drain** — single-event removal of pool liquidity (the canonical "hard rug").
 - OAK-T5.002 **Slow LP Trickle Removal** — gradual withdrawal designed to defeat threshold detectors ("soft rug" / "fragmented rug pull").
 - OAK-T5.003 **Hidden Mint Dilution** — operator mints new supply post-launch to dump on holders.
@@ -97,7 +99,7 @@ Detection tools (Token Sniffer, GoPlus, Honeypot.is, RugCheck) typically test al
 
 ---
 
-**Format conventions for OAK content**
+## Format conventions for OAK content
 
 - "OAK-Tn" identifies a Tactic (`OAK-T1` through `OAK-T10`).
 - "OAK-Tn.NNN" identifies a Technique within a Tactic (`OAK-T4.003`).

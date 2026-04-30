@@ -118,6 +118,7 @@ Two new top-level axes, parallel to MITRE ATT&CK's Mitigations / Software / Data
 - T5.006 Vesting Cliff Dump — coordinated team / investor token sales at scheduled vesting unlock events. Cohort framing per token-unlock-tracker data (TokenUnlocks/Tokenomist, CryptoRank, DefiLlama Unlocks).
 
 Worked examples added (3, total 20):
+
 - examples/2021-10-cream-finance.md — Cream Finance Oct 27 2021 incident (~$130M); canonical T9.001 + T9.002 chain via yUSDVault book-value oracle manipulation. Cream's three 2021 incidents (Feb $37M, Aug $19M, Oct $130M) form a recurring-target pattern noted in the Discussion.
 - examples/2022-06-harmony-horizon.md — Harmony Horizon Jun 23-24 2022 (~$100M); canonical T10.001 + G01 case (2-of-5 multisig key compromise; ~$96M Tornado Cash laundering; FBI Lazarus attribution Jan 2023). Together with Ronin forms the "2022 Lazarus bridge wave".
 - examples/2023-07-multichain.md — Multichain Jul 6 2023 (~$126M); canonical T10.001 broadly construed; attribution explicitly marked **inferred-weak** (external-compromise vs insider-action vs wind-down hypotheses publicly debated, Singapore court ruling fanned insider suspicions).
@@ -126,6 +127,7 @@ Worked examples added (3, total 20):
 - T7.005 Privacy-Chain Hops — third orthogonal laundering rail alongside T7.001 (mixers) and T7.003 (cross-chain bridges). Defender asymmetry is highest of the T7 class — privacy-chain leg is not on-chain-traceable by design; mitigation concentrated at venue compliance + Travel Rule + post-emergence inferential heuristics.
 
 Worked examples added (2, total 17):
+
 - examples/2023-03-euler-finance.md — canonical T9.002 + T9.004 chain (~$197M; missing solvency check on `donateToReserves`; full recovery via on-chain message-channel negotiation with self-identified attacker "Jacob").
 - examples/2021-08-poly-network.md — canonical T9.004 case (~$611M; inter-contract privilege-boundary failure; full return within ~15 days; "Mr. White Hat" framing controversy as a teaching point on attacker-return outcomes).
 - T1.004 Blacklist / Pausable Transfer Weaponization — generic T1 + T6 modifier; admin-controlled blacklist or pausable predicate gates the transfer-logic path.
@@ -134,6 +136,7 @@ Worked examples added (2, total 17):
 - T8.002 Cross-Chain Operator Continuity — multi-chain operator-profile attribution surface; canonical reference for modern OAK-G01 attribution methodology.
 
 Worked example added (1, total 15):
+
 - examples/2024-07-wazirx.md — canonical OAK-T11.001 + T11.003 + G01 chain (~$234.9M; multisig contract modification mechanism; ~85% recovery via 2025-10 restructuring scheme).
 - T11 (Custody and Signing Infrastructure) added as a new top-level Tactic — the Bybit / WazirX / Atomic Wallet incident class. >$1.8B in losses across the three canonical cases alone. T11 elevates this attack category from off-chain footnote (in earlier v0.1 drafts) to a first-class Tactic with three Techniques: T11.001 Third-Party Signing/Custody Vendor Compromise (Bybit, WazirX), T11.002 Wallet-Software Distribution Compromise (Atomic Wallet), T11.003 In-Use Multisig Smart-Contract Manipulation (WazirX-specific contract-modification mechanism).
 - T1 expanded with T1.003 Renounced-But-Not-Really (Proxy-Upgrade Backdoor) — generic T1 + T6 modifier covering proxy-pattern, EIP-1967 admin-slot, AccessControl-role, and dependency-contract authority retention sub-patterns. Canonical case: Shido staking-contract incident (~4.3B SHIDO drained via post-renouncement proxy upgrade).
@@ -154,6 +157,7 @@ Worked example added (1, total 15):
 8 full case studies under `examples/`, each cross-linking to the relevant Technique pages:
 
 Operator-behaviour incidents:
+
 - `2021-10-anubisdao.md` — T5.001 → T7.001 chain (Ethereum, ~13,556 ETH / ~$60M).
 - `2021-11-squid.md` — T1.001 + T5.001 + T8.001 chain (BNB Chain, ~$3.38M direct / ~$19.3M cumulative cluster).
 - `2022-08-curve-dns-hijack.md` — T4.002 → T7.001 chain (Ethereum, ~$575K).
@@ -161,15 +165,18 @@ Operator-behaviour incidents:
 - `2023-11-safemoon-charges.md` — T2.002 (BNB Chain, U.S. SEC complaint).
 
 Smart-contract-exploit incidents:
+
 - `2022-04-beanstalk.md` — T9.002 + T9.003 + T7.001 chain (Ethereum, ~$182M, governance attack via $1B Aave flash loan).
 - `2022-10-mango-markets.md` — T9.001 (Solana, ~$110M, oracle price manipulation; CFTC enforcement, 2025 vacatur of criminal convictions on venue/materiality grounds).
 
 Bridge incidents:
+
 - `2022-02-wormhole.md` — T9.004 / T10.002 boundary case (Ethereum ↔ Solana, ~$325M, missing guardian-account validation; loss replaced by Jump Crypto).
 - `2022-03-ronin-bridge.md` — T10.001 + G01 (Ethereum ↔ Ronin, ~$625M, validator-key compromise via LinkedIn-delivered social-engineering payload; FBI/Treasury Lazarus attribution; >$468M laundered through Tornado Cash).
 - `2022-08-nomad-bridge.md` — T10.002 (multi-chain, ~$190M, post-upgrade trusted-root vs untrusted-root collision; canonical "mob attack" multi-actor exploitation pattern; ~$22M recovered).
 
 Off-chain entry vector with on-chain manifestation:
+
 - `2025-02-bybit.md` — G01 Lazarus-attributed (~$1.46B, third-party-vendor supply-chain compromise of Safe{Wallet}; the single largest crypto-theft event on the public record; FBI IC3 attribution).
 
 Coverage spans more than half of the v0.1 Techniques across 11 examples, exceeding the v0.1 launch criterion of "≥5 Techniques with named real-world example case studies."

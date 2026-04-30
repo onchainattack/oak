@@ -54,7 +54,7 @@ The event has three characteristics that make it the canonical pre-T11-era Japan
 - `[nemfoundationtagging2018]` — NEM Foundation post on the auto-tagging system deployed against the stolen XEM cluster.
 - `[chainalysiscoincheck2018]` — Chainalysis primary attribution / wallet-cluster work on the Coincheck theft.
 - `[chainalysis2024dprk]` for cumulative OAK-G01 / DPRK-attributed totals context (Coincheck included in cumulative figures).
-- `[treasuryofac2020]` — U.S. Treasury OFAC SDN designation of Tian Yinyin and Li Jiadong, March 2, 2020 (Treasury press release SM924, https://home.treasury.gov/news/press-releases/sm924). The designation sanctions two Chinese-national financial facilitators of Lazarus-laundered cryptocurrency proceeds across the 2017–2019 window; the press release does *not* name Coincheck. Cited for OAK-G01 laundering-network context; the absence of a Coincheck-by-name reference is why this example remains `inferred-strong` rather than `confirmed`.
+- `[treasuryofac2020]` — U.S. Treasury OFAC SDN designation of Tian Yinyin and Li Jiadong, March 2, 2020 (Treasury press release SM924, <https://home.treasury.gov/news/press-releases/sm924>). The designation sanctions two Chinese-national financial facilitators of Lazarus-laundered cryptocurrency proceeds across the 2017–2019 window; the press release does *not* name Coincheck. Cited for OAK-G01 laundering-network context; the absence of a Coincheck-by-name reference is why this example remains `inferred-strong` rather than `confirmed`.
 
 ## Discussion
 

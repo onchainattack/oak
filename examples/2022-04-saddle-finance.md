@@ -49,7 +49,6 @@ The case is OAK's reference example for the **virtual-price** subclass of T9.001
 - [The Block — Saddle Finance loses around \$10 million in metapool exploit](https://www.theblock.co/post/144572/saddle-finance-loses-around-10-million-in-metapool-exploit) — contemporaneous coverage.
 - `[zhou2023sok]` — academic taxonomy classifying this as a flash-loan-enabled oracle-manipulation chain against an on-chain invariant-derived price helper.
 
-
 ## Discussion
 
 Saddle is OAK's canonical T9.001 case for the **virtual-price subclass** because the manipulated price input was an on-chain helper function rather than an off-chain feed. This is the part of T9.001's surface that defenders most often miss when they hear "oracle manipulation" — the framing of "an external feed was thin" trains attention on Chainlink-style integrations and away from the protocol's own internal price helpers. The mitigation guidance for the two subclasses is similar in spirit (TWAP windows, deviation circuit-breakers, multi-input quorum) but lands on different code paths — for off-chain feeds it lands on the oracle-integration adapter; for virtual-price it lands on the pool-composition layer.

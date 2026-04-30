@@ -55,7 +55,7 @@ The site is fully static: `npm run build` writes a self-contained GitHub Pages a
 
 ## Repository layout
 
-```
+```text
 oak/
 ├── README.md
 ├── DISCLAIMER.md            # legal-positioning disclaimer

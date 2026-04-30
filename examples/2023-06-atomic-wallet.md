@@ -39,7 +39,7 @@ A class-action lawsuit was filed against Atomic Wallet and its proprietor follow
 ## Public references
 
 - `[ellipticatomic2023]` — Elliptic primary forensic write-up. Wallet-cluster attribution to OAK-G01 Lazarus Group; classified as `inferred-strong` at the industry-forensic layer.
-- `[fbidprkfunds2023]` — FBI press release *FBI Identifies Cryptocurrency Funds Stolen by DPRK* (August 22, 2023). Names "Atomic Wallet" by name in the \~\$100M-theft attribution to DPRK TraderTraitor-affiliated actors (Lazarus Group / APT38). The public-record document that takes Atomic Wallet attribution from `inferred-strong` to `confirmed`. URL: https://www.fbi.gov/news/press-releases/fbi-identifies-cryptocurrency-funds-stolen-by-dprk
+- `[fbidprkfunds2023]` — FBI press release *FBI Identifies Cryptocurrency Funds Stolen by DPRK* (August 22, 2023). Names "Atomic Wallet" by name in the \~\$100M-theft attribution to DPRK TraderTraitor-affiliated actors (Lazarus Group / APT38). The public-record document that takes Atomic Wallet attribution from `inferred-strong` to `confirmed`. URL: <https://www.fbi.gov/news/press-releases/fbi-identifies-cryptocurrency-funds-stolen-by-dprk>
 - [Class Action filed over 2023 Atomic Wallet Data Breach](https://www.classaction.org/news/class-action-filed-over-2023-atomic-wallet-data-breach-in-which-100m-in-crypto-assets-was-stolen) — litigation record.
 
 ## Discussion

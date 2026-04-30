@@ -57,7 +57,6 @@ The two incidents are documented together in this worked example because the cro
 - [PeckShield — Inverse Finance Second Exploit](https://twitter.com/peckshield/status/1537511160895926273) — on-chain trace.
 - `[zhou2023sok]` — academic taxonomy covering both as flash-loan-enabled oracle-manipulation chains.
 
-
 ## Discussion
 
 Inverse Finance is OAK's canonical 2022 example of the **recurring-target** pattern. The April 2 and June 16 incidents are individually unremarkable — each is a routine T9.001 + T9.002 chain in the same family as Mango Markets and Saddle Finance. What makes them collectively worth a worked example is the 75-day gap between them, the partial remediation in between, and the structural near-identity of the two extraction patterns despite the different oracle-input surfaces.

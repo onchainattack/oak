@@ -45,6 +45,7 @@ The per-Technique Detection signals sections describe *what pattern to look for*
 ## v0.1 Data Sources in this directory
 
 On-chain telemetry:
+
 - [`OAK-DS-01-token-deployment.md`](./OAK-DS-01-token-deployment.md) — token deployment events and bytecode metadata.
 - [`OAK-DS-02-lp-pool-events.md`](./OAK-DS-02-lp-pool-events.md) — DEX pool creation, liquidity-add, liquidity-remove events.
 - [`OAK-DS-03-erc20-approvals.md`](./OAK-DS-03-erc20-approvals.md) — `Approval` events on ERC-20 token contracts.
@@ -57,9 +58,11 @@ On-chain telemetry:
 - [`OAK-DS-10-cross-chain-bridge-flows.md`](./OAK-DS-10-cross-chain-bridge-flows.md) — cross-chain swap and bridge inflows/outflows.
 
 Mempool / pre-block telemetry:
+
 - [`OAK-DS-11-mempool-orderflow.md`](./OAK-DS-11-mempool-orderflow.md) — pending transactions and pre-block order flow.
 
 Off-chain telemetry:
+
 - [`OAK-DS-12-off-chain-cti.md`](./OAK-DS-12-off-chain-cti.md) — off-chain CTI feeds (phishing campaigns, DNS / hosting changes, social-engineering campaigns).
 
 ## Roadmap
