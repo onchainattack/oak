@@ -20,7 +20,7 @@ OAK content is provided **"as is" and without warranty of any kind**, express or
 
 Real-world examples cited in `examples/` and within Technique pages reference public on-chain transactions, public forensic writeups, and public incident reports. Where named tokens, contracts, wallets, or actors are referenced, those references are based on public sources cited in `citations.bib` and the per-example reference lists.
 
-If you believe a specific named reference is inaccurate, please open an issue or submit a corrective pull request per [CONTRIBUTING.md](./CONTRIBUTING.md).
+If you believe a specific named reference is inaccurate — or you are the source / subject / rights-holder of cited material and want it corrected, contextualised, or removed — see [CORRECTIONS.md](./CORRECTIONS.md) for the takedown and right-to-reply channel. Public corrections via GitHub issue or pull request, sensitive cases via off-list email at `corrections@onchainattack.org`.
 
 ## Trademarks
 

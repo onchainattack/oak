@@ -2828,6 +2828,7 @@ function App() {
         <div className="foot-section">
           <span className="foot-section-label">legal</span>
           <a href="#" onClick={(e) => { e.preventDefault(); openDoc("DISCLAIMER.md"); }}>Disclaimer</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); openDoc("CORRECTIONS.md"); }}>Corrections & takedowns</a>
           <span className="foot-meta">CC-BY-SA 4.0 content · MIT tooling</span>
         </div>
         <div className="foot-bar">

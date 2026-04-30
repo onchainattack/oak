@@ -251,6 +251,7 @@ const documentSpecs = [
   "CHANGELOG.md",
   "CODE_OF_CONDUCT.md",
   "CONTRIBUTING.md",
+  "CORRECTIONS.md",
   "COVERAGE.md",
   "CROSSWALK.md",
   "DISCLAIMER.md",
