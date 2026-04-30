@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { siteData } from "./data/generated";
+import { documentBodies } from "./data/documents";
 
 type Tactic = (typeof siteData.tactics)[number];
 type Technique = (typeof siteData.techniques)[number];
@@ -368,48 +369,9 @@ function IncidentsView({ openDoc }: { openDoc: (path: string) => void }) {
 
 function InlineMarkdown({ path }: { path: string }) {
   const indexEntry = siteData.documentIndex[path as keyof typeof siteData.documentIndex];
-  const [html, setHtml] = useState<string | null>(null);
-  const [loadState, setLoadState] = useState<"idle" | "loading" | "loaded" | "missing">("idle");
-
-  useEffect(() => {
-    let cancelled = false;
-    setHtml(null);
-    setLoadState("loading");
-    import("./data/documents")
-      .then((mod) => {
-        if (cancelled) return;
-        const body = mod.documentBodies[path];
-        if (typeof body === "string") {
-          setHtml(body);
-          setLoadState("loaded");
-        } else {
-          setLoadState("missing");
-        }
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setLoadState("missing");
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [path]);
-
-  if (!indexEntry || loadState === "missing") {
+  const html = documentBodies[path];
+  if (!indexEntry || typeof html !== "string") {
     return <p className="document-state">Markdown content not available for this entry.</p>;
-  }
-  if (loadState === "loading" || html === null) {
-    return (
-      <div className="markdown-skeleton" aria-hidden="true">
-        <div className="sk-line sk-h2" />
-        <div className="sk-line sk-w-90" />
-        <div className="sk-line sk-w-80" />
-        <div className="sk-line sk-w-95" />
-        <div className="sk-line sk-h2 sk-mt" />
-        <div className="sk-line sk-w-85" />
-        <div className="sk-line sk-w-70" />
-      </div>
-    );
   }
   return (
     <div
@@ -1316,32 +1278,8 @@ function MarkdownDocument({
   onOpenDoc: (path: string) => void;
 }) {
   const indexEntry = siteData.documentIndex[path as keyof typeof siteData.documentIndex];
-  const [html, setHtml] = useState<string | null>(null);
-  const [loadState, setLoadState] = useState<"idle" | "loading" | "loaded" | "missing">("idle");
-
-  useEffect(() => {
-    let cancelled = false;
-    setHtml(null);
-    setLoadState("loading");
-    import("./data/documents")
-      .then((mod) => {
-        if (cancelled) return;
-        const body = mod.documentBodies[path];
-        if (typeof body === "string") {
-          setHtml(body);
-          setLoadState("loaded");
-        } else {
-          setLoadState("missing");
-        }
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setLoadState("missing");
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [path]);
+  const html = documentBodies[path];
+  const loadState: "loaded" | "missing" = typeof html === "string" ? "loaded" : "missing";
 
   const documentKind = path.startsWith("examples/")
     ? "Incident"
@@ -1404,18 +1342,15 @@ function MarkdownDocument({
               This document is not in the precompiled site bundle yet.
             </p>
           )}
-          {indexEntry && loadState === "loading" && (
-            <p className="document-state">Loading document…</p>
-          )}
           {indexEntry && loadState === "missing" && (
             <p className="document-state">Document body not available.</p>
           )}
-          {indexEntry && loadState === "loaded" && html !== null && !path.endsWith(".md") && (
+          {indexEntry && loadState === "loaded" && typeof html === "string" && !path.endsWith(".md") && (
             <pre className="raw-document">
               <code>{html}</code>
             </pre>
           )}
-          {indexEntry && loadState === "loaded" && html !== null && path.endsWith(".md") && (
+          {indexEntry && loadState === "loaded" && typeof html === "string" && path.endsWith(".md") && (
             <>
               <DocumentHero
                 kind={documentKind}
