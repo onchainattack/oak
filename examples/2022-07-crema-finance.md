@@ -1,0 +1,70 @@
+# Crema Finance fake-tick-array exploit — Solana — 2022-07-02
+
+**Loss:** approximately \$8.78M extracted from Crema Finance, a concentrated-liquidity AMM (CLMM) on Solana, across the night of 2022-07-02 to 2022-07-03 in a flash-loan-funded extraction sequence against Crema's reward-claim function.
+**Recovery:** **confirmed-by-recovery-payment.** The attacker accepted a \~10% bug bounty (approximately \$1.6M, denominated as 45,455 SOL plus token equivalents) and returned the remaining \~\$7.18M to Crema. Negotiation was conducted publicly via on-chain memo and an off-chain communication channel that Crema confirmed in its post-incident statement. The recovery is one of the cleanest Solana-ecosystem worked examples of bounty-style negotiated return.
+**OAK Techniques observed:** **OAK-T9.004** (Smart-Contract Logic Flaw — input-validation / account-provenance sub-class) — primary; **OAK-T9.002** (Flash-Loan-Driven Manipulation) — secondary, as the attack capital was funded by a Solend flash loan that supplied the liquidity Crema's reward-claim logic computed against. The flash loan itself was not the vulnerability; the vulnerability was Crema's failure to validate that the tick-array account passed into the reward-claim function was a legitimate Crema-owned account rather than an attacker-fabricated one. The flash loan was the capital amplifier that made the attack profitable at scale.
+**Attribution:** **pseudonymous (attacker self-disclosed contact channel during negotiation; no named-individual attribution).** The recovery negotiation happened over public on-chain memo and a private channel; the attacker stated their identity to Crema for the purpose of the bounty arrangement but the identity was not made public, and there is no FBI / DOJ / Treasury attribution as of the OAK v0.1 cut.
+**Key teaching point:** **flash-loan-funded fake-account injection is a distinct T9.004 sub-pattern from Solana-side input-validation cases that do not involve flash loans.** Cashio (March 2022) was a pure T9.004 case — no flash loan, the attack capital was not the constraint. Crema is the canonical case where a Solana-side T9.004 missing-account-validation surface was *amplified* by a flash loan that supplied real liquidity-pool depth for the reward-claim function to compute large fees against. Defenders writing T9.004 mitigations on Solana should treat the combination "missing account-provenance validation + reward / fee math that scales with the spoofed account's contents" as a sentinel for flash-loan amplification, distinct from the simpler case where the flash loan is not needed.
+
+## Summary
+
+Crema Finance was a concentrated-liquidity AMM on Solana, in the same protocol class as Uniswap V3 (EVM) and Cetus (Sui). CLMMs use a tick-array data structure to track liquidity positions and the fees those positions accrue at specific price ranges. Crema's reward-claim function — the instruction users called to redeem accrued fees on a position — accepted a tick-array account as one of its inputs and read from it the position's claimable fee balance.
+
+On the night of 2022-07-02 to 2022-07-03, an attacker submitted a transaction that:
+
+1. Borrowed a large flash loan from Solend (a Solana-ecosystem money market) to fund a temporarily-large liquidity position.
+2. Constructed a fabricated "tick-array" account whose contents — the fields representing accumulated fees claimable by the position — were attacker-controlled and arbitrarily large.
+3. Called Crema's reward-claim instruction passing the fabricated tick-array account in place of the legitimate Crema-owned tick-array account.
+4. Crema's reward-claim instruction failed to validate that the tick-array account was a legitimate Crema-owned account; it accepted the fabricated account, computed the (attacker-stated) fee balance against the (flash-loan-supplied) liquidity, and credited the attacker with a fee payout drawn from Crema's real fee reserves.
+5. Repeated the pattern across Crema's pools until cumulative outflow reached approximately \$8.78M.
+6. Repaid the flash loan and exited.
+
+Crema detected the drain within hours, paused its protocol contracts, and engaged on-chain analytics firms (OtterSec was the primary Solana-side responder) to trace the attacker's funds. Public negotiation followed: Crema offered a 10% bug bounty in exchange for the return of the remaining funds. The attacker accepted, returning approximately \$7.18M and retaining \~\$1.6M as the bounty. The negotiation was concluded within roughly a week of the original event.
+
+For OAK's purposes Crema is the canonical Solana-side T9.004 + T9.002 combination case. It instantiates the same Solana-account-model failure class as Cashio (the foundational Solana T9.004 case from four months earlier), but with a flash-loan capital amplifier that turned a smaller real liquidity pool into a much larger nominal position the spoofed account's math could compute against. The recovery is the cleanest Solana-ecosystem bounty-style negotiated return on the OAK v0.1 worked-example record.
+
+## Timeline (UTC)
+
+| When | Event | OAK ref |
+|---|---|---|
+| Pre-event | Crema deploys CLMM contracts on Solana; reward-claim instruction reads tick-array account contents but does not validate the account is owned by the Crema program | T9.004 surface (latent) |
+| Pre-event | Attacker analyses Crema's reward-claim instruction and identifies the missing-validation surface; designs the flash-loan-amplified extraction pattern | (off-OAK pre-event observation) |
+| 2022-07-02 (late) | Attacker submits first attack transaction: borrows Solend flash loan; constructs fabricated tick-array account; calls Crema reward-claim with fabricated account; receives fee payout from Crema's fee reserves | **T9.004 + T9.002 extraction** |
+| 2022-07-02 to 2022-07-03 | Attacker repeats the pattern across Crema's pools; cumulative outflow reaches \~\$8.78M | T9.004 + T9.002 repeat |
+| 2022-07-03 | Crema detects anomalous fee outflow; pauses protocol contracts | (operator response) |
+| 2022-07-03 | Crema engages OtterSec and other Solana-ecosystem analysts; on-chain trace identifies attacker addresses | (forensics) |
+| 2022-07-03 to 2022-07-08 | Public negotiation via on-chain memo: Crema offers 10% bounty; attacker counter-communicates terms; agreement reached | (recovery negotiation) |
+| 2022-07-08 | Attacker returns \~\$7.18M to Crema; retains \~\$1.6M as bounty | **confirmed-by-recovery-payment** |
+| Continuing | No public named-individual attribution; protocol resumes operations after re-audit and patch | (final state) |
+
+## What defenders observed
+
+- **The bug was missing account-provenance validation, not a math bug.** Crema's reward-claim math was correct *given the inputs*. The tick-array account's contents were taken as authoritative without checking that the account was actually a Crema-owned tick-array. This is structurally identical to Cashio's missing-LP-token-provenance check from four months earlier — both incidents fail the same Solana-account-model defensive surface. The combination is what made Crema worse than a simpler T9.004 case: the spoofed account contained attacker-stated *fee* balances, and the flash loan supplied the *liquidity* the math computed against, so the dollar impact scaled with the flash-loan size rather than with the attacker's own capital.
+- **The flash loan was the amplifier, not the vulnerability.** A defender doing root-cause classification must separate the two. The flash loan was the capital mechanism; the protocol could not have prevented the flash loan from existing. The vulnerability was Crema's reward-claim instruction not validating the tick-array account's owner. With the validation present, the flash loan would have failed harmlessly; without the validation, the attack works at any scale the liquidity pool can support. This is the cleanest Solana-side worked example of T9.002 (flash loan) as amplifier of T9.004 (missing validation). The framing matters because the mitigation lives in the T9.004 surface, not in the T9.002 surface.
+- **Detection latency was hours, not minutes.** The attack ran for several hours overnight with cumulative outflow growing across pools before Crema's operations team detected the anomaly. This is consistent with the broader pattern in Solana-ecosystem 2022 incidents: detection systems were not yet mature, and overnight drains often ran for substantial time before human review caught them. Defenders writing detection-system requirements for Solana protocols should anchor on this case as evidence that "fee-outflow-versus-fee-accrual" anomaly detection at sub-hour granularity is a non-trivial requirement, not a default.
+- **Bounty negotiation worked because the attacker chose to accept.** The 10%-bounty / 90%-return outcome was not produced by Crema's leverage over the attacker — Solana's account-snapshot pattern (post-Slope) made tracking the funds tractable but not equivalent to the validator-coordinated freeze available on Sui. The recovery happened because the attacker chose to negotiate. Defenders writing recovery-framework documentation should treat the Crema outcome as evidence that bounty-style negotiation *can* work on Solana, but should not over-generalise — many Solana-side incidents in the same window (Cashio, Nirvana) did not produce equivalent recoveries because the attackers chose differently.
+- **The post-incident audit baseline shifted.** After Crema, the Solana-ecosystem audit baseline absorbed "tick-array and similar protocol-internal accounts must have explicit owner / authority checks" as a per-program checklist item. Anchor-framework constraints (the `#[account(...)]` attribute family) became the de-facto declarative pattern. Crema therefore reinforces the same audit-baseline lesson Cashio established, adding the flash-loan amplification dimension to the checklist.
+
+## What this example tells contributors writing future Technique pages
+
+- **T9.004 + T9.002 combinations need explicit framing in the worked-example layer.** A pure T9.004 case (Cashio) and a T9.004-amplified-by-T9.002 case (Crema) are not the same structurally. The vulnerability is in T9.004; the dollar impact is set by T9.002. Pages should clearly attribute the *vulnerability* to T9.004 and the *capital amplifier* to T9.002, not collapse the two into a single "flash loan attack" framing. The Crema case is the cleanest illustration of why this disambiguation matters.
+- **Bounty-style negotiated return is realistic on Solana but not guaranteed.** Crema's 10%-bounty outcome is a real data point in favour of the negotiation pathway. But Solana-ecosystem worked examples in the same window (Cashio: wealth-bracketed return; Nirvana: no return) span the full outcome spectrum. Recovery-framework documentation should treat negotiated bounty as one branch on the Solana recovery tree, not the default expected outcome.
+- **The Solana T9.004 cluster has internal sub-structure.** Cashio (no flash loan, fake LP collateral) → Crema (flash-loan-amplified, fake tick-array account) → Cypher August 2023 (no flash loan, sub-account isolation flaw) is a chronological cluster of Solana T9.004 cases that span different sub-patterns. T9.004 pages should preserve this internal structure rather than collapse all three into a single "Solana account-validation" bucket.
+- **Pseudonymous-with-private-attribution is a recovery-context attribution status worth preserving.** The Crema attacker identified themselves to Crema for the purposes of the bounty arrangement; Crema did not publish the identity. From OAK's perspective the attribution is `pseudonymous` (no public named individual), but the recovery process required private attribution. Worked examples should preserve this distinction: "the protocol team knows; the public does not" is not the same as "no one knows."
+
+## Public references
+
+- `[cremapostmortem2022]` — Crema Finance official post-incident statement describing the root cause, the negotiation, and the recovery.
+- `[rektcrema2022]` — Rekt News forensic write-up of the Crema exploit, including the flash-loan-amplification framing.
+- `[ottersecsolana2022crema]` — OtterSec on-chain analysis and trace of the attack, including the fabricated-tick-array forensics.
+- `[slowmistcrema2022]` — SlowMist incident analysis cross-referencing the Solend flash-loan leg.
+- `[halbornsolana2022crema]` — Halborn analysis of the Crema reward-claim missing-validation pattern.
+- See also `/examples/2022-03-cashio.md` (`[cashiopostmortem2022]`) for the foundational Solana T9.004 case Crema instantiates.
+
+## Discussion
+
+Crema is OAK's canonical Solana-side T9.004 + T9.002 worked example. The vulnerability — missing tick-array account-provenance validation in the reward-claim instruction — is structurally identical to the Cashio class, but the flash-loan capital amplifier turns a smaller-pool protocol into an \~\$8M loss event. The case is the cleanest illustration that on Solana, the input-validation surface is a load-bearing defensive layer whose failure scales with whatever capital amplifier the attacker can bring (flash loans being the most common, but not the only, amplifier).
+
+The recovery — 10% bounty, ~90% return, negotiated within roughly a week — is the cleanest Solana-ecosystem bounty-style outcome on the OAK v0.1 record. It demonstrates that the negotiation pathway works when the attacker chooses to engage, but it does not demonstrate that the pathway works as a default; the same window includes Cashio (wealth-bracketed return) and Nirvana (no return). Recovery-framework documentation should preserve the variance.
+
+For OAK's broader Solana-ecosystem coverage, Crema closes the second link in the Cashio → Crema → Cypher chain that establishes the Solana T9.004 cluster as a real, recurrent class with internal sub-structure (no-amplifier vs flash-loan-amplified vs sub-account-isolation-flaw). The chain is the empirical basis for treating Solana-side input-validation as a first-class T9.004 sub-class distinct from EVM-side input-validation patterns.

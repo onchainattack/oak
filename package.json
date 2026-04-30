@@ -1,0 +1,28 @@
+{
+  "name": "oak",
+  "version": "0.1.0",
+  "description": "OnChain Attack Knowledge taxonomy and website.",
+  "private": true,
+  "scripts": {
+    "site:data": "python3 tools/export_json.py && python3 tools/export_stix.py && node scripts/build-site-data.mjs && node scripts/build-sitemap.mjs",
+    "dev": "npm run site:data && vite --host 0.0.0.0",
+    "build": "npm run site:data && tsc --noEmit && vite build && node scripts/copy-static-content.mjs",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "marked": "^18.0.2",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.10"
+  }
+}

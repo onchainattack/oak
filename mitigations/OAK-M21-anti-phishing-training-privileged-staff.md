@@ -1,0 +1,44 @@
+# OAK-M21 — Anti-Phishing Training for Privileged Staff
+
+**Class:** operational
+**Audience:** custody-customer, custody-vendor, protocol
+
+## Maps to Techniques
+
+T11.001, T11.002
+
+## Description
+
+Targeted anti-phishing training for engineering staff, treasury operators, multisig signers, customer-support staff with privileged access, and any other role that holds either direct on-chain authority or the ability to substitute payloads at the signer-host layer. M21 is differentiated from generic enterprise security-awareness training by audience scope (only the privileged-role population), by vector specificity (LinkedIn fake-job-offer payloads, Telegram impersonation of contractors / counterparties, npm-package and developer-tooling supply-chain compromise, GitHub-issue malicious-attachment patterns), and by frequency calibration (quarterly or higher rather than annual, with active red-team exercises against the actual incoming attack patterns observed in the OAK-G01 cohort).
+
+From a defender's perspective, M21 addresses the structural fact that the dominant entry vector across documented T11.001 / T11.002 incidents is social engineering of vendor-side or customer-side personnel — typically via LinkedIn fake-job-offer payloads (the "TraderTraitor" / "Contagious Interview" pattern), supply-chain compromise of the privileged user's development tooling (malicious npm packages, malicious VS Code extensions, malicious browser extensions), or impersonation of trusted counterparties on messaging platforms. The customer organisation is rarely the proximate victim of the *on-chain* attack; the customer or vendor's privileged-staff member is the proximate victim of the *entry-vector* attack, and the organisation is the on-chain victim downstream. M21 closes the entry vector at its actual point of contact — the privileged individual's recognition of the lure pattern.
+
+The leverage from M21 is asymmetric. The same training population that, when un-trained, creates the entry vector for hundreds of millions of dollars of downstream loss is, when trained, frequently the highest-quality detection sensor for novel attack patterns: a privileged engineer who has seen four LinkedIn fake-job-offer attempts and reported each one to the SOC is the canonical organic threat-intelligence source against a campaign whose signature is still stabilising at the industry layer. M21 is therefore both a prevention control and a detection-signal-generation control.
+
+## How it applies
+
+- **T11.001 (Third-Party Signing / Custody Vendor Compromise):** the entry vector for Bybit-Feb-2025 (Safe{Wallet} developer-workstation compromise via social engineering), Radiant-Oct-2024 (multi-developer-laptop compromise via INLETDRIFT macOS backdoor delivered through a social-engineering chain), DMM-May-2024 (Ginco supply-chain compromise via TraderTraitor lure). M21 at the vendor side closes the entry vector at the vendor; M21 at the customer side closes the parallel entry vector against the customer's own privileged staff. Both surfaces are needed — a customer with mature M21 still inherits the vendor-side risk if the vendor's M21 is weak, and vice versa. Pair M21 with M20 (vendor breach-notification SLA) so that compromise that does land is disclosed in a customer-actionable window.
+- **T11.002 (Wallet-Software Distribution Compromise):** the Atomic Wallet June 2023 cohort. The build-pipeline compromise that produced the malicious wallet binary likely landed via a social-engineering chain against a wallet-vendor engineer; the technical cause was not fully publicly disclosed but the cohort pattern matches. M21 at wallet-vendor engineering populations is the highest-leverage prevention surface; pair with reproducible builds, signed-binary distribution with HSM-backed signing keys, and supply-chain attestation infrastructure for the residual technical surface.
+
+## Limitations
+
+- **Training does not bound novel attack patterns.** A privileged engineer trained against the 2024 LinkedIn fake-job-offer pattern is not by that fact protected against a 2025 Telegram-DM-from-impersonated-counterparty pattern. M21 must run continuously and incorporate threat-intelligence feedback from the actual OAK-G01 / OAK-G02 / etc. operational tradecraft as it evolves. Annual cadence is structurally insufficient against actors operating on a quarterly tradecraft-iteration cycle.
+- **Selection bias against high-performers.** The dominant entry-vector lure (LinkedIn fake-job-offer) selects for engineers actively considering job changes — typically high-performers with marketable skills, not the demographic most aligned with rigorous security-policy compliance. M21 must address the lure's actual psychology (genuine career interest in the offered role) rather than treating engineers as adversarial-to-the-policy actors.
+- **Training-fatigue degrades signal quality.** Over-frequent or low-relevance training degrades both the recipient's attention to the training and the SOC's signal-quality on reported lures (engineers who are tired of phishing-simulation emails report less, including real lures). Calibration of training-to-real-lure ratio matters more than absolute training volume.
+- **Vendor-side surface is opaque to customers.** Customers can audit their own M21 program directly but can audit a vendor's M21 program only via vendor-questionnaire and audit-attestation channels — both of which are weak signals against a determined attacker who has already compromised the vendor. The structural complement is M20 (disclosure SLA) plus M19 (air-gap signing) for the vendor-compromise residual.
+- **Doesn't bound non-social-engineering vectors.** M21 closes the social-engineering entry vector but is irrelevant to a vendor-platform compromise that lands via, e.g., infrastructure-level (DNS, hosting, BGP) attack, or via a zero-day in a build-tool the vendor depends on. M21 is one layer in a defence-in-depth stack, not a replacement for the others.
+
+## Reference implementations
+
+- **Industry-shared lure feeds:** vendor-coalition threat-sharing programs (Crypto-ISAC, ISAC-equivalent industry groups) increasingly circulate live LinkedIn / Telegram lure samples and IOCs across member organisations within hours of first observation. The shared-feed model converts each member's first-observed lure into all-members' training material.
+- **Red-team integration:** mature M21 programs include continuous red-team exercises against the privileged-staff population using the actual OAK-G01 lure templates (modulo legal scope agreements). Self-administered phishing-simulation platforms produce poor signal against sophisticated lures; in-house or contracted red-team capability is the calibration step.
+- **Onboarding integration:** new-engineer onboarding at major custody vendors and protocol teams now typically includes a structured M21 module covering the canonical OAK-G01 lure templates, the vendor's incident-reporting channel, and the response-time expectations. Without onboarding integration, the trained-staff-vs-untrained-staff ratio degrades over time as staff turn over.
+- **Lure-reporting infrastructure:** a low-friction, single-click lure-reporting button in the corporate email / messaging clients converts the privileged-staff population into a high-volume detection sensor; this is the signal-generation side of M21 rather than the prevention side, and is frequently the higher-leverage outcome.
+
+## Citations
+
+- `[radiantpostmortem2024]` — Radiant Capital October 2024; canonical multi-developer-laptop compromise via social-engineering chain. The post-mortem is unusually detailed on the lure delivery and is the primary reference for what M21 is defending against.
+- `[mandiantradiant2024]` — UNC4736 / Citrine Sleet attribution; DPRK-nexus tradecraft cluster covering the Radiant-Oct-2024 social-engineering chain.
+- `[fbidmm2024]` — DMM Bitcoin May 2024; FBI / DC3 / NPA joint statement documenting the TraderTraitor pattern as the entry vector for the \$308M Ginco-supply-chain incident.
+- `[chainalysis2024dprk]` — broader OAK-G01 context for social-engineering as the dominant entry vector across the 2024 DPRK-attributed cohort.
+- `[microsoftcitrineradiant2024]` — Citrine Sleet / AppleJeus / UNC4736 naming convergence and INLETDRIFT macOS backdoor family detail.

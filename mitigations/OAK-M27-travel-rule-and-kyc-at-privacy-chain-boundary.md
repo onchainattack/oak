@@ -1,0 +1,44 @@
+# OAK-M27 — Travel Rule and KYC at Privacy-Chain Boundary
+
+**Class:** venue
+**Audience:** venue (CEX, OTC desk, instant-swap service), regulator, risk-team
+**Maps to Techniques:** OAK-T7.002, OAK-T7.003, OAK-T7.005
+
+## Description
+
+A boundary-layer mitigation applied at the on-ramp / off-ramp / instant-swap surfaces that bracket a privacy-chain hop or cross-chain laundering leg, on the premise that the privacy-chain interior is not analytically tractable on-chain at v0.1 and so the defender's only viable surface is the boundary at which funds re-emerge into a regulated venue. The mitigation has four legs: (a) **pre-privacy-chain CEX deposit attribution** — at deposit time on the source-chain side, the venue applies per-cluster aggregate-inflow tracking, screens against compliance-provider illicit-cluster watchlists, and aggregates nominally-distinct customer deposits whose upstream source-clusters overlap, so that structuring evasion against per-customer thresholds (the documented spikes around \$1K / \$3K / \$10K) is detected at cluster granularity; (b) **post-privacy-chain re-emergence flagging** — for amount-class-matching inflows on alternative transparent chains following an unresolved source-chain terminal-deposit event, the destination venue applies elevated review and feeds the re-emergence signal back into shared compliance-provider watchlists; (c) **Travel Rule data exchange** — FATF-aligned originator / beneficiary information exchange between VASPs at deposit and withdrawal, using the IVMS-101 schema as the canonical message format, so that a customer deposit at the destination venue carries the originator-VASP attribution that an on-chain trace alone cannot reconstruct; (d) **per-cluster blocklist enforcement** — sanctioned-address blocklists are enforced at venue level (deposit refusal, withdrawal pause, asset freeze) at cluster rather than per-address granularity, so that cluster expansion via fresh-address generation does not bypass the block.
+
+The defender's framing is that OAK-T7.005 (privacy-chain hops) is the canonical case for which on-chain attribution fails by design and the mitigation surface is necessarily off-chain, but the same boundary-layer logic applies to OAK-T7.002 (CEX deposit layering) and OAK-T7.003 (cross-chain bridge laundering) because in each case the re-emergence-into-a-regulated-venue leg is the structural chokepoint where attribution becomes possible. The Travel Rule data exchange is the off-chain compensation for the on-chain attribution gap that privacy chains and (to a lesser extent) cross-chain bridges introduce.
+
+The class is `venue` rather than `detection` because the mitigation requires venue-side policy and inter-VASP message infrastructure (Travel Rule message exchange, shared compliance-provider feeds, cluster-level blocklist enforcement) — it is not satisfied by an analyst publishing cluster watchlists if the venues do not act on them at deposit-acceptance time.
+
+## How it applies
+
+- **OAK-T7.002 (CEX Deposit Layering):** the venue integrates per-cluster aggregate-inflow tracking from compliance providers, aggregates nominally-distinct customer deposits whose upstream source-clusters overlap, and applies threshold-structuring detection on the deposit-amount distribution. Per-customer KYC posture review triggers when aggregate-cluster inflows exceed configured thresholds. Travel Rule originator information from the depositing VASP narrows the attribution gap that pure on-chain analysis would leave. Structuring-evasion thresholds are aligned with established TradFi standards (the documented \$1K / \$3K / \$10K spikes mirror TradFi structured-deposit doctrine).
+- **OAK-T7.003 (Cross-Chain Bridge Laundering):** the bridge protocol integrates compliance-provider screening at deposit time and pauses or freezes deposits from sanctioned addresses; downstream venues at the bridge's destination chain apply elevated review for inbound deposits whose attribution graph traces through the bridge during a post-incident time window. Travel Rule message exchange between the source-chain VASP and the destination-chain VASP, where both ends are regulated, narrows the cross-chain attribution gap; cross-chain coordination of asset-freeze actions across multiple chains within days of a major extraction event is policy-feasible at v0.1.
+- **OAK-T7.005 (Privacy-Chain Hops):** the source-chain CEX applies elevated review to customer accounts whose deposit-then-privacy-chain-withdraw flow pattern correlates with watchlisted source-clusters; venues that retain XMR / ZEC support carry disproportionate mitigation responsibility at the deposit-attribution leg. The destination-side re-emergence-flagging leg applies elevated review for amount-class-matching inflows on alternative transparent chains following an unresolved source-chain terminal-deposit event. Venue delisting of privacy-chain pairs (the documented industry trend through 2020–2024) is a structural sub-mitigation of OAK-M27 that contracts the deposit-attribution surface; OAK takes no position on the underlying policy debate. Travel Rule enforcement narrows the off-ramp surface for the post-privacy-chain re-emergence leg in jurisdictions with stronger enforcement. Instant-swap services are at v0.1 a comparatively under-mitigated surface relative to CEXes and represent a high-leverage future application target for the mitigation's screening leg.
+
+## Limitations
+
+- Privacy-chain interior remains analytically intractable: the mitigation is a boundary-layer compensation, not an attribution restoration. Funds that enter a privacy chain via a non-KYC source (peer-to-peer trade, mining payout, or a chain of small-amount conversions through services that fall below per-VASP threshold) and exit to a non-KYC destination (peer-to-peer trade, self-custody) bypass the mitigation entirely.
+- Travel Rule coverage is uneven across jurisdictions; venues in jurisdictions without Travel Rule enforcement are a hole in the message-exchange leg, and inter-jurisdictional message-format compatibility (IVMS-101 conformance) is still maturing. The mitigation is materially stronger where both sides of a deposit-then-withdraw flow are in Travel-Rule-enforcing jurisdictions.
+- Instant-swap services are an operationally-significant surface at v0.1 that have not in general adopted the same screening-and-attribution posture as CEXes; the mitigation's instant-swap-side application is a roadmap item rather than current practice.
+- Cluster-level blocklist enforcement requires shared compliance-provider feeds; venues that rely solely on per-address sanctions lists (e.g., raw OFAC SDN list) miss cluster-expansion via fresh-address generation. The mitigation's effectiveness depends on the compliance-provider feed quality, which is a residual single-vendor risk.
+- The mitigation is silent on the policy question of whether privacy-chain delisting is the correct response (versus stronger boundary-layer screening with privacy-chain support retained); OAK documents the trend without taking a position.
+
+## Reference implementations
+
+- FATF Recommendation 16 (Travel Rule) — international standard mandating originator / beneficiary information exchange for VASP-to-VASP value transfers above a configured threshold.
+- IVMS-101 — interVASP Messaging Standard; the canonical machine-readable message format for Travel Rule data exchange.
+- Chainalysis Reactor / KYT, TRM Labs, Elliptic Navigator — compliance-provider feeds providing cluster-level screening and watchlists consumed by venue compliance teams.
+- Binance XMR delisting (2024-02), Kraken / Bittrex / Huobi privacy-chain delisting actions through 2020–2024 — venue-surface-contraction reference events for the OAK-T7.005 deposit-attribution leg.
+- OFAC SDN designations (Tornado Cash 2022, follow-on cases) — per-cluster blocklist primitives for the enforcement leg, applied at venue level.
+
+## Citations
+
+- `[chainalysis2024laundering]` — 2024 Chainalysis Money Laundering Report; canonical scale and pattern characterisation across the OAK-T7 cluster.
+- `[chainalysis2024dprk]` — DPRK-attributed cryptocurrency-theft retrospective; Lazarus historical privacy-chain and CEX-layering usage.
+- `[chainalysisprivacychain2024]` — Chainalysis CSAM-vendor / instant-exchanger Monero-conversion analysis; vendor-cohort OAK-T7.005 usage pattern.
+- `[binancexmrdelist2024]` — Binance XMR delisting announcement; venue-surface-contraction reference event.
+- `[ofac2022tornado]` — Tornado Cash SDN designation; reference for the post-2022 laundering-rail repositioning context that OAK-T7.005 sits within alongside OAK-T7.001 and OAK-T7.003.
+- `[coindeskthorchainlazarus2025]` — primary citation for the THORChain-as-Lazarus-laundering-rail framing relevant to the cross-chain leg.

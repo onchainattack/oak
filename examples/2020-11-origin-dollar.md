@@ -1,0 +1,118 @@
+# Origin Dollar (OUSD) flash-loan-funded reentrancy — Ethereum — 2020-11-17
+
+**Loss:** approximately \$7M extracted from the Origin Dollar (OUSD) stablecoin protocol on Ethereum in a single transaction. Contemporaneous reporting and the Origin Protocol post-mortem cite the figure as \~\$7.0M; the extracted assets were a mix of DAI, USDT, and USDC drawn from OUSD's underlying-collateral set. **Recovery:** partial. Origin Protocol pursued an extensive recovery effort combining (a) a public on-chain message channel offering an attacker bug-bounty / settled-return arrangement, (b) coordinated forensic outreach with PeckShield / SlowMist / Chainalysis, and (c) cooperation with centralised exchanges to tag and freeze laundering-route deposits. Approximately \$2M was returned and / or recovered through grey-hat-channel and exchange-side action across subsequent weeks. Origin Protocol then funded the residual \~\$5M shortfall to OUSD holders from operator-reserve token allocations (OGN) and treasury contributions, structuring the compensation as a phased rebase-and-repay programme.
+**OAK Techniques observed:** **OAK-T9.005** (Reentrancy) — primary; the canonical case of reentrancy weaponising a fake-token callback against a stablecoin-protocol's `mint()` and `redeem()` paths. **OAK-T9.002** (Flash-Loan-Enabled Exploit) — enabling precondition; the attacker funded the exploit's working capital — \~\$70M aggregate flash loans across dYdX and other sources — with flash loans, repaying within the same transaction. The combined T9.005 + T9.002 framing is the right one, and is structurally similar to Akropolis (2020-11-12) five days earlier. The case is **not T9.001** — there is no oracle-input manipulation; the failure is in the `mint()` / `redeem()` per-call accounting state.
+**Attribution:** pseudonymous. The attacker was never publicly identified as a named individual / group at the OAK v0.1 cutoff. Some of the laundering-trace fingerprint material was published by Origin Protocol and partner forensic firms during the recovery period; the partial-recovery outcome was achieved without rising to judicial / regulatory attribution.
+
+## Summary
+
+Origin Dollar (OUSD) was an Ethereum-based stablecoin protocol launched by Origin Protocol in late September 2020. Its design accepted user deposits of DAI, USDC, and USDT and minted OUSD 1-for-1, routing the underlying collateral into yield-bearing strategies (Compound, Aave, and Curve at various points) and rebasing OUSD balances upward to pass yield through to holders. The `mint()` and `redeem()` paths on the OUSD vault contract were the attack surface: when a user called `mint()` with a supplied token, the contract pulled the token via `transferFrom`, computed the OUSD-mint amount as a function of the supplied token's value and the vault's current total-supply state, and minted OUSD to the user. The `redeem()` path similarly burned OUSD and returned a pro-rata share of the vault's underlying collateral. Both paths read and updated the vault's `totalValue` accounting state across the external `transferFrom` boundary without per-function `nonReentrant` discipline.
+
+On 2020-11-17, an attacker constructed a malicious "fake token" contract — an ERC-20-compatible contract whose `transferFrom` function did not actually transfer tokens but instead reentered OUSD's `mint()` function. The attacker took flash loans aggregating \~\$70M across dYdX and several other sources, supplied a small "real" stablecoin amount alongside a much larger nominal "fake-token" amount through OUSD's `mint()` entrypoint, and the fake-token reentrancy caused OUSD's vault to register the fake-token "deposit" against the vault's accounting state — without any real underlying transfer — and then to mint OUSD against the inflated total-deposit figure. The attacker then exited via `redeem()` against the inflated OUSD position, pulling out \~\$7M of real DAI / USDT / USDC from the vault's actual underlying-collateral set. The flash loans were repaid in the same transaction; net capital outlay was the gas cost.
+
+The Origin Dollar incident is the **canonical mid-November 2020 yield-aggregator-class reentrancy + flash-loan case at the \\$7M scale**, structurally adjacent to Akropolis five days earlier and Pickle Finance four days later. Its distinguishing teaching point is not the mechanic — which is structurally similar to Akropolis — but the **recovery-and-disclosure response**: Origin Protocol's open-source post-mortem within 24 hours, on-chain message-channel offer to the attacker, coordinated forensic outreach, and structured rebase-and-repay compensation programme together became a *template for subsequent on-chain negotiation cases* (notably the Euler 2023 negotiation and, in less direct lineage, Mango Markets 2022's DAO-vote settlement). Contributors writing future cases should treat Origin Dollar's response cadence as one of the canonical reference points for "what good crisis comms and recovery looks like" in DeFi incident response.
+
+## Timeline (UTC)
+
+| When | Event | OAK ref |
+|---|---|---|
+| 2020-09-30 | Origin Protocol launches OUSD on Ethereum | (standing protocol context) |
+| Pre-event (2020) | OUSD vault contract deployed without per-function `nonReentrant` modifier on `mint()` / `redeem()` paths; accepts arbitrary supplied tokens through the supported-asset list with insufficient pre-call validation against fake-token contracts | (standing T9.005 surface) |
+| Pre-event (industry context) | Lendf.me 2020-04 had established callback-hook reentrancy as a production T9.005 sub-class; Akropolis 2020-11-12 had established the same sub-class against a yield-aggregator deposit path five days before; the industry-side surface awareness was active | (industry-known surface, OUSD did not inherit the lesson) |
+| 2020-11-17 \~17:30 (T+0) | Attacker contract initiates exploit transaction: takes flash loans \~\$70M aggregate (\$7.5M ETH from dYdX + \~\$50M+ DAI / USDT from various sources) | **T9.002 precondition** |
+| 2020-11-17 (same window) | Attacker calls OUSD `mint()` with a fake-token alongside real stablecoin; fake `transferFrom` reenters `mint()` on the real flash-loan stablecoin; vault `totalValue` accounting credited twice | **T9.005 reentrancy turn — phantom mint accumulation** |
+| 2020-11-17 (same window) | Attacker calls `redeem()` against the inflated OUSD position; vault returns pro-rata share of real DAI / USDT / USDC underlying collateral; net extraction \~\$7M | **T9.005 + T9.002 chained extraction** |
+| 2020-11-17 (same window) | Flash loans repaid in same transaction; net capital outlay \~gas cost | **T9.002 closure** |
+| 2020-11-17 \~17:34 | Origin Protocol identifies the compromise via on-chain monitoring | (defender detection) |
+| 2020-11-17 (within hours) | Origin Protocol pauses OUSD `mint()` and `redeem()` paths; sends on-chain message to attacker addresses opening negotiation channel | (defender response — pause + outreach) |
+| 2020-11-17 to 2020-11-18 | Origin Protocol publishes open-source post-mortem within \~24 hours, including reentrancy mechanic at function-call resolution, asset-flow trace, and proposed compensation plan | (rapid-disclosure template) |
+| 2020-11-18 to 2020-12 | Origin Protocol coordinates with PeckShield / SlowMist / Chainalysis on forensic trace; coordinates with major exchanges (Binance, Huobi, etc.) on laundering-route tagging | (forensic / exchange-coordination response) |
+| 2020-11 to 2020-12 | \~\$2M recovered through grey-hat-channel and exchange-side action over subsequent weeks; \~\$5M shortfall remains outstanding | (partial recovery outcome) |
+| 2020-12 onward | Origin Protocol announces structured rebase-and-repay compensation programme funded from OGN treasury allocations and operator reserves; OUSD holders made whole over a phased timeline | (operator-funded compensation) |
+| 2020-11 to 2020-12 | Pickle Finance (2020-11-21), Cover Protocol (2020-12-28), and Value DeFi incidents follow with structurally similar yield-aggregator vault-share / mint-redeem accounting failures | (industry pattern — "DeFi November / December") |
+| 2020 onward | Origin Protocol's post-mortem and response cadence become a widely-cited template in DeFi incident-response literature; the Euler 2023 negotiation channel cites the OUSD-style on-chain message channel as a structural antecedent | (downstream template) |
+
+## What defenders observed
+
+- **The reentrancy vector was a fake attacker-controlled token, not a real callback-bearing token.** Like Akropolis five days earlier, the OUSD attack worked through a malicious-by-construction ERC-20-compatible contract whose `transferFrom` reentered OUSD's `mint()` rather than performing a real transfer. The defender lesson is the same as Akropolis's: any contract that accepts arbitrary user-supplied token contracts as input is exposed to whatever malicious behaviour those contracts implement, and the standing mitigation is whitelisted-asset-only acceptance plus per-function `nonReentrant` discipline. Contributors writing future yield-aggregator / stablecoin-vault Technique pages should treat fake-token-as-reentrancy-vector as a baseline attack pattern rather than a novel observation.
+- **Stablecoin protocols inherit the yield-aggregator share-accounting reentrancy surface.** OUSD's vault is structurally a yield-aggregator (deposits routed into Compound, Aave, Curve strategies; rebases passing yield through to holders) wrapped in a stablecoin's mint-and-redeem semantics. Its per-call accounting state is the vault's `totalValue` reading, which is sensitive to the same kind of ratio-based corruption as Akropolis's share-accounting. The defender lesson is that *stablecoin protocols built on top of yield-aggregator architectures inherit the yield-aggregator class's reentrancy surface*, and should be analysed under the same mitigation framework rather than under a notionally-different "stablecoin" framework.
+- **Flash loans aggregated \~\$70M to extract \~\$7M; the leverage ratio was \~10x.** The attacker's flash-loan capital pool exceeded the actual extracted value by an order of magnitude, because the attacker needed enough working capital to *meaningfully manipulate the vault's `totalValue` reading* through the fake-token reentrancy chain. This pattern — flash-loan capital sized to exceed the extracted value by a multiplicative factor — recurs across many T9.005 + T9.002 cases (Akropolis, Pickle, Cover, Beanstalk) and is a defender-side detectable signal: a single transaction borrowing \~\$70M of flash loans against a protocol whose vault TVL is \~\$7M is, in 2026 monitoring terms, an obvious anomaly. The detection pattern was not standard in November 2020; it is now (Forta / OpenZeppelin Defender / Hypernative / BlockSec PhalconHQ all surface flash-loan-leverage-ratio anomalies as a baseline alert class).
+- **Origin Protocol's response cadence was rapid and structurally informative.** Same-hour pause of `mint()` / `redeem()` paths; on-chain message-channel outreach to attacker within hours; open-source post-mortem within 24 hours; coordinated forensic / exchange outreach within days; structured operator-funded compensation plan within weeks. Each of these elements had partial precedent in earlier incidents (Bancor 2018 same-day disclosure, Lendf.me 2020 negotiation channel), but Origin's response is the first case where *all five elements* appear together as a unified template. Subsequent canonical responses (Euler 2023, more clearly than Mango 2022) draw on this template; contributors writing future incident-response runbooks should reference Origin Dollar 2020 as a viable lower bound for the integrated-response posture.
+- **Recovery decomposition: \~30% on-chain partial recovery; \~70% operator-funded compensation.** The \~\$2M / \~\$7M proportion of partial on-chain recovery is materially higher than Harvest's \~10%; the \~\$5M operator-funded compensation makes OUSD holders effectively whole at the *protocol-token-cost* of OGN treasury allocations. The defender lesson, generalised: when on-chain recovery is partial, operator-side compensation funded from native-token reserves can close the residual gap, but at the cost of the protocol's token economics absorbing the loss. This is materially different from "users lose money" total-loss outcomes; it is closer to Akropolis's compensation pattern but with a substantially higher recovery rate. Contributors writing future Technique pages should record the recovery composition explicitly.
+
+## What this example tells contributors writing future Technique pages
+
+- **The "open-source post-mortem within 24 hours + on-chain message channel + coordinated forensic / exchange outreach + structured compensation plan" template is a defender-side reference pattern.** Worked examples involving operator-side response should explicitly evaluate whether the response inherited this template or not. The template's elements are independently valuable — same-day disclosure of mechanic, asset-flow, and pause action; explicit attacker-outreach channel; forensic / exchange coordination from day-1; operator-funded compensation when on-chain recovery is partial — and contributors writing T9.x worked examples should preserve the framing rather than treating each response as ad-hoc.
+- **Stablecoin protocols are not a separate Technique family from yield-aggregators when the architecture is yield-aggregator-with-mint-redeem-wrapper.** The Technique-framework consequence is that contributors should not treat OUSD / sUSD / DAI Savings Rate / DAI / USDD / FRAX / etc. under a separate "stablecoin Technique" surface unless the stablecoin's failure mode is a peg-mechanism failure (algorithmic collapse, oracle-driven liquidation cascade) distinct from the yield-aggregator-class T9.x surfaces. OUSD November 2020's failure was T9.005 + T9.002, full stop; the stablecoin wrapper was the affected interface, not the failure mode. Contributors writing future stablecoin worked examples should distinguish peg-mechanism failures (Iron Finance 2021-06, Terra / UST 2022-05, USDD partial-depeg events) from yield-aggregator-class failures (OUSD, Beanstalk 2022-04 governance-side) explicitly.
+- **The "DeFi November / December 2020" cluster framing applies here as it does to Akropolis.** OUSD is the second-largest case in the cluster after Lendf.me's earlier-2020 standalone incident; cross-references to Akropolis (2020-11-12), Pickle (2020-11-21), Cover (2020-12-28), and the broader yield-aggregator-class wave should appear in any T9.005 worked example for cluster-period cases. Contributors writing other cluster cases should treat the cluster framing as a load-bearing element of the historical record, not as decorative context.
+- **On-chain message channel as a recovery primitive deserves explicit Technique-page treatment.** OUSD is one of the earliest cases where the on-chain message channel — embedding human-readable text in transaction-input data sent to an attacker address — was used systematically as part of the recovery effort. The channel reappears at Mango 2022, Euler 2023, and several subsequent cases as a quasi-formal negotiation primitive. Contributors writing future Technique pages on recovery-channel taxonomy should treat the on-chain message channel as a documented recovery mechanism with its own success-condition prerequisites (attacker reads on-chain messages, attacker has incentive to negotiate, attacker has not yet completed laundering through obfuscation routes).
+
+## Public references
+
+- Origin Protocol. *"Urgent: OUSD has hacked and there has been a loss of funds."* Official Medium post-mortem, 2020-11-17 / 2020-11-18 — `[originpostmortem2020]`. Origin Protocol's contemporaneous official disclosure, with mechanic at function-call resolution, asset-flow trace, and compensation-plan announcement; canonical primary source.
+- Origin Protocol. *"Update on OUSD compensation and recovery."* Official Medium follow-up, 2020-12 — `[origincompensation2020]`. Origin Protocol's structured rebase-and-repay compensation plan announcement; canonical source for the recovery composition (\~\$2M on-chain + \~\$5M operator-funded).
+- PeckShield. *"OUSD Hack: Root Cause Analysis."* PeckShield blog / Medium, 2020-11 — `[peckshieldousd2020]`. PeckShield's transaction-level forensic walkthrough; canonical industry-side reference for the fake-token reentrancy chain.
+- The Block. *"Stablecoin protocol Origin Dollar drained for \$7 million in flash loan exploit."* The Block, 2020-11-17 — `[theblockousd2020]`. Contemporaneous mainstream-press reporting; cited for industry-reaction framing and timing.
+- CoinDesk. *"DeFi Stablecoin Origin Dollar Loses \$7M in Latest Hack."* CoinDesk, 2020-11-17 — `[coindeskousd2020]`. CoinDesk's contemporaneous reporting; cited for the flash-loan framing and the broader "DeFi November" cluster context.
+- `[zhou2023sok]` — academic taxonomy classifying this incident in the yield-aggregator share-accounting reentrancy sub-class of T9.005-equivalent vulnerabilities; OUSD is one of the SoK's worked examples.
+- `[daoreentrancy2016retrospective]`, `[atzei2017survey]` — companion historical-anchor citations for the broader T9.005 lineage.
+- `[peckshieldbzx2020]` — companion historical-anchor for the T9.002 flash-loan precondition framing.
+
+### Proposed new BibTeX entries
+
+```bibtex
+@misc{originpostmortem2020,
+  author       = {{Origin Protocol}},
+  title        = {Urgent: {OUSD} has hacked and there has been a loss of funds},
+  year         = {2020},
+  howpublished = {Official protocol post-mortem, Origin Medium},
+  url          = {https://medium.com/originprotocol/urgent-ousd-has-hacked-and-there-has-been-a-loss-of-funds-7b8c4a7d534c},
+  note         = {OAK v0.1 — proposed. Origin Protocol's contemporaneous official disclosure of the 2020-11-17 OUSD reentrancy + flash-loan incident; cited for mechanic at function-call resolution, asset-flow trace, and compensation-plan announcement.}
+}
+
+@misc{origincompensation2020,
+  author       = {{Origin Protocol}},
+  title        = {Update on {OUSD} compensation and recovery},
+  year         = {2020},
+  howpublished = {Official protocol update, Origin Medium},
+  url          = {https://medium.com/originprotocol/},
+  note         = {OAK v0.1 — proposed. Origin Protocol's structured rebase-and-repay compensation plan; canonical source for the recovery composition (\~\$2M on-chain + \~\$5M operator-funded).}
+}
+
+@misc{peckshieldousd2020,
+  author       = {{PeckShield}},
+  title        = {{OUSD} Hack: Root Cause Analysis},
+  year         = {2020},
+  howpublished = {Industry forensic analysis, PeckShield / Medium},
+  url          = {https://peckshield.medium.com/},
+  note         = {OAK v0.1 — proposed. PeckShield's transaction-level forensic breakdown of the OUSD fake-token reentrancy chain.}
+}
+
+@misc{theblockousd2020,
+  author       = {{The Block}},
+  title        = {Stablecoin protocol {Origin Dollar} drained for \$7 million in flash loan exploit},
+  year         = {2020},
+  howpublished = {News article, The Block},
+  url          = {https://www.theblock.co/post/84512/stablecoin-protocol-origin-dollar-drained-for-7-million-in-flash-loan-exploit},
+  note         = {OAK v0.1 — proposed. Contemporaneous mainstream-press reporting on the OUSD incident; cited for industry-reaction framing.}
+}
+
+@misc{coindeskousd2020,
+  author       = {{CoinDesk}},
+  title        = {{DeFi} Stablecoin {Origin Dollar} Loses \$7{M} in Latest Hack},
+  year         = {2020},
+  howpublished = {News article, CoinDesk},
+  url          = {https://www.coindesk.com/markets/2020/11/17/defi-stablecoin-origin-dollar-loses-7m-in-latest-hack},
+  note         = {OAK v0.1 — proposed. CoinDesk's contemporaneous reporting on the OUSD incident; cited for flash-loan framing and "DeFi November" cluster context.}
+}
+```
+
+## Discussion
+
+Origin Dollar November 2020 sits in OAK's corpus as a **structurally-clean T9.005 + T9.002 case at the \\$7M scale**, with the *defender-side response cadence* as the load-bearing teaching point rather than the mechanic. The mechanic is structurally similar to Akropolis five days earlier — fake-token reentrancy against a yield-aggregator-style accounting path, flash-loan-funded — and contributors should not treat OUSD's mechanic as novel. Where OUSD distinguishes itself in the historical record is the **integrated response template**: same-hour pause, on-chain message channel, open-source post-mortem within 24 hours, coordinated forensic / exchange outreach, and operator-funded compensation programme. That template, taken as a unit, is the case OAK's worked-examples corpus uses to anchor "what good incident response looks like" in DeFi.
+
+The on-chain message channel as a recovery primitive is perhaps the most lasting structural contribution. The channel — embedding human-readable text in the input-data field of transactions sent to attacker addresses, sometimes with explicit settlement-offer terms — is now a quasi-standard primitive in DeFi incident response. Mango Markets 2022 used it; Euler 2023 used it as a load-bearing element of the negotiation that produced \~100% recovery; multiple subsequent cases (Curve 2023, Penpie 2024, others) have used it. The channel's utility is bounded — it requires the attacker to still hold the funds, to be reading on-chain messages, and to perceive a return-versus-laundering tradeoff in their favour — but where those conditions hold, it is a meaningful recovery lever. Contributors writing future Technique pages on recovery-channel taxonomy should treat OUSD November 2020 as the historical anchor for the on-chain-message-channel recovery primitive, even as Lendf.me April 2020 anchors the broader "negotiated-recovery via forensic pressure" category.
+
+The recovery composition is the third lasting framing. \~30% on-chain partial recovery + \~70% operator-funded compensation is a category distinct from total-loss, distinct from Harvest-style \~10% partial-grey-hat-return, distinct from Lendf.me-style \~100% on-chain recovery, and distinct from Akropolis-style purely-token-based-compensation. The OUSD case is the canonical worked example for *blended on-chain-and-operator recovery*; the operator-side cost (OGN treasury allocations) is real but bounded, and the depositor-side outcome (made whole over a phased timeline) is approximately the best non-trivial recovery outcome in OAK's corpus for cases where the protocol does not have built-in freeze authority. Contributors writing future Technique pages on recovery composition should preserve this category and use OUSD as the worked example.
+
+A final note on the cluster framing. Origin Dollar (2020-11-17) is the second case in the "DeFi November / December 2020" yield-aggregator-class cluster, after Akropolis (2020-11-12) and before Pickle Finance (2020-11-21), Cover Protocol (2020-12-28), and several Value DeFi incidents. The cluster framing is load-bearing: the structural lesson is not that any one of these protocols had an isolated bug, but that the *yield-aggregator architectural class* — accept arbitrary supplied tokens, route into yield-bearing strategies, expose mint / redeem paths whose accounting state depends on the vault's total balance — had a population-wide reentrancy surface that took until the cluster wave to be widely understood as such. Contributors writing future Technique pages should preserve the cluster framing as part of the historical record; OUSD is one of the most-cited worked examples for the cluster precisely because of its response-cadence template, not because of mechanic novelty.

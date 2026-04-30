@@ -1,0 +1,61 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Python (for tools/)
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.local-venv/
+.env
+.pytest_cache/
+
+# Node (for tools/)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Build output
+dist/
+build/
+*.egg-info/
+
+# Local notes / drafts not for the public repo
+NOTES.local.md
+drafts/
+.local/
+*.local.md
+STRATEGY*.md
+MONETIZATION*.md
+INTERNAL*.md
+private/
+secrets/
+
+# Editor artifacts
+.zed/
+*.iml
+
+# Tool output that should regenerate per-build
+tools/oak-stix.json
+tools/oak.json
+src/data/generated.ts
+src/data/documents.ts
+public/sitemap.xml
+
+# Sub-agent transcripts (Claude Code)
+.claude/
+.tasks/

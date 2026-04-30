@@ -1,0 +1,83 @@
+Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+
+This license applies to all knowledge content in this repository, specifically
+the contents of `tactics/`, `techniques/`, `examples/`, and `citations.bib`,
+together with any supporting prose or diagrams embedded in such content.
+
+Tooling code in `tools/`, `.github/`, and any scripts in this repository is
+licensed separately under the MIT License; see `LICENSE-code`.
+
+The full legal code of CC BY-SA 4.0 is canonical and authoritative at:
+
+    https://creativecommons.org/licenses/by-sa/4.0/legalcode
+
+A human-readable summary of the license is available at:
+
+    https://creativecommons.org/licenses/by-sa/4.0/
+
+SPDX-License-Identifier: CC-BY-SA-4.0
+
+================================================================================
+
+Summary of your rights and obligations under CC BY-SA 4.0
+
+You are free to:
+
+  - Share — copy and redistribute the material in any medium or format.
+  - Adapt — remix, transform, and build upon the material for any purpose,
+    even commercially.
+
+The licensor cannot revoke these freedoms as long as you follow the license
+terms.
+
+Under the following terms:
+
+  - Attribution — You must give appropriate credit, provide a link to the
+    license, and indicate if changes were made. You may do so in any
+    reasonable manner, but not in any way that suggests the licensor endorses
+    you or your use.
+
+  - ShareAlike — If you remix, transform, or build upon the material, you
+    must distribute your contributions under the same license as the original.
+
+  - No additional restrictions — You may not apply legal terms or
+    technological measures that legally restrict others from doing anything
+    the license permits.
+
+Notices:
+
+  - You do not have to comply with the license for elements of the material
+    in the public domain or where your use is permitted by an applicable
+    exception or limitation.
+
+  - No warranties are given. The license may not give you all of the
+    permissions necessary for your intended use. For example, other rights
+    such as publicity, privacy, or moral rights may limit how you use the
+    material.
+
+================================================================================
+
+Recommended attribution format
+
+When citing OAK content, please use:
+
+    "OnChain Attack Knowledge (OAK), v0.1, by Dmytro Chystiakov and OAK
+    contributors, licensed under CC BY-SA 4.0
+    (https://creativecommons.org/licenses/by-sa/4.0/)."
+
+When referencing a specific Technique, please cite by stable ID, e.g.:
+
+    "OAK-T5.001 (per OAK v0.1, CC BY-SA 4.0)."
+
+================================================================================
+
+Note on the canonical legal text
+
+The summary above is provided for convenience only and is not a substitute
+for the full legal code. In any case of ambiguity or conflict, the canonical
+text published at https://creativecommons.org/licenses/by-sa/4.0/legalcode
+governs.
+
+For derivative works distributed outside this repository, contributors are
+encouraged to include either the full legal code or a clear pointer to the
+canonical URL above, in line with Creative Commons recommended practice.

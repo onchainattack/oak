@@ -1,0 +1,48 @@
+name: citation-format
+
+on:
+  pull_request:
+    paths:
+      - "citations.bib"
+      - "tools/check_citations.py"
+      - ".github/workflows/citation-format.yml"
+  push:
+    branches: [main]
+    paths:
+      - "citations.bib"
+
+permissions:
+  contents: read
+
+jobs:
+  citation-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install bibtexparser
+        run: python -m pip install --upgrade pip bibtexparser
+
+      - name: Validate citations.bib
+        run: |
+          if [ -f tools/check_citations.py ]; then
+            python tools/check_citations.py citations.bib
+          else
+            python - <<'PY'
+          import sys
+          import bibtexparser
+          with open("citations.bib", "r", encoding="utf-8") as f:
+              db = bibtexparser.load(f)
+          # Stub validation: file parses, every entry has a key.
+          missing = [e for e in db.entries if not e.get("ID")]
+          if missing:
+              print(f"Entries missing ID: {len(missing)}", file=sys.stderr)
+              sys.exit(1)
+          print(f"OK: {len(db.entries)} entries parsed.")
+          PY
+          fi

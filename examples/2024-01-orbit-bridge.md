@@ -1,0 +1,77 @@
+# Orbit Bridge — Ethereum ↔ multi-chain — 2024-01-01
+
+**Loss:** \~\$81.5M from the Ethereum side of Orbit Bridge (the Korean cross-chain bridge operated by Ozys), spread across USDT, USDC, ETH, wBTC, and DAI. Orbit Bridge was the principal cross-chain bridge connecting the Klaytn / Orbit Chain ecosystem to Ethereum and other major chains.
+**OAK Techniques observed:** **OAK-T10.001** (Validator / Signer Key Compromise) — primary; the bridge's authorisation function required 7 of 10 signer keys, and 7 of those keys were compromised simultaneously, producing a cryptographically valid threshold signature on the extraction transactions. Downstream T7-class laundering applies.
+**OAK-Gnn:** [OAK-G01 Lazarus Group / DPRK-attributed](../actors/OAK-G01-lazarus.md). **Inferred-strong** attribution per South Korean intelligence reporting (NIS / National Police Agency public-line statements) and Chainalysis on-chain tracking; not yet upgraded to `confirmed` by an FBI / Treasury / DOJ public statement at v0.1 cutoff.
+**Notable structural feature:** **7 of 10 signer keys compromised simultaneously**. The simultaneous-compromise geometry is the load-bearing observation. Per-signer-phishing playbooks (the Ronin / Harmony shape) typically compromise signers serially over weeks-to-months; an N-of-M event where M-1 signers are compromised in a single cutover window is more parsimoniously explained by infrastructure-side compromise (shared signing-server, shared key-management system, shared KMS / HSM access) than by independent phishing of each signer. The insider-vs-supply-chain debate on the Ozys-team-staff key-compromise hypothesis is live in the public record and OAK records both hypotheses under T10.001 broadly construed.
+
+## Summary
+
+On January 1, 2024, an attacker drained approximately \$81.5M from the Ethereum side of Orbit Bridge, the cross-chain bridge connecting Orbit Chain (a Klaytn-derived chain operated by Korean Web3 firm Ozys) to Ethereum and other major chains. The bridge enforced a 7-of-10 signer threshold on outbound asset movements; the extraction transactions carried valid threshold signatures, meaning at least 7 of the 10 signer keys were under attacker control at the time of extraction.
+
+The compromise mechanism is contested in the public record. Two hypotheses dominate:
+
+1. **Infrastructure-side compromise (supply-chain / shared-signing-server):** the simultaneity of 7-of-10 key compromise is more parsimoniously explained by a shared infrastructure layer (signing server, KMS access, key-management procedure, build-and-deployment pipeline) than by independent phishing of seven separate signers. South Korean media and industry analyses repeatedly returned to this framing, with intermittent specific allegations (specific Ozys-team-staff member with privileged infrastructure access; vendor / managed-service compromise affecting the signing layer).
+
+2. **Insider compromise:** specific allegations of Ozys-team-staff key compromise — whether voluntary insider action, coerced action, or operational-security failure — appeared in Korean coverage and law-enforcement-adjacent reporting through 2024. The South Korean investigation has publicly examined the insider hypothesis.
+
+OAK does not adjudicate between these hypotheses. The two are, in fact, not mutually exclusive — an insider with privileged infrastructure access produces a compromise that is operationally identical to a supply-chain breach of the same infrastructure layer, and the public record does not contain evidence sufficient to resolve which framing is correct. Under T10.001 broadly construed, the load-bearing observation is that *7 of 10 signer keys were under attacker control at the same time*, and the simultaneity is the structural-risk signal that future bridge designers should internalise regardless of which hypothesis explains why.
+
+The G01 attribution is at `inferred-strong` strength on the basis of:
+
+- South Korean intelligence-side reporting (NIS / National Police Agency) tying the case to North Korean state-sponsored cyber actors;
+- Chainalysis on-chain tracking matching the laundering pattern (DEX-swaps, cross-chain hops, structured deposits into mixing infrastructure) to the established G01 playbook from prior 2023–2024 cases;
+- Wallet-cluster overlap with addresses previously linked to G01 activity.
+
+No FBI / Treasury / DOJ public statement upgrading the attribution to `confirmed` had been issued at v0.1 cutoff.
+
+## Timeline (UTC)
+
+| When | Event | OAK ref |
+|---|---|---|
+| Pre-event (off-chain) | Compromise of the infrastructure layer or signer-personnel layer producing simultaneous control of \>= 7 of 10 Orbit Bridge signer keys; specific mechanism contested in the public record (infrastructure-side compromise vs. insider compromise) | (off-chain entry vector — out of OAK on-chain Tactic scope; documented under OAK-G01 with hypothesis-multiplexing) |
+| 2024-01-01 (early UTC window) | Attacker submits five extraction transactions on the Ethereum side of Orbit Bridge carrying valid 7-of-10 threshold signatures; \~\$81.5M drained across USDT, USDC, ETH, wBTC, DAI | **T10.001 extraction** |
+| 2024-01-01 (within hours) | Ozys / Orbit Bridge team publicly disclose the incident; bridge operations halted; user funds messaging issued | (public disclosure) |
+| 2024-01-02 onward | Industry forensic providers (Chainalysis, others) trace proceeds; on-chain laundering pattern matches established G01 playbook | **T7-class laundering, G01 inferred-strong** |
+| 2024-01 onward | South Korean National Police Agency / NIS investigation opens; insider hypothesis examined alongside infrastructure-compromise hypothesis | (investigative status) |
+| 2024 (subsequent months) | South Korean intelligence-side public-line statements tie the case to North Korean state-sponsored cyber actors, supporting the G01 attribution | **G01 inferred-strong** |
+| 2024 onward | Korean media coverage of insider-vs-supply-chain framing continues; no public-record adjudication between the two hypotheses at v0.1 cutoff | (attribution mechanism contested) |
+
+## What defenders observed
+
+- **Pre-event (off-chain, structural):** the 7-of-10 signer geometry was on the public record. From a defender's perspective, this is one of the few T10.001-class structural-risk signals readable directly from on-chain configuration — anyone with exposure to Orbit Bridge could have enumerated the signers and observed that 7 of 10 had to be compromised for an extraction to succeed. This number is materially higher than the Ronin 5-of-9 or Harmony 2-of-5 thresholds, and on a naive risk model would have suggested *lower* T10.001 risk than those cases. The Orbit case is therefore the most important counter-example to "high threshold == low risk" in the public record: if the compromise mechanism is infrastructure-side rather than per-signer, the threshold geometry does not protect.
+- **Pre-event (off-chain, infrastructure):** the signing-infrastructure layer that made simultaneous 7-of-10 compromise possible was not publicly documented at a level that would have allowed a third-party defender to assess the risk. This is a recurring pattern for T10.001 cases — the structural risk that matters (the shared infrastructure layer) is not the structural property that is publicly readable (the threshold geometry).
+- **At-event:** the five extraction transactions carried valid threshold signatures and were on-chain-indistinguishable from authorised operator transfers. As with all T10.001 cases, the contract-validation layer produced no protocol-violation signal; the detection signal would have to come from anomaly-against-baseline (size, destination clustering, off-hours timing) or from operator-side internal telemetry.
+- **Post-event (laundering):** the laundering pattern matched the established G01 playbook (DEX-swaps to ETH, cross-chain hops, structured deposits into mixing infrastructure). Chainalysis and other industry providers traced the proceeds in near-real-time, supporting the inferred-strong G01 attribution within days.
+- **Post-event (attribution-mechanism contestation):** the public record does not converge on a single explanation for the simultaneity of the 7-of-10 compromise. Korean media coverage of the insider hypothesis is more prominent than the equivalent coverage in prior G01 bridge cases, but the infrastructure-side compromise hypothesis is also publicly defensible. OAK records both as live under T10.001 broadly construed.
+
+## What this example tells contributors writing future Technique pages
+
+- **Threshold geometry alone does not predict T10.001 risk.** Ronin (5-of-9), Harmony (2-of-5), and Orbit (7-of-10) span the threshold-fraction range from \~0.4 to 0.7 and all three resulted in successful T10.001 extractions of \$80M+. The threshold-fraction signal is publicly readable but is *not* the binding constraint when the compromise mechanism reaches the shared infrastructure layer. Future T10.001 examples should call out the threshold geometry in the header but should resist treating it as the load-bearing risk signal — the infrastructure-layer custody arrangement is the actual binding constraint and is typically not publicly readable.
+- **Simultaneous-N-of-M compromise is a tell for infrastructure-side, not per-signer-phishing, compromise mechanisms.** Per-signer-phishing playbooks compromise signers serially. When the compromised-signer count jumps from 0 to N >> 1 in a single cutover window, the parsimonious explanation is a shared layer (signing server, KMS access, build pipeline, vendor compromise). Contributors writing future T10.001 cases should treat the compromise-cutover-window as a diagnostic signal: if the window is short and N is large, write toward the infrastructure-side hypothesis rather than the per-signer hypothesis, even when the public record does not adjudicate.
+- **Insider-vs-supply-chain is structurally undecidable from on-chain data.** As at Multichain (the v0.1 canonical `inferred-weak` example), insider compromise and infrastructure-supply-chain compromise produce on-chain manifestations that are identical: a valid threshold signature from a signer set that is no longer under operator control. Contributors should not force a single hypothesis when the public record does not support one. The Orbit case is OAK's `inferred-strong` example of this pattern (the G01 attribution is well-supported, the *mechanism* of the simultaneous compromise is contested).
+- **Korean-jurisdiction cases warrant active surfacing.** Korean-operated bridges and exchanges have been under-represented in the public-record incident catalogue relative to their actual share of victims. The Orbit case, the prior Ankr arrest (`[cointelegraphankrarrest2023]`), and the WazirX (Indian-operator) case in 2024 collectively are the v0.1 evidence that the public-record incident catalogue is biased toward English-language coverage. Contributors with access to Korean / Japanese / Chinese-language primary sources should be explicit about that provenance in the references section.
+
+## Public references
+
+- `[chainalysis2024dprk]` — Chainalysis 2024 DPRK-attributed scale retrospective; standing OAK reference covering the Orbit Bridge case in the 2024 catalogue.
+- `[chainalysisdprktradertraitor]` — Chainalysis post-TraderTraitor laundering-pattern reference; the laundering-shape match is the load-bearing G01 attribution evidence.
+- `[chainalysisorbit2024]` *(proposed)* — Chainalysis dedicated forensic write-up of the January 1, 2024 Orbit Bridge incident; loss size, signer-geometry, on-chain extraction trace, and laundering-route description.
+- `[slowmistorbit2024]` *(proposed)* — SlowMist contemporaneous forensic analysis of the Orbit Bridge incident (January 2024); function-level walkthrough of the extraction transactions and same-week G01-leaning attribution.
+- `[koreaheraldorbit2024]` *(proposed)* — Korea Herald coverage of the Orbit Bridge incident, the South Korean National Police Agency / NIS investigation, and the insider-vs-infrastructure hypothesis framing in Korean media.
+- `[ozysorbit2024statement]` *(proposed)* — Ozys / Orbit Bridge official incident statement and post-mortem material; primary operator-side source for the signer-set configuration and incident-response timeline.
+
+## Discussion
+
+Orbit Bridge is OAK's canonical illustration that *threshold geometry alone does not predict T10.001 risk*. The 7-of-10 configuration was, on a naive analysis, more conservative than the Ronin 5-of-9 or Harmony 2-of-5 — and yet resulted in a successful \$81.5M extraction at the same Technique class. The structural lesson is not "use higher thresholds"; it is "the binding constraint on T10.001 risk is the infrastructure-layer custody arrangement, which is not what threshold geometry measures."
+
+This is also the v0.1 case where the *insider hypothesis* is most prominent in the public record. Multichain (the v0.1 canonical `inferred-weak` example) lives in a similar zone — both hypotheses are live, the public record does not converge — but Multichain's framing centres on operator-side custody discontinuity rather than on adversarial insider action, while the Orbit framing in Korean media is more squarely insider-action-as-primary-hypothesis. Contributors writing future T10.001 cases where insider hypotheses are live should reach for the Orbit case as the comparison reference for *how* to preserve the multi-hypothesis framing without collapsing it.
+
+A reasonable open question for future OAK iterations is whether the simultaneous-N-of-M-compromise pattern warrants its own structural-risk vocabulary distinct from per-signer-phishing playbooks. The diagnostic value is real: a defender observing that an N-of-M compromise occurred inside a short cutover window can immediately narrow the hypothesis space to infrastructure-side mechanisms, which materially changes the post-event response (focus on shared-layer forensics, not on per-signer entry-vector reconstruction). Whether this gets expressed as a sub-Technique under T10.001, as a `Maturity:` or `Mechanism:` axis, or as a recurring observation in worked examples is a v1.0-era taxonomy question. The v0.1 decision is to keep it in the worked-example layer and cross-reference between Multichain (`inferred-weak`, custody-discontinuity-flavoured), Orbit (`inferred-strong`, simultaneous-compromise-flavoured), and the established Lazarus bridge cases (`confirmed`, per-signer-phishing-flavoured).
+
+Contributors writing future Korean-jurisdiction or Asian-language-primary-source cases should:
+
+- Include the threshold geometry in the header (third-party-readable structural-risk signal).
+- Mark the compromise-cutover-window explicitly when the public record allows; this is the primary diagnostic for infrastructure-side vs per-signer compromise hypotheses.
+- Preserve the multi-hypothesis framing on attribution-mechanism even when the actor-attribution itself is at `inferred-strong` or higher; the two are independent dimensions.
+- Be explicit about non-English-primary-source provenance in the references section to push back against the public-record's English-language-coverage bias.

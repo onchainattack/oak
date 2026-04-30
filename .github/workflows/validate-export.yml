@@ -1,0 +1,40 @@
+name: validate-export
+
+on:
+  pull_request:
+    paths:
+      - "tactics/**"
+      - "techniques/**"
+      - "tools/export_json.py"
+      - "tools/oak.json"
+      - ".github/workflows/validate-export.yml"
+  push:
+    branches: [main]
+    paths:
+      - "tactics/**"
+      - "techniques/**"
+      - "tools/export_json.py"
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run export_json.py and verify oak.json is up to date
+        run: |
+          python tools/export_json.py --out tools/oak.json
+          if ! git diff --quiet -- tools/oak.json; then
+            echo "::error::tools/oak.json is stale. Run 'python tools/export_json.py' locally and commit the result."
+            git --no-pager diff tools/oak.json
+            exit 1
+          fi
+          echo "OK: tools/oak.json matches the generated output."

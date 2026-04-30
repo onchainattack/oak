@@ -1,0 +1,91 @@
+<svg width="1280" height="220" viewBox="0 0 1280 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OAK — OnChain Attack Knowledge">
+  <defs>
+    <linearGradient id="bg-grad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0A0E14"/>
+      <stop offset="0.55" stop-color="#101720"/>
+      <stop offset="1" stop-color="#0A0E14"/>
+    </linearGradient>
+    <radialGradient id="accent-teal" cx="0.85" cy="0.5" r="0.55">
+      <stop offset="0" stop-color="rgba(0,209,178,0.18)"/>
+      <stop offset="1" stop-color="rgba(0,209,178,0)"/>
+    </radialGradient>
+    <radialGradient id="accent-red" cx="0.12" cy="0.35" r="0.4">
+      <stop offset="0" stop-color="rgba(255,77,69,0.12)"/>
+      <stop offset="1" stop-color="rgba(255,77,69,0)"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1280" height="220" fill="url(#bg-grad)"/>
+  <rect width="1280" height="220" fill="url(#accent-teal)"/>
+  <rect width="1280" height="220" fill="url(#accent-red)"/>
+
+  <!-- mark -->
+  <g transform="translate(64 49)">
+    <polygon points="84,0 130,32 130,90 84,122 38,90 38,32" fill="rgba(0,209,178,0.06)" stroke="#F2F4F7" stroke-width="6"/>
+    <rect x="50" y="32" width="68" height="9" fill="#00D1B2"/>
+    <rect x="86" y="61" width="32" height="9" fill="#00D1B2"/>
+    <rect x="50" y="90" width="68" height="9" fill="#00D1B2"/>
+    <rect x="74" y="61" width="9" height="9" fill="#00D1B2" opacity="0.85"/>
+    <rect x="58" y="61" width="9" height="9" fill="#00D1B2" opacity="0.7"/>
+    <rect x="42" y="61" width="8" height="8" fill="#00D1B2" opacity="0.55"/>
+    <rect x="24" y="62" width="8" height="8" fill="#00D1B2" opacity="0.4"/>
+    <rect x="8" y="62" width="7" height="7" fill="#00D1B2" opacity="0.28"/>
+  </g>
+
+  <!-- wordmark -->
+  <g transform="translate(244 60)" font-family="IBM Plex Mono, Menlo, Consolas, monospace">
+    <text x="0" y="80" font-size="100" font-weight="700" letter-spacing="-2" fill="#F2F4F7">OAK</text>
+  </g>
+
+  <!-- tagline -->
+  <g transform="translate(244 165)" font-family="IBM Plex Mono, Menlo, Consolas, monospace">
+    <text x="0" y="0" font-size="16" font-weight="600" letter-spacing="6" fill="#00D1B2">ONCHAIN ATTACK KNOWLEDGE</text>
+  </g>
+  <g transform="translate(244 178)" opacity="0.32">
+    <rect x="0" y="0" width="14" height="3" fill="#00D1B2"/><rect x="22" y="0" width="14" height="3" fill="#00D1B2"/><rect x="44" y="0" width="14" height="3" fill="#00D1B2"/><rect x="66" y="0" width="14" height="3" fill="#00D1B2"/><rect x="88" y="0" width="14" height="3" fill="#00D1B2"/><rect x="110" y="0" width="14" height="3" fill="#00D1B2"/><rect x="132" y="0" width="14" height="3" fill="#00D1B2"/><rect x="154" y="0" width="14" height="3" fill="#00D1B2"/><rect x="176" y="0" width="14" height="3" fill="#00D1B2"/><rect x="198" y="0" width="14" height="3" fill="#00D1B2"/><rect x="220" y="0" width="14" height="3" fill="#00D1B2"/><rect x="242" y="0" width="14" height="3" fill="#00D1B2"/><rect x="264" y="0" width="14" height="3" fill="#00D1B2"/><rect x="286" y="0" width="14" height="3" fill="#00D1B2"/>
+  </g>
+
+  <!-- right panel: stat strip -->
+  <g transform="translate(720 56)" font-family="IBM Plex Mono, Menlo, Consolas, monospace">
+    <g>
+      <text x="0" y="0" font-size="11" font-weight="700" letter-spacing="3" fill="#95A3B5">TACTICS</text>
+      <text x="0" y="38" font-size="34" font-weight="700" fill="#F2F4F7">14</text>
+    </g>
+    <g transform="translate(110 0)">
+      <text x="0" y="0" font-size="11" font-weight="700" letter-spacing="3" fill="#95A3B5">TECHNIQUES</text>
+      <text x="0" y="38" font-size="34" font-weight="700" fill="#F2F4F7">62</text>
+    </g>
+    <g transform="translate(260 0)">
+      <text x="0" y="0" font-size="11" font-weight="700" letter-spacing="3" fill="#95A3B5">MITIGATIONS</text>
+      <text x="0" y="38" font-size="34" font-weight="700" fill="#F2F4F7">40</text>
+    </g>
+    <g transform="translate(410 0)">
+      <text x="0" y="0" font-size="11" font-weight="700" letter-spacing="3" fill="#95A3B5">SOFTWARE</text>
+      <text x="0" y="38" font-size="34" font-weight="700" fill="#F2F4F7">40</text>
+    </g>
+    <g transform="translate(540 0)">
+      <text x="0" y="0" font-size="11" font-weight="700" letter-spacing="3" fill="#95A3B5">ACTORS</text>
+      <text x="0" y="38" font-size="34" font-weight="700" fill="#F2F4F7">18</text>
+    </g>
+
+    <g transform="translate(0 76)">
+      <text x="0" y="0" font-size="11" font-weight="700" letter-spacing="3" fill="#95A3B5">EXAMPLES</text>
+      <text x="0" y="38" font-size="34" font-weight="700" fill="#F2F4F7">142</text>
+    </g>
+    <g transform="translate(110 76)">
+      <text x="0" y="0" font-size="11" font-weight="700" letter-spacing="3" fill="#95A3B5">CITATIONS</text>
+      <text x="0" y="38" font-size="34" font-weight="700" fill="#F2F4F7">964</text>
+    </g>
+    <g transform="translate(260 76)">
+      <text x="0" y="0" font-size="11" font-weight="700" letter-spacing="3" fill="#95A3B5">RELATIONSHIPS</text>
+      <text x="0" y="38" font-size="34" font-weight="700" fill="#F2F4F7">416</text>
+    </g>
+    <g transform="translate(440 76)">
+      <text x="0" y="0" font-size="11" font-weight="700" letter-spacing="3" fill="#FF4D45">VERSION</text>
+      <text x="0" y="38" font-size="34" font-weight="700" fill="#FF4D45">v0.1</text>
+    </g>
+  </g>
+
+  <!-- bottom-edge accent line -->
+  <line x1="0" y1="219" x2="1280" y2="219" stroke="#00D1B2" stroke-opacity="0.32" stroke-width="2"/>
+</svg>

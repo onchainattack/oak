@@ -1,0 +1,76 @@
+# Steadefi deployer-key compromise and malicious-upgrade extraction — Arbitrum — 2023-08-07
+
+**Loss:** approximately \$1.1M extracted from Steadefi vaults on Arbitrum on 2023-08-07 via a *deployer-key compromise* that the attacker weaponised by deploying a malicious upgrade and using post-compromise admin authority to flip access-control state in their favour. Steadefi was a leveraged yield / vault protocol on Arbitrum; the affected surface was the operator-controlled vault upgrade pathway and the post-upgrade access-control configuration.
+**Recovery:** **none on the on-chain layer**. Proceeds were laundered through Tornado Cash within the days following the incident. Steadefi's response was protocol-level pause and public acknowledgement; there is no public DOJ / civil-forfeiture action.
+**OAK Techniques observed:** **OAK-T11.002** (Operator / Deployer Credential Compromise — deployer-key compromise sub-class) as the *initial access* Technique that delivered the attacker's authority over the protocol's upgrade pathway. **OAK-T9.004** (Access-Control Misconfiguration) as the *post-compromise extraction* Technique — once the attacker held deployer authority, they exercised it to flip the access-control state of the deployed contracts (malicious upgrade + admin-authority-flip) in a way that delivered the extraction. The two compose: T11.002 is the *how-they-got-in* and T9.004 is the *what-they-did-with-it-once-inside*.
+**Attribution:** **pseudonymous**. The compromise vector (phishing, infostealer malware, key exfiltration from operator endpoint, or analogous) was not publicly disclosed by Steadefi at the function-level granularity that would enable confirmed attribution; the on-chain forensic chain documents the post-compromise extraction but does not identify the attacker. There is no public OAK-G01 attribution.
+**Key teaching point:** **deployer-key compromise is not a smart-contract vulnerability and is not retired by audits; it sits in the operator-side / off-chain credential-management surface and requires distinct mitigation discipline.** Steadefi is the canonical 2023 mid-tier worked example for the *deployer-key-compromise + malicious-upgrade + post-compromise-access-control-flip* composition. The structural family includes Radiant Capital October 2024 (\~\$50M, infostealer-attributed deployer compromise leading to malicious-upgrade-style extraction) at `/examples/2024-10-radiant-capital.md` and the broader 2024 cohort of operator-credential-compromise extraction events.
+
+## Summary
+
+Steadefi was a leveraged yield / vault protocol deployed on Arbitrum, offering vault strategies that managed user deposits across DeFi venues with leverage. The protocol's deployment architecture used upgradeable contracts whose upgrade authority was held by a deployer-controlled address; this deployer authority was the load-bearing operator-side credential.
+
+On 2023-08-07, an attacker obtained the deployer private key. The compromise vector was not publicly disclosed at granular detail by Steadefi but is consistent with the broader 2023–2024 cohort of operator-key-compromise events (phishing, infostealer malware on operator endpoints, supply-chain compromise of dev tooling, or analogous). With deployer authority in hand, the attacker proceeded along the post-compromise extraction path:
+
+1. Deploy malicious upgrade implementation contracts targeting the protocol's vault pathway.
+2. Trigger the upgrade pointer flip via the compromised deployer key — replacing the protocol's deployed implementation with the attacker-controlled implementation.
+3. Use post-upgrade admin-authority-flip and / or the malicious implementation's logic to drain vault state to an attacker-controlled address.
+
+Approximately \$1.1M was extracted before Steadefi's operations team detected the anomaly and paused the affected contracts. The attacker routed proceeds through Tornado Cash within the days following the incident, foreclosing on-chain recovery.
+
+For OAK's purposes the case is a clean T11.002 (deployer-key-compromise) initial access composed with T9.004 (post-compromise access-control-flip / malicious-upgrade) extraction. The composition is the structurally important framing; classifying the incident only as "smart-contract exploit" misses the actual root cause (the deployer key was compromised) and classifying it only as "key compromise" misses the operational extraction mechanism (malicious upgrade weaponising the post-compromise authority).
+
+## Timeline (UTC)
+
+| When | Event | OAK ref |
+|---|---|---|
+| Pre-2023-08 | Steadefi deploys vault contracts on Arbitrum with upgrade authority held by a deployer-controlled key | T11.002 surface (key) + T9.004 surface (upgrade authority) |
+| Pre-event (vector window) | Attacker obtains the deployer private key via phishing / infostealer / endpoint compromise / analogous (vector not publicly disclosed at granular detail) | **T11.002 initial access** |
+| 2023-08-07 (attack tx window) | Attacker deploys malicious upgrade implementation contracts targeting the protocol's vault pathway | T9.004 setup |
+| same window | Attacker triggers upgrade pointer flip via compromised deployer key, replacing deployed implementation with attacker-controlled implementation | **T9.004 execution** |
+| same window | Post-upgrade malicious implementation drains vault state to attacker-controlled address; \~\$1.1M extracted | T9.004 extraction |
+| 2023-08-07 (within hours) | Steadefi operations team detects the anomaly; pauses affected contracts; publishes initial public acknowledgement | (operator response) |
+| 2023-08-07 onward | Attacker routes extracted proceeds through Tornado Cash; on-chain trail obscured at the mixer boundary | T7.001 (off this example's framing) |
+| 2023-08-08 onward | Industry coverage (PeckShield, BlockSec, on-chain analyst threads) converges on the deployer-key-compromise + malicious-upgrade root cause | (transparency / cohort signal) |
+| Continuing | No public recovery; no civil-forfeiture action | (recovery state) |
+
+## What defenders observed
+
+- **The root-cause was off-chain credential compromise, not an on-chain smart-contract bug.** Steadefi's on-chain code, considered in isolation against the *intended* operator authority configuration, did not contain a vulnerability that produced the extraction. The vulnerability was that the *actual* deployer authority was held by an attacker rather than by Steadefi operators. Audits of the on-chain code would not have surfaced the root cause; the surface that needed protection was off-chain credential management. T11.002 worked examples should make the off-chain-surface framing explicit and resist reclassification as "smart-contract exploit" on the basis that the extraction transaction was on-chain.
+- **The malicious-upgrade pathway is the canonical post-compromise weaponisation of deployer authority.** Once the attacker held deployer authority, the upgrade pathway delivered effectively unbounded post-upgrade behaviour: the attacker could write whatever extraction logic they wanted into the new implementation. The post-compromise extraction is therefore not a function of a specific bug class but of the upgrade authority itself. T9.004 worked examples that classify malicious-upgrade extraction should make the precondition / extraction structure explicit (precondition: T11.002 deployer-compromise; extraction: T9.004 post-compromise upgrade authority weaponisation).
+- **Deployer-key-compromise is structurally distinct from smart-contract reentrancy / oracle / access-control bugs and requires distinct mitigations.** Mitigations for T11.002: hardware-key-based deployer-authority signing; multi-sig deployer authority with geographically-distributed quorum; timelocked upgrades that interpose a window during which an unauthorised upgrade can be detected and aborted; cohort-monitoring of deployer-controlled addresses for anomalous behaviour. Mitigations for T9.005 / T9.001 / T9.003 / T9.004 in the on-chain-bug sense: audits, fuzzing, formal verification, bug bounties. The two mitigation portfolios overlap minimally and worked examples should preserve the surface distinction.
+- **Detection latency was operator-acceptable; recovery latency was structurally foreclosed.** Steadefi paused affected contracts within hours of the on-chain extraction window. By that time the attacker had already executed the malicious upgrade and was on the laundering tail. The protocol-pause primitive on EVM mainnet protects future drains but does not unwind completed extraction. The Onyx 2024 case at `/examples/2024-09-onyx.md` documents the same recovery-window-closure pattern; the structural property is shared across T9.x and T11.002 + T9.004 incidents whose proceeds reach a mixer in the same operational window.
+- **The dollar loss is mid-tier by 2023 standards but the cohort signal is the analytical value.** \~\$1.1M is small compared to Euler's \~\$197M or Multichain's \~\$130M elsewhere in 2023. Steadefi earns its corpus position by documenting the *T11.002 + T9.004 composition* at a modest scale where the operational shape is clean and the case is not overshadowed by recovery-or-attribution drama. The structurally larger cohort cases (Radiant Capital October 2024 at \~\$50M with infostealer-attributed deployer compromise) layer onto this canonical small-scale shape.
+
+## What this example tells contributors writing future Technique pages
+
+- **T11.002 (deployer-key-compromise) routinely composes with T9.004 (post-compromise access-control-flip / malicious-upgrade) and the composition should be made explicit.** Worked examples should preserve the precondition / extraction structure: T11.002 is *how the attacker got in* (off-chain credential compromise) and T9.004 is *what they did once inside* (on-chain upgrade authority weaponisation). Contributors writing the T11.002 and T9.004 technique pages should cross-reference the composition and link Steadefi 2023 + Radiant 2024 as the canonical OAK worked examples.
+- **The off-chain credential-management surface is a first-class OAK Tactic / Technique surface and requires distinct mitigation vocabulary.** The Mitigations layer should include hardware-key-based signing, multi-sig deployer authority with geographically-distributed quorum, timelocked upgrades, and cohort-monitoring of deployer-controlled addresses as first-class mitigations referenced from T11.002 worked examples. The on-chain-bug mitigation portfolio (audits, fuzzing, formal verification, bug bounties) is structurally distinct and does not retire T11.002 surface.
+- **Cohort framing for deployer-key compromise is operationally important.** The 2023–2024 cohort of operator-credential-compromise events spans Steadefi (2023, \~\$1.1M), several mid-tier 2024 cases, Radiant Capital (October 2024, \~\$50M, infostealer-attributed), and the WazirX August 2024 case at `/examples/2024-07-wazirx.md` (different sub-class but adjacent cohort). The cohort signal: operator-side credential management is a recurring failure surface across protocol scale and cannot be retired by on-chain code review. Contributors writing the OAK Mitigations layer should treat operator-credential-management discipline as a cross-cutting mitigation referenced from multiple T11.002 worked examples.
+- **Pseudonymous attribution in T11.002 cases is the realistic baseline; resist over-attribution.** The compromise vector at Steadefi was not publicly disclosed at function-level granularity; the on-chain forensic chain documents the post-compromise extraction but does not identify the attacker. Worked examples should document attribution honestly. The Radiant Capital case has stronger inferred attribution (infostealer-class-attributed) but still falls short of confirmed named-individual attribution; contributors should not over-claim.
+
+## Public references
+
+- `[steadefipostmortem2023]` — Steadefi public post-incident statement, including the deployer-key-compromise framing and the malicious-upgrade root-cause description.
+- `[peckshieldsteadefi2023]` — PeckShield headline alert and analytics coverage on the Steadefi extraction.
+- `[blocksecsteadefi2023]` — BlockSec post-incident technical write-up of the Steadefi malicious-upgrade transaction trace.
+- `[slowmiststeadefi2023]` — SlowMist incident analysis covering post-event Tornado Cash laundering.
+- `[rektsteadefi2023]` — Rekt News post-incident write-up situating Steadefi in the operator-credential-compromise cohort.
+
+## Citations
+
+- `[steadefipostmortem2023]` — Steadefi's own post-incident statement.
+- `[peckshieldsteadefi2023]` — PeckShield alert and analytics coverage.
+- `[blocksecsteadefi2023]` — BlockSec malicious-upgrade transaction trace forensics.
+- `[slowmiststeadefi2023]` — SlowMist post-event laundering tracing.
+- `[rektsteadefi2023]` — Rekt News cohort-framing post-incident write-up.
+
+## Discussion
+
+Steadefi is OAK's canonical 2023 mid-tier worked example for the *T11.002 (deployer-key-compromise) + T9.004 (malicious-upgrade post-compromise extraction)* composition. The composition is the analytically important framing: the *root cause* is off-chain (the deployer key was compromised) and the *extraction mechanism* is on-chain (the upgrade authority was weaponised). Classifying the incident only as one or the other loses the operational shape that worked examples in the cohort share.
+
+The cohort framing pairs the Steadefi case with Radiant Capital October 2024 as the canonical larger-scale companion in the same composition class. The Radiant case has stronger inferred attribution (infostealer-class-attributed) and \~50x dollar scale; Steadefi has cleaner small-scale structural shape with no attribution complication and no recovery drama. Together they document the same composition across two scale points in the 2023–2024 cohort, with WazirX August 2024 and similar mid-tier 2024 cases as adjacent worked examples in operator-credential-compromise space.
+
+The Mitigations layer implication is that the on-chain-bug mitigation portfolio (audits, fuzzing, formal verification, bug bounties) does not retire the T11.002 surface. Hardware-key-based signing, multi-sig deployer authority with geographically-distributed quorum, timelocked upgrades, and cohort-monitoring of deployer-controlled addresses are the mitigation portfolio for T11.002 and they are operationally distinct from the on-chain-bug portfolio. Worked examples in the T11.002 + T9.004 composition class should reference this distinction explicitly rather than allowing the on-chain extraction to drive the mitigation framing.
+
+The recovery dimension is structural foreclosure rather than operator failure. Once the proceeds reached Tornado Cash within the operational window, on-chain recovery was foreclosed. The contrast with the Euler / Sentiment / Allbridge 2023 recovery-negotiation cohort is informative: in those cases the attacker had on-chain incentive to negotiate (smart-contract bug exploitation, identity not yet structurally protected); in Steadefi the attacker had already moved through credential compromise and was on the laundering tail before defender response could engage. T11.002 + T9.004 worked examples should report total-loss outcomes as the base-rate expectation for the class.

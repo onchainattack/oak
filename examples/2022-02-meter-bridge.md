@@ -1,0 +1,60 @@
+# Meter.io Passport Bridge — Ethereum ↔ BNB Smart Chain ↔ Moonriver — 2022-02-05
+
+**Loss:** \~\$4.3M (\~1,400 ETH on Ethereum-Moonriver leg + \~2.74 BTC equivalent in WBTC on the BNB-Smart-Chain leg). The dollar magnitude is small relative to the same-month Wormhole and Ronin incidents, but the structural lesson is canonical for the T10.002 "trust-the-payload" sub-class.
+**Recovery:** partial. Meter.io publicly committed to making affected users whole using protocol treasury / collateral resources; subsequent operator updates indicated a substantial portion of the realised user-loss was absorbed by Meter rather than being pushed to users. No on-chain attacker-side recovery (no return of funds; no clawback of laundered proceeds).
+**OAK Techniques observed:** **OAK-T10.002** (Message-Verification Bypass) — primary; the `wrapDeposit` / handler path on the Meter Passport bridge accepted an attacker-supplied `bridgeData` parameter as authoritative for deposit semantics, without independently verifying that the corresponding ERC-20 `transferFrom` / native-asset transfer actually moved the asset into the bridge contract. **OAK-T9.004** (Access-Control Misconfiguration) — secondary / mechanistic; the underlying defect is that a code path exposed by the Passport handler treated user-controlled deposit-event parameters as trusted in the bridge's downstream mint logic.
+**Attribution:** **pseudonymous**. The attacker wallet was on-chain-pseudonymous and the proceeds were laundered through standard 2022-era Tornado Cash routing. No public named-individual or named-cluster attribution. No OAK-G01 / state-actor attribution.
+
+## Summary
+
+On February 5, 2022 — three days after Wormhole, three weeks before Ronin — an attacker exploited a logic flaw in the Meter Passport cross-chain bridge (the proprietary bridge connecting the Meter.io ecosystem to Ethereum, BNB Smart Chain, and Moonriver). Meter Passport was a fork of the ChainBridge (Chainsafe) bridge codebase with Meter-specific extensions; the defect that was exploited lived in Meter's local extensions to the deposit / handler flow, not in the upstream ChainBridge code path.
+
+The structural defect: the Meter-extended `wrapDeposit` (and adjacent handler) path accepted an attacker-supplied `bridgeData` parameter and used the parameter to drive the downstream mint / unlock semantics, **without independently verifying that the corresponding asset transfer had actually occurred**. The Meter-specific extension was intended to optimise the path for native-wrapped-asset (wETH, wBTC) handling — letting the deposit handler skip a redundant balance-check on the wrapped-asset path. The optimisation removed the binding integrity check.
+
+The attacker called the affected handler with a spoofed `bridgeData` that asserted "this user deposited 1,400 ETH on this side" without actually depositing any ETH; the bridge processed the spoofed deposit as authentic and unlocked the corresponding ETH on the destination side. The same defect was exercised on the BNB-Smart-Chain leg against the wrapped-BTC path, draining \~2.74 BTC in BTCB. Cumulative loss: approximately \$4.3M.
+
+For OAK's purposes, Meter is the **"trust-the-payload" T10.002 worked example** — a sibling case to Qubit (`examples/2022-01-qubit-bridge.md`) where the failure mode is the same generic shape ("the bridge accepted a deposit event without verifying the underlying asset transfer") but the function-level mechanism is different (Qubit: `address(0)` sentinel path; Meter: the wrapped-asset optimisation removed the balance check). Both ladder up to T10.002 (operational classification) and T9.004 (mechanistic classification).
+
+## Timeline (UTC)
+
+| When | Event | OAK ref |
+|---|---|---|
+| Pre-event | Meter Passport (fork of ChainBridge) deploys Meter-specific extensions to the deposit / handler flow optimising native-wrapped-asset paths; the optimisation removes the balance-check that the upstream code retained | **T10.002 / T9.004 latent flaw introduced** |
+| 2022-02-05 (T+0) | Attacker calls the affected handler with a spoofed `bridgeData` parameter asserting a deposit of \~1,400 ETH that was never made | **T10.002 message forgery (Ethereum leg)** |
+| 2022-02-05 (T+0) | Bridge processes the spoofed deposit and unlocks \~1,400 ETH on the destination side to the attacker | **T10.002 cross-chain unlock without lock** |
+| 2022-02-05 (T+0) | Attacker repeats the pattern on the BNB-Smart-Chain leg against the wrapped-BTC handler; \~2.74 BTC equivalent in BTCB drained | **T10.002 second-leg exploitation** |
+| 2022-02-05 (within hours) | Meter detects the anomaly via on-chain monitoring (visible balance-vs-event divergence on the bridge contracts); pauses Meter Passport operations | (operator response) |
+| 2022-02-05 (within hours) | Meter publicly discloses the incident; commits to making affected users whole via protocol treasury / collateral | (response) |
+| 2022-02-05 onward | Stolen ETH / BTCB swapped and routed through Tornado Cash | **T7.001 mixer-routed laundering** |
+| Subsequent weeks | Meter publishes post-mortem describing the `wrapDeposit` / handler flaw; protocol-side compensation framework rolled out for affected users | (partial recovery via operator make-whole) |
+
+## What defenders observed
+
+- **Pre-event (audit / fork-divergence layer):** Meter Passport was a fork of ChainBridge (Chainsafe). The defect lived in Meter's local divergences from the upstream codebase, not in the upstream code itself. This is a recurring 2021–2022 pattern: forks of audited bridge code introduce local optimisations that remove invariants the upstream audit relied on. Pre-event review of the **divergence diff between the upstream codebase and the local fork** would have isolated the affected handler path; the Meter case is a textbook argument for treating fork-divergence as a first-class audit scope.
+- **Pre-event (property-based testing):** the property "for every successful cross-chain unlock event, the bridge's balance of the corresponding asset decreased by the event's amount" would have caught the spoofed-deposit pattern at audit time. Meter is a more compact illustration of the same property-based-testing argument that Qubit (`examples/2022-01-qubit-bridge.md`) makes — both cases turn on a missing balance-delta invariant.
+- **At-event:** the on-chain artefact was a deposit-event-without-balance-increase, which Meter's monitoring caught within hours. The detection latency at Meter (\~hours) was materially better than Ronin's (\~6 days, see `examples/2022-03-ronin-bridge.md`); the smaller dollar magnitude at Meter is partly explained by this faster detection — the bridge was paused before the attack could be scaled.
+- **Post-event (recovery shape):** the partial-recovery-via-operator-treasury pattern is structurally a Wormhole-shaped (`examples/2022-02-wormhole.md`) recovery — operator absorbs the loss to avoid passing it to users. The shape generalises only when the operator has treasury / collateral resources of comparable magnitude to the loss; for small bridges, this recovery primitive is not always viable.
+
+## What this example tells contributors writing future Technique pages
+
+- **Fork-divergence is a first-class T10.002 audit scope.** Bridges that fork an upstream codebase (ChainBridge, Multichain, Wormhole, etc.) and add local extensions are a recurring T10.002 risk class because the local extensions are often less heavily reviewed than the upstream code. Contributors writing future T10.002 examples involving forked bridges should explicitly identify the divergence diff between the upstream codebase and the local fork as the primary audit-scope question.
+- **Small-loss T10.002 cases are structurally identical to large-loss ones.** Meter's \~\$4.3M loss is a small fraction of the same-cohort Wormhole and Ronin losses, but the structural defect class is identical. Contributors should not weight T10.002 examples by dollar magnitude when surfacing the structural lesson — the function-level mechanism is the load-bearing observation, not the loss size.
+- **Faster detection materially constrains realised loss.** Meter's hours-scale detection capped the realised extraction at the attack's first scaling pass. Ronin's 6-day detection latency, by contrast, did not constrain realised extraction at all (the attack was a single transaction). Contributors writing future T10.002 cases should report detection latency as a reportable metric; cases where faster detection meaningfully constrained realised loss are operationally instructive.
+- **Operator make-whole is a viable recovery primitive at small to moderate loss magnitudes.** Meter's \~\$4.3M loss was within the range that a protocol-treasury / collateral make-whole could absorb. The pattern generalises only at moderate magnitudes; large-loss cases (Ronin, Orbit, Multichain) have not generally been made whole through this primitive.
+
+## Public references
+
+- `[meterpassportpostmortem2022]` *(proposed)* — Meter.io / Meter Passport official incident statement and post-mortem; primary operator-side source for the affected function path, fork-divergence framing, and user-make-whole policy.
+- `[certikmeter2022]` *(proposed)* — CertiK contemporaneous forensic write-up; function-level walkthrough of the `wrapDeposit` / handler path and the spoofed-`bridgeData` mechanism.
+- `[halbornmeter2022]` *(proposed)* — Halborn forensic post-mortem of the Meter Passport February 2022 incident; loss-size accounting across Ethereum and BNB Smart Chain legs.
+- `[rektmeter2022]` *(proposed)* — Rekt News write-up of the Meter Passport February 2022 incident; "trust-the-payload" framing and laundering-route note.
+
+## Discussion
+
+Meter is OAK's compact T10.002 worked example — the case is small in dollar magnitude but unusually clean in function-level mechanism. The defect (a fork-introduced optimisation that removed a balance-check invariant) is the most teachable shape of the T10.002 "trust-the-payload" subclass: the bridge's verification function accepts a deposit-event payload as authoritative for the downstream mint / unlock without independently verifying the underlying asset transfer.
+
+The case sits between Qubit (`examples/2022-01-qubit-bridge.md`) and Ronin (`examples/2022-03-ronin-bridge.md`) on the calendar, and the three together span the 2022-Q1 bridge-cohort triad: Qubit (T10.002 / native-asset-sentinel), Meter (T10.002 / fork-divergence), Ronin (T10.001 / validator-key-compromise). The trio is OAK's compact illustration that the bridge attack-surface in 2022-Q1 was not dominated by any single mechanism — three structurally distinct failure modes produced major incidents within six weeks of each other, and the only common operational tell across all three is the Tornado Cash laundering route on the proceeds-side.
+
+Contributors writing future T10.002 worked examples should reach for Meter as the comparison reference for the **fork-divergence subclass** specifically: the case where the audited upstream code is fine, the local extensions introduce the defect, and the post-mortem isolates the divergence diff as the load-bearing audit scope. The pattern recurs at several subsequent 2022–2023 incidents (some of which are catalogued in OAK v0.1 under their own worked examples), and Meter is the cleanest early example in the public record.
+
+A defender-side observation worth preserving: Meter's hours-scale detection latency was materially better than the cohort baseline. The operator's monitoring caught the balance-vs-event divergence before the attack could be scaled. This is one of the few 2022-Q1 bridge cases where operator-side runtime monitoring made a material difference to realised loss; it stands as evidence that the per-bridge invariant monitoring discussed at Wormhole (`examples/2022-02-wormhole.md`) and Qubit (`examples/2022-01-qubit-bridge.md`) is not just theoretically deployable but was, in fact, in use somewhere in the cohort and did the job it was designed to do.
