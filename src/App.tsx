@@ -2820,6 +2820,7 @@ function App() {
         <div className="foot-section">
           <span className="foot-section-label">community</span>
           <a href="https://github.com/onchainattack/oak" target="_blank" rel="noreferrer">GitHub</a>
+          <a href="https://github.com/onchainattack/oak-mcp" target="_blank" rel="noreferrer">oak-mcp (AI integration)</a>
           <a href="#" onClick={(e) => { e.preventDefault(); openDoc("CONTRIBUTING.md"); }}>Contributing</a>
           <a href="#" onClick={(e) => { e.preventDefault(); openDoc("CODE_OF_CONDUCT.md"); }}>Code of conduct</a>
           <a href="#" onClick={(e) => { e.preventDefault(); openDoc("SECURITY.md"); }}>Security</a>

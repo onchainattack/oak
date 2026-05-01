@@ -104,6 +104,20 @@ OAK accepts new Techniques, Tactic refinements, real-world examples, and Referen
 
 Other vendors (GoPlus, RugCheck, Chainalysis, TRM, MetaSleuth, etc.) are openly invited to publish their own OAK coverage maps and submit Reference-implementation entries via PR.
 
+## AI integration — `oak-mcp`
+
+[`oak-mcp`](https://github.com/onchainattack/oak-mcp) is a Model Context Protocol server that exposes the OAK corpus as queryable tools for AI coding agents (Claude Desktop, Cursor, Cline, Zed, and any other MCP-aware environment). One-line install via `npx`; embedded snapshot ships with each release for offline use.
+
+```json
+{
+  "mcpServers": {
+    "oak": { "command": "npx", "args": ["-y", "@onchainattack/oak-mcp"] }
+  }
+}
+```
+
+10 tools: `oak_search`, `oak_get_technique` / `oak_get_tactic` / `oak_get_mitigation` / `oak_get_software`, `oak_find_mitigations_for_technique`, `oak_find_software_for_technique`, `oak_find_relationships`, `oak_list_techniques`, `oak_dataset_info`. See `oak-mcp` README for client-specific config snippets.
+
 ## Maintainer
 
 Initial author and curator: **Dmytro Chystiakov** ([@iZonex](https://github.com/iZonex)).
