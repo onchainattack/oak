@@ -32,10 +32,10 @@ OAK v0.1's Tactic catalog is on-chain-extraction-focused; G07's *intrusion* surf
 - **OAK-T7.002 (CEX Deposit-Address Layering)** — observed as the canonical off-ramp at the end of the hash-rental-and-cloud-mining laundering chain; mined-coin output is layered through CEX deposit-address activity into spendable fiat or operational-infrastructure procurement.
 - **OAK-T8.001 (Common-Funder Cluster Reuse)** — the *attribution-side* Technique used by Mandiant, Chainalysis, TRM Labs, and Recorded Future to maintain G07-cluster identification across phishing-NFT contract rotations, across malicious-extension distribution rotations, and across the G01 / G07 sub-cluster boundary. Distinguishing G07 wallet activity from G01 wallet activity is a non-trivial defender problem precisely because both clusters share RGB substrate; T8.001 cluster-tracking is the canonical method for partitioning the two.
 - **Pre-incident vectors not yet in OAK v0.1 scope (TAXONOMY-GAPS overlap with OAK-G01 and OAK-G04):**
- - *Spear-phishing with sustained social-engineering rapport-building under fabricated personas* — the dominant G07 entry vector. Operators pose as journalists, broadcast writers, or subject-matter experts and build relationships with targets over weeks before delivering payloads.
- - *Malicious browser-extensions and Android-app payloads* — Chromium-extension Gmail exfiltration is a documented G07-distinctive TTP per the BfV / NIS advisory.
- - *Phishing-NFT distribution at volume* — Mandiant-documented \>10 million phishing NFTs from June 2022 onward; structurally a credential-and-wallet-drain volume technique that does not fit cleanly under any single OAK v0.1 Tactic.
- - *Hash-rental-and-cloud-mining laundering* — the cluster-distinctive laundering rail; sits between OAK-T7 (laundering Tactic) and a future TAXONOMY-GAPS candidate for *mining-as-laundering-conversion*.
+- *Spear-phishing with sustained social-engineering rapport-building under fabricated personas* — the dominant G07 entry vector. Operators pose as journalists, broadcast writers, or subject-matter experts and build relationships with targets over weeks before delivering payloads.
+- *Malicious browser-extensions and Android-app payloads* — Chromium-extension Gmail exfiltration is a documented G07-distinctive TTP per the BfV / NIS advisory.
+- *Phishing-NFT distribution at volume* — Mandiant-documented \>10 million phishing NFTs from June 2022 onward; structurally a credential-and-wallet-drain volume technique that does not fit cleanly under any single OAK v0.1 Tactic.
+- *Hash-rental-and-cloud-mining laundering* — the cluster-distinctive laundering rail; sits between OAK-T7 (laundering Tactic) and a future TAXONOMY-GAPS candidate for *mining-as-laundering-conversion*.
 
 ## Observed Examples
 

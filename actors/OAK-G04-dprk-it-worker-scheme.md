@@ -32,8 +32,8 @@ OAK v0.1 does not yet have a dedicated *insider-placement* Tactic (this is a TAX
 - **OAK-T9.004 (Access-Control Misconfiguration)** — applicable when the insider-extraction step exploits privileged developer / deployer keys held legitimately by the G04-placed worker (the Munchables case is in this class: the developer used proxy-contract upgrade authority to assign themselves a 1M-ETH internal balance).
 - **OAK-T11.001 (Third-Party Signing/Custody Vendor Compromise)** — adjacent Technique when the G04 placement is at a vendor (custody, multisig tooling, signing infrastructure) whose access fans out to multiple downstream firms; the public record contains industry-forensic claims that G04-placed workers have been hired at vendors in the G01 supply-chain target set, and OAK should track this overlap as the G01 × G04 chain matures.
 - **Pre-incident vectors not yet in OAK v0.1 scope (TAXONOMY-GAPS candidates):**
- - *Identity fabrication and synthetic-identity hiring fraud* — the off-chain entry vector that defines G04. A future OAK Tactic for "off-chain operator-placement-as-entry-vector" should subsume this and the G01 social-engineering / fake-job-offer pattern under a single insider / personnel attack-surface category.
- - *Laptop-farm facilitator infrastructure* — the U.S.-domestic enabling layer (Chapman, Ntekereze, Ashtor) is governance-and-policy-layer behaviour outside the on-chain Tactic taxonomy at v0.1 but is essential context for any defender model of G04.
+- *Identity fabrication and synthetic-identity hiring fraud* — the off-chain entry vector that defines G04. A future OAK Tactic for "off-chain operator-placement-as-entry-vector" should subsume this and the G01 social-engineering / fake-job-offer pattern under a single insider / personnel attack-surface category.
+- *Laptop-farm facilitator infrastructure* — the U.S.-domestic enabling layer (Chapman, Ntekereze, Ashtor) is governance-and-policy-layer behaviour outside the on-chain Tactic taxonomy at v0.1 but is essential context for any defender model of G04.
 
 ## Observed Examples
 
