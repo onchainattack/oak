@@ -1,0 +1,104 @@
+<svg width="1000" height="540" viewBox="0 0 1000 540" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="dotgrid2" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="0.8" fill="rgba(232,233,236,0.05)"/>
+    </pattern>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#00ffd1"/>
+    </marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ff7a70"/>
+    </marker>
+  </defs>
+
+  <rect width="1000" height="540" fill="#0a0a0c"/>
+  <rect width="1000" height="540" fill="url(#dotgrid2)"/>
+
+  <!-- Title -->
+  <g font-family="-apple-system, BlinkMacSystemFont, system-ui, sans-serif">
+    <text x="500" y="44" text-anchor="middle" font-size="22" font-weight="600" fill="#e8e9ec" letter-spacing="-0.5">The structured-knowledge gap</text>
+    <text x="500" y="72" text-anchor="middle" font-size="13" font-weight="400" fill="#8b8e96">Traditional IT has a substrate AI can query. Crypto does not — yet.</text>
+  </g>
+
+  <!-- LEFT COLUMN — traditional IT -->
+  <g transform="translate(40 110)">
+    <text x="220" y="0" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" font-weight="600" letter-spacing="2" fill="#00ffd1">TRADITIONAL IT SECURITY</text>
+
+    <!-- Boxes -->
+    <g font-family="ui-monospace, monospace" font-size="13" fill="#e8e9ec">
+      <rect x="20" y="30" width="180" height="38" rx="6" fill="rgba(0,255,209,0.06)" stroke="#00ffd1" stroke-width="1.2"/>
+      <text x="110" y="55" text-anchor="middle" font-weight="600">CWE</text>
+
+      <rect x="240" y="30" width="180" height="38" rx="6" fill="rgba(0,255,209,0.06)" stroke="#00ffd1" stroke-width="1.2"/>
+      <text x="330" y="55" text-anchor="middle" font-weight="600">OWASP Top 10</text>
+
+      <rect x="20" y="90" width="180" height="38" rx="6" fill="rgba(0,255,209,0.06)" stroke="#00ffd1" stroke-width="1.2"/>
+      <text x="110" y="115" text-anchor="middle" font-weight="600">CVE</text>
+
+      <rect x="240" y="90" width="180" height="38" rx="6" fill="rgba(0,255,209,0.06)" stroke="#00ffd1" stroke-width="1.2"/>
+      <text x="330" y="115" text-anchor="middle" font-weight="600">STIX / TAXII</text>
+    </g>
+
+    <!-- Subtext -->
+    <text x="220" y="160" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#8b8e96">structured · open · machine-queryable</text>
+
+    <!-- Arrow down -->
+    <line x1="220" y1="190" x2="220" y2="240" stroke="#00ffd1" stroke-width="1.5" marker-end="url(#arrowGreen)"/>
+
+    <!-- AI agent box -->
+    <rect x="120" y="250" width="200" height="48" rx="8" fill="rgba(0,255,209,0.1)" stroke="#00ffd1" stroke-width="1.6"/>
+    <text x="220" y="280" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" font-size="14" font-weight="600" fill="#00ffd1">AI agent</text>
+
+    <!-- result -->
+    <text x="220" y="330" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" font-size="14" fill="#e8e9ec" font-weight="500">grounded answers</text>
+    <text x="220" y="352" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#8b8e96">cited · verifiable · current</text>
+  </g>
+
+  <!-- DIVIDER -->
+  <line x1="500" y1="100" x2="500" y2="490" stroke="rgba(232,233,236,0.16)" stroke-width="1" stroke-dasharray="4 4"/>
+
+  <!-- RIGHT COLUMN — crypto -->
+  <g transform="translate(540 110)">
+    <text x="220" y="0" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" font-weight="600" letter-spacing="2" fill="#ff7a70">CRYPTO SECURITY (TODAY)</text>
+
+    <!-- Scattered, dashed boxes (intentionally less aligned) -->
+    <g font-family="ui-monospace, monospace" font-size="11" fill="#e8e9ec">
+      <rect x="10" y="30" width="150" height="32" rx="6" fill="rgba(255,122,112,0.04)" stroke="#ff7a70" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="85" y="50" text-anchor="middle">Chainalysis report</text>
+
+      <rect x="200" y="40" width="120" height="32" rx="6" fill="rgba(255,122,112,0.04)" stroke="#ff7a70" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="260" y="60" text-anchor="middle">TRM report</text>
+
+      <rect x="350" y="28" width="80" height="32" rx="6" fill="rgba(255,122,112,0.04)" stroke="#ff7a70" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="390" y="48" text-anchor="middle">SoK paper</text>
+
+      <rect x="30" y="80" width="100" height="32" rx="6" fill="rgba(255,122,112,0.04)" stroke="#ff7a70" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="80" y="100" text-anchor="middle">audit PDF</text>
+
+      <rect x="160" y="92" width="160" height="32" rx="6" fill="rgba(255,122,112,0.04)" stroke="#ff7a70" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="240" y="112" text-anchor="middle">post-mortem blog</text>
+
+      <rect x="340" y="84" width="100" height="32" rx="6" fill="rgba(255,122,112,0.04)" stroke="#ff7a70" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="390" y="104" text-anchor="middle">CTI feed</text>
+    </g>
+
+    <!-- Subtext -->
+    <text x="220" y="160" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#8b8e96">scattered · paywalled · PDF-locked · vendor-specific</text>
+
+    <!-- Confused arrow (?) -->
+    <line x1="220" y1="190" x2="220" y2="240" stroke="#ff7a70" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrowRed)"/>
+    <text x="240" y="220" font-family="ui-monospace, monospace" font-size="20" fill="#ff7a70" font-weight="700">?</text>
+
+    <!-- AI agent box -->
+    <rect x="120" y="250" width="200" height="48" rx="8" fill="rgba(255,122,112,0.08)" stroke="#ff7a70" stroke-width="1.6"/>
+    <text x="220" y="280" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" font-size="14" font-weight="600" fill="#ff7a70">AI agent</text>
+
+    <!-- result -->
+    <text x="220" y="330" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" font-size="14" fill="#e8e9ec" font-weight="500">confidently wrong</text>
+    <text x="220" y="352" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#8b8e96">stale · hallucinated · unverifiable</text>
+  </g>
+
+  <!-- Bottom message -->
+  <rect x="200" y="490" width="600" height="36" rx="6" fill="rgba(0,255,209,0.06)" stroke="#00ffd1" stroke-width="1.2"/>
+  <text x="500" y="513" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" font-size="14" font-weight="500" fill="#00ffd1">Crypto + AI need a structured knowledge layer</text>
+</svg>

@@ -1,0 +1,91 @@
+<svg width="1000" height="540" viewBox="0 0 1000 540" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="dotgrid3" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="0.8" fill="rgba(232,233,236,0.05)"/>
+    </pattern>
+    <marker id="arrowAccent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#00ffd1"/>
+    </marker>
+  </defs>
+
+  <rect width="1000" height="540" fill="#0a0a0c"/>
+  <rect width="1000" height="540" fill="url(#dotgrid3)"/>
+
+  <!-- Title -->
+  <g font-family="-apple-system, BlinkMacSystemFont, system-ui, sans-serif">
+    <text x="500" y="44" text-anchor="middle" font-size="22" font-weight="600" fill="#e8e9ec" letter-spacing="-0.5">oak-mcp · the AI bridge</text>
+    <text x="500" y="72" text-anchor="middle" font-size="13" font-weight="400" fill="#8b8e96">One config line. Embedded snapshot. No infra to host.</text>
+  </g>
+
+  <!-- LEFT — OAK corpus -->
+  <g transform="translate(60 130)">
+    <rect x="0" y="0" width="240" height="280" rx="12" fill="rgba(255,255,255,0.012)" stroke="rgba(232,233,236,0.16)" stroke-width="1.2"/>
+    <text x="120" y="32" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" font-weight="600" letter-spacing="2" fill="#8b8e96">OAK CORPUS</text>
+
+    <g font-family="ui-monospace, monospace" font-size="13" fill="#e8e9ec">
+      <text x="22" y="74">14 Tactics</text>
+      <text x="22" y="104">62 Techniques</text>
+      <text x="22" y="134">40 Mitigations</text>
+      <text x="22" y="164">40 Software</text>
+      <text x="22" y="194">18 Threat Actors</text>
+      <text x="22" y="224">142 Incidents</text>
+      <text x="22" y="254">416 Relationships</text>
+    </g>
+
+    <text x="120" y="278" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="rgba(232,233,236,0.32)">CC-BY-SA 4.0</text>
+  </g>
+
+  <!-- Arrow 1 -->
+  <line x1="305" y1="270" x2="380" y2="270" stroke="#00ffd1" stroke-width="2" marker-end="url(#arrowAccent)"/>
+
+  <!-- CENTER — oak-mcp server -->
+  <g transform="translate(380 130)">
+    <rect x="0" y="0" width="240" height="280" rx="12" fill="rgba(0,255,209,0.06)" stroke="#00ffd1" stroke-width="1.6"/>
+    <text x="120" y="32" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" font-weight="600" letter-spacing="2" fill="#00ffd1">OAK-MCP SERVER</text>
+
+    <text x="120" y="60" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#8b8e96">10 tools · stdio transport</text>
+
+    <g font-family="ui-monospace, monospace" font-size="11" fill="#e8e9ec">
+      <text x="22" y="92">oak_search</text>
+      <text x="22" y="116">oak_get_technique</text>
+      <text x="22" y="140">oak_get_tactic</text>
+      <text x="22" y="164">oak_get_mitigation</text>
+      <text x="22" y="188">oak_get_software</text>
+      <text x="22" y="212">oak_find_relationships</text>
+      <text x="22" y="236">oak_list_techniques</text>
+      <text x="22" y="260">oak_dataset_info</text>
+    </g>
+  </g>
+
+  <!-- Arrow 2 -->
+  <line x1="625" y1="270" x2="700" y2="270" stroke="#00ffd1" stroke-width="2" marker-end="url(#arrowAccent)"/>
+
+  <!-- RIGHT — AI editors -->
+  <g transform="translate(700 130)">
+    <rect x="0" y="0" width="240" height="280" rx="12" fill="rgba(255,255,255,0.012)" stroke="rgba(232,233,236,0.16)" stroke-width="1.2"/>
+    <text x="120" y="32" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" font-weight="600" letter-spacing="2" fill="#8b8e96">AI EDITOR</text>
+
+    <g font-family="-apple-system, system-ui, sans-serif" font-size="14" fill="#e8e9ec" font-weight="500">
+      <text x="22" y="76">Claude Desktop</text>
+      <text x="22" y="106">Cursor</text>
+      <text x="22" y="136">Cline (VS Code)</text>
+      <text x="22" y="166">Zed</text>
+      <text x="22" y="196">…any MCP client</text>
+    </g>
+
+    <line x1="22" y1="220" x2="218" y2="220" stroke="rgba(232,233,236,0.16)" stroke-width="1"/>
+
+    <g font-family="ui-monospace, monospace" font-size="11" fill="#8b8e96">
+      <text x="22" y="244">your agent queries</text>
+      <text x="22" y="262">→ structured response</text>
+    </g>
+  </g>
+
+  <!-- Bottom config snippet -->
+  <g transform="translate(120 450)">
+    <rect x="0" y="0" width="760" height="76" rx="8" fill="rgba(255,255,255,0.025)" stroke="rgba(232,233,236,0.16)" stroke-width="1"/>
+    <text x="20" y="28" font-family="ui-monospace, monospace" font-size="12" fill="#8b8e96">// claude_desktop_config.json / cursor / cline / zed</text>
+    <text x="20" y="50" font-family="ui-monospace, monospace" font-size="13" fill="#e8e9ec">{ "mcpServers": { "oak": { "command": "npx",</text>
+    <text x="20" y="68" font-family="ui-monospace, monospace" font-size="13" fill="#e8e9ec">    "args": ["-y", "github:onchainattack/oak-mcp"] } } }</text>
+  </g>
+</svg>

@@ -1,0 +1,26 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#0a0a0c"/>
+
+  <!-- Hex chip mark, large, right side -->
+  <g transform="translate(820 175)">
+    <polygon points="120,0 200,46 200,138 120,184 40,138 40,46" fill="rgba(0,255,209,0.04)" stroke="#e8e9ec" stroke-width="6"/>
+    <rect x="60" y="46" width="120" height="14" fill="#00ffd1"/>
+    <rect x="120" y="85" width="60" height="14" fill="#00ffd1"/>
+    <rect x="60" y="124" width="120" height="14" fill="#00ffd1"/>
+  </g>
+
+  <!-- Eyebrow -->
+  <text x="80" y="170" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="500" letter-spacing="3" fill="#8b8e96">OAK · v0.1.0-DRAFT · ONCHAINATTACK.ORG</text>
+
+  <!-- Headline -->
+  <text x="80" y="280" font-family="Helvetica, Arial, sans-serif" font-size="80" font-weight="700" fill="#ffffff" letter-spacing="-3">An Open</text>
+  <text x="80" y="368" font-family="Helvetica, Arial, sans-serif" font-size="80" font-weight="700" fill="#ffffff" letter-spacing="-3">Knowledge Layer</text>
+
+  <!-- Sub headline -->
+  <text x="80" y="450" font-family="Helvetica, Arial, sans-serif" font-size="44" font-weight="500" fill="#00ffd1" letter-spacing="-1">for AI-Native Crypto</text>
+
+  <!-- Footer line + stats -->
+  <line x1="80" y1="540" x2="1120" y2="540" stroke="#00ffd1" stroke-width="2"/>
+  <text x="80" y="585" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#8b8e96">14 TACTICS · 62 TECHNIQUES · 142 INCIDENTS · 40 MITIGATIONS · 416 RELATIONSHIPS</text>
+  <text x="1120" y="585" text-anchor="end" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#00ffd1">CC-BY-SA 4.0</text>
+</svg>

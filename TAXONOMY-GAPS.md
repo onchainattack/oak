@@ -51,8 +51,15 @@ These are Techniques that fit cleanly inside an existing v0.1 Tactic but are fla
 
 ### T4 — Access Acquisition (additions for v0.x)
 
+- **Native-app social phishing on engagement-weighted platforms** (proposed). Scope: phishing campaigns whose distribution surface is a paid-for or engagement-weighted in-platform mechanic that the attacker manipulates to occupy visibility (e.g., comment-pinning, reply-ranking). Distinct from generic phishing because the platform's own mechanics fund the distribution surface. Canonical: Polymarket comment-section campaign Nov 2025 (≥$500K cumulative loss; attackers bought YES+NO shares to anchor pinned phishing comments). See `examples/2025-11-polymarket-comment-section-phishing.md`. Generalises to any engagement-weighted platform (Friend.tech, pump.fun, Farcaster).
+- **Pre-token brand-anticipation phishing** (proposed). Scope: phishing campaigns exploiting *the absence* of a token from a high-trust platform — the lure is the official-channel-amplified ambiguity ("airdrop coming soon" → fake claim sites). Distinct from T6.002 (Fake Audit Claim) because no false audit is claimed; the ambiguity is around a future event the platform itself has hinted at. Canonical: Polymarket "POLY airdrop claim" typosquat cohort, accelerating after Polymarket's CMO confirmed future token plans October 2025.
+
 - QR-code phishing as an entry vector — relevant across T4 generally; merits a standalone Technique stub if the QR-specific surface (mobile-wallet UX, malicious WalletConnect QR codes) warrants one.
 - iOS / Android push-notification compromise as a wallet-extension distribution-channel surface (CoinStats Jun 2024 is the canonical case; OAK-T11.002 broadly construed at v0.1).
+
+### T5 — Value Extraction (additions for v0.x)
+
+- **Third-party brand-impersonation custodial soft-rug** (proposed). Scope: an off-platform service that brands itself in a legitimate platform's name without contractual basis, accumulates user deposits in operator-controlled custody, and exits citing an unverifiable "hack." Distinct from T5.005 (Treasury-Management Exit) — the operator never had a fiduciary relationship with the platform whose brand they used. Distinct from T4 phishing — users deposited willingly. Canonical: Polycule trading bot Jan 2026 ($230K, Polymarket-branded but unaffiliated, exit-via-"hack" announcement followed by communication blackout). Detection signal at the platform layer: monitoring for off-platform brand-impersonation services through trademark / domain / Telegram-handle surveillance + authoritative third-party-service registry publication. See `examples/2026-01-polymarket-polycule-bot.md`.
 
 ### T7 — Laundering (additions for v0.x)
 
@@ -70,6 +77,11 @@ These are Techniques that fit cleanly inside an existing v0.1 Tactic but are fla
 - Cross-contract logic flaws / re-initialisation attacks (the structural class beyond simple delegatecall flaws).
 - Diamond-pattern-specific facet-audit-incomplete cases (Li.Fi Jul 2024 is the canonical 2024 worked example; more cases anticipated as diamond-pattern adoption grows).
 - Fork-substrate-vulnerability-not-mitigated-at-fork-time as a recurring meta-class (Hundred → Midas → Sonne → Onyx → Resupply cohort; Curio fork of MakerDAO; multiple Uniswap-V2-fork rugs; the meta-class is documented across multiple worked examples but not yet articulated as a standalone Technique).
+- **T9.006 Subjective-Oracle Resolution Manipulation** (proposed). Distinct from T9.001 (price-feed oracle manipulation): the "oracle" is a token-weighted vote over a natural-language claim (UMA DVM, Kleros, Reality.eth, Augur REP), not a numeric price feed. Sub-patterns identified from the Polymarket cohort 2025-2026:
+  - **T9.006.001** — DVM vote capture by economically-interested holder. Canonical: Ukraine mineral deal market March 2025 ($7M, single whale ~25% of vote); UFO declassification December 2025 ($16M); Zelenskyy-suit market July 2025 ($237M). See `examples/2025-03-polymarket-uma-ukraine-mineral-deal.md`.
+  - **T9.006.002** — Resolution-spec ambiguity exploitation. Canonical: Zelenskyy-suit market — "wearing a suit" had no machine-checkable definition; voters resolved against the bettor-majority interpretation. See `examples/2025-07-polymarket-zelenskyy-suit.md`.
+  - **T9.006.003** — Off-chain resolution-source coercion. Canonical: Times of Israel correspondent threatened with death by Polymarket bettors over Iran-strike market March 2026. **First publicly documented case of physical coercion of a human reporter as an oracle attack vector in crypto.** See `examples/2026-03-polymarket-iran-strike-journalist-coercion.md`.
+  - **T9.006.004** — Platform-override of oracle outcome. Canonical: Barron Trump / DJT memecoin market — UMA voted NO, Polymarket overrode. Establishes precedent that platform discretion is a backstop on top of the "decentralised" oracle, collapsing the trust model. Structural finding: oracle-token market cap (UMA ~$95M) is less than the volume of single adjudicated markets ($237M Zelenskyy) — stable disequilibrium that worsens as Polymarket scales.
 
 ### T11 — Custody and Signing Infrastructure (additions for v0.x)
 
@@ -77,6 +89,8 @@ These are Techniques that fit cleanly inside an existing v0.1 Tactic but are fla
 - Multi-chain key-store co-location (canonical case is Poloniex Nov 2023; the simultaneous-multi-chain extraction pattern as architectural anti-pattern).
 - Custodial-private-key-storage trading-bot anti-pattern (canonical case is DEXX Sep-Nov 2024).
 - Legacy-version-maintenance attack-surface (canonical case is GMX V1 Jul 2025; the operator-side decision to maintain deprecated protocol versions as residual exploitable surface).
+- **Embedded-wallet identity-provider compromise** (proposed). Scope: any wallet whose key derivation runs through a third-party authentication service (email magic-link, OAuth federation, MPC-backed social login — Magic Labs / Privy / Dynamic / Web3Auth). The attack surface is the auth provider's security posture; the on-chain transaction is correctly signed by the provider's key. Canonical: Polymarket account-takeover incidents Sep 2024 + Dec 2025 (both attributed by Polymarket to "third-party login tool"). The widespread "non-custodial" claim collapses back to "as custodial as the auth provider's security posture." See `examples/2024-09-polymarket-magic-labs-takeover.md`.
+- **Trader-tooling supply-chain compromise targeting `.env` private keys** (proposed). Adjacent to T11.002 (Wallet-Software Distribution Compromise) but distinct in target cohort: end-user wallet binaries vs. developer-environment plaintext key storage. Canonical: malicious npm `polymarket-clob` package + `dev-protocol` GitHub-org hijack distributing trojan "polymarket-copytrading-bot" repos, Dec 2025 - Apr 2026 (Vidar Stealer infrastructure overlap, DPRK-cohort-fingerprint similarity). Detection signals are off-chain at the package-registry level. See `examples/2026-01-polymarket-trader-tooling-supply-chain.md`.
 
 ### T12 — NFT-Specific Patterns (additions for v0.x)
 
