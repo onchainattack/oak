@@ -4,26 +4,19 @@ OAK does not exist in a vacuum. This file documents the public frameworks, datas
 
 ---
 
-## MITRE ATT&CK
+## Adversary-behavior taxonomies
 
-OAK's per-Technique structure (Description, Detection, Mitigations, identifier scheme `OAK-Tn` / `OAK-Tn.NNN`) is consciously modelled on the structural conventions of MITRE ATT&CK. The intent is for security and risk professionals already fluent in that structure to read OAK content with minimal context switching.
+OAK uses a tactics-as-columns / techniques-as-cells matrix structure, which is a well-established pattern in adversary-behavior taxonomies broadly. The matrix shape itself is not unique to any single project — it reflects how adversary behaviour is most readably catalogued for defenders.
 
-**OAK is not affiliated with MITRE Corporation or the ATT&CK framework.** This non-affiliation is explicit in `DISCLAIMER.md` and reiterated in the README banner. Specifically:
+OAK's contribution sits in **what** the matrix catalogues, not the matrix shape: crypto's threat surface (public-ledger finality, pseudonymous adversaries, smart-contract attack surfaces, money-laundering as part of the attack chain rather than aftermath) doesn't fit cleanly into general IT-security frameworks. OAK is built from scratch for this segment.
 
-- OAK reuses **no** MITRE-copyrighted text, **no** MITRE identifier numbering, and **no** MITRE visual styling.
-- The `OAK-` identifier prefix is intentional: it signals lineage (this is an attack-knowledge-base structure) without claiming the trademark.
-- ATT&CK® is a registered trademark of MITRE Corporation. References to ATT&CK in OAK content are descriptive only.
+What OAK does differently from general adversary-behavior frameworks:
 
-What OAK takes from ATT&CK conceptually but does not yet have:
-
-- **Threat-actor / Groups axis** — flagged in TAXONOMY-GAPS.md as the most consequential v0.1 omission.
-- **Data Sources as a first-class axis** — also flagged in TAXONOMY-GAPS.md.
-
-What OAK does differently:
-
-- **Scope.** ATT&CK is general adversary behaviour across IT. OAK is on-chain-specific, with explicit chain-coverage labelling per Technique.
-- **License.** OAK content is CC-BY-SA 4.0 — fully redistributable and adaptable. ATT&CK is licensed for reuse with restrictions specific to MITRE.
-- **Governance.** OAK is, at v0.1, single-maintainer with PR-based community contribution; co-maintainers invited by v0.5; foundation incorporation considered in Y3 of the broader OAK strategy.
+- **Scope.** On-chain-specific, with explicit chain-coverage labelling (EVM / Solana / cross-chain / etc.) per Technique.
+- **Loss + recovery + attribution-strength layer.** Every worked example carries dollar-loss, laundering rail, recovery outcome, and explicit attribution-strength (`confirmed` / `inferred-strong` / `inferred-weak`).
+- **Laundering pipeline as first-class.** Laundering rails (mixers, CEX deposit-address layering, cross-chain bridge laundering, NFT wash-laundering, privacy-chain hops) are catalogued as Tactic-level, not aftermath.
+- **License.** Content under CC-BY-SA 4.0, tooling under MIT — fully redistributable and adaptable.
+- **Governance.** v0.1 single-maintainer with PR-based community contribution; co-maintainers invited by v0.5; long-term sustainability and incorporation patterns under research per ROADMAP.
 
 ---
 
@@ -107,7 +100,6 @@ OAK does not endorse any of these by listing them; the policy in `CONTRIBUTING.m
 
 The 30-second elevator pitch with prior art surfaced:
 
-- **MITRE ATT&CK** is the structural inspiration (per-Technique format, identifier scheme); OAK is independent and on-chain-specific.
 - **OWASP Smart Contract Top 10** is the closest existing framework; it occupies the contract-vulnerability layer; OAK occupies the orthogonal operator-behaviour layer; the two are complementary, not competing.
 - **Zhou et al. 2023 SoK** is the academic taxonomy of DeFi-protocol-layer attacks; v0.3 of OAK will build on it for the Smart-Contract Exploit Tactic.
 - **Chainalysis / TRM / SlowMist / EigenPhi / Elliptic / rekt.news** are the industry intelligence sources OAK draws on for incident-level attribution.

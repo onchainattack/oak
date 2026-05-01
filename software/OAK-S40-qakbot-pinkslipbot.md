@@ -1,7 +1,7 @@
 # OAK-S40 — Qakbot / Pinkslipbot / QBot
 
 **Type:** malware / banking trojan + commodity loader
-**Aliases:** Qakbot (the dominant industry naming since approximately 2010); QBot (CrowdStrike historical naming); Pinkslipbot (an earlier-era name from Symantec / Broadcom). MITRE ATT&CK ID S0650. One of the longest-running individual malware families on the OAK-relevant timeline.
+**Aliases:** Qakbot (the dominant industry naming since approximately 2010); QBot (CrowdStrike historical naming); Pinkslipbot (an earlier-era name from Symantec / Broadcom). external cyber-threat-intel taxonomy ID S0650. One of the longest-running individual malware families on the OAK-relevant timeline.
 **Active:** sunset for original infrastructure post-August 2023 (Operation Duck Hunt). Cohort-level operating substrate persists in OAK-S38 Pikabot which is structurally a successor-and-overlap loader rebuilt by the same Russian-cybercrime-ecosystem operator cohort.
 **First observed:** approximately 2008 (initial banking-trojan operation; some pre-2008 ancestor variants are documented but the family-level naming stabilises at 2008–2010).
 **Used by Groups:** ecosystem-wide. Documented in the kill chains feeding OAK-G05 LockBit, OAK-G10 ALPHV/BlackCat, OAK-G11 Black Basta, OAK-G14 Cl0p, plus the historical OAK-S26 Conti operator-cohort era. Operator-cohort substrate is Russian-cybercrime-ecosystem.

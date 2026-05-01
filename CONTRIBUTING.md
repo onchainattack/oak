@@ -12,7 +12,7 @@ We accept PRs in any of the following categories:
 | **Tactic refinement** | Edits to an existing `tactics/Tn-*.md` improving description, scope, or relationships. |
 | **Technique improvement** | Detection-signal additions, mitigation additions, new real-world example references, citation additions. |
 | **New Mitigation** | A new file under `mitigations/` with a proposed `OAK-MNN` identifier. Mitigations are reusable defences mapping many-to-many to Techniques. |
-| **New Software** | A new file under `software/` with a proposed `OAK-SNN` identifier. Tools, kits, and malware families used by Threat Actors (parallel to MITRE ATT&CK Software). |
+| **New Software** | A new file under `software/` with a proposed `OAK-SNN` identifier. Tools, kits, and malware families used by Threat Actors. |
 | **New Threat Actor / Group** | A new file under `actors/` with a proposed `OAK-Gnn` identifier. Tracked operators and operator-cohort families with explicit attribution-strength language. |
 | **New Data Source** | A new file under `data-sources/` with a proposed `OAK-DS-NN` identifier. Telemetry-input identifiers used across the framework. |
 | **Reference-implementation mapping** | A new row under "Reference implementations" pointing to your tool's coverage of an existing Technique or Mitigation. |
@@ -159,7 +159,7 @@ What defenders look for. NO specific file hashes — refer to live CTI feeds and
 Lineage (predecessors / successors), market-share evolution, naming-overlap caveats, takedown / disruption history.
 ```
 
-Software entries cover named tools and malware families; the operator group that uses them lives at `OAK-Gnn` actor entries. The Group/Software split mirrors MITRE ATT&CK's intrusion-set-vs-malware separation.
+Software entries cover named tools and malware families; the operator group that uses them lives at `OAK-Gnn` actor entries. The Group/Software split keeps reusable tooling distinct from the operators that use it.
 
 ## Per-Group (Threat Actor) template
 

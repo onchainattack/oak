@@ -1,6 +1,6 @@
 # OAK Data Sources
 
-OAK's fourth top-level axis, alongside Tactics (`tactics/`), Techniques (`techniques/`), and Threat Actors (`actors/`). A **Data Source** is a stable identifier for a class of telemetry that detection and forensic methodologies depend on — analogous to MITRE ATT&CK's Data Sources axis (Process: Process Creation, Network Traffic: Network Connection Creation, etc.).
+OAK's fourth top-level axis, alongside Tactics (`tactics/`), Techniques (`techniques/`), and Threat Actors (`actors/`). A **Data Source** is a stable identifier for a class of telemetry that detection and forensic methodologies depend on — analogous to external cyber-threat-intel taxonomy's Data Sources axis (Process: Process Creation, Network Traffic: Network Connection Creation, etc.).
 
 OAK introduces this axis at v0.1 because the per-Technique "Detection signals" sections answer *what to look for* but do not aggregate *what telemetry a defender needs* across the framework. With Data Sources as a separate axis, a risk team or detector vendor can answer "do we have the telemetry to detect OAK-T9.001?" by checking the Data Sources the Technique references (rather than re-deriving it from the Detection signals prose).
 

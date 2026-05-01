@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 export_stix.py — emit OAK content as a STIX 2.1 bundle for interop with
-TIPs, SIEMs, and other ATT&CK-aware tooling.
+TIPs, SIEMs, and other STIX 2.1 tooling.
 
 Reads:
 - tools/oak.json (Tactics, Techniques, Mitigations, Software, Relationships)
@@ -12,13 +12,13 @@ Writes:
 - tools/oak-stix.json (STIX 2.1 bundle)
 
 Schema mapping:
-- OAK-Tn        → x-mitre-tactic (custom; phase identifier for kill chain)
+- OAK-Tn        → x-oak-tactic (custom; phase identifier for kill chain)
 - OAK-Tn.NNN    → attack-pattern (with kill_chain_phases pointing to parent Tactic)
 - OAK-MNN       → course-of-action
 - OAK-SNN       → malware (if type in ransomware|malware|infostealer)
                   OR tool (if type in tool|drainer-kit|mev-bot|vanity-gen)
 - OAK-Gnn       → intrusion-set
-- OAK-DS-NN     → x-mitre-data-source (custom)
+- OAK-DS-NN     → x-oak-data-source (custom)
 - relationships → relationship SROs
 
 UUIDs are derived deterministically from the OAK ID via uuid5(oak_namespace, oak_id),
@@ -81,14 +81,14 @@ def shortname(s: str) -> str:
 
 def tactic_to_sdo(tac: dict) -> dict:
     return {
-        "type": "x-mitre-tactic",
+        "type": "x-oak-tactic",
         "spec_version": "2.1",
-        "id": stix_id("x-mitre-tactic", tac["id"]),
+        "id": stix_id("x-oak-tactic", tac["id"]),
         "created": NOW,
         "modified": NOW,
         "name": tac["name"],
         "description": tac.get("phase", ""),
-        "x_mitre_shortname": shortname(tac["name"]),
+        "x_oak_shortname": shortname(tac["name"]),
         "external_references": [
             {
                 "source_name": "oak",
@@ -113,7 +113,7 @@ def technique_to_sdo(tech: dict, tactic_shortnames: dict[str, str]) -> dict:
         "modified": NOW,
         "name": tech["name"],
         "kill_chain_phases": phases,
-        "x_mitre_platforms": tech.get("chains", []),
+        "x_oak_platforms": tech.get("chains", []),
         "external_references": [
             {
                 "source_name": "oak",
@@ -156,7 +156,7 @@ def software_to_sdo(sw: dict) -> dict:
         "name": sw["name"],
         "is_family": True if stix_type == "malware" else None,
         "aliases": [a for a in sw.get("aliases", []) if a and len(a) < 200] or None,
-        "x_mitre_platforms": sw.get("host_platforms", []) or None,
+        "x_oak_platforms": sw.get("host_platforms", []) or None,
         "external_references": [
             {
                 "source_name": "oak",
@@ -193,9 +193,9 @@ def group_to_sdo(group_id: str, group_name: str, status: str) -> dict:
 
 def datasource_to_sdo(ds_id: str, name: str, description: str) -> dict:
     return {
-        "type": "x-mitre-data-source",
+        "type": "x-oak-data-source",
         "spec_version": "2.1",
-        "id": stix_id("x-mitre-data-source", ds_id),
+        "id": stix_id("x-oak-data-source", ds_id),
         "created": NOW,
         "modified": NOW,
         "name": name,
@@ -274,7 +274,7 @@ def main(argv: list[str]) -> int:
         sdo = tactic_to_sdo(tac)
         objects.append(sdo)
         oak_to_stix[tac["id"]] = sdo["id"]
-        tactic_shortnames[tac["id"]] = sdo["x_mitre_shortname"]
+        tactic_shortnames[tac["id"]] = sdo["x_oak_shortname"]
 
     # Techniques
     for tech in oak.get("techniques", []):

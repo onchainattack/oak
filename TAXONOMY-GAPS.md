@@ -110,21 +110,21 @@ Techniques published in v0.1 with `Maturity: speculative` because the threat sur
 
 Beyond Techniques themselves, OAK v0.1 lacks several first-class concepts that comparable frameworks treat as separate axes.
 
-### MITRE ATT&CK STIX 2.1 export
+### STIX 2.1 export
 
-Tactics × Techniques × Mitigations × Software × Groups × Data Sources × Relationships are emitted in OAK-native `tools/oak.json` schema v2 at v0.1. STIX 2.1 export (compatible with TIPs, SIEMs, and other ATT&CK-aware tooling) is a v0.x post-launch work item.
+Tactics × Techniques × Mitigations × Software × Groups × Data Sources × Relationships are emitted as an OAK-native machine-readable bundle at `tools/oak.json` (schema v2). A STIX 2.1 export at `tools/oak-stix.json` is delivered at v0.1 (601 SDOs/SROs). Onward integration with TIPs, SIEMs, and threat-intel platforms is a v0.x adoption-paced work item.
 
-### MITRE-style Campaigns
+### Campaigns axis
 
-MITRE ATT&CK has Campaigns as a discrete object class (multi-incident threads attributed to a Group operating in a discrete operational period). OAK Worked Examples cover individual incidents; cross-incident Campaign aggregation (e.g., the 2022-2024 OAK-G01 TraderTraitor cohort of exchange-vendor compromises) is documented in cross-references but not as a discrete first-class object. v0.x candidate.
+A discrete first-class object class for multi-incident threads (an operator running a coherent operation across multiple targets in a discrete operational period). OAK Worked Examples cover individual incidents; cross-incident Campaign aggregation (e.g., the 2022-2024 OAK-G01 TraderTraitor cohort of exchange-vendor compromises) is documented in cross-references but not as a discrete first-class object. v0.x candidate.
 
-### MITRE-style Assets
+### Assets axis
 
-MITRE ATT&CK ICS has Assets as a discrete object class (what is being attacked). For crypto: token contracts, AMM pools, oracle contracts, multisig wallets, bridge contracts, validator key sets, custody-vendor signing infrastructure, etc. OAK Techniques reference assets in prose but not as a discrete first-class object. v0.x candidate.
+A discrete first-class object class for what is being attacked: token contracts, AMM pools, oracle contracts, multisig wallets, bridge contracts, validator key sets, custody-vendor signing infrastructure. OAK Techniques reference assets in prose but not as a discrete first-class object. v0.x candidate.
 
-### MITRE-style Data Components
+### Data-component decomposition
 
-MITRE ATT&CK has Data Components as sub-entities of Data Sources representing specific event types. OAK Data Sources are flat at v0.1. Sub-component decomposition (e.g., DS "On-chain transaction" → "Token transfer event", "Approval event", "Pool-creation transaction") is a v0.x candidate.
+Sub-entities of Data Sources representing specific event types (e.g., DS "On-chain transaction" → "Token transfer event", "Approval event", "Pool-creation transaction"). OAK Data Sources are flat at v0.1; sub-component decomposition is a v0.x candidate.
 
 ### False-positive characterisation
 

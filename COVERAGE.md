@@ -120,7 +120,7 @@ The Mitigations, Software, Threat Actors, Data Sources, and Worked Examples axes
 | Axis | Entries | Status convention |
 |---|---:|---|
 | Mitigations (`OAK-MNN`) | 40 | Each entry maps to ≥1 Technique; coverage status is per-mitigation deployment (vendor-side) rather than per-Technique. |
-| Software (`OAK-SNN`) | 40 | Each entry has named CTI-vendor or government-anchor citations; family-naming convention follows MITRE ATT&CK Software where applicable. |
+| Software (`OAK-SNN`) | 40 | Each entry has named CTI-vendor or government-anchor citations; family naming follows the most-cited public-record convention where one exists. |
 | Threat Actors (`OAK-Gnn`) | 18 | Attribution-strength language is explicit per-Group: confirmed (government anchor), inferred-strong (industry-forensic anchor), inferred-weak (single-source; OAK does not publish at v0.1). |
 | Data Sources (`OAK-DS-NN`) | 12 | Each entry references the canonical telemetry source and OAK Techniques that consume it. |
 | Worked Examples | 142 | Each example cites the operator post-mortem (where one exists), industry-forensic walkthroughs, and government / court records (where applicable). |

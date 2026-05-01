@@ -1,7 +1,7 @@
 # OAK-S39 — DanaBot
 
 **Type:** malware / banking trojan + commodity loader
-**Aliases:** DanaBot (the canonical industry naming since 2018); MITRE ATT&CK ID S0634. Some early 2018 reporting tracked DanaBot under the placeholder name "Trojan.Win32.Spy" before family-level naming stabilised.
+**Aliases:** DanaBot (the canonical industry naming since 2018); external cyber-threat-intel taxonomy ID S0634. Some early 2018 reporting tracked DanaBot under the placeholder name "Trojan.Win32.Spy" before family-level naming stabilised.
 **Active:** yes through May 2024 (Operation Endgame target). Post-Operation-Endgame the operating-tempo has been significantly reduced; activity continues through 2025 at lower volume.
 **First observed:** 2018-05.
 **Used by Groups:** ecosystem-wide. Documented in the kill chains feeding OAK-G05 LockBit, OAK-G10 ALPHV/BlackCat, OAK-G11 Black Basta, OAK-G16 Akira, plus the historical OAK-S26 Conti operator-cohort era. Operator-cohort substrate is Russian-cybercrime-ecosystem.

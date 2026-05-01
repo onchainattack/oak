@@ -16,7 +16,7 @@ This Code of Conduct keeps the work productive across that mix.
 - Personal attacks, harassment, doxxing, or threats — public or private.
 - Misrepresenting another vendor's coverage or capabilities. Critique with evidence; don't trash-talk.
 - Linking to live attacker infrastructure, recoverable malicious code, or anything that turns OAK into an offensive resource. Cite public forensic write-ups instead.
-- Misrepresenting affiliation with OAK, MITRE, or any organisation.
+- Misrepresenting affiliation with OAK or any other organisation.
 
 ## Enforcement
 
