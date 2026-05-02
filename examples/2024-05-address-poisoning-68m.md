@@ -3,7 +3,7 @@
 **Loss as initially extracted:** \~\$68M in WBTC.
 **Outcome:** the attacker returned the \~\$68M to the victim approximately six days later, following a public bounty negotiation.
 **Operator-campaign net (per Chainalysis):** \~\$1.49M across the broader 66-day campaign, representing a 1,147% ROI on campaign cost.
-**OAK Techniques observed:** OAK-T4.003 (Address Poisoning) — primary.
+**OAK Techniques observed:** OAK-T4.003 (Address Poisoning) — primary; **OAK-T6** (Defense Evasion) — modifier: the lookalike-address technique exploits the truncated-display attack surface in wallet UIs, defensively evading the standard "verify-the-address-before-signing" trust workflow that careful holders use as a load-bearing transfer-time control. T4.003 lists OAK-T6 as a secondary parent tactic for exactly this structural reason — the on-chain transfer is authorised by the user; the defense-evasion lives at the wallet-UX layer where the user verification surface is the load-bearing baseline.
 **Attribution:** **pseudonymous** — pseudonymous attacker (campaign cluster identifiable via OAK-T8.001 funder-graph methods); no public named-individual attribution.
 
 ## Summary
