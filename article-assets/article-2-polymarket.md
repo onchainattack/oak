@@ -116,7 +116,7 @@ The work is open. The corrections channel is open. Contributions welcome.
 
 ---
 
-**Links**
+## Links
 
 - OAK framework: [github.com/onchainattack/oak](https://github.com/onchainattack/oak)
 - MCP server: [github.com/onchainattack/oak-mcp](https://github.com/onchainattack/oak-mcp)

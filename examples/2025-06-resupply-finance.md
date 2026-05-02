@@ -1,9 +1,10 @@
-# Resupply Finance empty-market rounding-error — Ethereum — 2025-06-26
+# Resupply Finance wstUSR empty-market donation exploit — Ethereum — 2025-06-26
 
-**Loss:** approximately $9.5M extracted from Resupply Finance lending markets on Ethereum mainnet.
-**OAK Techniques observed:** **OAK-T9.005** (Reentrancy / arithmetic precision-loss class — empty-market rounding-error donation-attack subclass) + **OAK-T9.002** (flash-loan precondition).
-**Attribution:** **pseudonymous-unattributed**; partial recovery via team-side white-hat-bounty negotiation channel (~$1M returned per operator post-mortem; remainder entered Tornado-Cash-and-equivalent laundering chains).
-**Key teaching point:** **The empty-market rounding-error subclass continues to recur in 2025**. The Resupply June 2025 incident is structurally identical to the Hundred Finance April 2023 → Midas Capital 2023 → Sonne Finance May 2024 → Onyx Protocol November 2023 + September 2024 cohort cases — same Compound-v2-fork donation-attack pattern, same flash-loan funding, same fork-substrate-vulnerability-not-mitigated-at-fork-time meta-class. Resupply 2025 is the canonical 2025 cohort-anchor for the proposition that fork-substrate vulnerabilities recur indefinitely until the underlying upstream pattern is fixed at every downstream fork; defenders should treat fork-substrate vulnerability monitoring as a permanent operational discipline rather than a one-time audit task.
+**Loss:** approximately \$9.5M-\$9.6M extracted from Resupply Finance's wstUSR lending market on Ethereum mainnet on 2025-06-26 at approximately 01:53 UTC. Resupply is a CDP / yield-aggregating lending protocol associated with the Curve / Convex / Yearn ecosystem cluster; the drained surface was specifically the wstUSR market integrating Resolv Labs's wstUSR yield-token via a CurveLend pair using a cvcrvUSD synthetic stablecoin pricing path.
+**Recovery:** **partial via on-chain bounty negotiation**. Per the operator post-incident statement and BlockSec / SlowMist forensic threads, the attacker engaged with Resupply's on-chain message-channel bounty offer and returned approximately \$1M to the protocol's recovery multisig over the days following the incident; the residual ~\$8.5M was routed through Tornado Cash and is presumed unrecoverable. A subsequent **Singapore court order** was filed in connection with downstream operator-cluster disputes between Resupply and adjacent ecosystem participants (the Curve / Resolv ecosystem). There is no public DOJ / civil-forfeiture action against the attacker.
+**OAK Techniques observed:** **OAK-T9.005** (Reentrancy / arithmetic precision-loss class — empty-market rounding-error donation-attack subclass) + **OAK-T9.002** (flash-loan precondition). The specific failure was an **empty ERC4626 wrapper used as a price oracle** in the CurveLend pair; the attacker donated 2 crvUSD to the empty wrapper, manipulating the per-share exchange rate, then borrowed ~10M reUSD against artificially-inflated collateral.
+**Attribution:** **pseudonymous-unattributed**. The attacker funded the exploit wallet via Tornado Cash at 01:50:11 UTC — three minutes before the first attack transaction — and returned to Tornado Cash for the unreturned portion. No industry forensic provider has produced a named-individual claim; same-cluster correlation across the funding hop and laundering hop is the strongest forensic signal.
+**Key teaching point:** **The empty-market rounding-error subclass continues to recur in 2025**, now with a yield-token-integration variant. The Resupply June 2025 incident is structurally identical to the Hundred Finance April 2023 → Midas Capital 2023 → Sonne Finance May 2024 → Onyx Protocol November 2023 + September 2024 → zkLend February 2025 cohort cases — same donation-attack pattern, same flash-loan funding, same fork-substrate-vulnerability-not-mitigated-at-fork-time meta-class — but extended in the Resupply case from the canonical Compound-v2 cToken substrate to the **ERC4626 vault-wrapper substrate** used as a price oracle. Resupply 2025 is the canonical 2025 cohort-anchor for the proposition that fork-substrate vulnerabilities recur indefinitely until the underlying upstream pattern is fixed at every downstream fork *and* across every adjacent vault-wrapper integration; defenders should treat fork-substrate vulnerability monitoring as a permanent operational discipline rather than a one-time audit task, and should extend it explicitly to ERC4626-wrapper-as-oracle integrations.
 
 ## Summary
 
@@ -26,9 +27,11 @@ Resupply's operator team identified the exploit within hours, deployed emergency
 
 ## What defenders observed
 
-- **Pre-event (cohort-pattern publicly documented).** The empty-market rounding-error subclass had been publicly documented across the Hundred / Midas / Sonne / Onyx cohort with detailed technical post-mortems; defenders performing audit-readiness review of any new Compound-v2-or-Curve-fork lending protocol launching in 2024-2025 had access to the cohort-pattern reference. The Resupply incident reflects that the audit-readiness-review process was either not performed at all or was insufficient to flag the donation-attack vector at protocol-launch time.
-- **At-event (rapid forensic identification).** Industry forensic posts identified the empty-market rounding-error pattern within hours of the on-chain extraction event; the cohort-recognition was substantially faster than at the foundational Hundred Finance April 2023 incident (where the subclass was novel and required several days of cross-cohort analysis to articulate).
-- **Post-event (operator-side recovery-via-negotiation).** Resupply's emergency-pause + on-chain-message-channel bounty offer follows the post-Euler-2023 operating norm and produced approximately 10% recovery via partial-bounty.
+- **Pre-event (cohort-pattern publicly documented).** The empty-market rounding-error subclass had been publicly documented across the Hundred / Midas / Sonne / Onyx / zkLend cohort with detailed technical post-mortems; defenders performing audit-readiness review of any new Compound-v2-or-Curve-fork lending protocol launching in 2024-2025 had access to the cohort-pattern reference. The Resupply incident reflects that the audit-readiness-review process was either not performed at all or was insufficient to flag the donation-attack vector at protocol-launch time, and specifically did not extend the cohort-pattern reference to the ERC4626-wrapper-as-oracle integration substrate.
+- **At-event (rapid forensic identification across multiple investigators).** The detection chain ran in parallel across at least four independent providers within the first hour. **BlockSec PhalconHQ** flagged the anomalous flow at the on-chain extraction event and published the function-level walkthrough. **PeckShield** issued the cumulative-loss aggregation and laundering-trace headline. **SlowMist** attached the funding-source tracking — identifying the Tornado Cash funding hop at 01:50:11 UTC, three minutes before the first attack transaction. **QuillAudits** published a same-day analytical breakdown of the donation-attack mechanics specific to the empty ERC4626 wrapper. The cohort-recognition was substantially faster than at the foundational Hundred Finance April 2023 incident (where the subclass was novel and required several days of cross-cohort analysis to articulate); by 2025 the empty-market donation pattern was a same-hour signal.
+- **At-event (independent investigator engagement).** Beyond the formal forensic providers, the incident was tracked in real time by independent on-chain investigators on X / Twitter; the wstUSR market identification, the donation transaction hash, and the cvcrvUSD pricing path were published in pseudonymous-investigator threads alongside the formal forensic write-ups, producing a richer detection surface than the formal-provider channel alone.
+- **Post-event (operator-side recovery-via-negotiation).** Resupply's emergency-pause + on-chain-message-channel bounty offer follows the post-Euler-2023 operating norm and produced approximately 10% recovery via partial-bounty (~\$1M returned). The recovery rate sits in the realistic 10-30% band for cases where negotiation surface is engaged, consistent with the zkLend February 2025 (~20%) and Loopscale April 2025 (~50%) parallel cases.
+- **Post-event (downstream ecosystem dispute).** The Resupply incident produced a documented downstream operator-cluster dispute that culminated in a **Singapore court order** filed between Resupply / Curve / Resolv-adjacent ecosystem participants. The dispute is structurally distinct from the on-chain incident itself; it reflects the contractual and operational entanglement between the integrating protocols (Resupply consuming Resolv's wstUSR through Curve's CurveLend infrastructure) and is one of the cleaner 2025 examples of a DeFi exploit producing legal-process spillover into the operator-of-record cluster relationships, even when the attacker remains pseudonymous.
 
 ## What this example tells contributors writing future Technique pages
 
@@ -40,17 +43,23 @@ Resupply's operator team identified the exploit within hours, deployed emergency
 
 - Resupply Finance operator-side post-mortem — `[resupplypostmortem2025]`.
 - PeckShield on-chain trace and cumulative-loss aggregation — `[peckshieldresupply2025]`.
-- BlockSec function-level walkthrough — `[blocksec_resupply2025]`.
-- SlowMist incident analysis — `[slowmistresupply2025]`.
+- BlockSec function-level walkthrough including the empty-ERC4626-wrapper price-oracle root cause — `[blocksec_resupply2025]`.
+- SlowMist incident analysis covering the Tornado Cash funding-hop tracking — `[slowmistresupply2025]`.
 - Halborn defender-oriented post-mortem — `[halbornresupply2025]`.
+- QuillAudits same-day analytical breakdown of the donation-attack mechanics — `[quillauditsresupply2025]`.
+- The Block reporting on the on-chain extraction, including the BlockSec attribution — `[theblockresupply2025]`.
+- Cointelegraph reporting on the Singapore court order following the downstream Curve / Resolv ecosystem dispute — `[cointelegraphresupplysingapore2025]`.
 
 ## Citations
 
 - `[resupplypostmortem2025]` — Resupply operator-side post-mortem and partial-bounty recovery framework.
 - `[peckshieldresupply2025]` — PeckShield on-chain trace.
-- `[blocksec_resupply2025]` — BlockSec function-level walkthrough.
-- `[slowmistresupply2025]` — SlowMist incident analysis.
+- `[blocksec_resupply2025]` — BlockSec function-level walkthrough; primary technical source for the empty-ERC4626-wrapper price-oracle root cause.
+- `[slowmistresupply2025]` — SlowMist incident analysis; primary source for funding-source Tornado Cash hop tracking.
 - `[halbornresupply2025]` — Halborn defender-oriented post-mortem.
+- `[quillauditsresupply2025]` — QuillAudits analytical breakdown; secondary technical source for the donation-attack mechanics.
+- `[theblockresupply2025]` — The Block contemporaneous reporting; secondary source for the on-chain extraction timeline and BlockSec attribution.
+- `[cointelegraphresupplysingapore2025]` — Cointelegraph reporting on the Singapore court order; primary source for the downstream ecosystem dispute spillover.
 - `[zhou2023sok]` — academic taxonomy classifying this as a flash-loan-enabled empty-market rounding-error attack.
 
 ## Discussion
