@@ -1,0 +1,91 @@
+# Magnate Finance / Solfire / Kokomo deployer-cluster exit-scam cohort — Solana / BNB Chain / Base — 2022-01 → 2023-08
+
+**Loss:** **\~\$16.7M cumulative** across three publicly-attributed deployments tied to the same deployer cluster: **Solfire (Solana, 2022-01-23)** \~\$4.8M; **Kokomo Finance (BNB Chain, 2023-03)** \~\$5.5M; **Magnate Finance (Base, 2023-08)** \~\$6.4M. Per-incident loss is moderate (\$5-7M band); cohort-scale operator profitability is the operative concern.
+**OAK Techniques observed:** **OAK-T1.003** (Renounced-but-not-really / Retained-Admin-Authority sub-class) — the structural enabling configuration across all three deployments: each protocol publicly framed itself as community-governed lending / yield infrastructure while retaining operator-controlled authority over the price oracle, the admin role, or the proxy implementation. **OAK-T9.001** (Oracle Price Manipulation) at Magnate Finance specifically — the operator modified the price oracle (a residual non-renounced authority) to drain user deposits as the extraction mechanism. **OAK-T5.001** (Hard LP Drain / Exit Scam) — the operational outcome of weaponising the retained authority. **OAK-M04** (Funder-Graph / Deployer-Cluster Attribution) — the canonical 2022-2023 cross-chain deployer-cluster case at v0.1.
+**Attribution:** **pseudonymous at named-operator level; clustered-strong at deployer-EOA level.** The Magnate Finance deployer EOA was directly linked on-chain to the Solfire (January 2022) and Kokomo (March 2023) deployer addresses by ZachXBT and confirmed in contemporaneous coverage by The Block, Cointelegraph, Coingape, BSCN, and Cryptobriefing. The cumulative \$16.7M figure is a cross-chain attribution sum, not a per-incident sum. The operator(s) behind the cluster have not been publicly named.
+**Key teaching point:** Magnate Finance is the canonical **cross-chain deployer-cluster (M04 funder-graph) attribution** worked example for OAK at v0.1. ZachXBT publicly warned the community **hours before** the Magnate Finance rug pull, anchored to the cluster-attribution evidence (deployer EOA on Base mapped on-chain to the prior Solfire and Kokomo deployer EOAs). The protocol team rugged anyway. The case is structurally informative because it demonstrates that **on-chain cluster-attribution evidence at the deployer-EOA level is operationally actionable pre-rug**, but its actionability depends on the user-side / venue-side enforcement layer responding to the warning rather than dismissing it.
+
+## Summary
+
+The Magnate Finance / Solfire / Kokomo cluster spans three publicly-named protocol deployments across three chains over a 19-month window:
+
+1. **Solfire Finance (Solana, launched 2021-10-31, rug 2022-01-23)** — Asset management protocol promising 500%+ APY; gained legitimacy via partnerships and mentions from prominent Solana projects; peak TVL >\$12M. On 2022-01-23 at approximately 03:41 UTC, the operators began stealing user funds; bridged \~\$3M to Ethereum and provided \~\$1.8M of liquidity to a DeFi protocol on the way out. Cumulative extracted: \~\$4.1-4.8M (figures vary across sources). Public-facing accounts deleted same day. CertiK reported Solfire accounted for >77% of the 2022 Solana exit-scam dollar volume.
+
+2. **Kokomo Finance (BNB Chain, March 2023)** — Lending protocol; deployer rugged for \~\$5.5M. The post-event on-chain trail was attributed to the same deployer-EOA cluster as Solfire by subsequent investigators.
+
+3. **Magnate Finance (Base, August 2023)** — Lending protocol on Base; the team modified the price oracle (a residual non-renounced authority) to drain user deposits. Extraction: \~\$6.4M. ZachXBT publicly warned the community hours before the rug, citing the deployer-EOA linkage to Solfire. The operators rugged the protocol anyway: deleted the Telegram group, took the website down, and within hours executed the oracle-manipulation extraction.
+
+The cumulative figure across the cluster is **\~\$16.7M**, and is the canonical 2022-2023 evidence at v0.1 that **pseudonymous deployer-cluster attribution at the EOA level is operationally tractable**: every step of the cross-chain trail (Solana → BNB Chain → Base) was reachable via standard on-chain analysis at the time of each successive deployment.
+
+The class-level forensic surface is well-developed: TRM Labs's Solfire post-mortem (`[trmsolfire2022]`-proposed); The Block's Magnate Finance coverage (`[theblockmagnate2023]`); Cointelegraph's deployer-cluster coverage (`[cointelegraphmagnate2023]`-proposed); Coingape's cluster-aggregation breakdown (`[coingapemagnatecluster2023]`-proposed); BSCN, Cryptobriefing, AMBCrypto, Cryptopolitan, BeInCrypto, and Coin Edition contemporaneous coverage; Web3 Is Going Great's Solfire entry; CertiK's 2022 Solana Exploits Overview.
+
+## Why this is structurally significant
+
+T1.003 + M04 chained attribution is the canonical pattern OAK promotes for cohort-scale rug-pull defender-tooling. Magnate Finance is the cleanest 2023 worked example because the cohort-attribution evidence was **publicly disclosed pre-rug** and yet the rug proceeded. The case demonstrates two structurally important properties:
+
+1. **On-chain cluster-attribution at the deployer-EOA level is operationally tractable.** ZachXBT's pre-rug warning was anchored to publicly-observable on-chain evidence — the deployer EOA on Base was traceable to the prior Solfire and Kokomo deployers via standard Etherscan / Solscan lookups. The detection signal exists at the M04 funder-graph layer; the analytical methodology was widely available in 2023 (Arkham, Nansen, Breadcrumbs, ZachXBT's manual investigation pipeline). T1.003 contributors should treat M04 cluster-attribution as a *required* component of pre-trade risk assessment for any protocol claiming community ownership / renounced authority.
+
+2. **Attribution-availability is not equivalent to attribution-actionability.** Magnate Finance rugged after the public warning, which means the warning was either not seen by the affected users, or seen and dismissed under FOMO conditions, or known and accepted as a risk by yield-chasing capital. The defender intervention surface is not "produce the attribution evidence" (the evidence existed); it is "operationalise the warning at the user-decision layer." Wallet-vendor pre-trade UX, venue / launchpad listing-time gates, and aggregator route-blocking are the load-bearing mitigation surfaces; investigative-journalism warnings alone are not sufficient.
+
+The case generalises beyond Magnate. Any protocol whose deployer EOA can be M04-clustered to a prior rug-pull cluster should be treated as elevated risk regardless of the current deployment's marketing framing or audit status. The cohort's existence at scale (Solfire + Kokomo + Magnate is one cluster among many; Chainalysis 2024 and Slowmist 2024 retrospectives document the broader cohort) is structurally informative for OAK's M04 mitigation design: the clustering primitive is the load-bearing defender capability.
+
+Three structural features distinguish the case:
+
+1. **Cross-chain deployer continuity.** Solana → BNB Chain → Base is a 3-chain trail across an 19-month window. Cross-chain-operator-continuity (OAK-T8.002) is the parent Tactic surface; M04 is the mitigation primitive that operationalises detection. T8.002 contributors should treat Magnate as the canonical 2023 cross-chain example.
+
+2. **The oracle-manipulation extraction primitive at Magnate is structurally distinct from the LP-drain primitive at Solfire and Kokomo.** Magnate's extraction was via T9.001 (Oracle Price Manipulation) — the operator modified the lending protocol's price oracle to mark borrower collateral as worth more than the lent assets, then drained the lending pools via legitimate-looking borrows against the inflated collateral. Solfire and Kokomo were straightforward LP / treasury drains. The cluster therefore demonstrates **extraction-primitive evolution within a single operator group** across deployments — defenders should not assume the prior incident's primitive predicts the next incident's primitive.
+
+3. **The Base ecosystem 2023 cohort scale.** Magnate was the 12th major exit-scam recorded on Arbitrum in 2023 per CertiK, with the Base / Arbitrum L2 cohort accounting for substantial 2023 exit-scam dollar volume. The cohort's chain-distribution is a gas-economics signal (cheap deployment + active retail capital + young listing-compliance regimes); future T1.003 / T8.002 examples should record the chain-cohort context.
+
+## Timeline (UTC)
+
+| When | Event | OAK ref |
+|---|---|---|
+| 2021-10-31 | Solfire Finance launches on Solana as asset-management protocol promising 500%+ APY | (genesis surface) |
+| Pre-2022-01-23 | Solfire grows TVL to \>\$12M; gains legitimacy via mentions from other Solana projects | (T1.003 standing surface) |
+| 2022-01-23 \~03:41 UTC | **Solfire rug**: operators begin stealing user funds; bridge \~\$3M to Ethereum; \~\$4.1-4.8M cumulative extracted; public accounts deleted same day | **T5.001 (Solfire leg)** |
+| 2023-03 | **Kokomo Finance rug** on BNB Chain; \~\$5.5M; deployer cluster traced to Solfire post-event | **T5.001 (Kokomo leg)** |
+| 2023-08 (pre-rug) | **ZachXBT publicly warns** the community that Magnate Finance on Base is likely to exit-scam; anchored to deployer-EOA linkage to Solfire and Kokomo | (M04 attribution / pre-event detection) |
+| 2023-08 (rug, hours after warning) | Magnate Finance team deletes Telegram group; takes website down; modifies the price oracle to inflate borrower collateral; drains lending pools via collateralised borrows | **T1.003 + T9.001 + T5.001 (Magnate leg)** |
+| 2023-08 (post-rug) | The Block, Cointelegraph, Coingape, BSCN, Cryptobriefing, AMBCrypto, Cryptopolitan, BeInCrypto, Coin Edition publish forensic coverage; cumulative cluster figure (~\$16.7M) anchored across the three deployments | (forensic surface) |
+| 2023-08 onward | Operator(s) remain unnamed; cluster's next deployment (if any) not publicly identified at v0.1 | (continuing surface) |
+
+## What defenders observed
+
+- **Pre-event (M04 cluster-attribution layer):** ZachXBT publicly warned of Magnate Finance hours before the rug, anchored to deployer-EOA linkage to Solfire (Solana, January 2022) and Kokomo (BNB Chain, March 2023). The detection methodology is standard on-chain analysis: trace deployer EOAs across chains via funder-graph + cross-chain-bridge correlation. The warning was actionable — withdraw deposits before the operator triggers the oracle-manipulation extraction. Defender lesson: M04 cluster-attribution is the load-bearing mitigation primitive for the T1.003 + T8.002 cohort; the analytical methodology was widely available in 2023; the binding constraint is *whether the user-side / venue-side pipeline acts on the warning*.
+- **At-event (Magnate-specific oracle layer):** Magnate's extraction was via price-oracle modification — the operator inflated the collateral price quote, then borrowed against the inflated collateral and walked away. The on-chain signature is a single-block oracle-update transaction immediately followed by a sequence of borrowing transactions against the affected collateral. A lending-protocol monitoring indexer can detect this pattern in real time; Magnate's protocol-side governance did not have such monitoring in place.
+- **At-event (operator-side signal):** the protocol's Telegram group was deleted and the website was taken down hours before the on-chain extraction. The off-chain signal was a precedent of the rug; defender pipelines integrating off-chain operator-channel monitoring (Discord / Telegram presence-watch, web-archive change detection) would have caught the precedent. v0.1 vendor coverage of off-chain operator-channel monitoring is sparse; v0.x mitigation work should formalise the integration pattern.
+- **Post-event:** standard recovery-window-closure profile. Funds bridged out of Base via standard cross-chain bridges; subsequent laundering trail not fully reconstructed at v0.1 cutoff. No public DOJ / civil-forfeiture action; the operator(s) remain unnamed.
+
+## What this example tells contributors writing future Technique pages
+
+- **T1.003 + M04 + T8.002 chained attribution is the canonical defender-tooling pattern.** Future T1.003 contributors writing examples should record (a) the deployer-EOA cluster fingerprint, (b) the cluster's prior incidents, (c) the chain trail, and (d) the public attribution status. The Magnate case is a model for the chained-attribution write-up.
+- **Pre-rug on-chain attribution is operationally tractable; the binding constraint is enforcement.** The Magnate case shows that publicly-disclosed cluster-attribution evidence is not sufficient to deter the cohort if the user-side / venue-side enforcement layer does not act on the warning. T1.003 mitigation guidance should emphasise the *enforcement* side (wallet-vendor pre-trade UX, venue / launchpad listing-time gates, aggregator route-blocking) over the *detection* side.
+- **Extraction-primitive evolution within a single operator cluster is structurally possible.** Solfire and Kokomo were LP / treasury drains; Magnate was an oracle-manipulation extraction. Defenders should not assume the prior incident's primitive predicts the next incident's primitive; M04 cluster-attribution flags the *deployer*, not the *primitive*.
+- **Cross-chain deployer continuity scales the cohort.** Solana → BNB Chain → Base across 19 months; chain-distribution is a gas-economics signal. T8.002 contributors should treat the cross-chain dimension as a first-class observation, not a secondary detail.
+- **Off-chain operator-channel monitoring is a v0.x mitigation gap.** The Magnate Telegram-deletion / website-takedown signal was a real precedent of the rug; v0.1 vendor coverage of off-chain operator-channel monitoring is sparse. v0.x mitigation work should formalise the integration pattern.
+
+## Public references
+
+- `[trmsolfire2022]` *(proposed)* — TRM Labs, "Exploit Radar: Solfire Finance Burns Victims with a Rug Pull": <https://www.trmlabs.com/resources/blog/exploit-radar-solfire-finance-burns-victims-with-a-rugpull>
+- `[w3iggsolfire2022]` *(proposed)* — Web3 Is Going Great, "Solfire Finance rug pulls for $4.8 million": <https://www.web3isgoinggreat.com/?id=solfire-finance-rug-pull>
+- `[certik2022solana]` *(proposed)* — CertiK, "2022 Solana Exploits Overview": <https://www.certik.com/resources/blog/2022-solana-exploits-overview>
+- `[theblockmagnate2023]` *(proposed)* — The Block, "Magnate Finance disappears with over $6 million in apparent 'rug pull'": <https://www.theblock.co/post/247375/magnate-finance-rug>
+- `[cointelegraphmagnate2023]` *(proposed)* — Cointelegraph, "Magnate Finance on Base rug-pulls users of $6.5M, as predicted by on-chain sleuth": <https://cointelegraph.com/news/magnate-finance-on-base-rug-pulls-users-of-6-5m-as-predicted-by-on-chain-sleuth>
+- `[coingapemagnatecluster2023]` *(proposed)* — Coingape, "Magnate Finance Deployer Exploited $17 Mln From Multiple Rug Pulls": <https://coingape.com/magnate-finance-deployer-exploited-17-mln-from-multiple-rug-pulls/>
+- `[bscnewsmagnate2023]` *(proposed)* — BSCN (BSC News), "Base Lending Protocol Magnate Finance Rug Pulls with $6.5M in Losses": <https://bsc.news/post/base-lending-protocol-magnate-finance-rug-pulls-with-6-5-in-losses>
+- `[cryptobriefingmagnate2023]` *(proposed)* — Cryptobriefing, "Magnate Finance's $6.4M TVL Appears to Be Pulled": <https://cryptobriefing.com/magnate-finances-appears-to-be-pulled/>
+- `[ambcryptomagnate2023]` *(proposed)* — AMBCrypto, "Magnate Finance's shocking rug pull shakes Base users; millions lost": <https://ambcrypto.com/magnate-finances-shocking-rug-pull-shakes-base-users-millions-lost/>
+- `[cryptopolitanmagnate2023]` *(proposed)* — Cryptopolitan, "Magnate Finance executes $6.4 million exit scam on Base Network: Details": <https://www.cryptopolitan.com/magnate-finance-6-4-million-exit-scam-on-base-network/>
+- `[beincryptomagnate2023]` *(proposed)* — BeInCrypto, "Magnate Finance Rug Pulls $6.5M in Latest Base L2 Exit Scam": <https://beincrypto.com/magnate-finance-6-5-exit-scam-base-l2-bald-token-debacle/>
+- `[coineditionmagnate2023]` *(proposed)* — Coin Edition, "Lending Protocol Magnate Finance Rug Pulls, Exits With $6.5 Million": <https://coinedition.com/lending-protocol-magnate-finance-rug-pulls-exits-with-6-5-million/>
+- `[chainalysis2025rug]` — broader cohort retrospective.
+- `[slowmist2024report]` — broader 2024 cohort retrospective.
+
+## Discussion
+
+The Magnate Finance case is the canonical 2023 worked example for OAK's **T1.003 + M04 + T8.002 chained-attribution** pattern. The structural distinguishing feature is that the cluster-attribution evidence was **publicly disclosed pre-rug** and the rug proceeded anyway. This makes Magnate the cleanest 2023 case study for the *enforcement-not-detection* framing: the analytical methodology was available, the warning was published, and the user-side / venue-side enforcement layer did not act on it.
+
+The case structurally complements Hope Finance (`/examples/2023-02-hopefinance.md` — the on-chain *renouncement-vs-marketing* discrepancy) and Chibi Finance (`/examples/2023-06-chibi-finance-onlygov-arbitrum.md` *new*, see below — the *onlyGov* residual-authority sub-class). The three together cover the canonical 2023 T1.003 sub-pattern coverage: (a) router-rerouting via retained authority (Hope), (b) `panic` function via residual `_gov` role (Chibi), (c) oracle-modification via residual oracle-admin authority + cross-chain deployer cluster (Magnate). T1.003 contributors should treat the three as the v0.1 canonical reference triple for the 2023 cohort.
+
+For OAK's broader cohort coverage, this case + the cross-chain honeypot cohort + the Solana PD burn-on-buy cohort + the Hyperbridge counterfeit-mint case collectively populate the **fake / honeypot / malicious-by-design smart contract cohort** at v0.1. The Magnate case is the cohort's clearest M04-attribution anchor; the Hyperbridge case is the cleanest contract-layer T6.005 + T6.006 anchor; the honeypot and PD-burn cohorts anchor the genesis-time hostile-bytecode and hostile-extension classes respectively.
