@@ -290,6 +290,20 @@ const documents = Object.fromEntries(
   ),
 );
 
+// Detailed coverage stats — computed by tools/build_stats.py and read here.
+// Single source of truth for per-Tactic / year-month / attribution density.
+let coverageStats = null;
+try {
+  const raw = await readFile(rel("tools/stats.json"), "utf8");
+  coverageStats = JSON.parse(raw);
+} catch (err) {
+  console.warn(
+    "build-site-data: tools/stats.json not found — run "
+    + "`python3 tools/build_stats.py --json > tools/stats.json` first. "
+    + "Continuing without coverage stats.",
+  );
+}
+
 // Lightweight metadata index — keeps initial JS bundle small.
 const siteData = {
   generatedAt: new Date().toISOString(),
@@ -305,6 +319,20 @@ const siteData = {
     relationships: relationships.length,
     documents: Object.keys(documents).length,
   },
+  coverage: coverageStats
+    ? {
+        examplesByTactic: coverageStats.examples_by_tactic,
+        examplesByYear: coverageStats.examples_by_year,
+        examplesByYearMonth: coverageStats.examples_by_year_month,
+        attributionDistribution: coverageStats.attribution_distribution,
+        examplesByActor: coverageStats.examples_by_actor,
+        actorTitles: coverageStats.actor_titles,
+        inactiveActors: coverageStats.inactive_actors,
+        emptyTactics: coverageStats.empty_tactics,
+        anchorDebt: coverageStats.anchor_debt,
+        taxonomyGapProposals: coverageStats.taxonomy_gap_proposals,
+      }
+    : null,
   tactics,
   techniques,
   mitigations,
@@ -335,6 +363,29 @@ await writeFile(
 const documentBodies = Object.fromEntries(
   Object.entries(documents).map(([key, doc]) => [key, doc.html]),
 );
+// Refresh the og:description meta in index.html from current stats so social
+// previews stay honest without manual editing. Idempotent — only rewrites
+// the file if the rendered string actually changed.
+{
+  const s = siteData.stats;
+  const description =
+    `Open vendor-neutral knowledge base of adversary Tactics and Techniques `
+    + `observed against on-chain assets. v0.1: ${s.tactics} Tactics, `
+    + `${s.techniques} Techniques, ${s.mitigations} Mitigations, `
+    + `${s.software} Software, ${s.actors} Threat Actors, `
+    + `${s.examples} worked examples, ${s.citations} citations, `
+    + `${s.relationships} relationships.`;
+  const indexPath = rel("index.html");
+  const indexHtml = await readFile(indexPath, "utf8");
+  const updated = indexHtml.replace(
+    /(<meta property="og:description" content=")[^"]+(")/,
+    `$1${description}$2`,
+  );
+  if (updated !== indexHtml) {
+    await writeFile(indexPath, updated);
+  }
+}
+
 await writeFile(
   rel("src/data/documents.ts"),
   `${banner}\nexport const documentBodies: Record<string, string> = ${JSON.stringify(documentBodies, null, 2)};\n`,

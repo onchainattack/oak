@@ -52,6 +52,7 @@ secrets/
 # Tool output that should regenerate per-build
 tools/oak-stix.json
 tools/oak.json
+tools/stats.json
 src/data/generated.ts
 src/data/documents.ts
 public/sitemap.xml
