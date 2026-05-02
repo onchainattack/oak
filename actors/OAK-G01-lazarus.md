@@ -62,6 +62,8 @@ Operationally, Lazarus's modern crypto-theft playbook combines social engineerin
 - [`examples/2025-04-exch-shutdown.md`](../examples/2025-04-exch-shutdown.md) — eXch instant-exchange shutdown (laundering-rail substrate; G01 customer-cohort attribution)
 - [`examples/2025-07-coindcx.md`](../examples/2025-07-coindcx.md) — CoinDCX operational-wallet drain
 - [`examples/2025-09-sbi-crypto.md`](../examples/2025-09-sbi-crypto.md) — SBI Crypto mining-pool drain
+- [`examples/2023-07-multichain.md`](../examples/2023-07-multichain.md) — Multichain cross-chain protocol compromise
+- [`examples/2025-02-infini.md`](../examples/2025-02-infini.md) — Infini neobank treasury drain
 
 ## Citations
 

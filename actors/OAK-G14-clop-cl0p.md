@@ -39,7 +39,11 @@ OAK v0.1's Tactic catalog is on-chain-extraction-focused; Cl0p's *intrusion* sur
 
 ## Observed Examples
 
-OAK v0.1 does not yet contain a worked example whose primary axis is a Cl0p-attributed direct-cryptocurrency-firm intrusion; the on-chain angle of G14 is the *laundering of ransom-and-data-extortion payments* rather than direct crypto-firm intrusion, and the cluster's most defender-relevant payment-tracing case (the June 2023 MOVEit campaign) is on the watch-list for v0.x worked-example coverage. The high-salience public-record events anchoring the cluster:
+Worked examples in `examples/`:
+
+- [`examples/2023-06-moveit-clop-campaign.md`](../examples/2023-06-moveit-clop-campaign.md) — MOVEit Transfer mass-extortion campaign; ~2,500 victim organisations; estimated \$75–100M total ransom volume; canonical OAK-G14 worked example.
+
+The high-salience public-record events anchoring the cluster (narrative — see worked example above for the canonical entry):
 
 - **Accellion FTA mass-exploitation campaign (December 2020-to-early-2021).** Cl0p's *first* mass-exploitation-of-MFT-products campaign, exploiting the legacy Accellion File Transfer Appliance product across approximately 100 customer organisations using CVE-2021-27101 / CVE-2021-27102 / CVE-2021-27103 / CVE-2021-27104. Established the cluster's signature operational pattern. Attribution at *confirmed* per Mandiant FIN11 and CISA tracking.
 - **GoAnywhere MFT mass-exploitation campaign (February 2023).** Cl0p's *second* mass-exploitation-of-MFT-products campaign, exploiting Fortra's GoAnywhere MFT product across approximately 130 customer organisations using CVE-2023-0669; produced multiple high-profile victims including Community Health Systems and Procter & Gamble. Attribution at *confirmed*.

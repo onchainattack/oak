@@ -41,6 +41,19 @@ EXAMPLE_REF_RE = re.compile(r"examples/[A-Za-z0-9._-]+\.md")
 H1_RE = re.compile(r"^# (.+?)$", re.MULTILINE)
 DATE_PREFIX_RE = re.compile(r"^(\d{4}(?:-\d{2})?)")
 
+# Canonical attribution: `**OAK-Gnn:**` header line + markdown links to actor
+# cards (`../actors/OAK-G\d{2}-...md`). Mirrors check_backlinks.py.
+ATTRIBUTION_HEADER_RE = re.compile(
+    r"^\*\*OAK-Gnn:\*\*\s*(.+?)$", re.MULTILINE
+)
+ACTOR_LINK_RE = re.compile(
+    r"\.\./actors/(OAK-G\d{2})-[A-Za-z0-9._-]+\.md"
+)
+ATTRIBUTION_NEGATION_RE = re.compile(
+    r"\b(unattributed|not\s+(?:yet\s+)?attributed|no\s+attribution|attribution\s+pending)\b",
+    re.IGNORECASE,
+)
+
 
 def extract_title(path: Path) -> str:
     text = path.read_text(encoding="utf-8")
@@ -89,7 +102,16 @@ def index_examples() -> tuple[dict[str, set[str]], dict[str, set[str]], dict[str
         text = ex.read_text(encoding="utf-8")
         rel = f"examples/{ex.name}"
         titles[rel] = extract_title(ex)
-        for a in collect_oak_refs(text, ACTOR_REF_RE):
+        # Canonical attribution mirrors check_backlinks.py: **OAK-Gnn:** line
+        # plus markdown links to actor cards.
+        attribution_actors: set[str] = set()
+        for m in ATTRIBUTION_HEADER_RE.finditer(text):
+            line = m.group(1)
+            if ATTRIBUTION_NEGATION_RE.search(line):
+                continue
+            attribution_actors |= set(ACTOR_REF_RE.findall(line))
+        attribution_actors |= set(ACTOR_LINK_RE.findall(text))
+        for a in attribution_actors:
             actor_idx[a].add(rel)
         for t in collect_oak_refs(text, TECHNIQUE_REF_RE):
             technique_idx[t].add(rel)

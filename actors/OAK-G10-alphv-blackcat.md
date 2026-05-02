@@ -38,7 +38,14 @@ OAK v0.1's Tactic catalog is on-chain-extraction-focused; ALPHV's *intrusion* su
 
 ## Observed Examples
 
-OAK v0.1 does not yet contain a worked example whose primary axis is an ALPHV/BlackCat target; the on-chain angle of G10 is the *laundering of ransom payments* rather than direct crypto-firm intrusion, and the cluster's most defender-relevant payment-tracing case (Change Healthcare) is on the watch-list for v0.x worked-example coverage. The high-salience public-record events anchoring the cluster:
+Worked examples in `examples/`:
+
+- [`examples/2023-09-mgm-resorts.md`](../examples/2023-09-mgm-resorts.md) — MGM Resorts ALPHV-encryptor intrusion via Scattered Spider help-desk voice-phishing; ~\$100M business-interruption cost; payment refused.
+- [`examples/2023-09-caesars-entertainment.md`](../examples/2023-09-caesars-entertainment.md) — Caesars Entertainment paid-ransom case (~\$15M) via the same Scattered Spider × ALPHV affiliate stream.
+- [`examples/2024-02-change-healthcare-ransom.md`](../examples/2024-02-change-healthcare-ransom.md) — Optum / UnitedHealth Change Healthcare clearinghouse encryption + ~\$22M Bitcoin ransom payment.
+- [`examples/2024-04-change-healthcare-reextortion.md`](../examples/2024-04-change-healthcare-reextortion.md) — RansomHub-attributed re-extortion against the same victim using the data exfiltrated during the ALPHV affiliate's intrusion; canonical example of the post-exit-scam affiliate-dispersal pattern.
+
+The high-salience public-record events anchoring the cluster (narrative — see worked examples above for the canonical entries):
 
 - **Operation BlackCat / FBI-led disruption (December 19, 2023).** FBI public announcement of a months-long disruption operation that produced the ALPHV decryption tool (made available to victims), an FBI-controlled-takedown banner briefly displayed on the ALPHV leak site, and a CISA / FBI joint advisory updating the prior April-2022 advisory with current TTPs (`[fbi2023blackcatdisruption]`, `[cisa2023blackcatadvisory]`). The operator subsequently re-asserted control of the leak-site infrastructure within hours and continued operating until the March 2024 exit-scam; the FBI-decryptor disclosure was the more durably-impactful component of the operation. Attribution at *confirmed*.
 - **MGM Resorts and Caesars Entertainment intrusions (September 2023).** Scattered Spider / UNC3944 affiliate-stream campaigns deploying the ALPHV encryptor, with help-desk voice-phishing as the initial-access vector. MGM publicly refused to pay and absorbed an estimated \~\$100M in business-interruption costs; Caesars reported a paid ransom with a reduced disclosed-attack scope. Subsequently anchored multiple DOJ Scattered Spider indictments unsealed across 2024 (`[doj2024scatteredspider]`). Attribution at *confirmed* at the cluster-and-named-affiliate level.

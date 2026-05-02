@@ -39,7 +39,9 @@ OAK v0.1's Tactic catalog is on-chain-extraction-focused; LockBit's *intrusion* 
 - **ICBC U.S. broker-dealer attack (November 9, 2023) — \~\$9B in disrupted Treasury-securities settlement.** Specifically cited in the February 2024 OFAC designation press release as a financial-sector escalation factor. The clearest case in the public record of a LockBit attack producing systemic-risk-class market impact rather than only victim-firm impact. Attribution at *confirmed*.
 - **Aeza Group OFAC designation (2025).** OFAC SDN designation of the Russian bulletproof-hosting provider Aeza Group for hosting LockBit (and other criminal-cohort) infrastructure (`[ofac2025aeza]`). Sustains the post-Cronos enforcement tempo against G05's enabling infrastructure layer. Attribution at *confirmed*.
 - **Aggregate LockBit metrics** from `[doj2024khoroshev]` (\>2,000 victims, \>\$120M extortion revenue, \>120 countries) and from `[chainalysis2024khoroshev]` (\>2,000 BTC / \~\$110M unspent-or-unlaundered proceeds identified by NCA blockchain analysis at the time of the May 2024 designation; H2 2024 LockBit-attributable ransom-payment volume down \~79% versus H1 per `[chainalysis2025ransomware]`).
-- Worked examples for specific G05-mediated ransom-payment laundering flows are pending v0.x and will live under `examples/` once the per-incident attribution surface stabilises sufficiently for the OAK confirmed / inferred-strong distinction.
+- [`examples/2023-11-icbc-financial-services.md`](../examples/2023-11-icbc-financial-services.md) — ICBC Financial Services LockBit intrusion (November 9, 2023; ~\$9B Treasury-securities settlement disruption); cited in the February 2024 OFAC designation press release as a financial-sector escalation factor.
+- [`examples/2024-02-lockbit-operation-cronos.md`](../examples/2024-02-lockbit-operation-cronos.md) — Operation Cronos international disruption action; canonical OAK-G05 attribution-and-enforcement worked example.
+- Additional G05-mediated ransom-payment laundering flow examples are pending v0.x.
 
 ## Citations
 

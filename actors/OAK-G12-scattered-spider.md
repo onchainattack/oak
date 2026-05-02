@@ -38,7 +38,12 @@ OAK v0.1's Tactic catalog is on-chain-extraction-focused; Scattered Spider's *in
 
 ## Observed Examples
 
-OAK v0.1 does not yet contain a worked example whose primary axis is a Scattered-Spider-attributed direct-cryptocurrency-firm intrusion; the high-profile public-record cases are concentrated on the off-chain enterprise-IT compromise surface, with cryptocurrency angles on the laundering side rather than the primary-target side. The high-salience public-record events anchoring the cluster:
+Worked examples in `examples/`:
+
+- [`examples/2023-09-mgm-resorts.md`](../examples/2023-09-mgm-resorts.md) — MGM Resorts help-desk-vishing intrusion deploying OAK-G10 ALPHV encryptor; canonical Scattered-Spider-distinctive social-engineering vector.
+- [`examples/2023-09-caesars-entertainment.md`](../examples/2023-09-caesars-entertainment.md) — Caesars Entertainment paid-ransom case (~\$15M) via the same affiliate stream and same week.
+
+The high-salience public-record events anchoring the cluster (narrative — see worked examples above for the canonical entries):
 
 - **Twilio / 0ktapus campaign (August 2022).** Credential-phishing campaign affecting approximately 130 organisations through a single SMS-phishing-and-SSO-credential-harvesting wave; named victims include Twilio, Cloudflare (defended), MailChimp, DoorDash, and downstream cryptocurrency-firm exposures (Twilio's customer-list exposure rippled into multiple cryptocurrency firms' authentication-substrate, with Coinbase notifying affected users) (`[groupib2022oktapus]`). Attribution at *confirmed* at the cluster level.
 - **MGM Resorts and Caesars Entertainment intrusions (September 2023).** Help-desk-vishing-led intrusions deploying the OAK-G10 ALPHV / BlackCat encryptor; MGM publicly refused to pay and absorbed an estimated \~\$100M in business-interruption costs; Caesars reported a paid ransom with a reduced disclosed-attack scope. Subsequently anchored multiple DOJ Scattered Spider indictments unsealed across 2024 (`[doj2024scatteredspider]`, `[mandiant2023unc3944]`). Attribution at *confirmed* at the cluster-and-named-affiliate level.

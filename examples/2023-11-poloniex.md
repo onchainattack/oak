@@ -3,6 +3,7 @@
 **Loss:** approximately $120M across multiple chains (~$60M ETH + ~$30M TRX + ~$13M BTTC + ~$17M cross-chain stablecoins and tokens).
 **OAK Techniques observed:** **OAK-T11** broadly construed (custody-side hot-wallet compromise across multiple chains; multi-chain key-store co-location is the load-bearing architectural variable).
 **Attribution:** **inferred-strong G01 / TraderTraitor cluster** per Chainalysis + SlowMist + Match Systems + ZachXBT analyses converging on the laundering-pattern overlap with confirmed Lazarus laundering chains.
+**OAK-Gnn:** [OAK-G01 Lazarus Group / DPRK-attributed](../actors/OAK-G01-lazarus.md).
 **Key teaching point:** **Multi-chain key-store co-location at exchange-side hot-wallet infrastructure produces multi-chain loss surfaces from a single compromise event**. Poloniex's November 2023 incident drained simultaneously across ETH, TRX, BTTC, and other chains, indicating that the underlying hot-wallet signing infrastructure was sharing key material or signing-execution context across the affected chains. The pattern recurs at the broader OAK-G01 TraderTraitor cluster of 2023-2024 exchange compromises (Phemex January 2025, HTX November 2023, Indodax September 2024) and is canonical for OAK-T11 contributions discussing multi-chain key-isolation as a discrete custody-side architectural variable.
 
 ## Summary

@@ -53,11 +53,20 @@ PLACEHOLDER_RE = re.compile(r"\bOAK-(?:G|T|M|S)nn\b")
 TECHNIQUE_REF_RE = re.compile(r"\bOAK-T\d+(?:\.\d+){1,2}\b")
 ACTOR_REF_RE = re.compile(r"\bOAK-G\d{2}\b")
 
-# Canonical attribution: actors named on the **OAK-Gnn:** header line.
-# Body mentions (commentary, disambiguation, "not OAK-G01-attributed") do not
-# count as backlinks — only the header line declares the example's actor link.
+# Canonical attribution signals (either-or, both unambiguous positive):
+#   1) `**OAK-Gnn:**` header line listing OAK-G## ids (modern template)
+#   2) A markdown link to `../actors/OAK-G\d{2}-{slug}.md` anywhere in the
+#      file (legacy and modern). Only an explicit link to an actor card is
+#      treated as a positive attribution claim — plain-text "OAK-G01"
+#      mentions in narrative text are commentary, not attribution, and are
+#      ignored to avoid false positives from negation contexts ("not OAK-G01
+#      attributed", "distinct from OAK-G01 cohort", "no public OAK-G01
+#      attribution").
 ATTRIBUTION_HEADER_RE = re.compile(
     r"^\*\*OAK-Gnn:\*\*\s*(.+?)$", re.MULTILINE
+)
+ACTOR_LINK_RE = re.compile(
+    r"\.\./actors/(OAK-G\d{2})-[A-Za-z0-9._-]+\.md"
 )
 ATTRIBUTION_NEGATION_RE = re.compile(
     r"\b(unattributed|not\s+(?:yet\s+)?attributed|no\s+attribution|attribution\s+pending)\b",
@@ -192,15 +201,15 @@ def main() -> int:
     for ex in examples:
         text = ex.read_text(encoding="utf-8")
         rel = f"examples/{ex.name}"
-        # Actor attribution is the **OAK-Gnn:** header line ONLY — body
-        # mentions are commentary (and frequently negation, e.g. "not
-        # OAK-G01-attributed").
+        # Canonical attribution: **OAK-Gnn:** header line + markdown links to
+        # actor cards. Plain-text body mentions are commentary, not attribution.
         attribution_actors: set[str] = set()
         for m in ATTRIBUTION_HEADER_RE.finditer(text):
             line = m.group(1)
             if ATTRIBUTION_NEGATION_RE.search(line):
                 continue
             attribution_actors |= set(ACTOR_REF_RE.findall(line))
+        attribution_actors |= set(ACTOR_LINK_RE.findall(text))
         example_actors[rel] = attribution_actors
         example_techniques[rel] = collect_oak_refs(text, TECHNIQUE_REF_RE)
 

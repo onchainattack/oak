@@ -39,7 +39,12 @@ OAK v0.1's Tactic catalog is on-chain-extraction-focused; RansomHub's *intrusion
 
 ## Observed Examples
 
-OAK v0.1 does not yet contain a worked example whose primary axis is a RansomHub target; the on-chain angle of G15 is the *laundering of ransom payments* rather than direct crypto-firm intrusion, and the cluster's most defender-relevant payment-tracing case (Change Healthcare data-leak re-extortion) is on the watch-list for v0.x worked-example coverage. The high-salience public-record events anchoring the cluster:
+Worked examples in `examples/`:
+
+- [`examples/2024-02-change-healthcare-ransom.md`](../examples/2024-02-change-healthcare-ransom.md) — original ALPHV / Notchy intrusion of Optum / UnitedHealth Change Healthcare clearinghouse; cited from G15 because RansomHub absorbed the dispersed ALPHV affiliates after the March 2024 exit-scam.
+- [`examples/2024-04-change-healthcare-reextortion.md`](../examples/2024-04-change-healthcare-reextortion.md) — RansomHub-attributed re-extortion against the same victim using exfiltrated data from the original ALPHV intrusion; canonical G15 worked example, anchoring the post-exit-scam affiliate-dispersal pattern.
+
+The high-salience public-record events anchoring the cluster (narrative — see worked examples above for the canonical entries):
 
 - **CISA / FBI / HHS / MS-ISAC AA24-242A joint advisory (August 29, 2024).** "StopRansomware: RansomHub Ransomware" — characterising the cluster's TTPs across the healthcare and other critical-infrastructure sectors, naming RansomHub as the dominant 2024 RaaS strain by victim-count with more than 200 named victims through August 2024, and identifying the cluster's post-ALPHV-affiliate-absorption operational substrate (`[cisa2024aa24242aransomhub]`). Attribution at *confirmed* at the cluster level.
 - **Change Healthcare data-leak re-extortion (April 2024).** RansomHub-affiliate Notchy (the original ALPHV affiliate behind the February 2024 Change Healthcare intrusion under OAK-G10) re-monetised the Change Healthcare data archive under the RansomHub brand by threatening data-disclosure unless a second ransom was paid; the first publicly-documented case of *post-exit-scam-affiliate-data-monetisation* in the ransomware-and-data-extortion ecosystem. Documented per industry-forensic tracking and per HHS-sectoral response (`[chainalysis2025ransomware]`, `[trm2024ransomhub]`). Attribution at *confirmed* at the cluster level; attribution of the Notchy-as-RansomHub-affiliate continuity is *inferred-strong*.
