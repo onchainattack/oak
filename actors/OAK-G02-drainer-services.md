@@ -30,6 +30,9 @@ Per `[slowmist2024report]`, wallet-drainer activity attributed collectively to t
 
 - [`examples/2022-08-curve-dns-hijack.md`](../examples/2022-08-curve-dns-hijack.md) — T4.002 case via cloned UI served from compromised registrar nameserver.
 - Aggregate metrics for the 2024 wallet-drainer ecosystem from `[slowmist2024report]` (\$494M total, 56.7% via permit signatures).
+- [`examples/2022-04-bored-ape-discord-wave.md`](../examples/2022-04-bored-ape-discord-wave.md) — Bored Ape Yacht Club / Yuga Labs operator-side credential-compromise wave
+- [`examples/2022-08-yuga-otherside.md`](../examples/2022-08-yuga-otherside.md) — Yuga Labs Otherside Discord-phishing wave
+- [`examples/2024-10-inferno-drainer-handover.md`](../examples/2024-10-inferno-drainer-handover.md) — Inferno Drainer service ecosystem
 
 ## Citations
 

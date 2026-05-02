@@ -39,6 +39,29 @@ Operationally, Lazarus's modern crypto-theft playbook combines social engineerin
 - [`examples/2024-07-wazirx.md`](../examples/2024-07-wazirx.md) — \~\$234.9M via third-party custody (Liminal) compromise + multisig contract manipulation. Canonical OAK-T11.001 + T11.003 case. \~85% returned to users via 2025-10 restructuring scheme.
 - [`examples/2025-02-bybit.md`](../examples/2025-02-bybit.md) — \~\$1.46B Safe{Wallet} third-party-vendor supply-chain compromise leading to cold-wallet transfer redirection. Canonical OAK-T11.001 case. The single largest crypto-theft event on the public record.
 - [`examples/2025-02-bybit-thorchain-laundering.md`](../examples/2025-02-bybit-thorchain-laundering.md) — the post-extraction T7.003 laundering chain (\~\$1.4B routed through THORChain in \~10 days; \$12M to THORChain node operators in fees).
+- [`examples/2017-06-bithumb.md`](../examples/2017-06-bithumb.md) — Bithumb employee-laptop compromise + downstream phishing wave
+- [`examples/2017-12-nicehash.md`](../examples/2017-12-nicehash.md) — NiceHash mining-marketplace wallet compromise
+- [`examples/2018-01-coincheck.md`](../examples/2018-01-coincheck.md) — Coincheck exchange hot-wallet theft
+- [`examples/2018-06-coinrail.md`](../examples/2018-06-coinrail.md) — Coinrail exchange compromise
+- [`examples/2019-03-dragonex.md`](../examples/2019-03-dragonex.md) — DragonEx exchange compromise
+- [`examples/2019-11-upbit.md`](../examples/2019-11-upbit.md) — Upbit exchange hot-wallet drain
+- [`examples/2020-09-kucoin.md`](../examples/2020-09-kucoin.md) — KuCoin exchange hot-wallet theft
+- [`examples/2022-06-harmony-horizon.md`](../examples/2022-06-harmony-horizon.md) — Harmony Horizon Bridge
+- [`examples/2023-09-coinex.md`](../examples/2023-09-coinex.md) — CoinEx hot-wallet theft
+- [`examples/2023-09-stake-com.md`](../examples/2023-09-stake-com.md) — Stake.com hot-wallet theft
+- [`examples/2023-11-htx-heco-bridge.md`](../examples/2023-11-htx-heco-bridge.md) — HTX hot wallet + HECO Bridge
+- [`examples/2023-11-poloniex.md`](../examples/2023-11-poloniex.md) — Poloniex hot-wallet drain
+- [`examples/2024-01-concentric.md`](../examples/2024-01-concentric.md) — Concentric Finance multisig signing-key social-engineering compromise
+- [`examples/2024-01-orbit-bridge.md`](../examples/2024-01-orbit-bridge.md) — Orbit Bridge
+- [`examples/2024-02-fixedfloat.md`](../examples/2024-02-fixedfloat.md) — FixedFloat instant-swap hot-wallet drain
+- [`examples/2024-05-dmm-bitcoin.md`](../examples/2024-05-dmm-bitcoin.md) — DMM Bitcoin hot-wallet theft
+- [`examples/2024-09-bingx.md`](../examples/2024-09-bingx.md) — BingX hot-wallet drain
+- [`examples/2024-09-indodax.md`](../examples/2024-09-indodax.md) — Indodax hot-wallet drain
+- [`examples/2024-10-radiant-capital.md`](../examples/2024-10-radiant-capital.md) — Radiant Capital cross-chain lending compromise
+- [`examples/2025-01-phemex.md`](../examples/2025-01-phemex.md) — Phemex hot-wallet theft
+- [`examples/2025-04-exch-shutdown.md`](../examples/2025-04-exch-shutdown.md) — eXch instant-exchange shutdown (laundering-rail substrate; G01 customer-cohort attribution)
+- [`examples/2025-07-coindcx.md`](../examples/2025-07-coindcx.md) — CoinDCX operational-wallet drain
+- [`examples/2025-09-sbi-crypto.md`](../examples/2025-09-sbi-crypto.md) — SBI Crypto mining-pool drain
 
 ## Citations
 

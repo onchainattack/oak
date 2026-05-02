@@ -2,6 +2,7 @@
 
 **Loss reported:** \~\$575K from users who interacted with the cloned UI during the incident window.
 **OAK Techniques observed:** OAK-T4.002 (Compromised Front-End Permit Solicitation) — primary; OAK-T7.001 (Mixer-Routed Hop) downstream as the proceeds were routed through Tornado Cash (per public reporting of the laundering route).
+**OAK-Gnn:** [OAK-G02 Drainer-as-a-Service operators](../actors/OAK-G02-drainer-services.md) — service-layer-adjacent T4.002 case; cited on the OAK-G02 actor page as the canonical service-layer-adjacent registrar-side compromise example. The per-incident operator was not publicly tied to a named drainer-service brand, but the cloned-UI-served-from-compromised-DNS pattern is structurally adjacent to the drainer-service substrate at *inferred-weak* confidence.
 **Status:** registrar-side compromise (`iwantmyname` nameserver) identified and corrected; protocol redirected `.fi` to neutral nameservers and operated from an alternate domain (`curve.finance`) until stabilised.
 
 ## Summary

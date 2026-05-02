@@ -3,7 +3,7 @@
 **Loss:** approximately \$305M (4,502.9 BTC at the time of the event). At publication of the FBI / DC3 / NPA joint statement in December 2024 the figure was widely cited as \$308M; OAK uses the at-event figure for consistency with other entries.
 **OAK Techniques observed:** OAK-T11.001 (Third-Party Signing / Custody Vendor Compromise) — primary, via the Ginco wallet-software supply chain; downstream OAK-T7.001 (mixer-routed laundering — Bitcoin CoinJoin) and pending cross-chain laundering Techniques as the attacker cluster rotated proceeds throughout 2024-2025.
 **Attribution:** **confirmed** by FBI, Department of Defense Cyber Crime Center (DC3), and Japanese National Police Agency (NPA) in a joint public statement on 2024-12-23, attributing the theft to "TraderTraitor" — the DPRK / Lazarus cluster also tracked as Jade Sleet, UNC4899, and Slow Pisces. Chainalysis and Elliptic independently corroborated the wallet-cluster attribution.
-**OAK-Gnn:** [OAK-G01 Lazarus Group / DPRK-attributed](../actors/OAK-G01-lazarus.md).
+**OAK-Gnn:** [OAK-G01 Lazarus Group / DPRK-attributed](../actors/OAK-G01-lazarus.md). Concurrent industry write-ups note [OAK-G08 BlueNoroff](../actors/OAK-G08-bluenoroff.md) operator-fingerprint overlap on the macOS / supply-chain-tradecraft side; OAK records this case under G01 because the primary FBI / DC3 / NPA attribution document names TraderTraitor specifically, with G08 overlap noted on the OAK-G08 actor page.
 
 ## Summary
 
