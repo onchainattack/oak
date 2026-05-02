@@ -2,7 +2,7 @@
 
 **Class:** operational
 **Audience:** custody-customer
-**Maps to Techniques:** T11.001, T11.002, T11.003
+**Maps to Techniques:** OAK-T11.001, OAK-T11.002, OAK-T11.003
 
 ## Description
 

@@ -2,10 +2,7 @@
 
 **Class:** venue
 **Audience:** venue, risk-team, trader
-
-## Maps to Techniques
-
-T6.002, T6.004
+**Maps to Techniques:** OAK-T6.002, OAK-T6.004
 
 ## Description
 

@@ -2,10 +2,7 @@
 
 **Class:** operational
 **Audience:** custody-customer, risk-team, venue
-
-## Maps to Techniques
-
-T11.001, T11.002
+**Maps to Techniques:** OAK-T11.001, OAK-T11.002
 
 ## Description
 

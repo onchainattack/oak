@@ -2,10 +2,7 @@
 
 **Class:** operational
 **Audience:** custody-customer, custody-vendor, protocol
-
-## Maps to Techniques
-
-T1.003, T11.001, T11.002, T11.003, T9.004
+**Maps to Techniques:** OAK-T1.003, OAK-T11.001, OAK-T11.002, OAK-T11.003, OAK-T9.004
 
 ## Description
 
