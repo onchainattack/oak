@@ -27,7 +27,11 @@ Closes #
 ## Checklist
 
 - [ ] `npx markdownlint-cli2 "**/*.md"` passes locally.
-- [ ] `python tools/check_citations.py` passes locally (every cited `[key]` resolves to a `citations.bib` entry).
+- [ ] `python3 tools/check_citations.py` passes locally (every cited `[key]` resolves to a `citations.bib` entry).
+- [ ] `python3 tools/check_linkage.py` passes locally for any new file (forward references resolve, `**Loss:**` / `**OAK Techniques observed:**` / `**Attribution:**` headers present, `## Summary` and `## Public references` sections present).
+- [ ] `python3 tools/check_backlinks.py` does not introduce new failures (run on the full corpus; pre-existing legacy debt is acceptable; new content must not add to it).
+- [ ] If new attribution to an existing actor is added, that actor's `## Observed Examples` section lists the new example (run `python3 tools/suggest_backlinks.py --actor OAK-Gnn --only-missing` to generate the bullet).
+- [ ] If a new Technique is referenced canonically, the Technique's `## Real-world examples` section lists the new example.
 - [ ] All citations in the changed pages point to public, verifiable sources.
 - [ ] No links to live attacker infrastructure (forensic write-ups and post-mortems only).
 - [ ] If this changes coverage status (full / partial / gap), `COVERAGE.md` is updated accordingly.

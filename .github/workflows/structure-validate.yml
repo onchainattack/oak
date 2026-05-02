@@ -1,0 +1,89 @@
+name: structure-validate
+
+on:
+  pull_request:
+    paths:
+      - "examples/**"
+      - "techniques/**"
+      - "tactics/**"
+      - "actors/**"
+      - "mitigations/**"
+      - "software/**"
+      - "data-sources/**"
+      - "TAXONOMY-GAPS.md"
+      - "citations.bib"
+      - "tools/check_linkage.py"
+      - "tools/check_backlinks.py"
+      - ".github/workflows/structure-validate.yml"
+  push:
+    branches: [main]
+    paths:
+      - "examples/**"
+      - "techniques/**"
+      - "tactics/**"
+      - "actors/**"
+      - "mitigations/**"
+      - "software/**"
+      - "data-sources/**"
+      - "TAXONOMY-GAPS.md"
+
+permissions:
+  contents: read
+
+jobs:
+  forward-linkage:
+    name: Forward references and example structure
+    runs-on: ubuntu-latest
+    # v0.1: continue-on-error while pre-template legacy files are being
+    # re-mapped. Flip to false after the legacy structural-debt sweep lands.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run check_linkage.py
+        run: python3 tools/check_linkage.py
+
+  backlinks:
+    name: Reverse anchors and bidirectional consistency
+    runs-on: ubuntu-latest
+    # v0.1: continue-on-error while actor / technique anchor sections are
+    # being auto-populated from forward references. Flip to false after the
+    # backlink-population sweep lands.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run check_backlinks.py
+        run: python3 tools/check_backlinks.py
+
+  coverage-matrix:
+    name: Coverage matrix snapshot
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generate coverage matrix
+        run: python3 tools/build_coverage_matrix.py > /tmp/coverage-snapshot.md
+
+      - name: Upload coverage snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-matrix-snapshot
+          path: /tmp/coverage-snapshot.md
+          retention-days: 30

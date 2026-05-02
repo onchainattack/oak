@@ -210,10 +210,33 @@ npx markdownlint-cli2 "**/*.md"
 lychee --no-progress './**/*.md'
 
 # citation-format validation + cross-reference check
-python tools/check_citations.py
+python3 tools/check_citations.py
+
+# forward references + worked-example structural completeness:
+# every OAK-T*, OAK-G*, OAK-M*, OAK-S* mention resolves; every example has
+# Loss / Techniques / Attribution / Summary / Public references sections.
+python3 tools/check_linkage.py
+
+# reverse anchors + bidirectional consistency:
+# actor `## Observed Examples` and technique `## Real-world examples`
+# sections must list every example that attributes / references them;
+# mitigation `**Maps to Techniques:**` and software `**Used by Groups:**`
+# metadata must resolve. v0.1 corpus has known legacy debt; new contributions
+# must not add to it.
+python3 tools/check_backlinks.py
+
+# generate paste-ready bullets when populating actor or technique anchors:
+python3 tools/suggest_backlinks.py --actor OAK-Gnn --only-missing
+python3 tools/suggest_backlinks.py --technique OAK-Tn.nnn --only-missing
+
+# inspect the corpus (year x Tactic, year-month, per-Technique density):
+python3 tools/build_coverage_matrix.py --per-technique --monthly
+
+# topline stats snapshot (counts, attribution distribution, gap surface):
+python3 tools/build_stats.py
 
 # regenerate the machine-readable export and commit the result if it changed
-python tools/export_json.py
+python3 tools/export_json.py
 git diff --quiet -- tools/oak.json || git add tools/oak.json
 ```
 
