@@ -31,7 +31,7 @@ from __future__ import annotations
 
 import re
 import sys
-from collections import Counter, defaultdict
+from collections import Counter
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
@@ -44,8 +44,18 @@ ID_RE = re.compile(
 PLACEHOLDER_RE = re.compile(r"\bOAK-(?:G|T|M|S)nn\b")
 
 H1_RE = re.compile(r"^# .+", re.MULTILINE)
-LOSS_RE = re.compile(r"^\*\*Loss:\*\*", re.MULTILINE)
-TECHNIQUES_RE = re.compile(r"^\*\*OAK Techniques observed:\*\*", re.MULTILINE)
+# Accept Loss / Total loss / Direct loss / Loss range / Loss alleged /
+# Volume / Volume laundered / Cumulative metrics — different incident classes
+# (laundering, market-collapse, MEV-operator, federal-complaint) use distinct
+# headers but all carry the magnitude / quantification claim the validator
+# wants to see.
+LOSS_RE = re.compile(
+    r"\*\*(?:Loss|Total\s+loss|Direct\s+loss|Volume(?:\s+\w+)?|Cumulative(?:\s+\w+)?|Loss\s+\w+)[^*]*?:\*\*",
+    re.IGNORECASE,
+)
+# Accept the OAK-Techniques header inline within a paragraph too — pre-template
+# legacy files frequently dump multiple `**X:**` markers in a single paragraph.
+TECHNIQUES_RE = re.compile(r"\*\*OAK Techniques observed:\*\*")
 ATTRIBUTION_RE = re.compile(r"^\*\*Attribution:\*\*", re.MULTILINE)
 SUMMARY_H2_RE = re.compile(r"^## Summary\b", re.MULTILINE)
 REFS_H2_RE = re.compile(r"^## Public references\b", re.MULTILINE)

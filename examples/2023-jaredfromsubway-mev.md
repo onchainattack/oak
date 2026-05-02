@@ -1,5 +1,7 @@
 # `jaredfromsubway.eth` sandwich-MEV operator — Ethereum — operating since 2023-02-27
 
+**Attribution:** **pseudonymous** — no public actor attribution at OAK v0.1 cutoff.
+
 **Cumulative metrics (per EigenPhi tracking):** \~254K transactions in the first ~3 months (~98.31% identified as front/back-runs), \~106K victim swaps, \~\$40.6M revenue / \~\$6.3M profit in the first 3 months; cumulative MEV revenue later reported at \~82,679 ETH against \~76,850 ETH gas spent.
 **OAK Techniques observed:** OAK-T5.004 (Sandwich / MEV Extraction).
 **Status:** operator continues to be tracked publicly; "Jared 2.0" iteration documented by EigenPhi in 2024.

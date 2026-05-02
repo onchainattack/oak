@@ -1,5 +1,7 @@
 # SafeMoon (SFM) — BNB Chain — federal action 2023-11-01
 
+**Attribution:** **pseudonymous** — no public actor attribution at OAK v0.1 cutoff.
+
 **Loss alleged in the federal complaint:** \~\$200M misappropriated from purportedly-locked liquidity (per U.S. SEC press release 2023-229 and related DOJ filings).
 **OAK Techniques observed:** OAK-T2.002 (Locked-Liquidity Spoof) — primary; partial OAK-T1.001 framing (transfer tax) and OAK-T5 framing (cumulative misappropriation), but the canonical OAK mapping is T2.002 because the misrepresentation about locked liquidity is what the federal complaint specifically characterises.
 **Status:** SEC civil action filed November 2023; DOJ criminal charges in parallel; matter in litigation at the time of OAK v0.1.

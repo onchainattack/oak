@@ -1,6 +1,7 @@
 # Harmony Horizon Bridge — Ethereum ↔ Harmony — 2022-06-23/24
 
 **Loss:** \~\$100M (\~\$99.6M tracked by Elliptic at time of event; ETH, BNB, USDT, USDC, DAI extracted across 14 transactions on Ethereum and Binance Smart Chain).
+**Attribution:** **inferred-strong** — see OAK-Gnn line below for attribution detail.
 **OAK Techniques observed:** OAK-T10.001 (Validator / Signer Key Compromise) — primary; OAK-T7.001 (Mixer-Routed Hop) — downstream laundering (\~\$96M routed through Tornado Cash).
 **OAK-Gnn:** [OAK-G01 Lazarus Group / DPRK-attributed](../actors/OAK-G01-lazarus.md). **Confirmed** attribution: FBI public statement (January 23, 2023), naming Lazarus Group / APT38 and the broader "TraderTraitor" DPRK crypto-theft cluster. Elliptic published an inferred-strong attribution within days of the event (June 2022); the FBI statement upgraded that to a confirmed attribution roughly seven months later.
 

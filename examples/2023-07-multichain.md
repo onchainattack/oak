@@ -1,6 +1,7 @@
 # Multichain — cross-chain bridge protocol — 2023-07-06
 
 **Loss:** \~\$126M across the Multichain cross-chain bridge protocol; \~\$120M from the Fantom bridge alone, with smaller drains from the Moonriver (\~\$6.8M) and Dogechain (\~\$0.66M) deployments. Affected assets included wETH, wBTC, USDC, DAI, and LINK.
+**Attribution:** **pseudonymous** — no public actor attribution at OAK v0.1 cutoff.
 **OAK Techniques observed:** OAK-T10.001 (Validator / Signer Key Compromise) — broadly construed; the bridge's MPC-based authorisation function ceased to be controlled by its publicly-claimed key-management posture, regardless of whether the precipitating event was external compromise or insider action.
 **OAK-Gnn:** No actor-group attribution. **Not** OAK-G01 Lazarus. Industry attribution is at **inferred-weak** strength: both an external-MPC-compromise hypothesis and an insider-action / wind-down-event hypothesis are publicly debated and neither has been confirmed by a regulator or law-enforcement public statement.
 **Off-OAK precondition:** On May 21, 2023 Multichain CEO Zhaojun was arrested by Chinese police in Kunming; per Multichain team statements, hardware containing MPC key shares was confiscated, and the platform was unable to perform necessary technical maintenance after his arrest. This precondition is off-chain and out of OAK's on-chain Tactic scope, but it is load-bearing context for the July 6 incident's attribution-strength language.

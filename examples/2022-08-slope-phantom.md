@@ -1,6 +1,7 @@
 # Slope Wallet (Solana) — 2022-08-02
 
 **Loss:** \~\$4–8M across approximately 8,000–9,231 Solana end-user wallets (per-source variance: Slope's own DFIR report cites 9,231 affected wallets and \~\$4.1M; contemporaneous industry reporting in the first 24 hours cited up to \~\$8M; Elliptic's first-pass forensic accounting cited \~\$5.8M).
+**Attribution:** **pseudonymous** — no public actor attribution at OAK v0.1 cutoff.
 **OAK Techniques observed:** OAK-T11.002 (Wallet-Software Distribution Compromise) — primary, distinct sub-vector from build-pipeline compromise; OAK-T11.001 (broadly construed, third-party-vendor exposure — Sentry as the vendor whose logging infrastructure held the secret material, though responsibility lies with Slope's design choice).
 **OAK-Gnn:** none. **Attribution:** pseudonymous; not publicly attributed to a known operator cluster as of OAK v0.1 cut. Slope offered a 90%-return bounty on 2022-08-05 with a 48-hour deadline; the call went unanswered.
 

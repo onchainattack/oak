@@ -34,9 +34,10 @@ jobs:
   forward-linkage:
     name: Forward references and example structure
     runs-on: ubuntu-latest
-    # v0.1: continue-on-error while pre-template legacy files are being
-    # re-mapped. Flip to false after the legacy structural-debt sweep lands.
-    continue-on-error: true
+    # Strict: every example must have Loss / OAK Techniques observed /
+    # Attribution (with strength label) / Summary / Public references; every
+    # OAK-T*, OAK-G*, OAK-M*, OAK-S*, OAK-DS-* mention must resolve to the
+    # taxonomy or to a TAXONOMY-GAPS candidate.
     steps:
       - uses: actions/checkout@v4
 
@@ -51,10 +52,10 @@ jobs:
   backlinks:
     name: Reverse anchors and bidirectional consistency
     runs-on: ubuntu-latest
-    # v0.1: continue-on-error while actor / technique anchor sections are
-    # being auto-populated from forward references. Flip to false after the
-    # backlink-population sweep lands.
-    continue-on-error: true
+    # Strict: actor `## Observed Examples` and technique `## Real-world examples`
+    # must list every example that attributes / references them via canonical
+    # markdown link or `**OAK-Gnn:**` header. Mitigation `**Maps to Techniques:**`
+    # and software `**Used by Groups:**` metadata must resolve.
     steps:
       - uses: actions/checkout@v4
 

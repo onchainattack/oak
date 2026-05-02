@@ -3,7 +3,7 @@
 **Loss:** \~\$197M total at time of exploit (\~\$136M stETH, \~\$34M USDC, \~\$19M WBTC, \~\$8.7M DAI).
 **Recovery:** full return. The attacker (self-identified in on-chain encrypted messages as "Jacob") returned 3,000 ETH on 2023-03-18, 51,000 ETH on 2023-03-25, and an additional \~7,000 ETH plus \~\$10M DAI in subsequent stages. Net loss to the protocol after recovery: effectively zero in principal, with residual price-impact and downstream-protocol exposure absorbed by Euler and integrating protocols separately.
 **OAK Techniques observed:** OAK-T9.004 (Access-Control Misconfiguration — missing solvency check on `donateToReserves`) as the extraction mechanism; OAK-T9.002 (Flash-Loan-Enabled Exploit) as the precondition that scaled the extraction to nine figures.
-**Attribution:** pseudonymous attacker; self-identified as "Jacob" in on-chain messages during the recovery negotiation. No public named-individual attribution beyond that self-claim. Pre-event funding for gas was routed through Tornado Cash, observable on-chain but not the primary OAK framing for this incident.
+**Attribution:** **pseudonymous** — pseudonymous attacker; self-identified as "Jacob" in on-chain messages during the recovery negotiation. No public named-individual attribution beyond that self-claim. Pre-event funding for gas was routed through Tornado Cash, observable on-chain but not the primary OAK framing for this incident.
 
 ## Summary
 

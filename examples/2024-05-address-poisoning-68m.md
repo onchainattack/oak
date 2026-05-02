@@ -4,7 +4,7 @@
 **Outcome:** the attacker returned the \~\$68M to the victim approximately six days later, following a public bounty negotiation.
 **Operator-campaign net (per Chainalysis):** \~\$1.49M across the broader 66-day campaign, representing a 1,147% ROI on campaign cost.
 **OAK Techniques observed:** OAK-T4.003 (Address Poisoning) — primary.
-**Attribution:** pseudonymous attacker (campaign cluster identifiable via OAK-T8.001 funder-graph methods); no public named-individual attribution.
+**Attribution:** **pseudonymous** — pseudonymous attacker (campaign cluster identifiable via OAK-T8.001 funder-graph methods); no public named-individual attribution.
 
 ## Summary
 

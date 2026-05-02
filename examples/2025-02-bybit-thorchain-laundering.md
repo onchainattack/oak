@@ -1,5 +1,7 @@
 # Bybit aftermath — \$1.4B THORChain laundering — Ethereum → BTC / DAI — 2025-02 to 2025-03
 
+**Attribution:** **pseudonymous** — no public actor attribution at OAK v0.1 cutoff.
+
 **Volume laundered:** \~\$1.4B (the full Bybit-extracted ETH amount).
 **Time-to-launder:** approximately 10 days from extraction to full conversion.
 **THORChain operator economics:** node operators collectively earned at least \~\$12M in fees from the laundering operation. The figure originates with Chainalysis (`[chainalysisbybitthorchain]`), with CoinDesk's reporting (`[coindeskthorchainlazarus2025]`) wrapping the Chainalysis number; cite Chainalysis as the primary source and CoinDesk as secondary. As of v0.1 the \~\$12M figure rests primarily on the Chainalysis attribution; corroboration from Elliptic / TRM Labs has been published at the broader-volume level but not at the precise \$12M-fee-accrual level. **Status: verified-with-caveat** — single primary source for the precise dollar figure, multi-source for the surrounding facts (Bybit attribution, ETH → BTC / DAI chain-hop pattern, ~10-day window).

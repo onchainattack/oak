@@ -1,5 +1,7 @@
 # AnubisDAO (ANKH) — Ethereum — 2021-10-28 / 2021-10-29
 
+**Attribution:** **pseudonymous** — no public actor attribution at OAK v0.1 cutoff.
+
 **Total loss:** \~13,556 ETH (\~\$60M at the time of the event)
 **OAK Techniques observed:** OAK-T5.001 (Hard LP Drain), OAK-T7.001 (Mixer-Routed Hop)
 **Status:** funds laundered through Tornado Cash within \~24 hours of the drain; long-tail tracing remains a public open item.

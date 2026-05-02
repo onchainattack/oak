@@ -3,7 +3,7 @@
 **Loss extracted:** \~\$611M across Ethereum, Binance Smart Chain, and Polygon — the largest DeFi loss event at the time it occurred.
 **Recovery:** all funds returned by the attacker within roughly 15 days, beginning 2021-08-11. The attacker self-identified as "Mr. White Hat", framed the action as a vulnerability disclosure, and declined both a \$500K bug bounty and a "chief security advisor" role offered by Poly Network.
 **OAK Techniques observed:** OAK-T9.004 (Access-Control Misconfiguration) — primary mechanistic classification. OAK-T10.002 (Message-Verification Bypass) is a surface-similar but poorer-fit framing; see the discussion below.
-**Attribution:** pseudonymous, self-styled "Mr. White Hat". No off-chain identity has been confirmed publicly. Full recovery makes attribution structurally less consequential here than in other large incidents of the period.
+**Attribution:** **pseudonymous** — pseudonymous, self-styled "Mr. White Hat". No off-chain identity has been confirmed publicly. Full recovery makes attribution structurally less consequential here than in other large incidents of the period.
 
 ## Summary
 

@@ -1,5 +1,7 @@
 # Inferno Drainer service ecosystem — multi-chain — operating ~2022 through November 2023 (Telegram-announced shutdown; affiliate / kit re-emergence under successor branding)
 
+**Attribution:** **pseudonymous** — no public actor attribution at OAK v0.1 cutoff.
+
 **Cumulative attributed losses (service-level, per `[slowmist2024report]`):** the 2023 wallet-drainer ecosystem total (across Inferno *and* its peer services collectively — Angel, Pink, Monkey, Venom, and adjacent operators) was approximately \~\$494M in user losses. The \~\$494M figure is **a 2023 ecosystem total, not an Inferno-specific or 2024-specific figure**. Inferno was a major contributor within that ecosystem total during its active operational window; the largest single per-victim theft attributed to Inferno or its affiliates in this period was \~\$55.48M.
 **Operating period:** approximately 2022 through November 26, 2023 (Telegram-announced shutdown of the branded operation; affiliates / kit / tooling re-emerge under successor branding through 2024).
 **OAK Techniques observed:** OAK-T4.001 (Permit2 Authority Misuse, primary), OAK-T4.002 (Compromised Front-End Permit Solicitation, occasional), OAK-T4.004 (Allowance / Approve-Pattern Drainer), OAK-T7.001 (Mixer-Routed Hop) shifting toward OAK-T7.003 (Cross-Chain Bridge Laundering) through 2024, OAK-T8.001 (Common-Funder Cluster Reuse) at the service-infrastructure layer, OAK-T8.002 (Cross-Chain Operator Continuity, broadly construed) for the affiliate / infrastructure persistence across the Inferno → successor brand-retirement event.
