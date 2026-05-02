@@ -3530,3 +3530,307 @@ button {
   0%, 100% { background-position: -200% 0; }
   50% { background-position: 200% 0; }
 }
+
+/* ========== Corpus Stats panel (Coverage view) ========== */
+
+.corpus-stats {
+  margin-bottom: 48px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid #1f2937;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin: 24px 0 32px;
+}
+
+.stat-card {
+  background: #0f172a;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  padding: 18px 20px;
+}
+
+.stat-num {
+  font-size: 32px;
+  font-weight: 700;
+  color: #e2e8f0;
+  line-height: 1.1;
+}
+
+.stat-label {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.stats-section {
+  margin-top: 36px;
+}
+
+.stats-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin: 0 0 8px;
+}
+
+.stats-hint {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 0 0 14px;
+  line-height: 1.5;
+}
+
+/* Horizontal bar chart (per-Tactic) */
+
+.bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 220px 1fr 56px;
+  gap: 12px;
+  align-items: center;
+  font-size: 13px;
+}
+
+.bar-label strong {
+  color: #e2e8f0;
+  margin-right: 6px;
+}
+
+.bar-label span {
+  color: #94a3b8;
+}
+
+.bar-track {
+  height: 14px;
+  background: #1e293b;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.2s ease;
+}
+
+.bar-count {
+  text-align: right;
+  color: #cbd5e1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Heatmap (Year x Tactic) */
+
+.heatmap-wrap {
+  overflow-x: auto;
+}
+
+.heatmap {
+  border-collapse: separate;
+  border-spacing: 2px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.heatmap th {
+  font-weight: 500;
+  color: #94a3b8;
+  padding: 4px 8px;
+  text-align: center;
+}
+
+.heatmap tbody th {
+  text-align: right;
+  color: #cbd5e1;
+}
+
+.heatmap td {
+  width: 36px;
+  height: 28px;
+  text-align: center;
+  color: #f1f5f9;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.heatmap td.heatmap-total {
+  background: transparent !important;
+  color: #94a3b8;
+  font-weight: 600;
+  padding-left: 8px;
+}
+
+/* Vertical bar chart (year-month) */
+
+.bar-chart-vert {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 160px;
+  padding: 16px 0 32px;
+  border-bottom: 1px solid #1e293b;
+  position: relative;
+}
+
+.bar-vert {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  position: relative;
+  min-width: 24px;
+}
+
+.bar-vert-fill {
+  width: 100%;
+  background: #3b82f6;
+  border-radius: 3px 3px 0 0;
+  min-height: 2px;
+}
+
+.bar-vert-count {
+  position: absolute;
+  top: -18px;
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+.bar-vert-label {
+  position: absolute;
+  bottom: -22px;
+  font-size: 10px;
+  color: #94a3b8;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Stacked bar (attribution distribution) */
+
+.stack-bar {
+  display: flex;
+  height: 28px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #1e293b;
+  margin: 4px 0 12px;
+}
+
+.stack-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #0a0a0c;
+  font-weight: 600;
+  overflow: hidden;
+}
+
+.stack-seg-label {
+  white-space: nowrap;
+  padding: 0 6px;
+}
+
+.stack-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.stack-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stack-legend-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.stack-legend-item strong {
+  color: #e2e8f0;
+}
+
+/* Actor list */
+
+.actor-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 8px;
+}
+
+.actor-row {
+  display: grid;
+  grid-template-columns: 90px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 12px;
+  background: #0f172a;
+  border: 1px solid #1f2937;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.actor-row strong {
+  color: #e2e8f0;
+}
+
+.actor-count {
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Recently added */
+
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.recent-item {
+  all: unset;
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #1f2937;
+  border-radius: 4px;
+  background: #0f172a;
+  color: #e2e8f0;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.15s;
+}
+
+.recent-item:hover {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.recent-date {
+  color: #60a5fa;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.recent-title {
+  color: #cbd5e1;
+}
