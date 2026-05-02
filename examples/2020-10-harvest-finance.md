@@ -2,7 +2,7 @@
 
 **Loss:** \~\$24M extracted from Harvest Finance's `fUSDC` and `fUSDT` yield-vaults (most contemporaneous reporting cites the \~\$24M figure for the directly-extracted amount; some sources cite \~\$33–34M when the secondary "bank-run" outflow from Harvest's wider pool set is included). \~\$2.5M was returned by the attacker to the Harvest deployer address shortly after the event; the remainder was retained.
 **OAK Techniques observed:** OAK-T9.001 (Oracle Price Manipulation) — primary; OAK-T9.002 (Flash-Loan-Enabled Exploit) as the enabling precondition without which the cycle would not have been atomic or capital-free.
-**Attribution:** pseudonymous attacker; no public named-individual attribution. Harvest publicly posted a \$100,000 bounty for information leading to the attacker's identification; no public resolution of the attribution question reached the record.
+**Attribution:** **pseudonymous** attacker; no public named-individual attribution. Harvest publicly posted a \$100,000 bounty for information leading to the attacker's identification; no public resolution of the attribution question reached the record.
 
 ## Summary
 

@@ -2,7 +2,7 @@
 
 **Loss reported:** \~\$120M drained from BadgerDAO vault users who interacted with the protocol UI during the active injection window (per public reporting and the post-mortem co-authored with Mandiant; \~2,076 BTC equivalent across multiple ERC-20 vault tokens). A portion (\~\$9M) was recoverable because the attacker had transferred but not yet withdrawn it from Badger's own vaults at the time of incident response.
 **OAK Techniques observed:** OAK-T4.002 (Compromised Front-End Permit Solicitation) — primary, via a Cloudflare-Workers injection sub-vector rather than a DNS / nameserver compromise.
-**Attribution:** pseudonymous; not publicly attributed to a named operator cluster at time of writing.
+**Attribution:** **pseudonymous**; not publicly attributed to a named operator cluster at time of writing.
 **Status:** post-incident; partial recovery via a multi-tranche governance compensation plan funded by the BadgerDAO treasury (the BIP-79 series of proposals), one of the larger DAO-treasury restitution programs of the era.
 
 ## Summary

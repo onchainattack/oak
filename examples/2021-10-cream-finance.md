@@ -2,7 +2,7 @@
 
 **Loss:** \~\$130M extracted from Cream's lending pools (the third and largest of three Cream Finance incidents in 2021).
 **OAK Techniques observed:** OAK-T9.001 (Oracle Price Manipulation) — primary; OAK-T9.002 (Flash-Loan-Enabled Exploit) as the precondition without which the extraction would not have scaled.
-**Attribution:** pseudonymous attacker; no public named-individual attribution. Proceeds were moved on-chain after the event; no recovery negotiation reached the public record.
+**Attribution:** **pseudonymous** attacker; no public named-individual attribution. Proceeds were moved on-chain after the event; no recovery negotiation reached the public record.
 
 ## Summary
 

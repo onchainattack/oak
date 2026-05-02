@@ -3,7 +3,7 @@
 **Loss:** \~\$325M (~120,000 wETH minted on the Ethereum side without a corresponding lock).
 **Recovery:** the loss was made whole by Jump Crypto (Wormhole's developer-affiliated market-maker), which replaced the funds.
 **OAK Techniques observed:** OAK-T9.004 (Access-Control Misconfiguration) — primary mechanistic classification; OAK-T10.002 (Message-Verification Bypass) — operational classification (it is also a bridge incident with a verification-function failure).
-**Attribution:** pseudonymous attacker. Subsequent counter-exploitation by Jump Crypto recovered approximately \$140M from the original attacker's downstream position; the broader case did not receive a publicly named attribution.
+**Attribution:** **pseudonymous** attacker. Subsequent counter-exploitation by Jump Crypto recovered approximately \$140M from the original attacker's downstream position; the broader case did not receive a publicly named attribution.
 
 ## Summary
 

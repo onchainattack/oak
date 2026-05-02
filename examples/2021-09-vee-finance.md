@@ -2,7 +2,7 @@
 
 **Loss:** \~\$35M extracted from Vee Finance's leveraged-trading vaults — specifically 8,804.7 ETH (\~\$26M at the time) and 213.93 BTC (\~\$9M at the time). No funds were returned by the attacker; Vee Finance subsequently absorbed the loss via a protocol-funded compensation pool (see Resolution).
 **OAK Techniques observed:** OAK-T9.001 (Oracle Price Manipulation) — primary; OAK-T9.002 (Flash-Loan-Enabled Exploit) does **not** apply — the attacker self-funded with \~27 ETH bridged from Tornado Cash, not flash-borrowed working capital. The extraction was driven by Pangolin-pool-state manipulation across attacker-deployed trading pairs, not by capital-amplified atomic execution.
-**Attribution:** pseudonymous attacker (Vee-Finance address `0xeeeE…95ba`); no public named-individual attribution. TRM Labs noted methodological similarity to the earlier-September 2021 Zabu Finance exploit on the same chain (shared use of 0x for ETH→WETH conversion, shared Tornado Cash funding pattern, shared cross-chain laundering shape) but did not cluster the two incidents to a single actor on the public record.
+**Attribution:** **pseudonymous** attacker (Vee-Finance address `0xeeeE…95ba`); no public named-individual attribution. TRM Labs noted methodological similarity to the earlier-September 2021 Zabu Finance exploit on the same chain (shared use of 0x for ETH→WETH conversion, shared Tornado Cash funding pattern, shared cross-chain laundering shape) but did not cluster the two incidents to a single actor on the public record.
 
 ## Summary
 

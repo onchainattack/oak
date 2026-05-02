@@ -2,10 +2,11 @@
 
 **Two incidents documented in this file.** Both are textbook OAK-T9.004 (Access-Control Misconfiguration) cases against the same contract family — the Parity multi-signature wallet — separated by approximately four months. The first was an extraction event; the second was an unrecoverable destruction event. Together they are the foundational historical anchor for the access-control vulnerability class on EVM chains, and in particular for the family of risks introduced by the `delegatecall`-to-shared-library deployment pattern.
 
+**Loss:** combined \~663,774 ETH affected across both incidents (\~150,000 ETH extracted in incident 1 + \~513,774 ETH frozen in incident 2; aggregate \~\$330M at the time, \~\$2.3B+ at 2024 ETH prices).
 **Loss (incident 1):** \~150,000 ETH (~\$30M at the time of the event; ~\$300M+ at 2024 ETH prices) drained from three wallets (Edgeless, Swarm City, æternity) via `initWallet` re-initialisation. A subsequent White Hat Group rescue, using the same exploit primitive against the remaining vulnerable wallets, secured a further ~377,000 ETH and substantial token balances for return to legitimate owners.
 **Loss (incident 2):** \~513,774 ETH frozen across ~587 wallets (~\$300M at the time; ~\$2B+ at 2024 ETH prices). Funds were not extracted — the library contract on which all post-July-20 Parity multisig wallets depended was destroyed via `selfdestruct`, rendering its dependent wallets permanently unable to transact. Funds remain inaccessible.
 **OAK Techniques observed:** OAK-T9.004 (Access-Control Misconfiguration) — primary mechanistic classification for both incidents. The November freeze is a *destruction-not-extraction* sub-pattern of T9.004, distinct from the extraction sub-patterns that dominate the v0.1 example set.
-**Attribution:** Incident 1 — pseudonymous attacker; never publicly identified. Incident 2 — self-identified GitHub user "devops199," who described the call sequence as accidental and surrendered the ownership trail publicly. OAK records the second incident as accidental destruction by a self-identified actor and does not speculate on identity beyond the public record.
+**Attribution:** **pseudonymous** for both incidents. Incident 1 — pseudonymous attacker; never publicly identified. Incident 2 — self-identified GitHub user "devops199," who described the call sequence as accidental and surrendered the ownership trail publicly; OAK records the second incident as accidental destruction by a self-identified actor and does not speculate on identity beyond the public record.
 
 ## Summary
 

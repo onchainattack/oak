@@ -2,7 +2,7 @@
 
 **Loss:** approximately \$2M extracted from Akropolis's Delphi yield-aggregator contracts on Ethereum. Contemporaneous reporting and the Akropolis post-mortem cite the figure as \~2,030,000 DAI; subsequent forensic write-ups (PeckShield, Inspex) corroborate the figure within rounding. **Recovery:** none on-chain. Akropolis announced a treasury / token-based partial-compensation plan for affected users, funded from native ADEL / AKRO reserves; the on-chain DAI was not recovered.
 **OAK Techniques observed:** **OAK-T9.005** (Reentrancy) — primary; the canonical case of reentrancy weaponising a callback against a yield-aggregator's deposit-accounting path. **OAK-T9.002** (Flash-Loan-Enabled Exploit) — enabling precondition; the attacker funded the exploit's working capital with a flash loan, repaying it within the same transaction. The combined T9.005 + T9.002 framing is the right one — neither Technique alone is sufficient to describe the attack chain. The case is **not T9.001** — there is no oracle-input manipulation; the failure is in the deposit path's per-call accounting state, not in any price-feed surface.
-**Attribution:** pseudonymous. Never publicly identified. No FBI / Treasury / industry-forensic attribution to a named individual or known group at the OAK v0.1 cutoff. Akropolis offered a bug-bounty-style outreach to the attacker via on-chain message; no public response.
+**Attribution:** **pseudonymous**. Never publicly identified. No FBI / Treasury / industry-forensic attribution to a named individual or known group at the OAK v0.1 cutoff. Akropolis offered a bug-bounty-style outreach to the attacker via on-chain message; no public response.
 
 ## Summary
 

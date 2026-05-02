@@ -2,7 +2,7 @@
 
 **Loss:** \~\$80–90M in COMP tokens accidentally over-distributed to protocol users (some early estimates extended to \~\$147M / \~490,000 COMP if the bug had been exploited to its theoretical maximum). Approximately \~\$38–48M in COMP was voluntarily returned over the following weeks; the remainder was retained by recipients.
 **OAK Techniques observed:** OAK-T9.004 (Access-Control / Authorisation Logic Error) — *broadly construed*: a logic error in the Comptroller contract introduced through a legitimate governance proposal. **Boundary case** — see Discussion. Adjacent: OAK-T9.003 (Governance Attack) as the *converse* case (legitimate governance produced a bad change rather than malicious governance acquisition producing an attacker-designed change).
-**Attribution:** **none — this was accidental.** No attacker. The "loss" is the result of a one-character bug in a governance-passed upgrade, not adversarial behaviour. Recipients of the over-distributed COMP were ordinary protocol users whose claim transactions executed exactly as the deployed contract specified.
+**Attribution:** **unattributed** — accidental, no attacker. The "loss" is the result of a one-character bug in a governance-passed upgrade, not adversarial behaviour. Recipients of the over-distributed COMP were ordinary protocol users whose claim transactions executed exactly as the deployed contract specified.
 
 ## Summary
 

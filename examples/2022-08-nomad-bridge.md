@@ -2,7 +2,7 @@
 
 **Loss:** \~\$190M extracted; \~\$22M recovered post-event.
 **OAK Techniques observed:** OAK-T10.002 (Message-Verification Bypass) — primary.
-**Attribution:** initial single-attacker exploit followed by widespread "mob attack" copy-paste exploitation by hundreds of distinct addresses. A key suspect in the initial exploit was extradited to the United States in 2024 per `[trmlabs2024nomadextradition]` (see Public References).
+**Attribution:** **pseudonymous** — initial single-attacker exploit followed by widespread "mob attack" copy-paste exploitation by hundreds of distinct addresses. A key suspect in the initial exploit was extradited to the United States in 2024 per `[trmlabs2024nomadextradition]` (see Public References).
 
 ## Summary
 
