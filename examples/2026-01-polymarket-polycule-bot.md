@@ -1,7 +1,7 @@
 # Polycule trading bot — third-party brand-impersonation soft rug — 2026-01
 
 **Loss:** ~$230,000 in user funds frozen / withdrawn by operator. The Telegram-distributed "Polycule trading bot" branded itself as a Polymarket-integrated copy-trading service and operated a custodial wallet that users deposited USDC into.
-**OAK Techniques observed:** No clean v0.1 Technique. **Proposed v0.x candidate**: T5.x sub-class for *third-party brand-impersonation custodial soft-rug* — distinct from operator-side treasury-management exit (T5.005) because the operator was never contractually associated with the platform whose brand they used. See `TAXONOMY-GAPS.md`.
+**OAK Techniques observed:** **OAK-T5.007** (Third-party Brand-impersonation Custodial Soft-rug) — canonical anchor case. Distinct from operator-side treasury-management exit (T5.005) because the operator was never contractually associated with the platform whose brand they used.
 **Attribution:** **inferred-strong**. The Polycule operators were never associated with Polymarket; the platform clarified it had no relationship with the bot. Operator identity was not publicly resolved as of v0.1; the disappearance pattern (communication blackout following the "hack" announcement, no recovery effort, no public operator identification) is consistent with an exit-scam rather than a third-party intrusion.
 **OAK-Gnn:** unattributed at v0.1.
 
