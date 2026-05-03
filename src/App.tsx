@@ -1011,13 +1011,16 @@ const TACTIC_NAMES_SHORT: Record<string, string> = {
 
 const TACTIC_ORDER = ["T1","T2","T3","T4","T5","T6","T7","T8","T9","T10","T11","T12","T13","T14"];
 const ATTRIBUTION_ORDER = ["confirmed","inferred-strong","inferred-weak","pseudonymous","unattributed","(missing)"];
+// Attribution colors derive from OAK's single accent (electric teal) with
+// decreasing opacity for decreasing rigor; lower-rigor categories fall onto
+// muted gray so the visual emphasis stays on the strong-attribution share.
 const ATTRIBUTION_COLORS: Record<string, string> = {
-  "confirmed": "#22c55e",
-  "inferred-strong": "#84cc16",
-  "inferred-weak": "#eab308",
-  "pseudonymous": "#94a3b8",
-  "unattributed": "#64748b",
-  "(missing)": "#475569",
+  "confirmed": "rgba(0, 255, 209, 1)",
+  "inferred-strong": "rgba(0, 255, 209, 0.7)",
+  "inferred-weak": "rgba(0, 255, 209, 0.4)",
+  "pseudonymous": "rgba(184, 186, 192, 0.55)",
+  "unattributed": "rgba(139, 142, 150, 0.4)",
+  "(missing)": "rgba(139, 142, 150, 0.25)",
 };
 
 type CovStats = NonNullable<typeof siteData.coverage>;
@@ -1073,13 +1076,14 @@ function CorpusStats({ openDoc }: { openDoc: (path: string) => void }) {
   const totalExamples = (siteData.stats as { examples: number }).examples;
   const attributionTotal = Object.values(attributionCounts).reduce((a, b) => a + (b ?? 0), 0);
 
+  // Heat-map cells: zero gets the panel background (via .heatmap-zero class);
+  // 1+ scales accent opacity from 0.25 → 1.0 against the densest cell. Keeps
+  // the chart on a single OAK-accent ramp instead of a generic blue gradient.
   const heatColor = (v: number) => {
-    if (v === 0) return "#1e293b";
+    if (v === 0) return "";
     const t = Math.min(1, v / Math.max(maxYearTactic, 1));
-    const r = Math.round(30 + t * 226);
-    const g = Math.round(41 + t * 88);
-    const b = Math.round(59 + t * -28);
-    return `rgb(${r}, ${g}, ${b})`;
+    const opacity = 0.25 + t * 0.75;
+    return `rgba(0, 255, 209, ${opacity.toFixed(2)})`;
   };
 
   const recentExamples = useMemo(() => {
@@ -1131,7 +1135,10 @@ function CorpusStats({ openDoc }: { openDoc: (path: string) => void }) {
                   <strong>{t}</strong> <span>{TACTIC_NAMES_SHORT[t]}</span>
                 </div>
                 <div className="bar-track">
-                  <div className="bar-fill" style={{ width: `${pct}%`, background: count === 0 ? "#475569" : "#3b82f6" }} />
+                  <div
+                    className={count === 0 ? "bar-fill bar-fill-zero" : "bar-fill"}
+                    style={{ width: `${Math.max(pct, count > 0 ? 1 : 0)}%` }}
+                  />
                 </div>
                 <div className="bar-count">{count}</div>
               </div>
@@ -1162,8 +1169,14 @@ function CorpusStats({ openDoc }: { openDoc: (path: string) => void }) {
                     <th>{y}</th>
                     {TACTIC_ORDER.map((t) => {
                       const v = yearTacticMatrix[y]?.[t] ?? 0;
+                      const bg = heatColor(v);
                       return (
-                        <td key={t} style={{ background: heatColor(v) }} title={`${y} × ${t}: ${v}`}>
+                        <td
+                          key={t}
+                          className={v === 0 ? "heatmap-zero" : ""}
+                          style={bg ? { background: bg } : undefined}
+                          title={`${y} × ${t}: ${v}`}
+                        >
                           {v > 0 ? v : ""}
                         </td>
                       );
@@ -2880,8 +2893,8 @@ function App() {
               onOpenMitigation={openMitigation}
               onOpenSoftware={openSoftware}
             />
-            <a className="topbar-version" href="https://github.com/onchainattack/oak/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer">
-              v0.1.0-draft
+            <a className="topbar-version" href="https://github.com/onchainattack/oak/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer" title="Schema version + content snapshot date — see VERSIONING.md">
+              schema 0.1 · {new Date(siteData.generatedAt).toISOString().slice(0, 10)}
             </a>
           </nav>
         </header>
@@ -2890,7 +2903,7 @@ function App() {
 
       {!detailNode && activeView === "about" && (
         <section className="overview-hero">
-          <p className="eyebrow">v0.1.0-draft · open · community-comment</p>
+          <p className="eyebrow">schema 0.1 · content {new Date(siteData.generatedAt).toISOString().slice(0, 10)} · open · community-comment</p>
           <h1>An open taxonomy of on-chain attack behavior.</h1>
           <p className="overview-lede">
             OAK is a vendor-neutral knowledge base of adversary tactics and techniques

@@ -3531,41 +3531,44 @@ button {
   50% { background-position: 200% 0; }
 }
 
-/* ========== Corpus Stats panel (Coverage view) ========== */
+/* ========== Corpus Stats panel (Coverage view) — OAK graphite + teal ========== */
 
 .corpus-stats {
   margin-bottom: 48px;
   padding-bottom: 32px;
-  border-bottom: 1px solid #1f2937;
+  border-bottom: 1px solid var(--line);
 }
 
-.stats-grid {
+.corpus-stats .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
+  gap: 14px;
   margin: 24px 0 32px;
 }
 
-.stat-card {
-  background: #0f172a;
-  border: 1px solid #1f2937;
-  border-radius: 8px;
+.corpus-stats .stat-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
   padding: 18px 20px;
 }
 
 .stat-num {
   font-size: 32px;
   font-weight: 700;
-  color: #e2e8f0;
+  font-family: var(--mono);
+  color: var(--ink-strong);
   line-height: 1.1;
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-label {
   margin-top: 4px;
-  font-size: 13px;
-  color: #94a3b8;
+  font-size: 11px;
+  color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
+  font-family: var(--mono);
 }
 
 .stats-section {
@@ -3573,15 +3576,18 @@ button {
 }
 
 .stats-section h3 {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--ink);
   margin: 0 0 8px;
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .stats-hint {
   font-size: 13px;
-  color: #94a3b8;
+  color: var(--muted);
   margin: 0 0 14px;
   line-height: 1.5;
 }
@@ -3603,30 +3609,38 @@ button {
 }
 
 .bar-label strong {
-  color: #e2e8f0;
+  color: var(--ink);
   margin-right: 6px;
+  font-family: var(--mono);
 }
 
 .bar-label span {
-  color: #94a3b8;
+  color: var(--muted);
 }
 
 .bar-track {
-  height: 14px;
-  background: #1e293b;
-  border-radius: 4px;
+  height: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 2px;
   overflow: hidden;
 }
 
 .bar-fill {
   height: 100%;
-  border-radius: 4px;
+  background: var(--accent);
+  border-radius: 1px;
   transition: width 0.2s ease;
+}
+
+.bar-fill.bar-fill-zero {
+  background: var(--line-strong);
 }
 
 .bar-count {
   text-align: right;
-  color: #cbd5e1;
+  color: var(--ink);
+  font-family: var(--mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -3641,32 +3655,38 @@ button {
   border-spacing: 2px;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
+  font-family: var(--mono);
 }
 
 .heatmap th {
   font-weight: 500;
-  color: #94a3b8;
+  color: var(--muted);
   padding: 4px 8px;
   text-align: center;
 }
 
 .heatmap tbody th {
   text-align: right;
-  color: #cbd5e1;
+  color: var(--muted-strong);
 }
 
 .heatmap td {
   width: 36px;
   height: 28px;
   text-align: center;
-  color: #f1f5f9;
-  border-radius: 3px;
-  font-weight: 500;
+  color: var(--bg);
+  border-radius: 2px;
+  font-weight: 600;
+}
+
+.heatmap td.heatmap-zero {
+  background: var(--panel) !important;
+  color: var(--line-strong);
 }
 
 .heatmap td.heatmap-total {
   background: transparent !important;
-  color: #94a3b8;
+  color: var(--muted);
   font-weight: 600;
   padding-left: 8px;
 }
@@ -3676,10 +3696,10 @@ button {
 .bar-chart-vert {
   display: flex;
   align-items: flex-end;
-  gap: 8px;
+  gap: 6px;
   height: 160px;
-  padding: 16px 0 32px;
-  border-bottom: 1px solid #1e293b;
+  padding: 24px 0 32px;
+  border-bottom: 1px solid var(--line);
   position: relative;
 }
 
@@ -3691,29 +3711,33 @@ button {
   justify-content: flex-end;
   height: 100%;
   position: relative;
-  min-width: 24px;
+  min-width: 18px;
 }
 
 .bar-vert-fill {
   width: 100%;
-  background: #3b82f6;
-  border-radius: 3px 3px 0 0;
+  background: var(--accent);
+  opacity: 0.85;
+  border-radius: 1px 1px 0 0;
   min-height: 2px;
 }
 
 .bar-vert-count {
   position: absolute;
   top: -18px;
-  font-size: 11px;
-  color: #cbd5e1;
+  font-size: 10px;
+  font-family: var(--mono);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
 }
 
 .bar-vert-label {
   position: absolute;
   bottom: -22px;
   font-size: 10px;
-  color: #94a3b8;
+  color: var(--muted);
   white-space: nowrap;
+  font-family: var(--mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -3721,10 +3745,11 @@ button {
 
 .stack-bar {
   display: flex;
-  height: 28px;
-  border-radius: 6px;
+  height: 24px;
+  border-radius: 2px;
   overflow: hidden;
-  background: #1e293b;
+  background: var(--panel);
+  border: 1px solid var(--line);
   margin: 4px 0 12px;
 }
 
@@ -3732,9 +3757,10 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  color: #0a0a0c;
-  font-weight: 600;
+  font-size: 11px;
+  font-family: var(--mono);
+  color: var(--bg);
+  font-weight: 700;
   overflow: hidden;
 }
 
@@ -3747,8 +3773,9 @@ button {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
-  font-size: 13px;
-  color: #cbd5e1;
+  font-size: 12px;
+  color: var(--muted-strong);
+  font-family: var(--mono);
 }
 
 .stack-legend-item {
@@ -3759,13 +3786,14 @@ button {
 
 .stack-legend-swatch {
   display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 1px;
 }
 
 .stack-legend-item strong {
-  color: #e2e8f0;
+  color: var(--ink);
+  font-weight: 600;
 }
 
 /* Actor list */
@@ -3773,7 +3801,7 @@ button {
 .actor-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 8px;
+  gap: 6px;
 }
 
 .actor-row {
@@ -3782,18 +3810,20 @@ button {
   gap: 10px;
   align-items: center;
   padding: 8px 12px;
-  background: #0f172a;
-  border: 1px solid #1f2937;
-  border-radius: 4px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
   font-size: 13px;
 }
 
 .actor-row strong {
-  color: #e2e8f0;
+  color: var(--ink);
+  font-family: var(--mono);
 }
 
 .actor-count {
-  color: #94a3b8;
+  color: var(--muted);
+  font-family: var(--mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -3811,28 +3841,28 @@ button {
   grid-template-columns: 80px 1fr;
   gap: 12px;
   padding: 10px 12px;
-  border: 1px solid #1f2937;
-  border-radius: 4px;
-  background: #0f172a;
-  color: #e2e8f0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--panel);
+  color: var(--ink);
   cursor: pointer;
   font-size: 13px;
-  transition: background 0.15s;
+  transition: border-color 0.15s, background 0.15s;
 }
 
 .recent-item:hover {
-  background: #1e293b;
-  border-color: #334155;
+  background: var(--panel-2);
+  border-color: var(--accent-line);
 }
 
 .recent-date {
-  color: #60a5fa;
+  color: var(--accent);
+  font-family: var(--mono);
   font-variant-numeric: tabular-nums;
-  font-weight: 500;
 }
 
 .recent-title {
-  color: #cbd5e1;
+  color: var(--muted-strong);
 }
 
 /* ========== Comprehensive mobile / narrow-viewport rules ========== */
