@@ -3,29 +3,117 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0a0a0c" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="author" content="onchainattack.org" />
+    <meta name="keywords" content="OAK, OnChain Attack Knowledge, crypto threat intel, on-chain adversary taxonomy, DeFi attack patterns, smart contract exploits, crypto laundering, Lazarus Group, ransomware crypto, MITRE ATT&CK crypto equivalent" />
+    <link rel="canonical" href="https://onchainattack.org/" />
     <meta
       name="description"
       content="OAK is a common language for on-chain adversary behavior — open vendor-neutral taxonomy of crypto attack Tactics and Techniques."
     />
+    <meta property="og:site_name" content="OAK — OnChain Attack Knowledge" />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:title" content="OAK — OnChain Attack Knowledge" />
-    <meta property="og:description" content="Open vendor-neutral knowledge base of adversary Tactics and Techniques observed against on-chain assets. v0.1: 14 Tactics, 62 Techniques, 40 Mitigations, 40 Software, 18 Threat Actors, 185 worked examples, 1126 citations, 432 relationships." />
-    <meta property="og:image" content="/oak-banner.svg" />
+    <meta property="og:description" content="Open vendor-neutral knowledge base of adversary Tactics and Techniques observed against on-chain assets. v0.1: 14 Tactics, 62 Techniques, 40 Mitigations, 40 Software, 18 Threat Actors, 192 worked examples, 1176 citations, 432 relationships." />
+    <meta property="og:image" content="https://onchainattack.org/oak-banner.svg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="OAK — OnChain Attack Knowledge framework banner" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://onchainattack.org" />
+    <meta property="og:url" content="https://onchainattack.org/" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@iZonex" />
     <meta name="twitter:title" content="OAK — OnChain Attack Knowledge" />
-    <meta name="twitter:description" content="Open vendor-neutral taxonomy of on-chain adversary behavior." />
-    <meta name="twitter:image" content="/oak-banner.svg" />
+    <meta name="twitter:description" content="Open vendor-neutral taxonomy of on-chain adversary behavior. 192 worked examples, 1176 citations, 0 hard-fail validators." />
+    <meta name="twitter:image" content="https://onchainattack.org/oak-banner.svg" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/oak-icon-512.png" />
+    <link rel="alternate" type="application/json" title="OAK JSON export" href="/tools/oak.json" />
+    <link rel="alternate" type="application/json" title="OAK STIX 2.1 bundle" href="/tools/oak-stix.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <title>OAK — OnChain Attack Knowledge</title>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://onchainattack.org/#organization",
+            "name": "OAK — OnChain Attack Knowledge",
+            "url": "https://onchainattack.org/",
+            "logo": "https://onchainattack.org/oak-icon-512.png",
+            "sameAs": [
+              "https://github.com/onchainattack/oak",
+              "https://github.com/onchainattack/oak-mcp",
+              "https://x.com/iZonex"
+            ]
+          },
+          {
+            "@type": "Dataset",
+            "@id": "https://onchainattack.org/#dataset",
+            "name": "OAK — OnChain Attack Knowledge Dataset",
+            "description": "Open, vendor-neutral knowledge base of adversary Tactics and Techniques observed against on-chain assets, with worked examples, attribution-strength labels, citations, and machine-readable JSON / STIX 2.1 exports.",
+            "url": "https://onchainattack.org/",
+            "keywords": "on-chain attacks, smart contract exploits, crypto laundering, threat actors, taxonomy",
+            "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+            "creator": { "@id": "https://onchainattack.org/#organization" },
+            "isAccessibleForFree": true,
+            "encodingFormat": ["application/json", "text/x-bibtex", "text/markdown"],
+            "distribution": [
+              {
+                "@type": "DataDownload",
+                "encodingFormat": "application/json",
+                "contentUrl": "https://onchainattack.org/tools/oak.json"
+              },
+              {
+                "@type": "DataDownload",
+                "encodingFormat": "application/json",
+                "contentUrl": "https://onchainattack.org/tools/oak-stix.json",
+                "description": "STIX 2.1 bundle"
+              },
+              {
+                "@type": "DataDownload",
+                "encodingFormat": "text/x-bibtex",
+                "contentUrl": "https://onchainattack.org/citations.bib"
+              }
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://onchainattack.org/#website",
+            "url": "https://onchainattack.org/",
+            "name": "OAK — OnChain Attack Knowledge",
+            "publisher": { "@id": "https://onchainattack.org/#organization" },
+            "inLanguage": "en-US"
+          }
+        ]
+      }
+    </script>
+    <title>OAK — OnChain Attack Knowledge — open taxonomy of on-chain adversary behavior</title>
   </head>
   <body>
+    <script>
+      // Unwrap the GitHub Pages 404.html SPA-redirect — restore the original
+      // path before React mounts so the router sees the right URL.
+      (function (l) {
+        if (l.search[1] === "/") {
+          var decoded = l.search
+            .slice(1)
+            .split("&")
+            .map(function (s) {
+              return s.replace(/~and~/g, "&");
+            })
+            .join("?");
+          window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash);
+        }
+      })(window.location);
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

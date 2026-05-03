@@ -26,6 +26,7 @@ const copyTargets = [
   "ROADMAP.md",
   "SECURITY.md",
   "TAXONOMY-GAPS.md",
+  "VERSIONING.md",
   "LICENSE-code",
   "LICENSE-content",
   "citations.bib",

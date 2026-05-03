@@ -183,40 +183,70 @@ const techniqueMatches = (
   return queryOk && chainOk && maturityOk;
 };
 
-const markdownRouteFromHash = () => {
-  const raw = window.location.hash.replace(/^#\/?/, "");
+// HTML5 history routing. URLs are clean (`/matrix`, `/technique/OAK-T11.001`,
+// `/document/CHANGELOG`) — no hash fragment, no `.md` suffix in the URL.
+// Backwards-compat: legacy hash URLs (`/#/...`) are normalised at boot.
+const currentPath = () => {
+  const raw = window.location.pathname.replace(/^\/?/, "").replace(/\/+$/, "");
+  if (raw) return raw;
+  const hashRaw = window.location.hash.replace(/^#\/?/, "").replace(/\/+$/, "");
+  return hashRaw;
+};
+
+const markdownRouteFromPath = () => {
+  const raw = currentPath();
+  // /document/<path> → <path>.md (always restore .md for the documentBodies lookup)
+  const docMatch = raw.match(/^document\/(.+)$/);
+  if (docMatch) {
+    const p = docMatch[1];
+    return p.endsWith(".md") ? p : `${p}.md`;
+  }
+  // Legacy / direct: also accept `<path>.md` and `<path>.json|.bib` raw paths.
   return raw.endsWith(".md") || raw.endsWith(".json") || raw.endsWith(".bib") ? raw : "";
 };
 
-const techniqueRouteFromHash = () => {
-  const raw = window.location.hash.replace(/^#\/?/, "");
+const techniqueRouteFromPath = () => {
+  const raw = currentPath();
   const match = raw.match(/^technique\/(OAK-T\d+\.\d{3})$/);
   return match ? match[1] : "";
 };
 
-const mitigationRouteFromHash = () => {
-  const raw = window.location.hash.replace(/^#\/?/, "");
+const mitigationRouteFromPath = () => {
+  const raw = currentPath();
   const match = raw.match(/^mitigation\/(OAK-M\d+)$/);
   return match ? match[1] : "";
 };
 
-const softwareRouteFromHash = () => {
-  const raw = window.location.hash.replace(/^#\/?/, "");
+const softwareRouteFromPath = () => {
+  const raw = currentPath();
   const match = raw.match(/^software\/(OAK-S\d+)$/);
   return match ? match[1] : "";
 };
 
-const groupRouteFromHash = () => {
-  const raw = window.location.hash.replace(/^#\/?/, "");
+const groupRouteFromPath = () => {
+  const raw = currentPath();
   const match = raw.match(/^group\/(OAK-G\d+)$/);
   return match ? match[1] : "";
 };
 
-const workspaceRouteFromHash = (): WorkspaceView => {
-  const raw = window.location.hash.replace(/^#\/?/, "");
+const workspaceRouteFromPath = (): WorkspaceView => {
+  const raw = currentPath();
   return ["about", "matrix", "incidents", "actors", "mitigations", "software", "coverage", "contribute"].includes(raw)
     ? (raw as WorkspaceView)
     : "about";
+};
+
+const navigateTo = (path: string) => {
+  const target = `/${path.replace(/^\/+/, "")}`;
+  if (window.location.pathname + window.location.search !== target) {
+    window.history.pushState(null, "", target);
+  }
+};
+
+const docPathToUrl = (mdPath: string) => {
+  // documentBodies uses .md path; URL surface drops the .md.
+  const stripped = mdPath.replace(/\.md$/, "");
+  return `document/${stripped}`;
 };
 
 const resolveMarkdownHref = (currentPath: string, href = "") => {
@@ -504,7 +534,7 @@ function LogoMark() {
     { x: 30, y: 35, s: 2, op: 0.5 },
   ];
   return (
-    <a className="logo-lockup" href="#/about" aria-label="OAK home">
+    <a className="logo-lockup" href="/" aria-label="OAK home">
       <span className="oak-logo-mark" aria-hidden="true">
         <svg viewBox="0 0 64 64" focusable="false" xmlns="http://www.w3.org/2000/svg">
           <polygon
@@ -2395,13 +2425,13 @@ function GroupDetailPage({
 }
 
 function App() {
-  const [docPath, setDocPath] = useState(markdownRouteFromHash);
-  const [techniqueRoute, setTechniqueRoute] = useState(techniqueRouteFromHash);
-  const [mitigationRoute, setMitigationRoute] = useState(mitigationRouteFromHash);
-  const [softwareRoute, setSoftwareRoute] = useState(softwareRouteFromHash);
-  const [groupRoute, setGroupRoute] = useState(groupRouteFromHash);
+  const [docPath, setDocPath] = useState(markdownRouteFromPath);
+  const [techniqueRoute, setTechniqueRoute] = useState(techniqueRouteFromPath);
+  const [mitigationRoute, setMitigationRoute] = useState(mitigationRouteFromPath);
+  const [softwareRoute, setSoftwareRoute] = useState(softwareRouteFromPath);
+  const [groupRoute, setGroupRoute] = useState(groupRouteFromPath);
   const [activeTactic, setActiveTactic] = useState("all");
-  const [activeView, setActiveView] = useState<WorkspaceView>(workspaceRouteFromHash);
+  const [activeView, setActiveView] = useState<WorkspaceView>(workspaceRouteFromPath);
   const [query, setQuery] = useState("");
   const [chainFilter, setChainFilter] = useState("all");
   const [maturityFilter, setMaturityFilter] = useState("all");
@@ -2415,61 +2445,69 @@ function App() {
     setGroupRoute("");
   };
   const navigateView = (view: WorkspaceView) => {
-    window.location.hash = `/${view}`;
+    navigateTo(view === "about" ? "" : view);
     setActiveView(view);
     clearAllRoutes();
     setSidebarOpen(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const openDoc = (path: string) => {
-    window.location.hash = `/${path}`;
+    navigateTo(docPathToUrl(path));
     clearAllRoutes();
     setDocPath(path);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const openTechnique = (id: string) => {
-    window.location.hash = `/technique/${id}`;
+    navigateTo(`technique/${id}`);
     clearAllRoutes();
     setTechniqueRoute(id);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const openMitigation = (id: string) => {
-    window.location.hash = `/mitigation/${id}`;
+    navigateTo(`mitigation/${id}`);
     clearAllRoutes();
     setMitigationRoute(id);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const openSoftware = (id: string) => {
-    window.location.hash = `/software/${id}`;
+    navigateTo(`software/${id}`);
     clearAllRoutes();
     setSoftwareRoute(id);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const openGroup = (id: string) => {
-    window.location.hash = `/group/${id}`;
+    navigateTo(`group/${id}`);
     clearAllRoutes();
     setGroupRoute(id);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   useEffect(() => {
-    const onHashChange = () => {
-      const nextDocPath = markdownRouteFromHash();
-      const nextTechnique = techniqueRouteFromHash();
-      const nextMitigation = mitigationRouteFromHash();
-      const nextSoftware = softwareRouteFromHash();
-      const nextGroup = groupRouteFromHash();
+    // Normalize legacy hash URLs once at boot — strip `#/` and rewrite to a
+    // clean pathname so old links keep resolving.
+    if (window.location.hash && window.location.hash.startsWith("#/")) {
+      const stripped = window.location.hash.replace(/^#\/?/, "");
+      const target = `/${stripped.replace(/\.md$/, "").replace(/^([^/]+\.md)$/, (_m, p) => `document/${p.replace(/\.md$/, "")}`)}`;
+      window.history.replaceState(null, "", target);
+    }
+    const onPopState = () => {
+      const nextDocPath = markdownRouteFromPath();
+      const nextTechnique = techniqueRouteFromPath();
+      const nextMitigation = mitigationRouteFromPath();
+      const nextSoftware = softwareRouteFromPath();
+      const nextGroup = groupRouteFromPath();
       setDocPath(nextDocPath);
       setTechniqueRoute(nextTechnique);
       setMitigationRoute(nextMitigation);
       setSoftwareRoute(nextSoftware);
       setGroupRoute(nextGroup);
       if (!nextDocPath && !nextTechnique && !nextMitigation && !nextSoftware && !nextGroup) {
-        setActiveView(workspaceRouteFromHash());
+        setActiveView(workspaceRouteFromPath());
       }
     };
-    window.addEventListener("hashchange", onHashChange);
-    return () => window.removeEventListener("hashchange", onHashChange);
+    onPopState();
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
   // Update document.title based on current route — improves browser-tab + sharing UX
@@ -3142,6 +3180,7 @@ function App() {
           <span className="foot-section-label">framework</span>
           <a href="#" onClick={(e) => { e.preventDefault(); openDoc("CHANGELOG.md"); }}>Changelog</a>
           <a href="#" onClick={(e) => { e.preventDefault(); openDoc("ROADMAP.md"); }}>Roadmap</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); openDoc("VERSIONING.md"); }}>Versioning</a>
           <a href="#" onClick={(e) => { e.preventDefault(); openDoc("TAXONOMY-GAPS.md"); }}>Gaps</a>
           <a href="#" onClick={(e) => { e.preventDefault(); openDoc("GLOSSARY.md"); }}>Glossary</a>
           <a href="#" onClick={(e) => { e.preventDefault(); openDoc("PRIOR-ART.md"); }}>Prior art</a>
@@ -3168,7 +3207,10 @@ function App() {
           <span className="foot-meta">CC-BY-SA 4.0 content · MIT tooling</span>
         </div>
         <div className="foot-bar">
-          <span><span className="foot-tag">OAK//</span>v0.1.0-draft · onchainattack.org</span>
+          <span>
+            <span className="foot-tag">OAK//</span>
+            schema 0.1 · content {new Date(siteData.generatedAt).toISOString().slice(0, 10)} · onchainattack.org
+          </span>
         </div>
       </footer>
       </div>
