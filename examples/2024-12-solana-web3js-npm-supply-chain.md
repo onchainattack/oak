@@ -20,6 +20,7 @@ The compromise vector — disclosed in Anza / Solana Foundation's post-mortem �
 The malicious versions were detected by community researchers (initial reports surfaced through Socket and Wiz threat-intelligence feeds), reported to npm and Anza, and removed within \~5 hours of publication. The clean version 1.95.8 was published as the recommended-upgrade target. Anza, the Solana Foundation, and major Solana wallet vendors (Phantom, Solflare, Backpack) issued advisories confirming the impact scope and the upgrade path.
 
 Wallet vendors confirmed they were largely unaffected:
+
 - **Phantom** — confirmed its security team prevented impact through a combination of version-locking and code-review controls.
 - **Solflare** — confirmed not affected; cited version-locking and rigorous code-review as protective controls.
 - **Backpack** — confirmed not affected.

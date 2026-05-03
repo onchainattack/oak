@@ -125,5 +125,3 @@ Sub-Technique IDs proposed in `TAXONOMY-GAPS.md` but not yet referenced by any w
 3. Open a GitHub issue with the line item title (e.g. `[backlog] T13 × 2024 — paymaster compromise candidate`) so others can see what's claimed.
 
 4. Submit a PR per CONTRIBUTING.md. The PR template has a Checklist that runs the validators locally.
-
-

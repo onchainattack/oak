@@ -40,11 +40,13 @@ If a threshold consistently can't be met for a Tactic-year because the underlyin
 Edit this table in a PR with rationale. Every change must update both this document AND the `COVERAGE_TARGETS` constant in `tools/build_backlog.py` and `tools/check_targets.py`. The CI strict-targets check will fail until both stay in sync.
 
 A threshold should be raised when:
+
 - The public record for a Tactic-year is materially richer than the floor reflects
 - A new sub-Technique class is introduced that needs anchor cases
 - A new Tactic is added (set its initial floor based on the year it becomes active)
 
 A threshold should be lowered only when:
+
 - The Tactic is being deprecated or merged into another
 - The public record is genuinely thinner than initial estimate (and TAXONOMY-GAPS reflects the absence)
 
