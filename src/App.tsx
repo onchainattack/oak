@@ -3194,7 +3194,10 @@ function App() {
           <a href="#" onClick={(e) => { e.preventDefault(); openDoc("CHANGELOG.md"); }}>Changelog</a>
           <a href="#" onClick={(e) => { e.preventDefault(); openDoc("ROADMAP.md"); }}>Roadmap</a>
           <a href="#" onClick={(e) => { e.preventDefault(); openDoc("VERSIONING.md"); }}>Versioning</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); openDoc("BACKLOG.md"); }}>Backlog</a>
           <a href="#" onClick={(e) => { e.preventDefault(); openDoc("TAXONOMY-GAPS.md"); }}>Gaps</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); openDoc("RESEARCH-CADENCE.md"); }}>Cadence</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); openDoc("COVERAGE-TARGETS.md"); }}>Targets</a>
           <a href="#" onClick={(e) => { e.preventDefault(); openDoc("GLOSSARY.md"); }}>Glossary</a>
           <a href="#" onClick={(e) => { e.preventDefault(); openDoc("PRIOR-ART.md"); }}>Prior art</a>
         </div>
