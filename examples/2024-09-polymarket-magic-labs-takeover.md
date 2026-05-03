@@ -1,7 +1,7 @@
 # Polymarket account takeover via third-party auth — Polygon — 2024-09
 
 **Loss:** undisclosed; Polymarket characterised the affected set as "a small number of users."
-**OAK Techniques observed:** No clean v0.1 Technique. The attack vector — abuse of a third-party email-auth provider (Magic Labs) used to derive non-custodial wallets — is **proposed as a v0.x candidate Technique**: OAK-T11 sub-class for *embedded-wallet identity-provider compromise*. See `TAXONOMY-GAPS.md`.
+**OAK Techniques observed:** **OAK-T11.008** (Embedded-Wallet Identity-Provider Compromise) — canonical anchor case. The attack vector — abuse of a third-party email-auth provider (Magic Labs) used to derive non-custodial wallets — establishes that the widespread "non-custodial" claim collapses back to "as custodial as the auth provider's security posture."
 **Attribution:** **inferred-strong**. Polymarket publicly attributed the incident to abuse of a third-party authentication tool. Specific operator attribution has not been published; the Sep 2024 incident shares structural pattern with the Dec 2025 Polymarket account-breach wave (also blamed on third-party auth) and with the broader 2024-2026 cohort of Magic Labs / Privy / Web3Auth-class compromises.
 **OAK-Gnn:** none — operator unattributed at v0.1.
 
