@@ -3834,3 +3834,160 @@ button {
 .recent-title {
   color: #cbd5e1;
 }
+
+/* ========== Comprehensive mobile / narrow-viewport rules ========== */
+
+@media (max-width: 720px) {
+  /* Topline section headings — clamp instead of fixed sizes */
+  .section-heading h2 {
+    font-size: clamp(20px, 5vw, 28px);
+    line-height: 1.25;
+  }
+  .section-heading p {
+    font-size: 14px;
+  }
+  .section-heading .eyebrow {
+    font-size: 11px;
+  }
+
+  /* Section padding reduced on narrow screens */
+  .section {
+    padding: 24px 16px;
+  }
+
+  /* Matrix view: each Tactic column on its own row */
+  .matrix-grid {
+    grid-template-columns: 1fr;
+    overflow-x: visible;
+    gap: 12px;
+  }
+  .tactic-column {
+    min-width: 0;
+  }
+
+  /* Stats panel: single-column grid */
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .stat-num {
+    font-size: 26px;
+  }
+  .stat-label {
+    font-size: 11px;
+  }
+
+  /* Bar-chart row: collapse Tactic name into one line under the ID */
+  .bar-row {
+    grid-template-columns: 90px 1fr 44px;
+    gap: 8px;
+    font-size: 12px;
+  }
+  .bar-label span {
+    display: none;
+  }
+
+  /* Heatmap: smaller cells + horizontal scroll already wraps */
+  .heatmap td {
+    width: 26px;
+    height: 22px;
+    font-size: 11px;
+  }
+  .heatmap th {
+    padding: 2px 4px;
+    font-size: 11px;
+  }
+
+  /* Vertical bar chart: tighter */
+  .bar-chart-vert {
+    height: 120px;
+    gap: 4px;
+  }
+  .bar-vert-label {
+    font-size: 9px;
+  }
+  .bar-vert-count {
+    font-size: 10px;
+  }
+
+  /* Actor list: single column */
+  .actor-list {
+    grid-template-columns: 1fr;
+  }
+
+  /* Stack legend: smaller */
+  .stack-legend {
+    font-size: 11px;
+    gap: 8px 12px;
+  }
+  .stack-seg {
+    font-size: 10px;
+  }
+
+  /* Recent items: tighter date column */
+  .recent-item {
+    grid-template-columns: 64px 1fr;
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  .recent-date {
+    font-size: 11px;
+  }
+
+  /* Footer: stack columns vertically */
+  .app-foot {
+    grid-template-columns: 1fr;
+    padding: 18px 16px 12px;
+    gap: 12px;
+  }
+  .foot-section {
+    gap: 4px;
+  }
+  .foot-section-label {
+    font-size: 10px;
+  }
+  .foot-section a {
+    font-size: 13px;
+  }
+  .foot-bar {
+    font-size: 11px;
+    margin-top: 8px;
+  }
+
+  /* Coverage matrix table: smaller text */
+  .coverage-table {
+    font-size: 12px;
+  }
+  .coverage-table td,
+  .coverage-table th {
+    padding: 6px 8px;
+  }
+
+  /* Contributor grid: single column */
+  .contributor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Search bar: full width */
+  .top-search {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .bar-row {
+    grid-template-columns: 70px 1fr 36px;
+    font-size: 11px;
+  }
+  .heatmap td {
+    width: 22px;
+    height: 20px;
+    font-size: 10px;
+  }
+  .section-heading h2 {
+    font-size: 20px;
+  }
+}

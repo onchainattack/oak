@@ -38,59 +38,119 @@ const cleanInlineText = (value: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
-const tacticIconVariant = (id: string) => {
-  const n = Number(id.match(/OAK-T(\d+)/)?.[1] ?? 0);
-  return ((n - 1) % 7) + 1;
-};
+const tacticVariant = (id: string) => Number(id.match(/OAK-T(\d+)/)?.[1] ?? 0);
 
 function TacticGlyph({ id }: { id: string }) {
-  const variant = tacticIconVariant(id);
+  const n = tacticVariant(id);
 
   return (
     <span className="tactic-glyph" aria-hidden="true">
       <svg viewBox="0 0 48 48" focusable="false">
-        {variant === 1 && (
+        {n === 1 /* Token Genesis — mint arrow into token contract */ && (
           <>
-            <path d="M9 24h30M24 9v30" />
-            <circle cx="24" cy="24" r="7" />
+            <rect x="12" y="20" width="24" height="20" rx="2" />
+            <path d="M24 6v14M18 14l6 6 6-6" />
+            <path d="M18 30h12" className="fill-accent" />
           </>
         )}
-        {variant === 2 && (
+        {n === 2 /* Liquidity Establishment — AMM curve x*y=k */ && (
           <>
-            <path d="M10 32l14-20 14 20H10Z" />
-            <path d="M18 32l6-8 6 8" />
+            <path d="M8 40h32M10 40v-30" />
+            <path d="M14 36c0-14 8-22 22-22" />
+            <circle cx="36" cy="14" r="2.5" className="fill-accent" />
           </>
         )}
-        {variant === 3 && (
+        {n === 3 /* Holder Capture — concentric voting power */ && (
           <>
-            <path d="M12 14h24v20H12z" />
-            <path d="M12 22h24M20 14v20" />
+            <circle cx="24" cy="24" r="16" />
+            <circle cx="24" cy="24" r="10" />
+            <circle cx="24" cy="24" r="4" className="fill-accent" />
           </>
         )}
-        {variant === 4 && (
+        {n === 4 /* Access Acquisition — phishing hook + key */ && (
           <>
-            <path d="M24 8l15 8v16l-15 8-15-8V16l15-8Z" />
-            <path d="M24 8v16l15 8M24 24L9 16" />
+            <path d="M30 8c0 8-12 8-12 18 0 6 4 10 10 10s10-4 10-10" />
+            <circle cx="14" cy="34" r="5" />
+            <path d="M18 34h14" />
+            <path d="M30 32v4M34 32v4" className="fill-accent" />
           </>
         )}
-        {variant === 5 && (
+        {n === 5 /* Value Extraction — vault draining */ && (
           <>
-            <path d="M11 34c8-20 18-20 26 0" />
-            <path d="M14 26h20M19 18h10" />
+            <path d="M10 12h20v18H10z" />
+            <circle cx="20" cy="21" r="3" className="fill-accent" />
+            <path d="M30 21h12" />
+            <path d="M38 17l4 4-4 4" />
           </>
         )}
-        {variant === 6 && (
+        {n === 6 /* Defense Evasion — split mask */ && (
           <>
-            <path d="M10 14h28M10 24h28M10 34h28" />
-            <path d="M18 10l-4 28M34 10l-4 28" />
+            <path d="M24 8L40 18v8c0 8-7 14-16 16-9-2-16-8-16-16v-8Z" />
+            <path d="M24 8v32" />
+            <circle cx="16" cy="22" r="2" className="fill-accent" />
+            <circle cx="32" cy="22" r="2" />
           </>
         )}
-        {variant === 7 && (
+        {n === 7 /* Laundering — cyclic arrows / tumbler */ && (
           <>
-            <circle cx="15" cy="24" r="5" />
-            <circle cx="33" cy="15" r="5" />
-            <circle cx="33" cy="33" r="5" />
-            <path d="M20 22l8-5M20 26l8 5" />
+            <path d="M14 18a12 12 0 0 1 22 0" />
+            <path d="M34 30a12 12 0 0 1-22 0" />
+            <path d="M30 14l6 4-6 4" className="fill-accent" />
+            <path d="M18 34l-6-4 6-4" className="fill-accent" />
+          </>
+        )}
+        {n === 8 /* Operational Reuse — cluster of nodes */ && (
+          <>
+            <circle cx="14" cy="14" r="4" />
+            <circle cx="34" cy="14" r="4" />
+            <circle cx="14" cy="34" r="4" />
+            <circle cx="34" cy="34" r="4" className="fill-accent" />
+            <path d="M14 18v12M34 18v12M18 14h12M18 34h12" />
+          </>
+        )}
+        {n === 9 /* Smart-Contract Exploit — broken brackets */ && (
+          <>
+            <path d="M16 10l-8 14 8 14M32 10l8 14-8 14" />
+            <path d="M22 18l4 14" className="fill-accent" />
+            <circle cx="24" cy="24" r="2.5" className="fill-accent" />
+          </>
+        )}
+        {n === 10 /* Bridge / Cross-Chain — two chains linked */ && (
+          <>
+            <rect x="6" y="20" width="14" height="8" rx="4" />
+            <rect x="28" y="20" width="14" height="8" rx="4" />
+            <path d="M16 24h16" />
+            <circle cx="24" cy="24" r="2.5" className="fill-accent" />
+          </>
+        )}
+        {n === 11 /* Custody / Signing — vault + key */ && (
+          <>
+            <rect x="8" y="14" width="22" height="22" rx="2" />
+            <circle cx="19" cy="25" r="3" className="fill-accent" />
+            <path d="M19 28v4" className="fill-accent" />
+            <path d="M34 18l4-4M34 22l4-4M34 26l4-4M34 30l4-4" />
+          </>
+        )}
+        {n === 12 /* NFT — picture frame with image */ && (
+          <>
+            <rect x="8" y="8" width="32" height="32" rx="2" />
+            <circle cx="18" cy="18" r="3" className="fill-accent" />
+            <path d="M12 36l10-12 6 6 8-10 4 4v12Z" className="fill-accent" />
+          </>
+        )}
+        {n === 13 /* Account Abstraction — nested smart account */ && (
+          <>
+            <rect x="6" y="6" width="36" height="36" rx="3" />
+            <rect x="14" y="14" width="20" height="20" rx="2" />
+            <rect x="20" y="20" width="8" height="8" className="fill-accent" />
+          </>
+        )}
+        {n === 14 /* Validator / Staking — staking pyramid */ && (
+          <>
+            <path d="M24 6l16 28H8Z" />
+            <path d="M14 26h20M18 18h12" />
+            <circle cx="24" cy="34" r="3" className="fill-accent" />
+            <path d="M8 40h32" />
           </>
         )}
       </svg>
