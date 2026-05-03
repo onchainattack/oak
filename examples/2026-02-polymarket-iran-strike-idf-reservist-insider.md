@@ -1,7 +1,7 @@
 # Polymarket Iran-strike timing market — operational-insider trading by IDF Air Force reservist — 2026-02
 
 **Loss:** ~$162,663 in profits extracted by a two-person scheme on the timing of Israel's June 2025 opening strike against Iran (the first bet of an ongoing scheme that continued through additional Iran-conflict markets until arrest). The economically operative finding is the second confirmed criminal indictment of an operational-insider Polymarket bettor in distinct national jurisdictions, establishing the operational-insider sub-pattern as a multi-jurisdictional class rather than a single-case anomaly.
-**OAK Techniques observed:** No clean v0.1 Technique. **Cohort case for v0.x OAK-T9.006.004 (operational-insider sub-pattern)**, alongside the Van Dyke / Venezuela case (`examples/2026-01-polymarket-venezuela-maduro-soldier-insider.md`). See `TAXONOMY-GAPS.md`.
+**OAK Techniques observed:** **OAK-T9.006.004** — Operational-Insider Trading on Subjective-Resolution Prediction Markets. Cohort case alongside the Van Dyke / Venezuela canonical anchor at [`examples/2026-01-polymarket-venezuela-maduro-soldier-insider.md`](2026-01-polymarket-venezuela-maduro-soldier-insider.md). Parent Technique: OAK-T9.006 (Subjective-Oracle Resolution Manipulation).
 **Attribution:** **confirmed at the operator level** (Tel Aviv District Court indictment; Shin Bet, Defense Ministry investigative unit, and Israel Police arrested both defendants). Specific defendants are not publicly named at OAK v0.1 in deference to ongoing Israeli proceedings; case is documentable from indictment-stage public reporting.
 
 ## Summary

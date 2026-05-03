@@ -1,7 +1,7 @@
 # Polymarket Venezuela / Maduro-capture market — operational-insider trading by US Special Forces NCO — 2026-01
 
 **Loss:** ~$33,000 wagered → ~$404,000-$410,000 in profits extracted by a single bettor with classified-information access to (and operational involvement in) the underlying real-world military operation. The economically operative finding is not the dollar size — it is the first DOJ-charged criminal case anchoring the **operational-insider** sub-pattern of subjective-resolution prediction-market abuse.
-**OAK Techniques observed:** No clean v0.1 Technique. **Proposed canonical example for v0.x OAK-T9.006.004 — Insider-information trading on subjective-resolution prediction markets, operational-insider sub-pattern.** See `TAXONOMY-GAPS.md`.
+**OAK Techniques observed:** **OAK-T9.006.004** — Operational-Insider Trading on Subjective-Resolution Prediction Markets. The canonical worked-example anchor for the sub-Technique. Parent Technique: OAK-T9.006 (Subjective-Oracle Resolution Manipulation).
 **Attribution:** **confirmed at the operator level** (DOJ indictment, SDNY; defendant named, charges filed, parallel CFTC civil action). Specific Polymarket account → real-world identity attribution rests on government affidavits, KYC at the off-ramp (Kraken / brokerage), and on-chain forensics cited by prosecutors.
 
 ## Summary

@@ -1,7 +1,7 @@
 # Polymarket Zelenskyy-suit market — UMA resolution-spec ambiguity — 2025-07
 
 **Loss:** ~$237M in disputed market volume (subsequently characterised at ~$160M in CoinDesk's secondary reporting). No funds drained; bettors who interpreted the market's stated rule one way (multiple credible outlets reported Zelenskyy in a suit at NATO June 24) lost their stakes when UMA voted otherwise.
-**OAK Techniques observed:** No clean v0.1 Technique. **Proposed as canonical example for v0.x OAK-T9.006.002 — Resolution-spec ambiguity exploitation**. See `TAXONOMY-GAPS.md`.
+**OAK Techniques observed:** **OAK-T9.006.002** — Resolution-Spec Ambiguity Exploitation. The canonical worked-example anchor for the sub-Technique. Parent Technique: OAK-T9.006 (Subjective-Oracle Resolution Manipulation).
 **Attribution:** **inferred-strong**. The top 10 UMA voters held ~6.5M UMA (~30% of average vote). UMA's full market cap during the dispute window was ~$95M — less than half the disputed market's volume. Specific voter-bettor position-overlap analysis is in industry reporting; OAK does not name individual operators at v0.1.
 
 ## Summary
