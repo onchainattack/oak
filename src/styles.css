@@ -1116,12 +1116,19 @@ button {
 }
 
 .tactic-glyph path,
-.tactic-glyph circle {
+.tactic-glyph circle,
+.tactic-glyph rect,
+.tactic-glyph polygon {
   fill: none;
   stroke: var(--accent);
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 2.6;
+  stroke-width: 2.4;
+}
+
+.tactic-glyph .fill-accent {
+  fill: var(--accent);
+  stroke: var(--accent);
 }
 
 .tactic-meta {
