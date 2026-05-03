@@ -9818,3 +9818,465 @@
   url          = {https://ackee.xyz/solana/book/latest/chapter4/token-2022/},
   note         = {OAK v0.1 — verified. Ackee Blockchain Solana Handbook chapter on Token-2022 program internals.}
 }
+
+% =====================================================================
+% T14 cohort — LST/LRT depeg cascades + DVT correlated slashing
+% =====================================================================
+
+@misc{nansenstethdepeg2022,
+  author       = {{Nansen}},
+  title        = {On-Chain Forensics: Demystifying {stETH}'s ``De-peg''},
+  year         = {2022},
+  howpublished = {Nansen research note},
+  url          = {https://www.nansen.ai/research/on-chain-forensics-demystifying-steth-depeg},
+  note         = {OAK v0.1 — verified. Nansen forensic reconstruction of the May–June 2022 stETH cascade; primary numerical anchor for Curve-pool TVL contraction (~\$4.08B → ~\$1.91B), 3AC ~\$400M / Celsius withdrawals, and stETH/ETH depeg amplitude (low ~0.931).}
+}
+
+@misc{fintechcollectivesteth2022,
+  author       = {{FinTech Collective}},
+  title        = {{stETH} Depegging: A Case Study of Cascading Events},
+  year         = {2022},
+  howpublished = {FinTech Collective research},
+  url          = {https://fintech.io/articles/steth-depegging-a-case-study-of-cascading-events},
+  note         = {OAK v0.1 — verified. Structural-analysis source for Celsius near-liquidation on Aave during 2022 stETH cascade.}
+}
+
+@misc{heimbachleveragestaking2023,
+  author        = {Xiong, Xihan and Wang, Zhipeng and Chen, Xi and Knottenbelt, William and Huth, Michael},
+  title         = {Leverage Staking with Liquid Staking Derivatives ({LSDs}): Opportunities and Risks},
+  year          = {2023},
+  eprint        = {2401.08610},
+  archiveprefix = {arXiv},
+  primaryclass  = {q-fin.RM},
+  url           = {https://arxiv.org/abs/2401.08610},
+  note          = {OAK v0.1 — verified. IACR ePrint 2023/1842 / arXiv 2401.08610. Identifies 442 leverage-staking positions (~537{,}123 ETH / ~\$877M) on Aave/Compound during the May–June 2022 stETH cascade and ~136{,}069 ETH cumulative repayments. Cite key inherited from earlier OAK drafts (``Heimbach et al.''); actual authorship is Xiong, Wang, Chen, Knottenbelt, Huth.}
+}
+
+@misc{coindesksstethterra2022,
+  author       = {{CoinDesk}},
+  title        = {Nansen Report Shows Links Between {Terra} Collapse and {stETH} `De-peg'},
+  year         = {2022},
+  howpublished = {CoinDesk news},
+  url          = {https://www.coindesk.com/business/2022/06/29/nansen-casts-blame-for-steth-de-peg-on-terra},
+  note         = {OAK v0.1 — verified. Secondary coverage of Nansen's 2022-06-29 forensic report on the stETH cascade.}
+}
+
+@misc{protosrenzodepeg2024,
+  author       = {{Protos}},
+  title        = {Depeg of \$3{B} restaking token {ezETH} causes over \$60{M} in {DeFi} liquidations},
+  year         = {2024},
+  howpublished = {Protos news},
+  url          = {https://protos.com/depeg-of-3b-restaking-token-ezeth-causes-over-60m-in-defi-liquidations/},
+  note         = {OAK v0.1 — verified. Primary cumulative-loss aggregation source for the April 2024 Renzo ezETH cascade.}
+}
+
+@misc{dlnewsrenzo2024,
+  author       = {{DL News}},
+  title        = {{Renzo}'s {ezETH} falls as low as \$700, leading to \$56m in liquidations},
+  year         = {2024},
+  howpublished = {DL News},
+  url          = {https://www.dlnews.com/articles/defi/renzos-ezeth-loses-ether-peg-drops-79-in-under-one-hour/},
+  note         = {OAK v0.1 — verified. Primary breakdown source for Gearbox / Morpho liquidation distribution (~115 / ~146 borrowers, ~10{,}650 ezETH / ~\$33M, ~\$23M).}
+}
+
+@misc{cointelegraphrenzo2024,
+  author       = {{Cointelegraph}},
+  title        = {{Renzo}'s {ezETH} depegs to \$688 following end of airdrop farming window},
+  year         = {2024},
+  howpublished = {Cointelegraph},
+  url          = {https://cointelegraph.com/news/renzo-ezeth-depegs-688-airdrop},
+  note         = {OAK v0.1 — verified. Primary timeline source for the April 2024 ezETH depeg.}
+}
+
+@misc{blockworksrenzo2024,
+  author       = {{Blockworks}},
+  title        = {What was behind the run on {Renzo}'s liquid restaked {ETH}?},
+  year         = {2024},
+  howpublished = {Blockworks news},
+  url          = {https://blockworks.com/news/renzo-liquid-staked-eth},
+  note         = {OAK v0.1 — verified. Structural-analysis source for the looped-leverage / withdrawal-illiquidity framing of the April 2024 Renzo cascade.}
+}
+
+@misc{ambcryptorenzo2024,
+  author       = {{AMBCrypto}},
+  title        = {{Renzo} Crypto rethinks strategy after \$60{M} in liquidations},
+  year         = {2024},
+  howpublished = {AMBCrypto},
+  url          = {https://ambcrypto.com/renzo-protocol-rethinks-strategy-after-60m-in-liquidations/},
+  note         = {OAK v0.1 — verified. Secondary cumulative-loss source covering the April 2024 Renzo cascade and operator-side response.}
+}
+
+@misc{cryptoslaterenzo2024,
+  author       = {{CryptoSlate}},
+  title        = {{Renzo}'s {ezETH} token depeg triggers liquidations across {DeFi} platforms},
+  year         = {2024},
+  howpublished = {CryptoSlate},
+  url          = {https://cryptoslate.com/renzos-ezeth-token-depeg-triggers-liquidations-across-defi-platforms/},
+  note         = {OAK v0.1 — verified. Secondary post-event analysis source.}
+}
+
+@misc{theblockrenzoairdrop2024,
+  author       = {{The Block}},
+  title        = {{Renzo} increases airdrop allocation slightly after community outrage and temporary {ezETH} depeg},
+  year         = {2024},
+  howpublished = {The Block},
+  url          = {https://www.theblock.co/post/290802/renzo-increases-airdrop-allocation-slightly-after-community-outrage-and-temporary-ezeth-depeg},
+  note         = {OAK v0.1 — verified. Operator-response source documenting the airdrop-allocation increase from 5\% to 7\%.}
+}
+
+@misc{defiantethexitqueue2025,
+  author       = {{The Defiant}},
+  title        = {{ETH} Unstaking Queue Hits Record High, Led by {Justin Sun}-Linked Addresses},
+  year         = {2025},
+  howpublished = {The Defiant},
+  url          = {https://thedefiant.io/news/defi/ethereum-validator-exit-queue-hits-record-high-led-by-justin-sun-linked-addresses},
+  note         = {OAK v0.1 — verified. Primary attribution source for Justin-Sun-linked / HTX-affiliated wallet activity in the July 2025 cascade.}
+}
+
+@misc{blocksstethaavedepeg2025,
+  author       = {{The Block}},
+  title        = {{Ethereum} validator exit queue reaches highest point ever},
+  year         = {2025},
+  howpublished = {The Block},
+  url          = {https://www.theblock.co/post/364436/ethereum-validator-exit-queue-reaches-highest-point-ever},
+  note         = {OAK v0.1 — verified. Primary numerical anchor for queue-depth (744k validators), Aave wETH borrow APR spike (~3\% → 18\%+), and stETH depeg amplitude in July 2025 cascade.}
+}
+
+@misc{migalabsexitqueue2025,
+  author       = {{MigaLabs}},
+  title        = {{Ethereum} validator exit queue surge},
+  year         = {2025},
+  howpublished = {MigaLabs research blog},
+  url          = {https://www.migalabs.io/blog/ethereum-validator-exit-queue-surge},
+  note         = {OAK v0.1 — verified. Structural-analysis source for queue-depth (743k ETH, July 16–27 2025), Aave borrow-APR trajectory, and the reflexive cascade loop.}
+}
+
+@misc{blocksexitqueuerecord2025,
+  author       = {{The Block}},
+  title        = {{Ethereum} validator exit queue climbs to over \$3 billion in {ETH} amid increased stake withdrawals},
+  year         = {2025},
+  howpublished = {The Block},
+  url          = {https://www.theblock.co/post/366947/ethereum-validator-exit-queue-climbs},
+  note         = {OAK v0.1 — verified. Secondary numerical source for the validator-exit-queue record sequence in July–August 2025.}
+}
+
+@misc{beincryptostethdepeg2025,
+  author       = {{BeInCrypto}},
+  title        = {{Ethereum} Whale's \$1.7 Billion Exit from {Aave} Triggered {stETH} Depeg},
+  year         = {2025},
+  howpublished = {BeInCrypto},
+  url          = {https://beincrypto.com/ethereum-whale-aave-exit-steth-depeg/},
+  note         = {OAK v0.1 — verified. Primary attribution and cumulative-withdrawal source (~\$1.7B Aave wETH outflow) for the July 2025 cascade.}
+}
+
+@misc{blockworksstethloops2025,
+  author       = {{Blockworks}},
+  title        = {{Ethereum} stakers face 9-day wait as {stETH} loops fall into the red},
+  year         = {2025},
+  howpublished = {Blockworks},
+  url          = {https://blockworks.co/news/ethereum-stakers-9-day-wait-steth},
+  note         = {OAK v0.1 — verified. Structural-analysis source for the carry-flip framing (Aave wETH borrow APR ~3\% → 18\%+ flipped looped-leverage carry).}
+}
+
+@misc{cryptoslatelidomarketshare2025,
+  author       = {{CryptoSlate}},
+  title        = {{Lido} faces three-year low in {Ethereum} staking market amid {stETH} depeg turmoil},
+  year         = {2025},
+  howpublished = {CryptoSlate},
+  url          = {https://cryptoslate.com/lidos-market-share-shrinks-as-steth-struggles-with-depegging/},
+  note         = {OAK v0.1 — verified. Primary source for Lido staked-ETH market-share figure (~25\%, three-year low) and 235k stETH unfinalised-withdrawal-queue peak.}
+}
+
+@misc{ainveststethdepeg2025,
+  author       = {{AInvest}},
+  title        = {{Ethereum} News Today: {Lido}'s {Ethereum} staking share dips to 25\% as {stETH} depegging and {Aave} rates drive exit pressures},
+  year         = {2025},
+  howpublished = {AInvest},
+  url          = {https://www.ainvest.com/news/ethereum-news-today-lido-ethereum-staking-share-dips-25-steth-depegging-aave-rates-drive-exit-pressures-2507/},
+  note         = {OAK v0.1 — verified. Secondary coverage source for the July 2025 Lido market-share decline.}
+}
+
+@misc{ssvnetworkpostmortem2025,
+  author       = {{SSV Network}},
+  title        = {Post-Mortem: September 10th, 2025 Slashing Incident},
+  year         = {2025},
+  howpublished = {SSV Network official blog},
+  url          = {https://ssv.network/blog/community/slashing-post-mortem-september-2025/},
+  note         = {OAK v0.1 — verified. Canonical operator-side root-cause document for the 2025-09-10 correlated-slashing event (39 validators, ~12 ETH cumulative loss; root cause: Ankr maintenance-window key-management error).}
+}
+
+@misc{theblockssv2025,
+  author       = {{The Block}},
+  title        = {{SSV Labs} {CEO} says protocol is not compromised following validator slashing incidents},
+  year         = {2025},
+  howpublished = {The Block},
+  url          = {https://www.theblock.co/post/370299/ssv-labs-ceo-protocol-not-compromised-validator-slashing-incidents},
+  note         = {OAK v0.1 — verified. Primary protocol-layer-exoneration source citing Alon Muroch's public statement.}
+}
+
+@misc{cryptonewssvslashing2025,
+  author       = {{crypto.news}},
+  title        = {{Ethereum} slashes 39 validators after {SSV} network errors},
+  year         = {2025},
+  howpublished = {crypto.news},
+  url          = {https://crypto.news/ethereum-slashes-39-validators-ssv-network-error-2025/},
+  note         = {OAK v0.1 — verified. Secondary coverage source for the 2025-09 SSV correlated-slashing event.}
+}
+
+@misc{mexcssv2025,
+  author       = {{MEXC News}},
+  title        = {Mass slashing on {Ethereum}: 39 validators affected, operational link with {SSV}},
+  year         = {2025},
+  howpublished = {MEXC News},
+  url          = {https://www.mexc.com/news/93065},
+  note         = {OAK v0.1 — verified. Secondary coverage source for the 2025-09 SSV correlated-slashing event.}
+}
+
+@misc{cryptonomistssv2025,
+  author       = {{Cryptonomist}},
+  title        = {Mass slashing on {Ethereum}: 39 validators affected, operational link with {SSV}},
+  year         = {2025},
+  howpublished = {Cryptonomist},
+  url          = {https://en.cryptonomist.ch/2025/09/11/mass-slashing-on-ethereum-39-validators-affected-operational-link-with-ssv/},
+  note         = {OAK v0.1 — verified. Secondary coverage source for the 2025-09 SSV correlated-slashing event.}
+}
+
+@misc{blockchainnewsssv2025,
+  author       = {{Blockchain.News}},
+  title        = {{SSV Network} Analyzes September 2025 Slashing Incident Impact},
+  year         = {2025},
+  howpublished = {Blockchain.News},
+  url          = {https://blockchain.news/news/ssv-network-analyzes-september-2025-slashing-incident-impact},
+  note         = {OAK v0.1 — verified. Secondary coverage source for the 2025-09 SSV correlated-slashing event.}
+}
+
+% =====================================================================
+% T13 cohort — Cardex session-key, EIP-7702 delegation phishing, ERC-4337 EntryPoint griefing
+% =====================================================================
+
+@misc{abstractcardexpostmortem2025,
+  author       = {Cygaar},
+  title        = {{Cardex} Compromise Post Mortem},
+  year         = {2025},
+  howpublished = {X (Twitter) thread by Abstract Chain core contributor},
+  url          = {https://x.com/0xCygaar/status/1891948692204368122},
+  note         = {OAK v0.1 — url-not-pinned. Abstract Chain core-contributor (Cygaar) public post-mortem thread documenting the shared-session-signer + frontend-inlined-key root cause of the 2025-02-18 Cardex incident; canonical operator-side narrative source.}
+}
+
+@misc{theblockcardex2025,
+  author       = {{The Block}},
+  title        = {{Cardex} exploit compromised \$400,000 worth of ether across 9,000 wallets: {Abstract}},
+  year         = {2025},
+  howpublished = {The Block},
+  url          = {https://www.theblock.co/post/341694/cardex-exploit-compromised-400000-worth-of-ether-across-9000-wallets-abstract},
+  note         = {OAK v0.1 — verified. Primary public-press source for the \$400K loss, 9{,}000 affected accounts, and shared-session-signer / frontend-inlined-key root-cause framing.}
+}
+
+@misc{decryptcardex2025,
+  author       = {{Decrypt}},
+  title        = {`{Cardex}' Game Exploit Drains Wallets on {Ethereum} Layer-2 {Abstract}},
+  year         = {2025},
+  howpublished = {Decrypt},
+  url          = {https://decrypt.co/306608/cardex-game-exploit-drains-abstract-wallets},
+  note         = {OAK v0.1 — verified. Secondary source for the timeline and Abstract-Chain attribution framing of the 2025-02 Cardex incident.}
+}
+
+@misc{cryptorankcardex2025,
+  author       = {{CryptoRank}},
+  title        = {{Ethereum} Layer 2 Platform {Abstract} Reports \$400{K} Crypto Breach in {Cardex} Incident},
+  year         = {2025},
+  howpublished = {CryptoRank},
+  url          = {https://cryptorank.io/news/feed/6cc87-ethereum-layer-2-platform-abstract-reports-400k-crypto-breach-in-cardex-incident},
+  note         = {OAK v0.1 — verified. Secondary cumulative-loss aggregation source.}
+}
+
+@misc{quillauditscardex2025,
+  author       = {{QuillAudits}},
+  title        = {How did {Cardex} get exploited of \$400{K}?},
+  year         = {2025},
+  howpublished = {QuillAudits hack-analysis blog},
+  url          = {https://www.quillaudits.com/blog/hack-analysis/cardex-get-exploited-of-dollar-400K},
+  note         = {OAK v0.1 — verified. Primary source for the buyShares / transferShares / sellShares extraction-pattern walkthrough and session-signer scope-enforcement detail.}
+}
+
+@misc{playtoearncardex2025,
+  author       = {{PlayToEarn}},
+  title        = {{Cardex} Exploit Drains \$400k from {Abstract} Users — Here's What Happened},
+  year         = {2025},
+  howpublished = {PlayToEarn},
+  url          = {https://playtoearn.com/news/cardex-exploit-drains-400k-from-abstract-users-heres-what-happened},
+  note         = {OAK v0.1 — verified. Primary source for the in-scope-asset-class restriction (ETH only; ERC-20 / NFT protected by session scope).}
+}
+
+@misc{itcuacardex2025,
+  author       = {{ITC.ua}},
+  title        = {{Abstract} exploit: hackers stole \$400{K} from {Cardex} players via «lost» key},
+  year         = {2025},
+  howpublished = {ITC.ua},
+  url          = {https://itc.ua/en/news/abstract-exploit-hackers-stole-400k-from-cardex-players-via-lost-key/},
+  note         = {OAK v0.1 — verified. Industry press secondary source for the operator-response summary.}
+}
+
+@misc{coinmarketcapcardex2025,
+  author       = {{CoinMarketCap}},
+  title        = {{Abstract} Reports \$400,000 Ether Theft From 9,000 Wallets Due to {Cardex} Exploit},
+  year         = {2025},
+  howpublished = {CoinMarketCap Academy},
+  url          = {https://coinmarketcap.com/academy/article/abstract-reports-dollar400000-ether-theft-from-9000-wallets-due-to-cardex-exploit},
+  note         = {OAK v0.1 — verified. Secondary public-facing summary source.}
+}
+
+@misc{cryptopotatocardex2025,
+  author       = {{CryptoPotato}},
+  title        = {{Ethereum} Layer 2 Platform {Abstract} Reports \$400{K} Crypto Breach in {Cardex} Incident},
+  year         = {2025},
+  howpublished = {CryptoPotato},
+  url          = {https://cryptopotato.com/ethereum-layer-2-platform-abstract-reports-400k-crypto-breach-in-cardex-incident/},
+  note         = {OAK v0.1 — verified. L2-platform-incident summary; secondary source.}
+}
+
+@misc{bitcoinethcardex2025,
+  author       = {{BitcoinEthereumNews}},
+  title        = {{Ethereum} Layer 2 Platform {Abstract} Reports \$400{K} Crypto Breach in {Cardex} Incident},
+  year         = {2025},
+  howpublished = {BitcoinEthereumNews},
+  url          = {https://bitcoinethereumnews.com/ethereum/ethereum-layer-2-platform-abstract-reports-400k-crypto-breach-in-cardex-incident/},
+  note         = {OAK v0.1 — verified. Secondary aggregator source for the Cardex incident framing.}
+}
+
+@misc{wintermute7702crimeenjoyor2025,
+  author       = {{Wintermute Research}},
+  title        = {{EIP-7702} delegations and the ``{CrimeEnjoyor}'' delegator-family dashboard},
+  year         = {2025},
+  howpublished = {Wintermute / Dune dashboard},
+  url          = {https://dune.com/wintermute_research/eip7702},
+  note         = {OAK v0.1 — verified. Wintermute Research's public Dune dashboard tagging the CrimeEnjoyor delegator-family by bytecode signature; canonical bytecode-signature-cluster anchor for the 2025–2026 EIP-7702 phishing cohort. Companion narrative on the Wintermute X feed (https://x.com/wintermute\_t/status/1932101433916305743 and earlier launch threads).}
+}
+
+@misc{coindeskcrimeenjoyor2025,
+  author       = {{CoinDesk}},
+  title        = {{Ethereum} `{CrimeEnjoyors}' Aren't Making Money From Exploiting {Pectra}'s {EIP-7702}, {Wintermute} Says},
+  year         = {2025},
+  howpublished = {CoinDesk},
+  url          = {https://www.coindesk.com/tech/2025/06/02/post-pectra-upgrade-malicious-ethereum-contracts-are-trying-to-drain-wallets-but-to-no-avail-wintermute},
+  note         = {OAK v0.1 — verified. Primary public-press source for Wintermute's CrimeEnjoyor analysis, including the ~2.88 ETH / ~79{,}000 delegations economics figure.}
+}
+
+@misc{goplus7702malicious2025,
+  author       = {{GoPlus Security}},
+  title        = {Understanding {EIP-7702} Phishing Attacks: A Comprehensive Guide to Protection Strategies for Wallets},
+  year         = {2025},
+  howpublished = {GoPlus Security blog},
+  url          = {https://blog.gopluslabs.io/2025/06/03/financing/2025-06-03-Understanding-EIP-7702-Phishing-Attacks-A-Comprehensive-Guide-to-Protection-Strategies-for-Wallets/},
+  note         = {OAK v0.1 — verified. GoPlus Security delegation-state telemetry and protection guidance for the EIP-7702 phishing cohort; primary source for the >90\% malicious-delegations telemetry and Inferno Drainer 2025-05-24 case framing.}
+}
+
+@misc{slowmistinferno7702may2025,
+  author       = {{SlowMist}},
+  title        = {In-Depth Discussion on {EIP-7702} and Best Practices},
+  year         = {2025},
+  howpublished = {SlowMist Medium blog},
+  url          = {https://slowmist.medium.com/in-depth-discussion-on-eip-7702-and-best-practices-968b6f57c0d5},
+  note         = {OAK v0.1 — verified. SlowMist forensic and best-practices discussion of EIP-7702 covering the 2025-05-24 Inferno Drainer MetaMask-delegated-EOA \$146K drain; primary source for the cluster attribution.}
+}
+
+@misc{slowmist7702aug2025,
+  author       = {{SlowMist}},
+  title        = {{SlowMist}: A user lost \$1.54 million by signing an {EIP-7702} phishing batch transaction},
+  year         = {2025},
+  howpublished = {PANews / SlowMist disclosure},
+  url          = {https://www.panewslab.com/en/articles/af6394f0-8c32-4c18-a828-aedc0617440f},
+  note         = {OAK v0.1 — verified. SlowMist on-chain trace of the 2025-08-24 \$1.54M single-victim EIP-7702 batch-transaction phishing loss (wstETH, cbBTC, additional staked-ETH).}
+}
+
+@misc{cryptopolitan7702aug2025,
+  author       = {{Cryptopolitan}},
+  title        = {Security analysts warn about {EIP-7702} flaw after user loses \$1.54{M} in single phishing attack},
+  year         = {2025},
+  howpublished = {Cryptopolitan},
+  url          = {https://www.cryptopolitan.com/eip-7702-user-loses-1-54m-phishing-attack/},
+  note         = {OAK v0.1 — verified. Secondary source for the 2025-08-24 case framing and victim portfolio composition (wstETH, cbBTC, additional staked-ETH).}
+}
+
+@misc{eip7702phishingarxiv,
+  author        = {Qi, Minfeng and Wang, Qin and Li, Ruiqiang and Zhu, Tianqing and Chen, Shiping},
+  title         = {{EIP-7702} Phishing Attack},
+  year          = {2025},
+  eprint        = {2512.12174},
+  archiveprefix = {arXiv},
+  primaryclass  = {cs.CR},
+  url           = {https://arxiv.org/abs/2512.12174},
+  note          = {OAK v0.1 — verified. First academic empirical measurement of the EIP-7702 phishing cohort (150{,}000+ authorisation/execution events; 26{,}000+ delegated addresses); canonical taxonomy of three trigger pathways (user-driven, attacker-driven, protocol-triggered).}
+}
+
+@misc{devohmygodcrimeenjoyor2025,
+  author       = {{ohmygod}},
+  title        = {The {CrimeEnjoyor} Epidemic: How {EIP-7702} Delegation Phishing Drained 450{K}+ Wallets — And How to Detect It On-Chain},
+  year         = {2025},
+  howpublished = {DEV Community technical post},
+  url          = {https://dev.to/ohmygod/the-crimeenjoyor-epidemic-how-eip-7702-delegation-phishing-drained-450k-wallets-and-how-to-e2g},
+  note         = {OAK v0.1 — verified. DEV-community on-chain-detection regex and 450{,}000+ delegated-wallets cohort framing.}
+}
+
+@misc{threesigma7702wallets2025,
+  author       = {{Three Sigma}},
+  title        = {Inside Wallet Drainers and {EIP-7702} Exploits},
+  year         = {2025},
+  howpublished = {Three Sigma blog (AI-Phishing series, Part 2)},
+  url          = {https://threesigma.xyz/blog/opsec/ai-phishing-wallet-drainers-eip7702-part-2},
+  note         = {OAK v0.1 — verified. Defender-oriented analysis of EIP-7702 wallet-drainer evolution; covers the Inferno Drainer Reloaded (Mar–May 2025) cohort and time-of-check/time-of-use simulation gaps.}
+}
+
+@misc{hacken7702aa2025,
+  author       = {{Hacken}},
+  title        = {{ERC-4337} \& Account Abstraction: A Comprehensive Overview},
+  year         = {2025},
+  howpublished = {Hacken Discover blog},
+  url          = {https://hacken.io/discover/erc-4337-account-abstraction/},
+  note         = {OAK v0.1 — verified. Hacken account-abstraction overview covering EIP-7702 risk surface in the post-Pectra era; secondary defender-side source.}
+}
+
+@misc{cryptotimes7702quant2026,
+  author       = {{The Crypto Times}},
+  title        = {{EIP-7702} Flaw Drains 1{,}988 {QNT} From {Ethereum} Pool},
+  year         = {2026},
+  howpublished = {The Crypto Times},
+  url          = {https://www.cryptotimes.io/2026/04/29/eip-7702-flaw-drains-1988-qnt-from-ethereum-pool/},
+  note         = {OAK v0.1 — verified. Coverage of the 2026-04 EIP-7702 delegation-flaw drain of 1{,}988.5 QNT (~54.93 ETH) from a Quant-network ETH pool; protocol-counterparty-victim phase of the cohort.}
+}
+
+@misc{eip7702spec,
+  author       = {Buterin, Vitalik and Roberts, Sam and Hess, Ansgar and Beiko, Tim and Pateneau, Lightclient},
+  title         = {{EIP-7702}: Set Code for {EOAs}},
+  year         = {2024},
+  howpublished = {Ethereum Improvement Proposals},
+  url          = {https://eips.ethereum.org/EIPS/eip-7702},
+  note         = {OAK v0.1 — verified. Canonical specification for the EIP-7702 set-code transaction-type primitive (Pectra fork, 2025-05-07).}
+}
+
+@misc{hackenproof4337trustsec2025,
+  author       = {{HackenProof}},
+  title        = {High-Severity {ERC-4337} Account Abstraction Vulnerability: A {TrustSec} Case Study},
+  year         = {2025},
+  howpublished = {HackenProof blog},
+  url          = {https://hackenproof.com/blog/for-business/erc-4337-account-abstraction-vulnerability-case-study},
+  note         = {OAK v0.1 — verified. Canonical attribution and disclosure-pathway anchor for the TrustSec / EntryPoint v0.9 griefing-vector responsible disclosure.}
+}
+
+@misc{ethinfinitismaa,
+  author       = {{Ethereum Foundation Account Abstraction Working Group}},
+  title         = {{eth-infinitism/account-abstraction} (canonical reference implementation; {EntryPoint} v0.9 release)},
+  year         = {2025},
+  howpublished = {GitHub repository},
+  url          = {https://github.com/eth-infinitism/account-abstraction/tree/releases/v0.9},
+  note         = {OAK v0.1 — verified. Canonical EntryPoint reference implementation; v0.9 release-and-mitigation merge incorporating the TrustSec-disclosed mitigation (top-level-EOA-only handleOps / handleAggregatedOps).}
+}
+
+@misc{hackenproof4337program,
+  author       = {{HackenProof}},
+  title        = {Account Abstraction Bugs: Program Info},
+  year         = {2025},
+  howpublished = {HackenProof bug-bounty programme},
+  url          = {https://hackenproof.com/programs/account-abstraction-bugs},
+  note         = {OAK v0.1 — verified. Ongoing coordination-channel infrastructure for ERC-4337 / ERC-7562 protocol-layer disclosures; rewards up to \$250K.}
+}
