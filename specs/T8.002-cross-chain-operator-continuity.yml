@@ -1,0 +1,119 @@
+oak_techniques: [OAK-T8.002]
+spec_id: oak-detection-T8.002
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect cross-chain operator continuity — per-chain footprints that
+  are individually coherent but jointly attributable only via cross-
+  chain analysis. Load-bearing for OAK-G01 (Lazarus) attribution at
+  modern multi-chain scale. Detection extends T8.001 across chains via
+  bridge-deposit / CEX-withdrawal / cross-chain-swap edges, plus
+  laundering-destination convergence and off-chain operator-profile
+  continuity. Excludes: T8.001 (single-chain cluster reuse — same
+  primitive intra-chain); shared cross-chain swap routers / shared
+  bridge-deposit clusters that produce non-attributable cross-chain
+  edges (must be allowlisted).
+
+data_sources: [funder_graph, bridge_deposit_log, cex_withdrawal_log,
+               cross_chain_swap_log, contract_creation_log,
+               off_chain_cti, off_ramp_kyc]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (cross-chain funder-graph extension):
+    extend per-chain funder-graph to a multi-chain graph by ingesting
+    bridge-deposit / CEX-withdrawal / cross-chain-swap events as
+    cross-chain edges; identify components whose addresses span ≥ 2
+    chains. PATH B (cross-chain deployment-fingerprint match): per-
+    deployment-fingerprint indexes match across operator-clustered
+    addresses on different chains. PATH C (laundering-destination
+    convergence): downstream off-ramps receive inflows attributed to
+    multiple per-chain operator clusters within a window — the most-
+    load-bearing axis at v0.1 (Bybit / THORChain shape).
+  pseudocode: |
+    CROSS_CHAIN_INFRA_ALLOWLIST =
+        thorchain_routers ∪ lifi_aggregators ∪ across_relays
+        ∪ canonical_cex_withdrawal_addrs
+
+    # PATH A — cross-chain funder-graph extension
+    G ← build_per_chain_funder_graphs(chains)
+    edges ← []
+    for ev in bridge_deposits + cex_withdrawals + cross_chain_swaps:
+      if ev.from ∈ CROSS_CHAIN_INFRA_ALLOWLIST or ev.to ∈ CROSS_CHAIN_INFRA_ALLOWLIST:
+        # require matched amount + tight timing for attribution edge
+        ok ← amount_matches(ev) and timing_tight(ev, max_seconds = edge_window_seconds)
+        if not ok: continue
+      edges += [(ev.src_chain_addr, ev.dst_chain_addr, ev)]
+    G_xchain ← merge_with_edges(G, edges)
+    components ← connected_components(G_xchain)
+    for c in components:
+      chains_spanned ← {a.chain for a in c}
+      if |chains_spanned| < min_chains_spanned: continue
+      tokens ← flagged_deployments_in(c)
+      if |tokens| < min_tokens_per_xchain_cluster: continue
+      emit(PATH_A, cluster_id=hash(c), chains=chains_spanned,
+           token_count=|tokens|, severity=high)
+
+    # PATH B — fingerprint match across chains
+    by_fp ← group_by(contract_creations(across=chains, window = lookback_window),
+                     key = (creation_bytecode_hash, constructor_arg_shape,
+                            compiler_metadata, salt_pattern))
+    for fp, items in by_fp.items():
+      chains_hit ← {it.chain for it in items}
+      if |chains_hit| ≥ min_chains_per_fingerprint:
+        emit(PATH_B, fingerprint=fp, chains=chains_hit,
+             deployer_eoas={it.deployer for it in items},
+             severity=high)
+
+    # PATH C — laundering-destination convergence
+    for each off_ramp address D within laundering_destination_set:
+      inflows ← inbound_traces(D, hops = laundering_hops,
+                               window = convergence_window)
+      sources_by_chain ← {ev.src_chain: trace_to_per_chain_cluster(ev)
+                          for ev in inflows}
+      if |sources_by_chain| ≥ min_chains_converging
+         and shared_operator(sources_by_chain.values()):
+        emit(PATH_C, off_ramp=D, source_chains=list(sources_by_chain.keys()),
+             usd_volume=sum_usd(inflows), severity=critical)
+
+parameters:
+  edge_window_seconds:           { type: integer,  default: 1800 }   # 30 min matched timing
+  min_chains_spanned:            { type: integer,  default: 2 }
+  min_tokens_per_xchain_cluster: { type: integer,  default: 2 }
+  min_chains_per_fingerprint:    { type: integer,  default: 2 }
+  laundering_hops:               { type: integer,  default: 5 }
+  convergence_window:            { type: duration, default: 30d }
+  min_chains_converging:         { type: integer,  default: 2 }
+  laundering_destination_set:    { type: list,     default: [] }     # off-ramp candidates
+  lookback_window:               { type: duration, default: 365d }
+
+output_alert: [oak_technique, detection_path, severity,
+               cluster_id, chains, token_count, fingerprint, off_ramp,
+               source_chains, usd_volume, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-02-bybit                              # canonical Bybit/THORChain ~$1.4B laundering window
+    - 2024-10-inferno-drainer-handover           # G02 multi-chain service infrastructure
+    - 2025-04-exch-shutdown                      # eXch shutdown / cross-chain cluster pivot
+  negative:
+    - "Multi-chain DEX aggregator routing organic users — flows pass through CROSS_CHAIN_INFRA_ALLOWLIST"
+    - "Single-chain cluster with no cross-chain edges (handle via T8.001, not T8.002)"
+
+false_positive_modes:
+  - shared cross-chain swap-protocol routers / shared bridge-deposit clusters / shared CEX hot-wallet infrastructure (allowlist via CROSS_CHAIN_INFRA_ALLOWLIST)
+  - matched-amount / matched-timing attribution edges that are coincidental in high-volume protocols — calibrate edge_window_seconds tighter for high-throughput rails
+  - fingerprint matches across chains that reflect a shared open-source template (factories, OpenZeppelin canonical contracts) — exclude well-known templates
+  - laundering-destination convergence where the destination is a major CEX hot wallet (definitionally many sources) — restrict to non-canonical off-ramps
+
+mitigations: [OAK-M04, OAK-M07, OAK-M25]
+
+reference_implementations:
+  - { target: chainalysis-reactor, chain: evm,    url: "" }
+  - { target: trm-forensics,       chain: evm,    url: "" }
+  - { target: elliptic-investigator, chain: evm,  url: "" }
+  - { target: thorchain-explorer,  chain: cross-chain, url: "" }
+  - { target: lifi-api,            chain: cross-chain, url: "" }

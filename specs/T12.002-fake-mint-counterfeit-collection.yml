@@ -1,0 +1,120 @@
+oak_techniques: [OAK-T12.002]
+spec_id: oak-detection-T12.002
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect counterfeit NFT collections that mimic a legitimate
+  collection's identity (name / symbol / metadata / art) and route
+  victim mint-payments or marketplace-purchases to an attacker
+  treasury. Three sub-patterns: phishing-mint, marketplace-listed
+  clones, Discord-compromise-driven fake mints. Excludes: T4.005
+  (`setApprovalForAll` NFT drainer — different control: T4.005 abuses
+  authority over assets the victim already owns; T12.002 abuses
+  identity to capture mint-payment / purchase-price). The two co-occur
+  in the same Discord-compromise campaigns but live in different
+  defensive layers.
+
+data_sources: [contract_creation_log, contract_metadata,
+               nft_marketplace_events, nft_image_perceptual_hash,
+               canonical_contract_allowlist, off_chain_cti,
+               funder_graph]
+
+detection_logic:
+  description: |
+    Four orthogonal paths. PATH A (canonical-contract allowlist
+    enforcement): a contract claiming a known collection's identity
+    is not the canonical address. PATH B (metadata / image similarity
+    at index time): perceptual-hash + name/symbol edit-distance
+    against the verified-collection registry exceeds threshold but
+    deployer / treasury cluster differs. PATH C (Discord/X-compromise-
+    driven mint surge): mint-page traffic to a non-canonical contract
+    spikes shortly after an announcement from a historically-legitimate
+    project channel. PATH D (mint-payment cluster heuristic): the
+    counterfeit's mint recipient clusters with previously-flagged
+    scam infrastructure rather than the project's published treasury.
+  pseudocode: |
+    # PATH A — canonical-contract allowlist enforcement
+    for each newly_indexed_collection C on marketplace M:
+      claimed ← (eth_call(C, "name()"), eth_call(C, "symbol()"))
+      verified ← canonical_allowlist_lookup(claimed)
+      if verified ≠ None and C.address ≠ verified.address:
+        emit(PATH_A, marketplace=M, contract=C.address,
+             claimed_name=claimed[0], canonical=verified.address,
+             severity=critical)
+
+    # PATH B — metadata / image similarity at index time
+    for each newly_indexed_collection C:
+      for verified V in canonical_allowlist:
+        score ← max(image_phash_similarity(C, V),
+                    metadata_uri_similarity(C, V),
+                    name_edit_similarity(C, V))
+        if score < similarity_threshold: continue
+        if same_funder_cluster(deployer(C), verified.deployer): continue
+        emit(PATH_B, contract=C.address, mimics=V.address,
+             similarity=score, severity=critical)
+
+    # PATH C — Discord / X-compromise-driven mint surge
+    for each project P in monitored_project_set:
+      announcements ← off_chain_announcements(P,
+                                               channels = {discord, x},
+                                               window = announcement_window)
+      for ann in announcements:
+        targets ← extract_contract_addresses_from(ann)
+        for t in targets:
+          if t == P.canonical_contract: continue
+          surge ← mint_count(t, since = ann.t,
+                             window = surge_window) > surge_threshold
+          flagged ← (t.deployer ∉ P.deployer_cluster) or P.cti_compromise_flag(ann.t)
+          if surge and flagged:
+            emit(PATH_C, project=P, announcement=ann,
+                 counterfeit=t, severity=critical)
+
+    # PATH D — mint-payment cluster
+    for each in_progress mint contract C:
+      treasury ← mint_payment_recipient(C)
+      cluster ← funder_graph_cluster(treasury, hops = trace_hops)
+      if cluster ∩ scam_infrastructure_index ≠ ∅:
+        emit(PATH_D, contract=C, treasury=treasury,
+             matched_scam_clusters=cluster ∩ scam_infrastructure_index,
+             severity=critical)
+
+parameters:
+  canonical_allowlist:        { type: object,   default: {} }    # claimed_name → {address, deployer}
+  similarity_threshold:       { type: number,   default: 0.85 }
+  announcement_window:        { type: duration, default: 7d }
+  surge_window:               { type: duration, default: 1h }
+  surge_threshold:            { type: integer,  default: 50 }
+  trace_hops:                 { type: integer,  default: 3 }
+  scam_infrastructure_index:  { type: list,     default: [] }
+  monitored_project_set:      { type: list,     default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               marketplace, contract_address, claimed_name,
+               canonical, similarity_score, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-04-bored-ape-discord-wave              # Discord-compromise fake-mint wave + concurrent T4.005
+    - 2022-07-premint-phishing                    # mint-coordination platform front-end injection
+    - 2024-12-pudgy-penguins-google-ads-nft-drainer  # typosquat domain + ad-network distribution
+  negative:
+    - "Newly-deployed legitimate collection with deployer in funder-cluster of an existing verified project"
+    - "Pre-existing collection re-indexed by a marketplace whose canonical-contract entry matches"
+
+false_positive_modes:
+  - legitimate spinoff / season-2 collections sharing branding with a verified parent — annotate canonical_allowlist with the new address pre-launch
+  - high-similarity art that is intentional homage / fan-art — require deployer-cluster mismatch as a discriminator
+  - large announcement surges from organic project flows where the contract is canonical — PATH C must check t.deployer ∉ P.deployer_cluster
+  - legitimate aggregator routers used as mint-payment recipients (distinguish via scam_infrastructure_index seed quality)
+
+mitigations: [OAK-M02, OAK-M11, OAK-M16, OAK-M25]
+
+reference_implementations:
+  - { target: opensea-moderation, chain: evm,    url: "" }
+  - { target: magic-eden-allowlist, chain: solana, url: "" }
+  - { target: blur-verified,       chain: evm,    url: "" }
+  - { target: dune,                chain: evm,    url: "" }
+  - { target: red-points,          chain: evm,    url: "" }

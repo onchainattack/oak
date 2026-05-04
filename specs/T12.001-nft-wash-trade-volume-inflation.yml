@@ -1,0 +1,115 @@
+oak_techniques: [OAK-T12.001]
+spec_id: oak-detection-T12.001
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect NFT-marketplace wash trading whose operator goal is price-
+  discovery distortion (inflate collection volume + per-token sale
+  history + floor signals to attract real buyers). Detection runs at
+  the NFT-marketplace layer per-collection / per-token-id, not on DEX
+  pair-counterparty graphs. Excludes: T3.002 (fungible DEX wash —
+  different on-chain artefact, per-pair counterparty cycles); T7.004
+  (NFT wash-laundering — same on-chain pattern, different downstream
+  goal: T7.004 retains/routes-out, T12.001 follows with real-buyer
+  exit); marketplace-incentive-driven wash (LooksRare/X2Y2/Blur airdrop
+  farming — same artefact, fixed at reward-formula level).
+
+data_sources: [nft_marketplace_events, nft_token_id_sale_history,
+               funder_graph, collection_metadata]
+
+detection_logic:
+  description: |
+    Four orthogonal paths. PATH A (per-collection counterparty graph):
+    a small connected component accounts for disproportionate edges /
+    volume in the buyer-seller graph. PATH B (per-token-id self-financed
+    cluster): high-impact sales that reset the floor or top a token's
+    sale history reduce to one funder cluster on the buyer-side.
+    PATH C (floor-resilience divergence): wash-adjusted floor (excluding
+    self-financed cluster trades) diverges from marketplace-published
+    floor by > divergence_threshold. PATH D (real-buyer-exit
+    confirmation): goal discriminator vs T7.004 — after the wash burst,
+    a non-cluster buyer absorbs inventory at the inflated price.
+  pseudocode: |
+    # PATH A — per-collection counterparty-graph concentration
+    for each collection C:
+      G ← buyer_seller_graph(C, window = analysis_window,
+                             weighted_by = trade_count_and_notional)
+      components ← connected_components(G)
+      for comp in components:
+        edge_share ← Σ w(e) for e in edges_within(comp) / Σ w(e) for e in edges(G)
+        if edge_share > component_concentration:
+          emit(PATH_A, collection=C, component_size=|comp|,
+               edge_share, severity=high)
+
+    # PATH B — per-token-id self-financed cluster
+    for each (collection C, token_id i) with sale_count(i, window) > min_sales_per_id:
+      participants ← {p for s in sales_of(C, i) for p in [s.buyer, s.seller]}
+      cluster ← funder_graph_cluster(participants, hops = trace_hops)
+      if shared_funding(cluster):
+        floor_lift ← max_sale(C, i) − pre_window_floor(C)
+        emit(PATH_B, collection=C, token_id=i, cluster_size=|cluster|,
+             sale_count=sale_count(i, window), floor_lift,
+             severity = critical if floor_lift > impact_threshold else high)
+
+    # PATH C — wash-adjusted floor divergence
+    for each collection C:
+      adjusted ← floor_excluding_self_financed_cluster(C, window)
+      published ← marketplace_published_floor(C)
+      if adjusted == None or published == None: continue
+      div ← (published − adjusted) / max(adjusted, 1e-9)
+      if div > divergence_threshold:
+        emit(PATH_C, collection=C, published_floor=published,
+             wash_adjusted_floor=adjusted, divergence=div, severity=high)
+
+    # PATH D — goal discriminator: real-buyer exit vs T7.004 retention
+    for each PATH_A or PATH_B emit on collection C:
+      cluster ← cluster_from_emit
+      post_burst ← sales_of(C, after = burst_end(emit), window = exit_window)
+      external_buyers ← [s for s in post_burst
+                         if s.buyer ∉ cluster
+                         and s.notional ≥ pre_burst_floor(C) × exit_premium_factor]
+      if external_buyers ≠ ∅:
+        emit(PATH_D, collection=C, cluster=cluster,
+             external_buyer_count=|external_buyers|,
+             goal="price-discovery-distortion (T12.001)",
+             severity=critical)
+      # If absent, route to T7.004 (laundering motive); annotate, don't suppress
+
+parameters:
+  analysis_window:          { type: duration, default: 30d }
+  component_concentration:  { type: number,   default: 0.4 }
+  min_sales_per_id:         { type: integer,  default: 5 }
+  trace_hops:               { type: integer,  default: 3 }
+  impact_threshold:         { type: number,   default: 0.10 }     # floor lift > 10%
+  divergence_threshold:     { type: number,   default: 0.25 }     # 25% gap
+  exit_window:              { type: duration, default: 14d }
+  exit_premium_factor:      { type: number,   default: 1.2 }      # 20% above pre-burst floor
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               collection_address, token_id, cluster, edge_share,
+               wash_adjusted_floor, published_floor, evidence]
+
+test_fixtures:
+  positive:
+    - 2023-02-blur-airdrop-wash-cohort         # incentive-driven cohort, on-chain artefact shared with T12.001
+  negative:
+    - "Top-volume collection with diverse buyer/seller graph and stable wash-adjusted floor"
+    - "Single high-impact sale to a documented institutional buyer with no funder-cluster overlap"
+
+false_positive_modes:
+  - market-maker / aggregator routing inventory across owned wallets within one collection (cluster collapses to one entity, no third-party victim)
+  - JIT liquidity for sweeping floor (mint / sweep / burn pattern) — distinguish via PATH D's external-buyer absence
+  - genuinely concentrated collector cohort (long-term holders trading among themselves at organic prices) — PATH C's floor-resilience metric should not flag if pricing tracks reality
+  - marketplace-incentive-driven wash where the goal is reward farming, not real-buyer exit — PATH D returns empty; route to incentive-wash sub-class instead
+
+mitigations: [OAK-M04, OAK-M11, OAK-M25]
+
+reference_implementations:
+  - { target: dune,                chain: evm,    url: "" }
+  - { target: nansen-nft,          chain: evm,    url: "" }
+  - { target: chainalysis,         chain: evm,    url: "" }
+  - { target: bitscrunch,          chain: evm,    url: "" }
+  - { target: dappradar,           chain: evm,    url: "" }

@@ -1,0 +1,120 @@
+oak_techniques: [OAK-T12.003]
+spec_id: oak-detection-T12.003
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect NFT trades that settle without paying the creator's stated
+  ERC-2981 royalty — the standard-vs-enforcement gap. Detection is
+  primarily creator-side / analytics-side rather than runtime
+  exploit detection: the "bypass" is a marketplace contract executing
+  exactly as designed. OAK takes a non-partisan editorial position
+  on the policy ambiguity; this spec captures the defensive
+  measurement surface (per-collection effective royalty rate, cross-
+  marketplace volume distribution, Operator Filter Registry status,
+  direct-transfer-to-trade ratio). Excludes: T12.001 (wash-trade
+  volume inflation — different artefact); T7.004 (NFT laundering —
+  different motive); generic T9.004 access-control flaws.
+
+data_sources: [nft_marketplace_events, nft_token_transfer_events,
+               operator_filter_registry, collection_metadata,
+               royalty_info_query]
+
+detection_logic:
+  description: |
+    Four orthogonal paths producing measurement-grade outputs (not
+    binary maliciousness). PATH A (per-collection effective royalty
+    rate): realized_royalty / nominal_royalty across a rolling window,
+    broken down by marketplace; flag drops below royalty_floor. PATH B
+    (volume migration to royalty-optional venues): per-collection
+    share of trade volume settling through marketplaces with no
+    enforcement coupling. PATH C (Operator Filter Registry status
+    drift): for collections that opted into OFR, track filtered-
+    operator changes / registrant updates / sunset events. PATH D
+    (direct-transfer-to-trade ratio): unusual share of transferFrom
+    calls without a marketplace context — possible off-marketplace
+    settlement, high false-positive rate.
+  pseudocode: |
+    ENFORCING_VENUES   = {opensea_pre_2024_02, x2y2_pre_2022_11, ...}
+    ROYALTY_OPTIONAL   = {blur, x2y2_post_2022_11, looksrare_post_2022_11, ...}
+
+    # PATH A — per-collection effective royalty rate
+    for each collection C:
+      nominal ← royaltyInfo(C, salePrice = sample_price)
+      for each marketplace M with trades(C, window):
+        realized ← Σ royalty_paid(t) for t in trades(C, M, window)
+        expected ← Σ nominal(t.price) for t in trades(C, M, window)
+        rate ← realized / max(expected, 1)
+        if rate < royalty_floor:
+          emit(PATH_A, collection=C, marketplace=M,
+               effective_rate=rate, expected=expected,
+               realized=realized, severity=high)
+
+    # PATH B — volume migration to royalty-optional venues
+    for each collection C:
+      total_vol ← Σ usd_value(t) for t in trades(C, window)
+      optional_vol ← Σ usd_value(t) for t in trades(C, window)
+                       if marketplace_of(t) ∈ ROYALTY_OPTIONAL
+      share ← optional_vol / max(total_vol, 1)
+      if share > optional_share_threshold:
+        emit(PATH_B, collection=C, optional_share=share,
+             severity=medium)
+
+    # PATH C — Operator Filter Registry status drift
+    for each collection C with ofr_opted_in(C):
+      state ← operator_filter_registry_state(C)
+      previous ← cached_ofr_state(C, last_check)
+      if state.filtered_operators ≠ previous.filtered_operators
+         or state.registrant ≠ previous.registrant
+         or state.enforcement_mode ≠ previous.enforcement_mode:
+        emit(PATH_C, collection=C, change_kind=diff(previous, state),
+             severity=medium)
+
+    # PATH D — direct-transfer-to-trade ratio
+    for each collection C:
+      transfers ← {t for t in transfer_events(C, window)
+                   if t.context not in marketplace_contracts}
+      market_trades ← marketplace_trades(C, window)
+      if |market_trades| == 0: continue
+      ratio ← |transfers| / max(|market_trades|, 1)
+      if ratio > direct_transfer_ratio_threshold
+         and any(matches_settlement_pattern(t) for t in transfers):
+        emit(PATH_D, collection=C, direct_transfer_ratio=ratio,
+             severity=low)
+
+parameters:
+  royalty_floor:                   { type: number, default: 0.50 }   # < 50% of nominal
+  optional_share_threshold:        { type: number, default: 0.30 }
+  direct_transfer_ratio_threshold: { type: number, default: 0.40 }
+  marketplace_contracts:           { type: list,   default: [] }
+  ENFORCING_VENUES:                { type: list,   default: [] }
+  ROYALTY_OPTIONAL:                { type: list,   default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               collection_address, marketplace, effective_rate,
+               optional_share, change_kind, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-11-x2y2-looksrare-royalty-optional      # canonical marketplace-level shift
+    - 2023-08-opensea-operator-filter-sunset       # platform-side enforcement end
+  negative:
+    - "Collection where 100% of trades settle through OpenSea pre-Aug-2023 with full royalty enforcement"
+    - "Collection deployed without ERC-2981 metadata (no nominal royalty to compare against)"
+
+false_positive_modes:
+  - legitimate gifting / custodial moves producing high direct-transfer ratio (PATH D high false-positive baseline — surface as low severity)
+  - collections that never claimed royalty enforcement (no nominal royalty → PATH A undefined; emit only when nominal > 0)
+  - bulk transfers tied to staking / rewards programmes that look settlement-shaped — exclude when destination is a known staking contract
+  - PATH B is descriptive (volume migration is policy-neutral); intended as creator-side measurement, not malicious-classification
+
+mitigations: [OAK-M02, OAK-M16, OAK-M25]
+
+reference_implementations:
+  - { target: dune,                chain: evm, url: "" }
+  - { target: nansen-nft,          chain: evm, url: "" }
+  - { target: chainalysis,         chain: evm, url: "" }
+  - { target: dappradar,           chain: evm, url: "" }
+  - { target: ofr-monitor,         chain: evm, url: "" }

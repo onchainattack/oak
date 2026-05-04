@@ -1,0 +1,116 @@
+oak_techniques: [OAK-T8.001]
+spec_id: oak-detection-T8.001
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect single-chain operator cluster reuse across multiple
+  adversarial deployments — common funding source, shared deployment
+  fingerprint, persistent counterparty propagation post-brand-rotation.
+  Turns one-off alerts into longitudinal operator profiles. Excludes:
+  T8.002 (cross-chain joint attribution — same primitive at multi-
+  chain layer); shared-CEX-hot-wallet / shared-bridge-deposit common
+  funders that produce coincidental signatures (must be allowlisted);
+  per-incident T1/T5/T9 detection — T8.001 is attribution-grade
+  enrichment, not a primary classifier.
+
+data_sources: [funder_graph, contract_creation_log, contract_bytecode,
+               off_ramp_kyc, persistent_counterparty_log, off_chain_cti]
+
+detection_logic:
+  description: |
+    Three orthogonal paths producing a longitudinal operator-cluster
+    profile. PATH A (funder-graph component): connected component in
+    the depth-N funder graph spans multiple flagged deployments and
+    is not a shared-infrastructure allowlist member. PATH B
+    (deployment-fingerprint reuse): the (creation_bytecode_hash,
+    constructor_arg_shape, compiler_metadata, salt_pattern) tuple
+    recurs across multiple incident-flagged tokens. PATH C
+    (persistent counterparty post-rotation): when a brand is
+    sanctioned / shut down, downstream deposit clusters resume
+    receiving from a new upstream cluster — the cleanest signal of
+    operator continuity (Garantex → Grinex shape).
+  pseudocode: |
+    SHARED_INFRASTRUCTURE = cex_hotwallet_allowlist
+                            ∪ bridge_deposit_allowlist
+                            ∪ mev_funding_allowlist
+
+    # PATH A — funder-graph component crossing flagged deployments
+    G ← build_funder_graph(addresses = deployer_and_early_buyer_addrs(
+                              flagged_tokens(window = lookback_window)),
+                            depth = trace_hops)
+    components ← connected_components(G)
+    for c in components:
+      tokens ← {t for t in flagged_tokens(window=lookback_window)
+                if any(a ∈ c for a in operator_addrs(t))}
+      if |tokens| < min_tokens_per_cluster: continue
+      if c ⊆ SHARED_INFRASTRUCTURE: continue
+      variance ← funding_time_variance(c)
+      if variance > tight_window_seconds: continue   # coincidental shared funding
+      emit(PATH_A, cluster_id=hash(c), token_count=|tokens|,
+           sample_tokens=top_k(tokens, 5), severity=high)
+
+    # PATH B — deployment-fingerprint reuse
+    by_fp ← group_by(contract_creations(window = lookback_window),
+                     key = (creation_bytecode_hash, constructor_arg_shape,
+                            compiler_metadata, salt_pattern))
+    for fp, items in by_fp.items():
+      flagged ← [it for it in items if it.token in flagged_tokens(any)]
+      if len(flagged) ≥ min_fingerprint_hits:
+        emit(PATH_B, fingerprint=fp, hits=flagged,
+             deployer_eoas={it.deployer for it in flagged},
+             severity=high)
+
+    # PATH C — persistent counterparty propagation post-rotation
+    for each rotation_event R observed:        # sanction, takedown, brand pivot
+      pre_cluster  ← downstream_deposits(R.entity, before = R.t)
+      post_cluster ← downstream_deposits(R.entity, after = R.t,
+                                          window = post_rotation_window)
+      shared ← pre_cluster ∩ post_cluster
+      if |shared| ≥ min_shared_counterparties:
+        emit(PATH_C, rotation_event=R, brand_pre=R.brand_pre,
+             brand_post=R.brand_post, shared_counterparties=shared,
+             severity=critical)
+
+parameters:
+  trace_hops:                  { type: integer,  default: 2 }
+  lookback_window:             { type: duration, default: 365d }
+  min_tokens_per_cluster:      { type: integer,  default: 3 }
+  tight_window_seconds:        { type: integer,  default: 86400 }    # < 24h funding variance
+  min_fingerprint_hits:        { type: integer,  default: 3 }
+  post_rotation_window:        { type: duration, default: 90d }
+  min_shared_counterparties:   { type: integer,  default: 5 }
+  cex_hotwallet_allowlist:     { type: list,     default: [] }
+  bridge_deposit_allowlist:    { type: list,     default: [] }
+  mev_funding_allowlist:       { type: list,     default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               cluster_id, token_count, sample_tokens, fingerprint,
+               brand_pre, brand_post, shared_counterparties, evidence]
+
+test_fixtures:
+  positive:
+    - 2021-11-squid                              # TRM cross-incident attribution (canonical)
+    - 2024-10-inferno-drainer-handover           # service-layer continuity (Inferno → Angel)
+    - 2025-02-bybit                              # Lazarus per-chain cluster instance
+  negative:
+    - "Shared CEX hot-wallet funding multiple unrelated tokens — allowlist-suppressed"
+    - "MEV-bot funding cluster that crosses tokens without operator attribution"
+    - "Bridge deposit-cluster shared across organic users"
+
+false_positive_modes:
+  - shared CEX hot wallets / bridge deposits / MEV funding (must be on the appropriate allowlist; depth-2 ancestor matching alone insufficient)
+  - coincidental shared-CEX-funded clusters with wide funding-time variance — calibrate via tight_window_seconds
+  - launchpad / bundler infrastructure that touches many tokens by design — allowlist by infrastructure address
+  - rotation events from organic operators (project hand-over, team migration) — corroborate via off-chain evidence before flagging PATH C
+
+mitigations: [OAK-M04, OAK-M07, OAK-M25]
+
+reference_implementations:
+  - { target: chainalysis-reactor, chain: evm,    url: "" }
+  - { target: trm-forensics,       chain: evm,    url: "" }
+  - { target: elliptic-investigator, chain: evm,  url: "" }
+  - { target: bubblemaps,          chain: evm,    url: "" }
+  - { target: mg-detectors-rs,     chain: evm,    url: "" }
