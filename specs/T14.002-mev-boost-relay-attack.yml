@@ -1,0 +1,115 @@
+oak_techniques: [OAK-T14.002]
+spec_id: oak-detection-T14.002
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect attacks on the MEV-Boost relay layer — the off-chain network
+  that holds executed block bodies in escrow under Ethereum out-of-
+  protocol PBS. Four sub-shapes: (a) relay timing / unbundling
+  exploit (April-2023 canonical); (b) censoring relay; (c) relay-data
+  exfiltration; (d) relay-builder vertical collusion. Excludes:
+  T14.001 (consensus-layer slashing — adjacent when block equivocation
+  fires slashing); T13.002 (bundler MEV — analogue at AA EntryPoint,
+  not at the consensus-layer proposer interface); T5.004 (sandwich
+  MEV — T14.002 is the relay-layer attack, T5.004 is the per-block
+  extraction primitive that may be amplified or victimised by it).
+
+data_sources: [beacon_block_log, relay_get_payload_log,
+               relay_get_header_log, builder_bid_stream,
+               canonical_chain_state, relay_inventory]
+
+detection_logic:
+  description: |
+    Four orthogonal paths. PATH A (unbundling / equivocation): relay
+    `getPayload` returns the unblinded body, but the canonical block
+    at that slot has a different block-hash — the relay released the
+    body without the published block actually being canonicalised
+    (April-2023 signature). PATH B (relay censorship): per-relay
+    inclusion rate of a sanctions / exclusion list deviates from
+    cohort baseline by > censorship_z. PATH C (bid-stream leakage /
+    relay-builder vertical collusion): a (relay, builder) pair captures
+    a sustained share of `getHeader`-winning slots that materially
+    exceeds the builder's fair share computed from independent bid-
+    volume metrics. PATH D (validator equivocation): two distinct
+    blocks signed by the same proposer in the same slot, one sent to
+    the relay and a different one published.
+  pseudocode: |
+    # PATH A — relay unbundling / body-release without canonicalisation
+    for each `getPayload` call P on relay R at slot s:
+      released ← P.unblinded_block_hash
+      canonical ← canonical_block_hash_at_slot(s)
+      if released ≠ canonical:
+        proposer_sig_valid ← validate(P.signed_blinded_block.signature)
+        emit(PATH_A, relay=R, slot=s, released, canonical,
+             signed_was_valid=proposer_sig_valid, severity=critical)
+
+    # PATH B — censoring relay vs cohort baseline
+    for each relay R:
+      txs_obs ← txs_in_blocks_via(R, window = censorship_window)
+      sanctions_hits ← txs_obs ∩ sanctions_list
+      cohort ← peer_relays
+      cohort_rate ← median(inclusion_rate(r, sanctions_list, censorship_window)
+                            for r in cohort)
+      r_rate ← inclusion_rate(R, sanctions_list, censorship_window)
+      if r_rate < cohort_rate × (1 − censorship_z):
+        emit(PATH_B, relay=R, r_rate, cohort_rate, severity=medium)
+
+    # PATH C — relay-builder vertical-collusion outlier
+    for each (relay R, builder B):
+      win_share_r ← getHeader_winning_share(R, B, window = leak_window)
+      fair_share  ← bid_volume_share(B, window = leak_window,
+                                      across = peer_relays)
+      if win_share_r > fair_share × leak_factor
+         and win_share_r > leak_floor:
+        emit(PATH_C, relay=R, builder=B, win_share=win_share_r,
+             fair_share, severity=high)
+
+    # PATH D — validator equivocation (two signed blocks per slot)
+    for each slot s with proposer p:
+      relay_block ← get_payload_log(s).block_hash if any
+      published    ← canonical_block_hash_at_slot(s)
+      others        ← other_signed_blocks(p, s)         # sidecar / equivocation feed
+      if relay_block and published and relay_block ≠ published:
+        emit(PATH_D, slot=s, proposer=p, relay_block, published,
+             severity=critical)
+      elif |others| ≥ 2:
+        emit(PATH_D, slot=s, proposer=p, blocks=others, severity=critical)
+
+parameters:
+  censorship_window:        { type: duration, default: 7d }
+  censorship_z:             { type: number,   default: 0.5 }     # > 50% below cohort median
+  sanctions_list:           { type: list,     default: [] }
+  peer_relays:              { type: list,     default: [] }
+  leak_window:              { type: duration, default: 30d }
+  leak_factor:              { type: number,   default: 2.0 }
+  leak_floor:               { type: number,   default: 0.1 }     # 10% of slots minimum
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               relay, slot, released_block, canonical_block,
+               builder, proposer, evidence]
+
+test_fixtures:
+  positive:
+    - 2023-mev-boost-equivocation     # canonical April-2023 unbundling + 2024 DOJ indictment
+  negative:
+    - "Patched relay (post-April-2023 publication-gate) with no body-release without canonicalisation"
+    - "Censorship-neutral relay (Aestus / Ultra Sound) with cohort-baseline OFAC inclusion rate"
+    - "Relay-builder pair whose win-share tracks the builder's independently-measured bid-volume fair share"
+
+false_positive_modes:
+  - missed-slot scenarios where canonical block hash is null (PATH A should require a canonical block at the slot)
+  - PATH B false positives during sanctioned-asset inactivity windows where no relay sees the txs (require non-empty sanctions_hits across the cohort)
+  - PATH C false positives for builders genuinely dominant on a single relay due to integration latency advantages — calibrate leak_factor + cross-check fair_share via independent bid-stream
+  - validator equivocation caused by anti-slashing-database failure (operator-procedural; route to T14.001 PATH A instead) — distinguish via consensus-layer slashing presence
+
+mitigations: [OAK-M02, OAK-M11, OAK-M16]
+
+reference_implementations:
+  - { target: flashbots-relay,         chain: ethereum, url: "" }
+  - { target: aestus-relay,            chain: ethereum, url: "" }
+  - { target: ultra-sound-relay,       chain: ethereum, url: "" }
+  - { target: mev-watch,               chain: ethereum, url: "" }
+  - { target: etherscan-pbs-tracker,   chain: ethereum, url: "" }

@@ -1,0 +1,124 @@
+oak_techniques: [OAK-T16.005]
+spec_id: oak-detection-T16.005
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect proposal-text-vs-payload divergence where the on-chain
+  execution semantics differ from the front-end-displayed proposal
+  text — proposals that pass on legitimate vote weight but execute a
+  hidden malicious effect (Tornado Cash 2023, Audius 2022, Curio 2024).
+  Four sub-shapes: self-modifying-contract proposal (hidden setup() /
+  selfdestruct + redeploy); hidden delegatecall to attacker code;
+  storage-layout collision; multisig-to-governance pivot. Excludes:
+  T16.001/.002/.003 (voting-power-acquisition attacks — orthogonal
+  axis); T6.001 (generic source-bytecode mismatch — adjacent class
+  outside the governance-proposal context); legitimate non-trivially-
+  structured proposals (proxy upgrades, parameter-batch updates) with
+  source-verified bytecode and disclosed effects.
+
+data_sources: [proposal_calldata, proposal_text, contract_bytecode,
+               source_verification, governance_storage_layout,
+               post_execution_storage_state]
+
+detection_logic:
+  description: |
+    Four orthogonal paths matching the four sub-shapes. PATH A
+    (proposal-bytecode-vs-source-verified mismatch): deployed proposal
+    contract bytecode is not source-verified or differs from the
+    front-end-referenced source. PATH B (hidden delegatecall /
+    self-modifying primitive): proposal calldata contains delegatecall
+    to non-canonical target, selfdestruct + CREATE2, or setup() / init()
+    that grants privilege. PATH C (storage-layout collision):
+    proposal storage-write target overlaps a privileged slot in a
+    downstream contract sharing storage context (proxy / fork-substrate).
+    PATH D (post-execution privilege-grant): governance-contract
+    storage-state changes after proposal execution include role /
+    admin / voting-power grants structurally inconsistent with the
+    proposal text.
+  pseudocode: |
+    HIDDEN_PRIMITIVES = {delegatecall, selfdestruct, create2_redeploy,
+                          setup, init, _initialize}
+
+    # PATH A — bytecode-vs-source-verified mismatch
+    for each proposal P with non-trivial proposal_contract C_p:
+      if not has_verified_source(C_p):
+        emit(PATH_A, proposal=P.id, contract=C_p,
+             reason="not-source-verified", severity=critical)
+        continue
+      ref ← source_verified_bytecode_for(P.text.referenced_source)
+      if ref ≠ None and code_hash(C_p) ≠ code_hash(ref):
+        emit(PATH_A, proposal=P.id, contract=C_p,
+             expected_hash=code_hash(ref), actual_hash=code_hash(C_p),
+             severity=critical)
+
+    # PATH B — hidden delegatecall / self-modifying primitive
+    for each proposal P:
+      ops ← decode_calldata_recursive(P.payload, proposal_contract(P))
+      hits ← []
+      for op in ops:
+        if op.kind in HIDDEN_PRIMITIVES:
+          target ← op.target
+          if target ∉ canonical_targets(governance_of(P)):
+            hits += [(op, target)]
+      if hits ≠ ∅:
+        emit(PATH_B, proposal=P.id, hidden_ops=hits, severity=critical)
+
+    # PATH C — storage-layout collision
+    for each proposal P with storage_writes_in(P.payload):
+      governor_layout ← storage_layout(governance_of(P))
+      downstream_layouts ← {storage_layout(c)
+                             for c in storage_context_peers(governance_of(P))}
+      for sw in storage_writes_in(P.payload):
+        for dl in downstream_layouts:
+          if slot_collides(sw.slot, governor_layout, dl)
+             and is_privileged_slot(sw.slot, dl):
+            emit(PATH_C, proposal=P.id, write_slot=sw.slot,
+                 colliding_layout=dl.contract, severity=critical)
+
+    # PATH D — post-execution privilege-grant
+    on event ProposalExecuted(P) on governance G:
+      pre  ← privileged_storage_snapshot(G, before = P.execution_block)
+      post ← privileged_storage_snapshot(G, at = P.execution_block + 1)
+      delta ← privileged_state_diff(pre, post)
+      text_implied ← extract_text_implied_grants(P.text)
+      unexpected ← delta − text_implied
+      if unexpected ≠ ∅:
+        emit(PATH_D, proposal=P.id, governance=G,
+             unexpected_grants=unexpected, severity=critical)
+
+parameters:
+  canonical_targets:        { type: object, default: {} }       # per-governor allowlist
+  governance_proposal_lookback: { type: duration, default: 30d }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               governance, proposal_id, contract, hidden_ops,
+               write_slot, unexpected_grants, evidence]
+
+test_fixtures:
+  positive:
+    - 2023-05-tornado-cash-governance     # canonical self-modifying-contract sub-shape
+    - 2022-07-audius                      # canonical storage-collision sub-shape
+    - 2024-03-curio                       # storage-collision against MakerDAO-fork governance proxy
+    - 2025-12-unleash-protocol            # multisig-to-governance pivot sub-shape
+  negative:
+    - "Source-verified proposal bytecode whose effect matches the proposal text exactly"
+    - "Parameter-batch update via canonical executor library (delegatecall to allowlisted helper)"
+    - "Proxy upgrade via timelock-gated canonical upgrade contract on the canonical-targets allowlist"
+
+false_positive_modes:
+  - parameter-batch updates that delegatecall to a canonical executor library (allowlist via canonical_targets)
+  - proposal-text references to source that the front-end UI cannot fully decode (PATH A should fall back to source-verification status, not bytecode-equality)
+  - PATH C false positives on intentional storage-layout reuse in upgradeable contracts (require is_privileged_slot)
+  - PATH D false positives where the proposal text legitimately describes role grants (extract_text_implied_grants must parse role-grant intent)
+
+mitigations: [OAK-M01, OAK-M02, OAK-M03, OAK-M16]
+
+reference_implementations:
+  - { target: forta-bot,             chain: evm, url: "" }
+  - { target: oz-defender-sentinel,  chain: evm, url: "" }
+  - { target: tally-payload-decoder, chain: evm, url: "" }
+  - { target: tenderly-virtualnet,   chain: evm, url: "" }
+  - { target: dune,                  chain: evm, url: "" }

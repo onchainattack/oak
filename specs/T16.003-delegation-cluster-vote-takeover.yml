@@ -1,0 +1,104 @@
+oak_techniques: [OAK-T16.003]
+spec_id: oak-detection-T16.003
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect multi-wallet → single-delegate concentration of voting weight
+  over a multi-week accumulation window, used to clear quorum on a
+  malicious proposal. Underlying token holdings remain distributed
+  across the cluster; the delegation graph collapses voting weight.
+  Compound Proposal-289 / Golden Boys / Humpy canonical anchor.
+  Excludes: T16.001 (flash-loan single-block acquisition); T16.002
+  (direct holdings or T9.001-inflated, not delegation-graph
+  concentration); legitimate large-holder delegation to subject-matter-
+  expert delegates with no self-dealing payload; same-cohort
+  delegation that does not approach quorum.
+
+data_sources: [governance_events, delegation_events, vote_records,
+               proposal_calldata, funder_graph,
+               cross_protocol_governance_history]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (delegation-graph topology):
+    multi-wallet delegation pull to a single delegate within a narrow
+    window concentrates voting weight from a cluster whose funding-
+    graph signal overlaps T8.001 cluster-reuse. PATH B (cross-protocol
+    pattern-of-conduct): the cohort matches a governance-coordination
+    watchlist with documented prior pattern-of-conduct at adjacent
+    protocols (Humpy at Balancer / SushiSwap antecedent record).
+    PATH C (proposer-cohort + payload-beneficiary overlap with
+    delegation-pulled weight): the proposing actor's delegation-pulled
+    weight came from a cluster that is also the proposal's
+    beneficiary.
+  pseudocode: |
+    # PATH A — delegation-graph topology
+    for each governance contract G:
+      events ← delegation_events(G, window = accumulation_window)
+      by_delegate ← group_by(events, key = e.delegate)
+      for delegate, evs in by_delegate.items():
+        delegators ← {e.delegator for e in evs}
+        if |delegators| < min_delegators: continue
+        cluster ← funder_graph_cluster(delegators, hops = trace_hops)
+        if not shared_funding(cluster): continue
+        weight ← Σ voting_weight_at(d, latest) for d in delegators
+        if weight / quorum(G) > quorum_share_threshold:
+          emit(PATH_A, governance=G, delegate, delegators, cluster,
+               weight_share=weight/quorum(G), severity=high)
+
+    # PATH B — cross-protocol pattern-of-conduct match
+    for each PATH_A emit on cluster C:
+      hits ← cross_protocol_pattern_match(
+               C, prior_protocols = governance_cohort_watchlist)
+      if hits ≠ ∅:
+        emit(PATH_B, cluster=C, matched_cohort=hits.cohort_id,
+             prior_protocols=hits.protocols, severity=critical)
+
+    # PATH C — proposer + payload-beneficiary overlap (with delegation)
+    for each proposal P with delegation_pulled_voting_weight(P) > 0:
+      proposer_cluster ← delegation_source_cluster(P.proposer)
+      for op in P.payload.ops:
+        if not touches(op, PRIVILEGED_PROPOSAL_TARGETS): continue
+        beneficiary ← extract_beneficiary(op)
+        ben_cluster ← funder_graph_cluster(beneficiary, hops = trace_hops)
+        if proposer_cluster ∩ ben_cluster ≠ ∅:
+          emit(PATH_C, governance=G, proposal=P.id,
+               proposer_cluster, beneficiary_cluster=ben_cluster,
+               severity=critical)
+
+parameters:
+  accumulation_window:              { type: duration, default: 90d }
+  min_delegators:                   { type: integer, default: 3 }
+  trace_hops:                       { type: integer, default: 3 }
+  quorum_share_threshold:           { type: number,  default: 0.5 }     # ≥ 50% of quorum from cluster
+  governance_cohort_watchlist:      { type: list,    default: [] }      # Humpy / Golden Boys / etc.
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               governance, delegate, cluster_size, weight_share,
+               matched_cohort, prior_protocols, proposal_id, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-07-compound-vote-takeover     # canonical Compound 289 / Golden Boys / Humpy
+  negative:
+    - "Large holder delegating to a subject-matter-expert delegate with no self-dealing payload"
+    - "Multi-wallet delegation by a known protocol DAO to its own subject-matter committee"
+    - "Delegation flow without funder-cluster overlap (independent holders converging on a public delegate)"
+
+false_positive_modes:
+  - legitimate delegation flows (large holder → subject-matter-expert) without funder-cluster overlap (PATH A's shared_funding gate handles)
+  - cohort overlap through CEX hot-wallet allowlist (require shared_funding outside the allowlist)
+  - public delegate consortia operating openly with disclosed beneficiary relationships — PATH C requires beneficiary overlap, not just cohort overlap
+  - PATH B false positives from generic governance participation (require documented prior pattern-of-conduct, not just multi-protocol presence)
+
+mitigations: [OAK-M02, OAK-M11, OAK-M16, OAK-M17]
+
+reference_implementations:
+  - { target: tally-analytics,       chain: evm, url: "" }
+  - { target: boardroom,             chain: evm, url: "" }
+  - { target: deepdao,               chain: evm, url: "" }
+  - { target: karpatkey,             chain: evm, url: "" }
+  - { target: dune,                  chain: evm, url: "" }

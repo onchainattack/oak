@@ -1,0 +1,119 @@
+oak_techniques: [OAK-T16.002]
+spec_id: oak-detection-T16.002
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect proposals where the proposing cohort is also the beneficiary,
+  using voting power held throughout the lifecycle (multi-block /
+  multi-week direct accumulation, or T9.001-inflated position).
+  Mango Markets settlement-vote sub-shape, Build Finance two-proposal
+  probe sub-shape, Compound Proposal-289 direct-accumulation sub-shape.
+  Excludes: T16.001 (single-block flash-loan acquisition, position not
+  held outside window — snapshot mitigation closes T16.001 but not
+  T16.002); T16.003 (delegation-pull from multi-wallet cluster — co-
+  occurs and should both map); legitimate disclosed-beneficiary
+  treasury operations.
+
+data_sources: [governance_events, proposal_calldata, governance_token_transfers,
+               vote_records, funder_graph, off_chain_proposal_text]
+
+detection_logic:
+  description: |
+    Four orthogonal paths. PATH A (proposer-beneficiary overlap):
+    proposing cohort is the explicit beneficiary of the proposal
+    payload via funder-graph cluster overlap. PATH B (text-vs-payload
+    divergence): proposal text frames the action as routine treasury-
+    management while calldata directs treasury to the proposing
+    cohort. PATH C (T9.001 upstream): the proposing cohort's voting
+    weight depends on a position whose value was recently inflated
+    via T9.001-class oracle deviation. PATH D (cohort pattern-of-
+    conduct): the proposing cohort matches a publicly-named
+    governance-coordination cohort with prior pattern-of-conduct at
+    adjacent protocols (Humpy / Golden Boys).
+  pseudocode: |
+    PRIVILEGED_PROPOSAL_TARGETS = {treasury, mint_role, upgrade,
+                                    role_admin, vault, fee_router}
+
+    # PATH A — proposer-beneficiary overlap
+    for each proposal P on governance G:
+      proposer_cluster ← funder_graph_cluster(P.proposer, hops = trace_hops)
+      for op in P.payload.ops:
+        if not touches(op, PRIVILEGED_PROPOSAL_TARGETS): continue
+        beneficiary ← extract_beneficiary(op)
+        ben_cluster ← funder_graph_cluster(beneficiary, hops = trace_hops)
+        if proposer_cluster ∩ ben_cluster ≠ ∅:
+          emit(PATH_A, governance=G, proposal=P.id,
+               proposer_cluster, beneficiary_cluster=ben_cluster,
+               operation=op, severity=critical)
+
+    # PATH B — text-vs-payload divergence
+    for each proposal P:
+      text_actions ← parse_proposal_text(P.text)
+      payload_actions ← decode_calldata(P.payload, abi=G)
+      diff ← payload_actions − text_actions
+      if any(touches(op, PRIVILEGED_PROPOSAL_TARGETS) for op in diff):
+        emit(PATH_B, governance=G, proposal=P.id, hidden_ops=diff,
+             severity=critical)
+
+    # PATH C — T9.001-upstream voting-power inflation
+    for each active proposal P:
+      voters_top ← top_n_voters(P, n = top_n)
+      for v in voters_top:
+        position_value ← voting_position_value_usd(v.address, G)
+        recent_oracle_dev ← max_oracle_deviation_in(
+                              underlying_oracle(v.position),
+                              window = inflation_window)
+        if recent_oracle_dev > t9001_deviation_threshold
+           and position_value > min_position_usd:
+          emit(PATH_C, governance=G, proposal=P.id, voter=v.address,
+               oracle_deviation=recent_oracle_dev, severity=critical)
+
+    # PATH D — cohort pattern-of-conduct match
+    for each proposal P:
+      proposer_cluster ← funder_graph_cluster(P.proposer, hops = trace_hops)
+      hits ← cohort_watchlist_match(proposer_cluster,
+                                     known_cohorts = governance_cohort_watchlist)
+      if hits ≠ ∅:
+        emit(PATH_D, governance=G, proposal=P.id, matched_cohort=hits,
+             prior_protocols=hits.prior_pattern_of_conduct, severity=high)
+
+parameters:
+  trace_hops:                       { type: integer, default: 3 }
+  top_n:                            { type: integer, default: 10 }
+  inflation_window:                 { type: duration, default: 7d }
+  t9001_deviation_threshold:        { type: number,  default: 0.05 }    # 5%
+  min_position_usd:                 { type: number,  default: 100000 }
+  governance_cohort_watchlist:      { type: list,    default: [] }      # Humpy / Golden Boys / etc.
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               governance, proposal_id, proposer_cluster,
+               beneficiary_cluster, hidden_ops, oracle_deviation,
+               matched_cohort, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-10-mango-markets             # canonical T9.001 → T16.002 settlement vote
+    - 2021-03-true-seigniorage-dollar   # earliest direct-market-accumulation T16.002
+    - 2022-02-build-finance-dao         # two-proposal probe-then-execute sub-shape
+    - 2024-07-compound-vote-takeover    # PATH A + PATH D (Golden Boys / Humpy)
+  negative:
+    - "Disclosed-beneficiary treasury management proposal with non-cohort proposer"
+    - "Routine governance signaling vote with no treasury egress"
+
+false_positive_modes:
+  - legitimate self-disclosed bug-bounty / settlement votes where the beneficiary is the proposer with disclosure (PATH A flags; require lack of disclosure as escalator)
+  - cohort overlap from shared CEX hot-wallet funding (must be on funding-allowlist)
+  - T9.001 oracle deviation during legitimate market dislocation (require recent inflation pattern, not just one-shot move)
+  - PATH B false positives where proposal text deliberately references payload diff (parameter-batch updates) — require hidden_ops touching privileged targets
+
+mitigations: [OAK-M02, OAK-M11, OAK-M16, OAK-M17]
+
+reference_implementations:
+  - { target: tally-analytics,       chain: evm, url: "" }
+  - { target: boardroom,             chain: evm, url: "" }
+  - { target: deepdao,               chain: evm, url: "" }
+  - { target: forta-bot,             chain: evm, url: "" }
+  - { target: dune,                  chain: evm, url: "" }

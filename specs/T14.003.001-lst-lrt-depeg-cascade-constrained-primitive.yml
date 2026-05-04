@@ -1,0 +1,116 @@
+oak_techniques: [OAK-T14.003.001]
+spec_id: oak-detection-T14.003.001
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect the LST/LRT depeg-cascade pattern within T14.003 (b),
+  parametrised by which constrained primitive saturates: (i) chain-
+  level redemption-absence (pre-Shapella stETH 2022); (ii) operator-
+  blocked redemption (Renzo ezETH 2024 one-way valve); (iii)
+  withdrawal-queue-depth saturation (Lido stETH / Aave 2025-07).
+  All three sub-classes share the cascade structure secondary-market
+  pressure → bottlenecked redemption → DEX-spot-anchored lending-
+  oracle propagation → looped-leverage liquidation cascade. Excludes:
+  T14.003 sub-cases (a) (c) (d); T9.001 (oracle manipulation —
+  T14.003.001 *uses* DEX-spot-anchored oracles as amplification path
+  but does not require manipulation); legitimate redemption-arbitrage
+  flows that close peg without saturating the constrained primitive.
+
+data_sources: [lrt_state, dex_pool_state, lending_market_state,
+               oracle_feed, withdrawal_queue_state, validator_exit_queue,
+               operator_redemption_status]
+
+detection_logic:
+  description: |
+    Four orthogonal paths matching the three sub-classes plus the
+    cascade-amplification surface. PATH A (chain-level redemption-
+    absence): the underlying staking primitive does not yet support
+    direct redemption; secondary-market is the only clearing path.
+    PATH B (operator-blocked redemption): deposit-side primitive
+    active while withdrawal-side primitive disabled — one-way valve
+    (Renzo ezETH anti-pattern). PATH C (withdrawal-queue-depth
+    saturation): queue depth × per-period throughput exceeds
+    saturation_threshold of the asset's redeemable supply during the
+    sell-pressure window (Lido / Aave 2025-07 anti-pattern). PATH D
+    (cascade amplification via DEX-spot oracle): lending-market oracle
+    consumes secondary-market price; LTV breaches across looped-
+    leverage positions correlate with secondary-market discount.
+  pseudocode: |
+    # PATH A — chain-level redemption-absence
+    for each LST/LRT L:
+      if not protocol_redemption_enabled(L):
+        sec_market ← secondary_market_volume(L, window = pressure_window)
+        if sec_market > pressure_floor:
+          emit(PATH_A, asset=L, secondary_market_volume_usd=sec_market,
+               severity=high)
+
+    # PATH B — operator-blocked redemption (one-way valve)
+    for each LRT L:
+      deposit_active   ← operator_status(L).deposit_enabled
+      withdraw_active  ← operator_status(L).withdraw_enabled
+      if deposit_active and not withdraw_active:
+        sec_pressure ← secondary_market_sell_volume(L,
+                                                     window = pressure_window)
+        emit(PATH_B, lrt=L, deposit_active, withdraw_active,
+             secondary_market_sell_usd=sec_pressure, severity=critical)
+
+    # PATH C — withdrawal-queue-depth saturation
+    for each LST/LRT L with redemption_enabled(L):
+      queue_depth_eth ← withdrawal_queue_depth(L)
+      throughput_per_day ← per_period_throughput(L) × periods_per_day
+      clear_days ← queue_depth_eth / max(throughput_per_day, 1e-9)
+      sec_discount ← max(0, 1 − dex_price(L) / redemption_rate(L))
+      if clear_days > saturation_threshold_days
+         and sec_discount > sec_discount_floor:
+        emit(PATH_C, asset=L, queue_depth_eth, clear_days,
+             secondary_market_discount=sec_discount, severity=critical)
+
+    # PATH D — cascade amplification via DEX-spot oracle
+    for each lending market M with collateral asset L (LST/LRT):
+      oracle_kind ← M.oracle_for(L).kind
+      if oracle_kind ≠ secondary_market_spot: continue
+      sec_discount ← max(0, 1 − dex_price(L) / redemption_rate(L))
+      ltv_breach ← positions_breaching_ltv_under(M, L,
+                                                   discount = sec_discount)
+      if sec_discount > sec_discount_floor and |ltv_breach| > 0:
+        cascade_usd ← Σ position_size_usd(p) for p in ltv_breach
+        emit(PATH_D, market=M, asset=L, secondary_market_discount=sec_discount,
+             positions_at_risk=|ltv_breach|, cascade_usd, severity=critical)
+
+parameters:
+  pressure_window:               { type: duration, default: 24h }
+  pressure_floor:                { type: number,   default: 10000000 }   # $10M
+  saturation_threshold_days:     { type: number,   default: 7 }          # > 7 days clear
+  sec_discount_floor:            { type: number,   default: 0.005 }      # 0.5% off redemption
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               asset, lrt, market, secondary_market_discount,
+               clear_days, positions_at_risk, cascade_usd, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-06-lido-steth-depeg                 # PATH A — chain-level redemption-absence (pre-Shapella)
+    - 2024-04-renzo-ezeth-depeg                # PATH B — operator-blocked redemption (one-way valve)
+    - 2025-07-lido-steth-aave-cascade          # PATH C — withdrawal-queue-depth saturation
+  negative:
+    - "Post-Shapella stETH with deep secondary-market liquidity, queue clearing in < 1 day"
+    - "LRT with redemption-rate-aware lending oracle (PATH D suppressed)"
+    - "Healthy LRT with both deposit and withdraw active and < pressure_floor sell volume"
+
+false_positive_modes:
+  - PATH A on assets that have intentional permanent redemption-absence as design (e.g., synthetic exposure tokens) — annotate via design_intent
+  - PATH B during scheduled multi-day operator maintenance with deposits paused as well (not one-way valve) — require deposit_active and not withdraw_active simultaneously
+  - PATH C false positives during airdrop / event spikes that resolve without ltv breach — pair with sec_discount > floor as the cascade-firing trigger
+  - DEX-spot-anchored oracles on LSTs whose lending-market exposure is below cascade_margin (PATH D should still emit but at lower severity)
+
+mitigations: [OAK-M09, OAK-M11, OAK-M16, OAK-M17]
+
+reference_implementations:
+  - { target: gauntlet,            chain: ethereum, url: "" }
+  - { target: chaos-labs,          chain: ethereum, url: "" }
+  - { target: steakhouse,          chain: ethereum, url: "" }
+  - { target: dune,                chain: ethereum, url: "" }
+  - { target: lido-monitor,        chain: ethereum, url: "" }

@@ -1,0 +1,106 @@
+oak_techniques: [OAK-T16.001]
+spec_id: oak-detection-T16.001
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect same-block flash-borrow of governance tokens used to acquire
+  majority voting power on a treasury-affecting proposal, then repaid
+  in the same execution context. Surface gated by two design
+  conditions: voting-power computed from spot balances at execution
+  time + no minimum proposal-to-execution delay (or delay < flash-
+  loan window). Closing either condition closes the surface. Excludes:
+  T16.002 (multi-block direct accumulation, position held throughout);
+  T16.003 (delegation-pull from multi-wallet cluster); T9.002 (flash-
+  loan precondition — composes); T9.003 (generic governance-attack
+  parent); legitimate same-block governance flows on protocols with
+  snapshot-based voting power.
+
+data_sources: [tx_call_trace, governance_events, governance_token_transfers,
+               proposal_calldata, snapshot_state]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (single-tx flash-loan + vote +
+    execution + repay): a single tx contains flash-loan call, vote /
+    execute on a non-snapshot governor, treasury-affecting payload,
+    and repay. PATH B (governance-design surface inventory): governor
+    reads spot voting-power and lacks minimum proposal-to-execution
+    delay or has emergency-execution path bypassing the lifecycle.
+    PATH C (PoS-validator-stake amplification): the flash-loan
+    amplifies staked-token-derived validator weight past a super-
+    majority threshold in the same execution context (Shibarium
+    bridge sub-shape).
+  pseudocode: |
+    PRIVILEGED_PROPOSAL_TARGETS = {treasury, mint_role, upgrade,
+                                    role_admin, owner_set, fee_router}
+
+    # PATH A — single-tx flash-loan + vote + treasury-affecting payload
+    for each tx T touching a governance contract G:
+      flashloan ← exists frame f in T : selector(f) ∈ FLASHLOAN_PROVIDERS
+      acquired ← Σ T.token_in[gov_token(G)]
+      vote_or_exec ← any(f.selector ∈ {castVote, queue, execute, emergencyCommit}
+                          and f.contract == G for f in T.frames)
+      proposal ← linked_proposal(T)
+      payload_priv ← any(touches(op, PRIVILEGED_PROPOSAL_TARGETS)
+                          for op in proposal.ops)
+      if flashloan and vote_or_exec and payload_priv
+         and not snapshot_used(G, T)
+         and acquired > acq_floor × circulating(gov_token(G)):
+        emit(PATH_A, tx=T.hash, governance=G, borrowed_usd=flashloan_usd(T),
+             severity=critical)
+
+    # PATH B — governance-design surface (pre-deployment / one-shot)
+    for each governance contract G:
+      reads_spot ← reads_spot_voting_power(G)
+      no_delay   ← min_proposal_to_execution_delay(G) < flashloan_atomicity_window
+      emergency  ← has_emergency_execution_path(G)
+      if reads_spot and (no_delay or emergency):
+        emit(PATH_B, governance=G,
+             surface={"spot": reads_spot, "no_delay": no_delay,
+                      "emergency": emergency}, severity=high)
+
+    # PATH C — PoS-validator-stake amplification (Shibarium-class)
+    for each tx T on a PoS bridge / staking contract S:
+      flashloan ← exists frame f in T : selector(f) ∈ FLASHLOAN_PROVIDERS
+      stake_amp ← stake_balance_change(S, T) > 0
+      checkpoint_or_proposal ← any(f.selector ∈ S.consensus_checkpoint_funcs
+                                    for f in T.frames)
+      if flashloan and stake_amp and checkpoint_or_proposal
+         and not snapshot_used_for_validator_weight(S, T):
+        emit(PATH_C, tx=T.hash, contract=S,
+             stake_amplification_usd=stake_amp_usd(T), severity=critical)
+
+parameters:
+  acq_floor:                       { type: number,  default: 0.10 }   # ≥ 10% of supply
+  flashloan_atomicity_window:      { type: duration, default: 12s }   # 1 EVM block
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               governance, contract, tx, borrowed_usd,
+               stake_amplification_usd, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-04-beanstalk                    # canonical T16.001 + T9.002 + T9.003 chain
+    - 2024-03-curio                        # PATH A + T16.005 storage-collision composition
+    - 2025-09-shibarium-bridge             # PATH C — PoS validator-stake amplification
+  negative:
+    - "Compound Governor Bravo proposal with checkpoint snapshot + 2-day timelock"
+    - "Flash-loan-backed atomic arbitrage that touches no governance contract"
+
+false_positive_modes:
+  - legitimate flash-loan-funded participation in a snapshot-based governor (PATH A's snapshot_used filter handles)
+  - large stablecoin movements through a governance contract for treasury operations that don't actually change voting weight (PATH A's vote_or_exec gate filters)
+  - PATH C false positives on staking flows that don't cross consensus-checkpoint surfaces — require checkpoint_or_proposal frame
+  - governance contracts in test / staging that flag PATH B by design — restrict to mainnet
+
+mitigations: [OAK-M02, OAK-M11, OAK-M16, OAK-M17]
+
+reference_implementations:
+  - { target: forta-bot,             chain: evm, url: "" }
+  - { target: oz-defender-sentinel,  chain: evm, url: "" }
+  - { target: tally-analytics,       chain: evm, url: "" }
+  - { target: tenderly-virtualnet,   chain: evm, url: "" }
+  - { target: dune,                  chain: evm, url: "" }

@@ -1,0 +1,122 @@
+oak_techniques: [OAK-T14.003]
+spec_id: oak-detection-T14.003
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect restaking-protocol cascading risk where the same staked
+  assets simultaneously secure multiple AVSs, an LRT wraps restaked
+  stake, or a small operator set concentrates AVS coverage. Four
+  sub-cases: (a) AVS-design slashing-cascade; (b) LRT depeg cascade
+  (refined sub-class detection in T14.003.001); (c) operator
+  concentration risk; (d) slashing-as-economic-attack. Detection is
+  primarily pre-event surface inventory plus runtime cascade
+  monitoring. Excludes: T14.001 (single-validator slashing — composes
+  as ignition); T14.002 (relay attack); single-AVS contract bugs
+  (T9-class); legitimate high-TVL AVS without operator-overlap
+  concentration.
+
+data_sources: [restaking_protocol_state, avs_registry, operator_registry,
+               lrt_state, lending_market_state, oracle_feed,
+               slashing_event_log, funder_graph]
+
+detection_logic:
+  description: |
+    Five orthogonal paths. PATH A (per-operator AVS concentration):
+    operator secures > avs_concentration of stake-weight or > N AVSs.
+    PATH B (cross-AVS shared-stake graph): connected component of AVSs
+    sharing operators carries > component_tvl in cumulative TVL.
+    PATH C (LRT depeg propagation): LRT/ETH peg deviates beyond band
+    correlated with underlying slashing or oracle disagreement. PATH D
+    (lending-market LRT exposure): liquidation-cascade-size estimate
+    for n% LRT depeg exceeds protocol's solvency margin. PATH E
+    (slashing event causes cross-AVS shrinkage): a slash on AVS-A
+    reduces the security budget of AVS-B / C below the published
+    threshold via shared operator stake.
+  pseudocode: |
+    # PATH A — per-operator AVS concentration
+    for each operator O in operator_registry:
+      avss ← avss_secured_by(O)
+      stake_share ← Σ avs_stake(a, O) / total_stake(a) for a in avss
+      max_share ← max(stake_share)
+      if |avss| > avs_count_max or max_share > avs_concentration:
+        emit(PATH_A, operator=O, avs_count=|avss|, max_share, severity=high)
+
+    # PATH B — cross-AVS shared-stake graph
+    G ← graph(nodes = avs_registry,
+              edges = {(a,b, shared_stake_fraction(a,b))
+                       for a, b in pairs(avs_registry)
+                       if shared_stake_fraction(a, b) > shared_stake_floor})
+    for c in connected_components(G):
+      cum_tvl ← Σ tvl_usd(a) for a in c
+      if cum_tvl > component_tvl_floor:
+        emit(PATH_B, component_avss=c, cumulative_tvl_usd=cum_tvl,
+             severity=high)
+
+    # PATH C — LRT depeg propagation
+    for each LRT L:
+      peg ← lrt_eth_price(L) / redemption_rate(L)
+      window_holds ← all(|peg(t) − 1| > peg_band for t in last(peg_window))
+      slash_in_window ← ∃ slashing on underlying(L) in last(peg_window)
+      if window_holds and (slash_in_window or oracle_disagreement(L)):
+        emit(PATH_C, lrt=L, current_peg=peg, slash_correlated=slash_in_window,
+             severity=critical)
+
+    # PATH D — lending-market LRT cascade-size estimate
+    for each lending market M:
+      lrt_collat ← {(asset, amount) for (asset, amount) in collateral(M)
+                    if asset.kind == LRT}
+      for depeg in [0.05, 0.10, 0.20]:
+        cascade ← estimate_liquidation_cascade(M, depeg, lrt_collat)
+        if cascade > M.solvency_margin × cascade_margin_factor:
+          emit(PATH_D, market=M, depeg, cascade_usd=cascade, severity=high)
+
+    # PATH E — slashing → cross-AVS shrinkage
+    on slashing s on AVS A and operator O:
+      affected ← avss_secured_by(O) − {A}
+      for B ∈ affected:
+        before ← B.security_budget
+        after  ← before − stake_attributable(O, B) × s.fraction
+        if after < B.published_security_threshold:
+          emit(PATH_E, source_avs=A, affected_avs=B, before, after,
+               operator=O, severity=critical)
+
+parameters:
+  avs_count_max:           { type: integer, default: 8 }
+  avs_concentration:       { type: number,  default: 0.30 }     # > 30% of any AVS stake
+  shared_stake_floor:      { type: number,  default: 0.10 }
+  component_tvl_floor:     { type: number,  default: 1000000000 }   # $1B
+  peg_band:                { type: number,  default: 0.01 }      # 1% off-peg
+  peg_window:              { type: duration, default: 6h }
+  cascade_margin_factor:   { type: number,  default: 1.5 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               operator, avs_count, component_avss, cumulative_tvl_usd,
+               lrt, peg, market, cascade_usd, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-eigenlayer-restaking-airdrop          # AVS slashing-condition cohort context
+    - 2024-04-renzo-ezeth-depeg                  # LRT depeg propagation (refined in T14.003.001)
+    - 2025-07-lido-steth-aave-cascade            # cross-asset cascade context
+  negative:
+    - "AVS using Unique Stake Allocation (operator stake earmarked per AVS — cross-AVS shrinkage cannot fire)"
+    - "LRT with redemption-rate-aware oracle and depeg < peg_band"
+    - "Lending market with LRT cap below cascade_margin_factor × solvency"
+
+false_positive_modes:
+  - operators with high AVS count but Unique Stake Allocation (each AVS slashes only its own earmarked stake) — PATH A should consider stake-isolation primitives
+  - peg deviation during legitimate market dislocation without underlying slashing — PATH C requires correlation with slash or oracle disagreement
+  - PATH D estimates with conservative liquidity assumptions (calibrate via realistic cascade dynamics; lower-bound the estimate)
+  - shared-stake edges through operator-cluster aggregation rather than true protocol-level overlap (require shared_stake_fraction at the protocol layer, not at the operator-cluster layer)
+
+mitigations: [OAK-M09, OAK-M11, OAK-M16, OAK-M17]
+
+reference_implementations:
+  - { target: gauntlet,            chain: ethereum, url: "" }
+  - { target: chaos-labs,          chain: ethereum, url: "" }
+  - { target: steakhouse,          chain: ethereum, url: "" }
+  - { target: l2beat-restaking,    chain: ethereum, url: "" }
+  - { target: dune,                chain: ethereum, url: "" }
