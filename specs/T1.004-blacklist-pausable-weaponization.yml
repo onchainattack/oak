@@ -1,0 +1,114 @@
+oak_techniques: [OAK-T1.004]
+spec_id: oak-detection-T1.004
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect ERC-20-style tokens whose transfer logic is gated by an
+  authority-mutable blacklist mapping or pause flag without time-lock or
+  governance binding — the binary failure-mode counterpart to T1.001's
+  quantitative fee mutation. Excludes: T1.001 (fee mutation, quantitative
+  not binary); compliance-bearing pausable tokens whose issuer is on a
+  vetted-issuer allowlist (USDC / USDT freeze authority, regulated
+  securities); legitimate timelock-gated emergency pause (suppressed via
+  `timelock_allowlist`).
+
+data_sources: [contract_bytecode, contract_source, contract_storage,
+               contract_events, simulation_environment, funder_graph]
+
+detection_logic:
+  description: |
+    Five orthogonal paths. PATH A (static): transfer-path predicate keyed
+    on a state slot whose setter is not time-lock-gated. PATH B (sell-side
+    gate): the predicate is checked only when `to == pair`, producing the
+    "buy-but-cannot-sell" honeypot. PATH C (simulation): differential
+    transfer simulation — pause-state fast-forward, caller-address matrix.
+    PATH D (continuous): `Blacklisted` / `Paused` events post-launch from
+    a non-allowlisted caller. PATH E (cluster): deployer cluster reuses
+    the same primitive across prior deployments.
+  pseudocode: |
+    BLACKLIST_SETTERS = {setBlacklist, addToBlacklist, blockWallet, blockUser, ban}
+    PAUSE_SETTERS     = {pause, setPaused, _pause, freeze, setFrozen}
+    PAUSE_EVENTS      = {Paused(address), Unpaused(address),
+                         Blacklisted(address), TransfersFrozen()}
+    untrusted(g) := g.kind ∈ {Ownable, AccessControl}
+                     and authorities(g) ⊄ timelock_allowlist ∪ vetted_issuer_allowlist
+
+    # PATH A — transfer-path predicate keyed on mutable state
+    transfer_paths ← {_transfer, _update, transferFrom, transfer}
+    for each fn F ∈ transfer_paths(C):
+      gate_slots ← state_slots_read_in_branch_predicates(F)
+      for each setter selector S ∈ writers_to(gate_slots):
+        if S.name ∈ BLACKLIST_SETTERS ∪ PAUSE_SETTERS or sets_bool_flag(S):
+          if untrusted(modifier_chain(S)):
+            emit(PATH_A, fn=F, setter=S, slot=gate_slots, severity=critical)
+
+    # PATH B — sell-side-only gate (to == pair) honeypot sub-pattern
+    for each fn F ∈ transfer_paths(C):
+      preds ← branch_predicates(F)
+      for each p ∈ preds:
+        if depends_on(p, parameter=to) and references(p, gate_slots)
+           and equality_check(p, to == amm_pair_address(C)):
+          emit(PATH_B, fn=F, predicate=p, severity=critical)
+
+    # PATH C — differential simulation matrix
+    if simulation_available:
+      buyers ← sample_callers(funded_eoa, holder_sample, k=sim_caller_count)
+      ok_buy  ← {a : simulate_transfer(C, from=POOL, to=a, amount=sample)}
+      ok_sell ← {a : simulate_transfer(C, from=a, to=POOL, amount=sample)}
+      asym ← ok_buy − ok_sell
+      if asym ≠ ∅:
+        emit(PATH_C, asymmetric_callers=asym, severity=critical)
+      with chain_fork():
+        as(owner): try_call(C, PAUSE_SETTERS)
+        post ← simulate_transfer(C, from=POOL, to=any, amount=sample)
+        if not post.ok:
+          emit(PATH_C, mode=pause_fastforward, severity=critical)
+
+    # PATH D — continuous event monitoring
+    on event E on C where E.signature ∈ PAUSE_EVENTS:
+      caller ← E.tx.from
+      if caller ∉ timelock_allowlist ∪ vetted_issuer_allowlist:
+        emit(PATH_D, event=E.name, caller, tx=E.tx, severity=high)
+
+    # PATH E — deployer cluster reuse across prior deployments
+    cluster ← funder_graph_cluster(deployer(C), hops = trace_hops)
+    prior   ← contracts_deployed_by(cluster) − {C}
+    hits    ← {p ∈ prior : matched_PATH_A_or_B(p)}
+    if |hits| ≥ cluster_hit_threshold:
+      emit(PATH_E, cluster_size=|cluster|, prior_hits=hits, severity=high)
+
+parameters:
+  timelock_allowlist:        { type: list,    default: [] }
+  vetted_issuer_allowlist:   { type: list,    default: [] }   # USDC, USDT, regulated stablecoins
+  sim_caller_count:          { type: integer, default: 8 }
+  trace_hops:                { type: integer, default: 3 }
+  cluster_hit_threshold:     { type: integer, default: 1 }
+
+output_alert: [oak_technique, detection_path, severity, contract_address,
+               chain, predicate, authority, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-Q4-honeypot-token-cohort-cross-chain          # GoPlus 67,241 mints + Snibbb + Feb-2024 9-honeypot operator
+  negative:
+    - "USDC / USDT — pausable + freeze authority, vetted-issuer-allowlisted, must not flag"
+    - "OZ Pausable applied to a multisig+timelock-gated emergency control with non-trivial delay"
+
+false_positive_modes:
+  - regulated stablecoins / compliance-bearing tokens (USDC, USDT) — must be on vetted_issuer_allowlist
+  - timelocked emergency-pause guardian (legitimate operational control) — canonical timelock_allowlist
+  - launch-day fair-launch sniper protection (transient blacklist of known-snipers, removed within calibrated launch window) — calibrate via window-after-deployment
+  - per-pair AMM-only gates that are part of a documented anti-bot launch (ephemeral) — escalate only on persistence past launch window
+
+mitigations: [OAK-M01, OAK-M02, OAK-M03, OAK-M05, OAK-M16, OAK-M17, OAK-M25]
+
+reference_implementations:
+  - { target: slither-plugin,    chain: evm, url: "" }
+  - { target: honeypot-is,       chain: evm, url: "" }
+  - { target: goplus,            chain: evm, url: "" }
+  - { target: tokensniffer,      chain: evm, url: "" }
+  - { target: tenderly-virtualnet, chain: evm, url: "" }
+  - { target: mg-detectors-rs,   chain: evm, url: "" }

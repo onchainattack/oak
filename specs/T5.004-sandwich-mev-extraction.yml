@@ -1,0 +1,101 @@
+oak_techniques: [OAK-T5.004]
+spec_id: oak-detection-T5.004
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect three-transaction sandwich extraction on EVM DEX swaps —
+  attacker front-run + victim swap + attacker back-run within a single
+  block, with the bracketing pair clustering to one operator. Detection
+  is post-hoc attribution (who, whom, how much), not prevention.
+  Excludes: legitimate atomic arbitrage (no victim leg between brackets);
+  cross-block JIT liquidity provision; block-builder MEV-Boost
+  equivocation (T5.004-adjacent — the inverse-victim case in
+  `examples/2023-mev-boost-equivocation.md`); Solana / Jito-bundle
+  sandwich (no global mempool — separate v0.x sub-Technique scope).
+
+data_sources: [block_ordered_txs, dex_trades, mempool_visibility, funder_graph]
+
+detection_logic:
+  description: |
+    Two orthogonal paths. PATH A (per-block triplet): three transactions
+    against the same pool in the same block where the outer two are
+    counter-direction, the middle is the victim, and the outer pair
+    nets a favourable outcome with shared funder. PATH B (operator
+    cluster): roll PATH A hits per submitter / funder cluster and emit
+    when sustained extraction volume crosses thresholds — surfaces
+    persistent operators (`jaredfromsubway.eth`-class).
+  pseudocode: |
+    same_pool(t1, t2) := t1.pool == t2.pool
+    counter_dir(t1, t2) := t1.direction == opposite(t2.direction)
+
+    # PATH A — per-block sandwich triplet
+    for each block b:
+      for each pool P with ≥ 3 swaps in b:
+        swaps ← sorted(swaps_in(b, P), by = tx_index)
+        for i in 0..len(swaps)-3:
+          (a, v, c) ← swaps[i:i+3]
+          if not (same_pool(a, v) and same_pool(v, c)
+                  and counter_dir(a, c)
+                  and a.from ≠ v.from and c.from ≠ v.from):
+            continue
+          extracted ← outcome_value(a) + outcome_value(c) − cost_basis(a, c)
+          victim_loss ← expected_outcome(v, mid_pre = pool_mid(P, b−1))
+                          − realized_outcome(v)
+          cluster ← funder_graph_cluster({a.from, c.from}, hops = trace_hops)
+          if |cluster| == 1 or shared_funding(cluster)
+             and extracted > min_extracted_usd
+             and victim_loss > min_victim_loss_usd:
+            emit(PATH_A, block=b, pool=P, victim=v.tx, brackets=(a.tx, c.tx),
+                 extracted_usd=extracted, victim_loss_usd=victim_loss,
+                 builder=block_builder(b), severity=high)
+
+    # PATH B — operator cluster aggregation
+    for each window W of size cluster_window_blocks:
+      hits ← all_PATH_A_emissions(W)
+      by_operator ← group_by(hits, key = lambda h: funder_cluster_root(h.brackets))
+      for op, op_hits in by_operator:
+        ext_total ← Σ h.extracted_usd for h in op_hits
+        if len(op_hits) ≥ operator_min_hits and ext_total ≥ operator_min_ext_usd:
+          emit(PATH_B, operator=op, window_blocks=W, hit_count=len(op_hits),
+               extracted_usd_total=ext_total,
+               builders=top_k_by_volume(op_hits, key=builder, k=3),
+               severity=high)
+
+parameters:
+  min_extracted_usd:       { type: number,  default: 50 }       # per-incident dust filter
+  min_victim_loss_usd:     { type: number,  default: 25 }
+  trace_hops:              { type: integer, default: 3 }
+  cluster_window_blocks:   { type: integer, default: 7200 }     # ~24h on Ethereum
+  operator_min_hits:       { type: integer, default: 25 }
+  operator_min_ext_usd:    { type: number,  default: 5000 }
+
+output_alert: [oak_technique, detection_path, severity, chain, block,
+               pool_address, victim_tx, brackets, extracted_usd,
+               victim_loss_usd, operator, builder, evidence]
+
+test_fixtures:
+  positive:
+    - 2023-jaredfromsubway-mev                           # canonical persistent operator at scale
+    - 2024-08-ronin-bridge-rescue                        # whitehat MEV-bot rescue, sandwich-pattern exploitation
+  negative:
+    - "Atomic two-leg arbitrage between two pools (no victim leg between brackets)"
+    - "JIT liquidity provision (mint + swap + burn) without counter-direction outer pair"
+    - "Single-operator multi-pool inventory rebalance — counter-direction but no outside victim"
+
+false_positive_modes:
+  - JIT liquidity provision pattern (mint LP → consume swap → burn LP) — not a sandwich, no victim wealth transfer
+  - market-maker inventory rebalance across owned wallets (cluster collapses to one entity, no third-party victim)
+  - aggregator-routed multi-hop arbitrage where the "victim" is the same actor at a different intermediate hop
+  - block-builder reordering of independent swaps that incidentally form a triplet without funder-cluster overlap
+
+mitigations: [OAK-M11, OAK-M12, OAK-M16]
+
+reference_implementations:
+  - { target: dune,            chain: evm,    url: "" }
+  - { target: eigenphi,        chain: evm,    url: "" }
+  - { target: flashbots-protect, chain: evm,  url: "" }   # mitigation surface, not detector
+  - { target: forta-bot,       chain: evm,    url: "" }
+  - { target: mg-detectors-rs, chain: evm,    url: "" }
