@@ -1,0 +1,125 @@
+oak_techniques: [OAK-T15.005]
+spec_id: oak-detection-T15.005
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect compromise of operator-controlled communication channels
+  (Discord moderator / brand X account / Telegram channel admin /
+  Instagram) used to distribute malicious links / contract addresses
+  / mint windows under the legitimate brand. Trust-substrate is
+  brand identity, not smart-contract authority — the heuristic
+  "trust the official channel" is exactly what T15.005 defeats. Also
+  covers defender-side channel-suppression sub-shape (Build Finance
+  bot disable). Excludes: T15.004 (operator infrastructure-credential
+  compromise — different what-the-access-was-used-for); generic
+  external impersonation (T15.005 requires actual channel
+  compromise — message originates from the legitimate handle).
+
+data_sources: [channel_audit_log, account_recovery_feed,
+               oauth_authorisation_log, multimod_review_log,
+               cross_channel_consistency_feed, on_chain_outflow_log]
+
+detection_logic:
+  description: |
+    Three orthogonal paths plus a downstream cohort correlation.
+    PATH A (channel-platform anomaly): account-recovery / login-
+    anomaly / MFA-bypass / OAuth-grant on operator's official channel
+    admin account. PATH B (single-channel actionable announcement):
+    message containing wallet-connect link / contract-address claim /
+    mint window posted on one channel without cross-channel
+    confirmation. PATH C (channel-history modification): pre-
+    compromise messages deleted; legitimate-admin loss-of-access
+    reported. CORRELATION (downstream cohort): drainer-class extraction
+    from users who interacted with the linked content during the
+    compromise window. Plus PATH D (defender-side suppression):
+    operator-internal communication / alerting channel disabled
+    rather than spoofed.
+  pseudocode: |
+    # PATH A — channel-platform admin-account anomaly
+    for each platform P with operator-channel admins:
+      events ← {account_recovery_events(P, ops),
+                login_anomalies(P, ops),
+                mfa_bypass_events(P, ops),
+                oauth_grants(P, ops)}
+      if events ≠ ∅:
+        emit(PATH_A, platform=P, ops=events, severity=critical)
+
+    # PATH B — single-channel actionable announcement w/o cross-confirmation
+    for each msg M from operator official channel C:
+      actionable ← contains_actionable_payload(M.text,
+                          axes = {wallet_connect, contract_address_claim,
+                                   mint_window, transaction_prompt})
+      if not actionable: continue
+      cross_confirmed ← any(equivalent_msg_from(other_channel, M.text,
+                              window = confirmation_window)
+                            for other_channel in operator_channels(C.brand)
+                            if other_channel ≠ C)
+      multimod_approved ← multimod_review_log.contains(M)
+      if not cross_confirmed and not multimod_approved:
+        emit(PATH_B, channel=C, msg=M, severity=critical)
+
+    # PATH C — channel-history modification
+    for each channel C:
+      deletes ← message_deletions(C, window = recent_window)
+      legit_admin_lockouts ← admin_lockout_reports(C)
+      if |deletes| ≥ history_modification_floor or legit_admin_lockouts ≠ ∅:
+        emit(PATH_C, channel=C, deletion_count=|deletes|,
+             admin_lockouts=legit_admin_lockouts, severity=high)
+
+    # PATH D — defender-side channel suppression (Build Finance shape)
+    for each defender-side alerting bot or channel B:
+      offline ← B.offline_during(governance_critical_window)
+      if offline:
+        emit(PATH_D, channel_or_bot=B, mode="defender-suppression",
+             severity=high)
+
+    # CORRELATION — downstream cohort outflows in compromise window
+    for each PATH_A / B / C emit on channel C:
+      window ← C.compromise_window
+      victims ← outflow_addresses(linked_content(C, window),
+                                    classify = drainer_class)
+      if |victims| ≥ cohort_victim_floor:
+        emit(CORRELATION, channel=C, window, victim_count=|victims|,
+             severity=critical)
+
+parameters:
+  operator_channels:                { type: object,  default: {} }   # brand → [channels]
+  confirmation_window:              { type: duration, default: 30m }
+  recent_window:                    { type: duration, default: 24h }
+  history_modification_floor:       { type: integer, default: 5 }
+  governance_critical_window:       { type: duration, default: 7d }
+  cohort_victim_floor:              { type: integer, default: 3 }
+
+output_alert: [oak_technique, detection_path, severity,
+               platform, channel, msg, deletion_count,
+               admin_lockouts, victim_count, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-02-solana-x-account-compromise-cohort   # canonical brand-X-account cohort
+    - 2022-04-bored-ape-discord-wave               # BAYC Discord + Instagram
+    - 2022-04-ronin-discord                        # post-bridge Discord follow-up
+    - 2022-08-yuga-otherside                       # Otherside community-manager
+    - 2022-02-build-finance-dao                    # PATH D defender-side suppression
+  negative:
+    - "Cross-channel-confirmed mint announcement with multimod approval"
+    - "Genuine operator post via documented multi-channel cadence"
+    - "External impersonation post (different handle / not from operator's channel)"
+
+false_positive_modes:
+  - documented multi-channel announcements where cross-confirmation timing was tight (calibrate confirmation_window per project's published cadence)
+  - PATH C false positives from routine moderator deletions (require concurrent admin-lockout signal or platform anomaly)
+  - PATH D false positives from scheduled bot maintenance during non-critical windows (require governance-critical-window overlap)
+  - CORRELATION false positives where victim cohort interacted with content from non-channel sources — restrict to direct linked_content from compromise channel
+
+mitigations: [OAK-M21, OAK-M22, OAK-M30]
+
+reference_implementations:
+  - { target: scamsniffer,         chain: cross-chain, url: "" }
+  - { target: slowmist,            chain: cross-chain, url: "" }
+  - { target: discord-audit-log,   chain: cross-chain, url: "" }
+  - { target: x-platform-audit,    chain: cross-chain, url: "" }
+  - { target: telegram-admin-audit, chain: cross-chain, url: "" }

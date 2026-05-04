@@ -1,0 +1,115 @@
+oak_techniques: [OAK-T15.001]
+spec_id: oak-detection-T15.001
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect targeted social engineering against operator-side personnel
+  (developers, signers, executives, security, customer-support with
+  privileged access) — pretext + payload patterns: LinkedIn fake-job-
+  offer, Telegram fake-recruiter / former-contractor, fake-investor /
+  fake-VC, fake-trading-bot / API-partner, fake-audit-report. Vector,
+  not endpoint state. Excludes: T15.003 (resulting endpoint state —
+  composes); T4 end-user phishing (different victim class — wallet
+  holder vs operator staff); legitimate recruiter / investor / partner
+  outreach (filter on payload-vector step).
+
+data_sources: [operator_mailbox_log, dm_archive, attachment_hash_db,
+               cti_recruiter_pretext_feed, payload_chain_telemetry,
+               privileged_staff_inventory]
+
+detection_logic:
+  description: |
+    Three orthogonal paths matching the dominant pretext channels.
+    PATH A (unsolicited code-execution payload): unsolicited message
+    to privileged staff with attachment / repository / installer
+    requiring code execution to evaluate. PATH B (CTI-feed pretext
+    match): pretext fingerprint matches active vendor advisories
+    (UNC4736 / Citrine Sleet / TraderTraitor / BeaverTail / Contagious
+    Interview / Sapphire Sleet / Storm-1811). PATH C (cross-staff
+    cohort): the same pretext template targets ≥ N privileged staff
+    across the operator within a window — coordination signature.
+  pseudocode: |
+    PRETEXT_CHANNELS = [linkedin, telegram, discord_dm, slack_dm, email]
+    UNSOLICITED_PAYLOAD = [npm_install_required, python_install,
+                            dmg_zip_executable, repository_clone,
+                            pdf_with_unusual_permissions,
+                            calendly_drops_binary]
+
+    # PATH A — unsolicited code-execution payload to privileged staff
+    for each msg M to staff S in privileged_staff_inventory:
+      if M.channel ∉ PRETEXT_CHANNELS: continue
+      if not is_unsolicited(M, S.contact_history): continue
+      payload ← M.attachments ∪ M.embedded_repos ∪ M.installer_links
+      if any(p.kind ∈ UNSOLICITED_PAYLOAD for p in payload):
+        emit(PATH_A, staff=S, channel=M.channel, sender=M.from,
+             payload_kinds=[p.kind for p in payload], severity=critical)
+
+    # PATH B — CTI feed pretext match
+    for each msg M flagged by PATH_A:
+      cti_match ← cti_recruiter_pretext_feed.match(
+                    sender_handle = M.from,
+                    payload_hashes = [hash(p) for p in M.attachments],
+                    pretext_text_features = extract_features(M.text))
+      if cti_match ≠ ∅:
+        emit(PATH_B, msg=M, cti_attribution=cti_match.attribution,
+             advisory_ref=cti_match.advisory_id, severity=critical)
+
+    # PATH C — cross-staff cohort coordination
+    for each window W of size cohort_window:
+      pretext_groups ← group_by(PATH_A_emits in W,
+                                 key = lambda e: pretext_template_fingerprint(e.msg))
+      for fp, hits in pretext_groups.items():
+        targets ← {h.staff for h in hits}
+        if |targets| ≥ cohort_target_min:
+          emit(PATH_C, pretext_fingerprint=fp,
+               targeted_staff_count=|targets|, severity=critical)
+
+parameters:
+  privileged_staff_inventory:    { type: list,    default: [] }
+  cohort_window:                 { type: duration, default: 30d }
+  cohort_target_min:             { type: integer, default: 2 }
+  cti_recruiter_pretext_feed:    { type: object,  default: {} }
+
+output_alert: [oak_technique, detection_path, severity,
+               staff, channel, sender, payload_kinds,
+               cti_attribution, pretext_fingerprint,
+               targeted_staff_count, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-02-bybit                     # Safe{Wallet} dev — largest dollar T15.001 anchor
+    - 2024-10-radiant-capital           # Telegram + Penpie audit-report ZIP
+    - 2022-03-ronin-bridge              # canonical LinkedIn fake-job-offer
+    - 2024-05-dmm-bitcoin               # LinkedIn coding-test → Ginco
+    - 2024-01-concentric                # fabricated-investor pretext
+    - 2019-03-dragonex                  # pre-LinkedIn WFC Proof trading-bot lure
+    - 2025-09-swissborg                 # third-party staking partner (Kiln)
+    - 2021-08-liquid-global             # cohort-class T15.001 anchor
+    - 2017-12-nicehash                  # OAK-G01 cohort entry-vector pattern
+    - 2018-01-coincheck                 # phishing-delivered malware against staff
+    - 2018-06-coinrail                  # spear-phishing-led malware
+    - 2019-11-upbit                     # OAK-G01 entry-vector pattern (NPA Cyber Bureau)
+    - 2020-09-kucoin                    # internal IT compromise consistent with TraderTraitor
+    - 2015-01-bitstamp                  # pre-Lazarus spear-phishing anchor
+  negative:
+    - "Solicited recruiter outreach to staff who has publicly listed availability with no payload attachment"
+    - "Internal team member sharing a repository with documented prior collaboration history"
+    - "Vendor-confirmed legitimate partner email with code attachment matching prior signed reference"
+
+false_positive_modes:
+  - solicited recruiter / investor messages from documented prior contact (filter via contact-history)
+  - legitimate partner outreach with non-executable attachments (PATH A's UNSOLICITED_PAYLOAD filter)
+  - PATH B noise from generic CTI tags without per-pretext fingerprint match (require sender or payload-hash match)
+  - cross-staff false positives from broad recruitment campaigns (require pretext-template fingerprint, not just multi-target)
+
+mitigations: [OAK-M21, OAK-M22]
+
+reference_implementations:
+  - { target: mandiant-cti,            chain: cross-chain, url: "" }
+  - { target: unit42-cti,              chain: cross-chain, url: "" }
+  - { target: microsoft-threat-intelligence, chain: cross-chain, url: "" }
+  - { target: sentinelone,             chain: cross-chain, url: "" }
+  - { target: cisa-aa22-108a,          chain: cross-chain, url: "" }

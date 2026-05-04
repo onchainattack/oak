@@ -1,0 +1,125 @@
+oak_techniques: [OAK-T15.002]
+spec_id: oak-detection-T15.002
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect compromise of build / distribution / packaging / signing /
+  authentication infrastructure — wallet-vendor build pipelines,
+  package registries (npm / PyPI / Cargo), third-party signing-platform
+  pipelines, vendor-internal communications. Defining property is
+  *shared upstream surface* — once published, every downstream
+  consumer is exposed for the compromise window. Excludes: T15.001
+  (the social-engineering vector that produced the publisher
+  credential — composes); T15.003 (developer endpoint state that
+  produced the malicious commit — composes); T11.002 (downstream
+  customer-base extraction event — composes); legitimate version-bump
+  cycles with normal review pathway.
+
+data_sources: [build_pipeline_log, package_registry_advisory_feed,
+               artefact_hash_signed_reference, dependency_install_log,
+               vendor_disclosure_feed, slsa_attestation_chain]
+
+detection_logic:
+  description: |
+    Four orthogonal paths matching the four sub-shapes plus a
+    cohort-level on-chain correlation. PATH A (build-artefact
+    integrity drift): vendor-side runtime integrity verification of
+    build artefacts diverges from a signed reference. PATH B
+    (registry republication anomaly): package republished outside
+    normal cadence with install-side script changes. PATH C (vendor
+    disclosure): registry / vendor publishes compromise advisory or
+    package yank. PATH D (vendor-internal communications): SaaS audit
+    log or ticketing-platform anomaly enabling vendor-customer
+    request manipulation. CORRELATION (downstream cohort outflows
+    aligned to compromise window).
+  pseudocode: |
+    # PATH A — build-artefact integrity drift (vendor-side)
+    for each build B emitted by vendor V:
+      observed_hash ← B.binary_hash
+      reference_hash ← signed_reference_hash(V, B.version, attestation_chain)
+      if reference_hash ≠ None and observed_hash ≠ reference_hash:
+        emit(PATH_A, vendor=V, version=B.version,
+             observed_hash, reference_hash, severity=critical)
+
+    # PATH B — registry republication anomaly
+    for each package P in monitored_dependency_set:
+      versions ← P.versions(window = cadence_window)
+      cadence_norm ← normal_publish_cadence(P)
+      anomalies ← []
+      for v in versions:
+        if rapid_succession(v, cadence_norm)
+           or install_script_changed(v, prior=v.predecessor):
+          anomalies += [v]
+      if anomalies ≠ ∅:
+        emit(PATH_B, package=P.name, anomalous_versions=anomalies,
+             severity=high)
+
+    # PATH C — registry / vendor compromise disclosure
+    for each advisory A ∈ package_registry_advisory_feed
+                          ∪ vendor_disclosure_feed:
+      if A.kind ∈ {compromise, yank, security_advisory}
+         and A.target ∈ monitored_dependency_set ∪ monitored_vendor_set:
+        emit(PATH_C, advisory=A, target=A.target,
+             window=A.compromise_window, severity=critical)
+
+    # PATH D — vendor-internal communications anomaly (DMM / Ginco class)
+    for each vendor V with internal_comm_telemetry:
+      anomalies ← saas_audit_anomaly(V.slack_or_ticketing,
+                                       window = comm_window)
+      if anomalies ≠ ∅:
+        customer_requests ← outgoing_customer_requests(V, comm_window)
+        if any(modified_in_transit(req) for req in customer_requests):
+          emit(PATH_D, vendor=V, anomalies, modified_requests,
+               severity=critical)
+
+    # CORRELATION — downstream cohort outflows aligned to window
+    for each compromise window W from PATH_A/B/C:
+      affected_customers ← consumers_of(W.target)
+      outflows ← drainer_class_outflows(affected_customers, W)
+      if |outflows| ≥ cohort_outflow_floor:
+        emit(CORRELATION, target=W.target, window=W,
+             affected_customer_count=|affected_customers|,
+             outflow_count=|outflows|, severity=critical)
+
+parameters:
+  monitored_dependency_set:   { type: list,     default: [] }
+  monitored_vendor_set:       { type: list,     default: [] }
+  cadence_window:             { type: duration, default: 90d }
+  comm_window:                { type: duration, default: 14d }
+  cohort_outflow_floor:       { type: integer,  default: 5 }
+  attestation_chain:          { type: object,   default: {} }
+
+output_alert: [oak_technique, detection_path, severity,
+               vendor, package, version, observed_hash, reference_hash,
+               advisory, modified_requests,
+               affected_customer_count, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-02-bybit                          # Safe{Wallet} build pipeline — $1.46B
+    - 2023-06-atomic-wallet                  # wallet-vendor build pipeline
+    - 2023-12-ledger-connect-kit             # npm package compromise
+    - 2024-12-solana-web3js-npm-supply-chain # Solana web3.js npm
+    - 2026-01-polymarket-trader-tooling-supply-chain   # npm + GitHub-org
+  negative:
+    - "Routine npm minor version bump with hash matching signed reference + reviewed install script"
+    - "Wallet-vendor scheduled release with attested SLSA provenance and unchanged binary signature"
+
+false_positive_modes:
+  - legitimate security patches republished rapidly (PATH B's install-script-change filter; require non-trivial install-side delta)
+  - vendor-internal Slack noise unrelated to customer requests (PATH D requires modified_in_transit hits)
+  - PATH C false positives from advisory feed errors / retracted advisories — require non-retracted status
+  - cohort outflows during volatility windows that coincidentally align with compromise window (require compromise window from PATH A/B/C, not standalone)
+
+mitigations: [OAK-M01, OAK-M03, OAK-M20, OAK-M22, OAK-M40]
+
+reference_implementations:
+  - { target: github-advanced-security, chain: cross-chain, url: "" }
+  - { target: dependabot,              chain: cross-chain, url: "" }
+  - { target: snyk,                    chain: cross-chain, url: "" }
+  - { target: socket-dev,              chain: cross-chain, url: "" }
+  - { target: slsa-provenance,         chain: cross-chain, url: "" }
+  - { target: sigstore,                chain: cross-chain, url: "" }

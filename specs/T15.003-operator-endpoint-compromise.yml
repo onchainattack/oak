@@ -1,0 +1,124 @@
+oak_techniques: [OAK-T15.003]
+spec_id: oak-detection-T15.003
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect endpoint-state compromise on operator-controlled hosts —
+  developer workstations, signing machines, employee laptops with
+  privileged data access. Implant established (INLETDRIFT,
+  BeaverTail, RustBucket, KandyKorn, ObjCShellz, SwiftLoader),
+  MITM-on-signing-host layer, browser session-cookie exfiltration.
+  Detection lives in EDR / MDM telemetry; on-chain signal is post-
+  event (broadcast tx differs from what the signer reviewed).
+  Excludes: T15.001 (the upstream social-engineering vector —
+  composes); T15.002 (shared-upstream-surface publication — composes
+  when the compromised endpoint pushes a malicious commit); T11
+  custody compromise where keys are stolen rather than the host being
+  in a compromised state.
+
+data_sources: [edr_telemetry, mdm_telemetry, network_proxy_log,
+               implant_signature_db, broadcast_vs_review_diff_log,
+               session_cookie_exfil_log]
+
+detection_logic:
+  description: |
+    Three orthogonal paths plus an out-of-band cross-check. PATH A
+    (EDR-detected unsolicited code execution): operator-privileged
+    endpoint executes unsolicited code matching DPRK / state-aligned
+    implant signatures. PATH B (broadcast-vs-review divergence):
+    on-chain transaction signed by the operator differs from what
+    the operator's UI / Tenderly simulation displayed pre-sign.
+    PATH C (privileged-data exfil): employee laptop with non-signing
+    privileged-data access exhibits exfil-pattern (cookie / OAuth
+    token / customer-DB extract). CROSS-CHECK (anti-forensic teardown):
+    second-stage tooling teardown signature within minutes of
+    extraction — assume successful attackers tear down post-event.
+  pseudocode: |
+    IMPLANT_FAMILIES = {INLETDRIFT, BEAVER_TAIL, RUSTBUCKET, KANDYKORN,
+                        OBJCSHELLZ, SWIFTLOADER, APPLEJEUS}
+
+    # PATH A — EDR-detected implant on privileged endpoint
+    for each EDR event E on host H ∈ operator_privileged_endpoints:
+      if E.process_lineage_matches(IMPLANT_FAMILIES)
+         or E.persistence_path ∈ known_implant_persistence_paths
+         or E.unsolicited_code_executed:
+        emit(PATH_A, host=H, event=E,
+             implant_family=classify(E, IMPLANT_FAMILIES),
+             severity=critical)
+
+    # PATH B — broadcast vs review divergence (Bybit / Radiant signature)
+    for each signed tx T from operator_signing_host H:
+      reviewed ← review_record(T, source = {ui, tenderly_simulation})
+      broadcast ← broadcast_record(T)
+      if reviewed.destination ≠ broadcast.destination
+         or reviewed.value ≠ broadcast.value
+         or reviewed.calldata_hash ≠ broadcast.calldata_hash:
+        emit(PATH_B, host=H, tx=T.hash,
+             reviewed=reviewed, broadcast=broadcast,
+             severity=critical)
+
+    # PATH C — privileged-data exfil from employee laptop
+    for each host H ∈ employee_privileged_data_endpoints:
+      exfil ← exfil_signal(H, axes = {browser_cookie_dump,
+                                        oauth_token_export,
+                                        customer_db_query_anomaly,
+                                        bulk_session_replay})
+      if exfil ≠ ∅:
+        emit(PATH_C, host=H, exfil_axes=list(exfil.keys()),
+             severity=high)
+
+    # CROSS-CHECK — anti-forensic teardown signature
+    for each PATH_A or PATH_B emit on host H:
+      teardown ← second_stage_teardown_signal(H,
+                                                window = post_event_window)
+      if teardown ≠ None:
+        emit(CROSS_CHECK, host=H, teardown_t=teardown.t,
+             teardown_signature=teardown.signature,
+             severity=critical)
+
+parameters:
+  operator_privileged_endpoints:        { type: list,    default: [] }
+  employee_privileged_data_endpoints:   { type: list,    default: [] }
+  operator_signing_host:                { type: list,    default: [] }
+  known_implant_persistence_paths:      { type: list,    default: [] }
+  post_event_window:                    { type: duration, default: 1h }
+
+output_alert: [oak_technique, detection_path, severity,
+               host, event, implant_family, tx, reviewed,
+               broadcast, exfil_axes, teardown_signature, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-02-bybit                  # Safe{Wallet} dev workstation — broadcast-vs-review divergence
+    - 2024-10-radiant-capital        # INLETDRIFT MITM on signing host
+    - 2024-01-concentric             # multisig signer dev-machine compromise
+    - 2017-06-bithumb                # employee-laptop with customer-data DB
+    - 2021-08-liquid-global          # DPRK exchange-side cohort
+    - 2015-01-bitstamp               # pre-Lazarus admin workstation compromise
+    - 2017-12-nicehash               # engineer workstation with wallet-mgmt creds
+    - 2018-01-coincheck              # malware on staff endpoints with NEM key access
+    - 2018-09-zaif                   # operator-endpoint compromise (FSA Japan record)
+    - 2019-11-upbit                  # operator-endpoint compromise (NPA confirmed G01)
+    - 2020-09-kucoin                 # internal IT compromise hot-wallet signing infra
+  negative:
+    - "Operator endpoint with active EDR + signed code execution + reviewed-vs-broadcast match"
+    - "Air-gapped signing host with hardware-wallet display verification"
+
+false_positive_modes:
+  - benign developer-machine activity executing unsolicited code in network-isolated evaluation environments (require operator-privileged tag on host)
+  - PATH B false positives from RPC retry / nonce-bump tx replacements (compare semantic intent, not raw bytes)
+  - employee-laptop bulk-export operations during legitimate business processes (require exfil destinations outside known data-flows)
+  - CROSS-CHECK false positives from routine system updates that match teardown signatures (combine with PATH A or B presence)
+
+mitigations: [OAK-M18, OAK-M19, OAK-M21, OAK-M22]
+
+reference_implementations:
+  - { target: mandiant,                chain: cross-chain, url: "" }
+  - { target: stroz-friedberg,         chain: cross-chain, url: "" }
+  - { target: zeroshadow-seal-911,     chain: cross-chain, url: "" }
+  - { target: jamf,                    chain: cross-chain, url: "" }
+  - { target: sentinelone,             chain: cross-chain, url: "" }
+  - { target: elastic,                 chain: cross-chain, url: "" }
