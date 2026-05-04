@@ -55,6 +55,7 @@ tools/oak.json
 tools/stats.json
 tools/embedded.json
 tools/coverage.json
+tools/specs.json
 coverage/manifest.draft.yml
 src/data/generated.ts
 src/data/documents.ts
