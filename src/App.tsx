@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { siteData } from "./data/generated";
-import { documentBodies } from "./data/documents";
 
 type Tactic = (typeof siteData.tactics)[number];
 type Technique = (typeof siteData.techniques)[number];
@@ -24,13 +23,63 @@ type SearchResult = {
   subtitle: string;
   path: string;
 };
+type DocumentBodies = Record<string, string>;
+type DocumentHtmlState =
+  | { status: "loading"; html: "" }
+  | { status: "loaded"; html: string }
+  | { status: "missing"; html: "" };
 
 const techniqueById = new Map<string, Technique>(
   siteData.techniques.map((technique) => [technique.id, technique]),
 );
 const chainOptions = ["all", "EVM", "Solana", "cross-chain", "chain-agnostic"];
+let documentBodiesCache: DocumentBodies | null = null;
+let documentBodiesPromise: Promise<DocumentBodies> | null = null;
 
 const includes = (value: string, query: string) => value.toLowerCase().includes(query.toLowerCase());
+
+const documentStateForPath = (bodies: DocumentBodies, path: string): DocumentHtmlState => {
+  const html = bodies[path];
+  return typeof html === "string"
+    ? { status: "loaded", html }
+    : { status: "missing", html: "" };
+};
+
+const loadDocumentBodies = () => {
+  if (documentBodiesCache) return Promise.resolve(documentBodiesCache);
+  documentBodiesPromise ??= import("./data/documents").then((module) => {
+    documentBodiesCache = module.documentBodies;
+    return module.documentBodies;
+  });
+  return documentBodiesPromise;
+};
+
+function useDocumentHtml(path: string): DocumentHtmlState {
+  const [state, setState] = useState<DocumentHtmlState>(() =>
+    documentBodiesCache ? documentStateForPath(documentBodiesCache, path) : { status: "loading", html: "" },
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    if (documentBodiesCache) {
+      setState(documentStateForPath(documentBodiesCache, path));
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setState({ status: "loading", html: "" });
+    loadDocumentBodies().then((bodies) => {
+      if (!cancelled) setState(documentStateForPath(bodies, path));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [path]);
+
+  return state;
+}
 
 const cleanInlineText = (value: string) =>
   value
@@ -498,14 +547,20 @@ function IncidentsView({ openDoc }: { openDoc: (path: string) => void }) {
 
 function InlineMarkdown({ path }: { path: string }) {
   const indexEntry = siteData.documentIndex[path as keyof typeof siteData.documentIndex];
-  const html = documentBodies[path];
-  if (!indexEntry || typeof html !== "string") {
+  const documentHtml = useDocumentHtml(path);
+  if (!indexEntry) {
+    return <p className="document-state">Markdown content not available for this entry.</p>;
+  }
+  if (documentHtml.status === "loading") {
+    return <p className="document-state">Loading document body…</p>;
+  }
+  if (documentHtml.status === "missing") {
     return <p className="document-state">Markdown content not available for this entry.</p>;
   }
   return (
     <div
       className="markdown-body markdown-shell"
-      dangerouslySetInnerHTML={{ __html: html }}
+      dangerouslySetInnerHTML={{ __html: documentHtml.html }}
     />
   );
 }
@@ -1696,8 +1751,7 @@ function MarkdownDocument({
   onOpenDoc: (path: string) => void;
 }) {
   const indexEntry = siteData.documentIndex[path as keyof typeof siteData.documentIndex];
-  const html = documentBodies[path];
-  const loadState: "loaded" | "missing" = typeof html === "string" ? "loaded" : "missing";
+  const documentHtml = useDocumentHtml(path);
 
   const documentKind = path.startsWith("examples/")
     ? "Incident"
@@ -1757,7 +1811,7 @@ function MarkdownDocument({
               className="button button-secondary"
               href={reportIssueUrl(documentKind, path, indexEntry?.title ?? path)}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
             >
               Report inaccuracy
             </a>
@@ -1765,7 +1819,7 @@ function MarkdownDocument({
               className="button button-secondary"
               href={`${REPO_URL}/blob/main/${path}`}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
             >
               View source on GitHub
             </a>
@@ -1778,15 +1832,18 @@ function MarkdownDocument({
               This document is not in the precompiled site bundle yet.
             </p>
           )}
-          {indexEntry && loadState === "missing" && (
+          {indexEntry && documentHtml.status === "loading" && (
+            <p className="document-state">Loading document body…</p>
+          )}
+          {indexEntry && documentHtml.status === "missing" && (
             <p className="document-state">Document body not available.</p>
           )}
-          {indexEntry && loadState === "loaded" && typeof html === "string" && !path.endsWith(".md") && (
+          {indexEntry && documentHtml.status === "loaded" && !path.endsWith(".md") && (
             <pre className="raw-document">
-              <code>{html}</code>
+              <code>{documentHtml.html}</code>
             </pre>
           )}
-          {indexEntry && loadState === "loaded" && typeof html === "string" && path.endsWith(".md") && (
+          {indexEntry && documentHtml.status === "loaded" && path.endsWith(".md") && (
             <>
               <DocumentHero
                 kind={documentKind}
@@ -1814,7 +1871,7 @@ function MarkdownDocument({
                   event.preventDefault();
                   onOpenDoc(docTarget);
                 }}
-                dangerouslySetInnerHTML={{ __html: html }}
+                dangerouslySetInnerHTML={{ __html: documentHtml.html }}
               />
             </>
           )}
@@ -2628,25 +2685,41 @@ function App() {
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
-  // Update document.title based on current route — improves browser-tab + sharing UX
+  // Keep route metadata aligned with the visible page for crawlers and sharing.
   useEffect(() => {
     const baseTitle = "OAK — OnChain Attack Knowledge";
+    const baseDescription =
+      "OAK is a common language for on-chain adversary behavior — open vendor-neutral taxonomy of crypto attack Tactics and Techniques.";
     let pageLabel = "";
+    let pageDescription = baseDescription;
     if (techniqueRoute) {
       const t = techniqueById.get(techniqueRoute);
       pageLabel = t ? `${t.id} ${t.name}` : techniqueRoute;
+      pageDescription = t
+        ? `${t.id} ${t.name}: OAK Technique covering ${t.parentTactics.join(", ")} across ${t.chains.join(", ")} attack surfaces.`
+        : `${techniqueRoute}: OAK Technique in the OnChain Attack Knowledge taxonomy.`;
     } else if (mitigationRoute) {
       const m = siteData.mitigations.find((x) => x.id === mitigationRoute);
       pageLabel = m ? `${m.id} ${m.name}` : mitigationRoute;
+      pageDescription = m
+        ? `${m.id} ${m.name}: OAK Mitigation for ${m.audience || "defenders"} mapped to ${m.mapsToTechniques.length} Technique(s).`
+        : `${mitigationRoute}: OAK Mitigation in the OnChain Attack Knowledge taxonomy.`;
     } else if (softwareRoute) {
       const s = siteData.software.find((x) => x.id === softwareRoute);
       pageLabel = s ? `${s.id} ${s.name}` : softwareRoute;
+      pageDescription = s
+        ? `${s.id} ${s.name}: OAK Software entry with observed links to ${s.observedTechniques.length} Technique(s).`
+        : `${softwareRoute}: OAK Software entry in the OnChain Attack Knowledge taxonomy.`;
     } else if (groupRoute) {
       const g = siteData.actors.find((x) => x.id === groupRoute);
       pageLabel = g ? g.title : groupRoute;
+      pageDescription = g
+        ? `${g.title}: OAK Threat Actor entry with observed links to ${g.observedTechniques.length} Technique(s).`
+        : `${groupRoute}: OAK Threat Actor entry in the OnChain Attack Knowledge taxonomy.`;
     } else if (docPath) {
       const idx = siteData.documentIndex[docPath as keyof typeof siteData.documentIndex];
       pageLabel = (idx as { title?: string } | undefined)?.title ?? docPath;
+      pageDescription = `${pageLabel}: source document in the OAK on-chain adversary behavior knowledge base.`;
     } else {
       const viewLabel: Record<string, string> = {
         about: "Overview",
@@ -2659,8 +2732,29 @@ function App() {
         contribute: "Contribute",
       };
       pageLabel = viewLabel[activeView] ?? "";
+      pageDescription = `${pageLabel || "OAK"}: open vendor-neutral knowledge base of adversary Tactics and Techniques observed against on-chain assets.`;
     }
-    document.title = pageLabel ? `${pageLabel} · ${baseTitle}` : baseTitle;
+    const pageTitle = pageLabel ? `${pageLabel} · ${baseTitle}` : baseTitle;
+    const canonicalPath = window.location.pathname === "/" ? "/" : window.location.pathname.replace(/\/+$/, "");
+    const canonicalUrl = `https://onchainattack.org${canonicalPath}`;
+    const setMeta = (selector: string, attribute: "name" | "property", key: string, content: string) => {
+      let el = document.head.querySelector<HTMLMetaElement>(selector);
+      if (!el) {
+        el = document.createElement("meta");
+        el.setAttribute(attribute, key);
+        document.head.appendChild(el);
+      }
+      el.content = content;
+    };
+
+    document.title = pageTitle;
+    document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute("href", canonicalUrl);
+    setMeta('meta[name="description"]', "name", "description", pageDescription);
+    setMeta('meta[property="og:title"]', "property", "og:title", pageTitle);
+    setMeta('meta[property="og:description"]', "property", "og:description", pageDescription);
+    setMeta('meta[property="og:url"]', "property", "og:url", canonicalUrl);
+    setMeta('meta[name="twitter:title"]', "name", "twitter:title", pageTitle);
+    setMeta('meta[name="twitter:description"]', "name", "twitter:description", pageDescription);
   }, [activeView, techniqueRoute, mitigationRoute, softwareRoute, groupRoute, docPath]);
   const maturityOptions = useMemo(
     () => ["all", ...Array.from(new Set(siteData.techniques.map((technique) => technique.maturity).filter(Boolean)))],
@@ -2944,7 +3038,7 @@ function App() {
         type="button"
         className="sidebar-burger"
         aria-label="Toggle navigation"
-        aria-expanded={sidebarOpen}
+        aria-expanded={sidebarOpen ? "true" : "false"}
         onClick={() => setSidebarOpen((v) => !v)}
       >
         <span /><span /><span />
@@ -2974,7 +3068,7 @@ function App() {
           ))}
         </nav>
         <div className="sb-foot">
-          <a href="https://github.com/onchainattack/oak" target="_blank" rel="noreferrer" className="sb-link sb-link-ext">
+          <a href="https://github.com/onchainattack/oak" target="_blank" rel="noopener noreferrer" className="sb-link sb-link-ext">
             <span className="sb-link-tag">↗</span>
             <span className="sb-link-label">GitHub</span>
           </a>
@@ -2998,7 +3092,7 @@ function App() {
               onOpenMitigation={openMitigation}
               onOpenSoftware={openSoftware}
             />
-            <a className="topbar-version" href="https://github.com/onchainattack/oak/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer" title="Schema version + content snapshot date — see VERSIONING.md">
+            <a className="topbar-version" href="https://github.com/onchainattack/oak/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer" title="Schema version + content snapshot date — see VERSIONING.md">
               schema 0.1 · {new Date(siteData.generatedAt).toISOString().slice(0, 10)}
             </a>
           </nav>
@@ -3308,14 +3402,14 @@ function App() {
         </div>
         <div className="foot-section">
           <span className="foot-section-label">data</span>
-          <a href="/tools/oak.json" target="_blank" rel="noreferrer">JSON export</a>
-          <a href="/tools/oak-stix.json" target="_blank" rel="noreferrer">STIX 2.1 bundle</a>
-          <a href="/citations.bib" target="_blank" rel="noreferrer">citations.bib</a>
+          <a href="/tools/oak.json" target="_blank" rel="noopener noreferrer">JSON export</a>
+          <a href="/tools/oak-stix.json" target="_blank" rel="noopener noreferrer">STIX 2.1 bundle</a>
+          <a href="/citations.bib" target="_blank" rel="noopener noreferrer">citations.bib</a>
         </div>
         <div className="foot-section">
           <span className="foot-section-label">community</span>
-          <a href="https://github.com/onchainattack/oak" target="_blank" rel="noreferrer">GitHub</a>
-          <a href="https://github.com/onchainattack/oak-mcp" target="_blank" rel="noreferrer">oak-mcp (AI integration)</a>
+          <a href="https://github.com/onchainattack/oak" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="https://github.com/onchainattack/oak-mcp" target="_blank" rel="noopener noreferrer">oak-mcp (AI integration)</a>
           <a href="#" onClick={(e) => { e.preventDefault(); openDoc("CONTRIBUTING.md"); }}>Contributing</a>
           <a href="#" onClick={(e) => { e.preventDefault(); openDoc("CODE_OF_CONDUCT.md"); }}>Code of conduct</a>
           <a href="#" onClick={(e) => { e.preventDefault(); openDoc("SECURITY.md"); }}>Security</a>
