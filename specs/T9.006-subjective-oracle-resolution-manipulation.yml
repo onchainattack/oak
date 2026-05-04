@@ -1,0 +1,101 @@
+oak_techniques: [OAK-T9.006]
+spec_id: oak-detection-T9.006
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Parent-Technique umbrella detection for manipulation of subjective
+  oracles that adjudicate natural-language claims (UMA DVM, Kleros,
+  Reality.eth, Augur REP). Mitigations OAK lists for T9.001 (TWAP,
+  multi-venue feeds, deviation halts) do NOT apply here — the oracle
+  reads language, not numbers. Four sub-Techniques carry the per-layer
+  detection logic: T9.006.001 (oracle layer — DVM vote capture),
+  T9.006.002 (spec layer — ambiguity), T9.006.003 (resolution-input
+  layer — off-chain reporter coercion), T9.006.004 (information-symmetry
+  layer — operational-insider trading). This parent spec carries the
+  cross-cutting structural-disequilibrium detector and dispatches to
+  per-sub-pattern paths. Excludes: T9.001 (numeric oracle); T9.003
+  (protocol-governance, not oracle-governance).
+
+data_sources: [oracle_vote_logs, prediction_market_state,
+               token_market_cap_feed, market_resolution_spec,
+               off_chain_news_corpus, account_metadata]
+
+detection_logic:
+  description: |
+    Two cross-cutting paths plus dispatch. PATH A (structural
+    disequilibrium): adjudicated-market volume exceeds a fraction of
+    the oracle token's market cap — the prize is larger than the cost
+    of corrupting the vote. PATH B (host-platform admission): the
+    market's host platform publicly characterises the resolution as
+    "incorrect" / "captured" / "unprecedented governance attack" —
+    first-class detection signal at the cohort level. PATH DISPATCH:
+    route any flagged market into per-sub-pattern detectors
+    (T9.006.001 / .002 / .003 / .004).
+  pseudocode: |
+    SUBJECTIVE_ORACLES = {UMA_DVM, Kleros, Reality_eth, Augur_REP}
+
+    # PATH A — structural disequilibrium (cohort-level / pre-event)
+    for each market M observed on a prediction-market venue:
+      O ← resolving_oracle(M)
+      if O ∉ SUBJECTIVE_ORACLES: continue
+      vol ← adjudicated_volume_usd(M)
+      mcap ← token_market_cap_usd(O.token, at = M.resolution_window_start)
+      ratio ← vol / mcap
+      if ratio > disequilibrium_ratio:
+        emit(PATH_A, market=M, oracle=O, volume_usd=vol, oracle_mcap_usd=mcap,
+             ratio, severity = critical if ratio ≥ 1.0 else high)
+
+    # PATH B — host-platform admission monitor
+    for each public_statement S from host_platforms:
+      if mentions_market(S) and matches(S.text, ADMISSION_PATTERNS):
+        emit(PATH_B, market=referenced_market(S), platform=S.author,
+             quote=excerpt(S, 200), severity=high)
+
+    # PATH DISPATCH — route to sub-Technique detectors
+    for each emit from PATH_A or PATH_B:
+      run T9.006.001 — DVM vote capture
+      run T9.006.002 — Resolution-spec ambiguity
+      run T9.006.003 — Off-chain resolution-source coercion
+      run T9.006.004 — Operational-insider trading
+
+parameters:
+  disequilibrium_ratio:    { type: number, default: 0.5 }   # market vol > 50% of oracle mcap
+  ADMISSION_PATTERNS:
+    type: list
+    default:
+      - "unprecedented governance attack"
+      - "resolved incorrectly"
+      - "captured"
+      - "this isn't decentralized"
+  host_platforms:          { type: list,   default: [polymarket, kalshi, augur] }
+
+output_alert: [oak_technique, detection_path, severity, market,
+               oracle, ratio, sub_pattern, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-03-polymarket-uma-ukraine-mineral-deal       # ~$7M market, ~25% single-whale vote
+    - 2025-07-polymarket-zelenskyy-suit                 # ~$237M market, UMA mcap ~$95M (ratio > 2.0)
+    - 2026-03-polymarket-iran-strike-journalist-coercion
+    - 2026-01-polymarket-venezuela-maduro-soldier-insider
+    - 2026-02-polymarket-iran-strike-idf-reservist-insider
+  negative:
+    - "Polymarket on-chain-resolved market (block-height settlement) — no subjective layer"
+    - "Low-volume market well below oracle mcap with no host admission"
+
+false_positive_modes:
+  - low-volume markets where the structural ratio is met but no actual manipulation occurred (PATH A is a screening filter, not a finding)
+  - host-platform statements unrelated to resolution disputes (release-note language overlap with ADMISSION_PATTERNS)
+  - cross-listed markets where the same volume is double-counted across venues
+  - genuine new-information resolutions where the public-information state at resolution time genuinely supported the divergent outcome
+
+mitigations: [OAK-M02, OAK-M11, OAK-M16]
+
+reference_implementations:
+  - { target: dune,                chain: polygon, url: "" }
+  - { target: chainalysis-polymarket-surveillance, chain: polygon, url: "" }
+  - { target: acdc-analytics,      chain: polygon, url: "" }
+  - { target: polymarket-internal, chain: polygon, url: "" }

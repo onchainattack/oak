@@ -1,0 +1,97 @@
+oak_techniques: [OAK-T9.006.003]
+spec_id: oak-detection-T9.006.003
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect off-chain coercion of human reporters whose published account
+  is the load-bearing resolution input for a high-volume subjective-
+  oracle prediction market. The attack vector is non-crypto in technique
+  (extortion, threats, harassment) but the economic motivation is
+  generated on-chain by the market's bounty for a specific reporting
+  outcome. Detection mixes on-chain signals (bettor position + cohort
+  size) with off-chain signals (threat-monitoring, first-person
+  accounts). Excludes: T9.006.001 (oracle-layer attack); T9.006.002
+  (spec-layer attack); generic non-economic harassment of journalists
+  unrelated to a market's resolution payoff.
+
+data_sources: [prediction_market_state, prediction_market_positions,
+               market_resolution_spec, social_media_threat_signals,
+               journalist_first_person_accounts, news_corpus]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (pre-event surface): high-volume
+    market whose resolution spec names < min_sources independent
+    reporters / publications. PATH B (threat signal): bettor-to-
+    reporter social-media interaction concentrated in the resolution
+    window, with content matching THREAT_PATTERNS. PATH C (corroborated
+    coercion): the threatened reporter publishes a first-person account
+    or independent outlets corroborate the coercion attempt.
+  pseudocode: |
+    THREAT_PATTERNS = [
+      "rewrite", "retract", "delete", "or else", "consequences",
+      "we know where", "doxx", physical_threat_lexicon,
+    ]
+
+    # PATH A — narrow-cohort high-volume resolution-input surface
+    for each market M with adjudicated_volume_usd(M) > min_market_volume_usd:
+      sources ← extract_named_sources(M.resolution_spec)
+      reporters ← single_human_reporters_in(sources)
+      if |sources| < min_sources or reporters ≠ ∅:
+        emit(PATH_A, market=M, sources, reporters,
+             volume_usd=adjudicated_volume_usd(M), severity=high)
+
+    # PATH B — bettor-to-reporter threat signal
+    for each market M from PATH_A:
+      bettors  ← addresses_with_position(M, side = position_for_disfavoured_outcome)
+      handles  ← off_chain_handle_links(bettors)         # KYC / ENS / X-handle linkage
+      window   ← [M.resolution_window_start, M.resolution_window_end + 7d]
+      mentions ← social_media_interactions(
+                   from = handles, to = reporters, in_window = window)
+      hits ← [m for m in mentions
+              if any(p in m.text.lower() for p in THREAT_PATTERNS)]
+      if hits ≠ ∅:
+        emit(PATH_B, market=M, reporter=reporters, sample=top_k(hits, 5),
+             severity=critical)
+
+    # PATH C — corroborated coercion (first-person + independent outlets)
+    for each reporter R named in any market's resolution spec:
+      first_person ← published_first_person_threat_account(R)
+      indep ← corroborating_outlets(first_person, distinct = ≥ 2)
+      if first_person ≠ None and indep ≠ ∅:
+        market ← linked_market(first_person, R)
+        emit(PATH_C, reporter=R, market=market,
+             account_url=first_person.url, corroborators=indep,
+             severity=critical)
+
+parameters:
+  min_market_volume_usd:   { type: number,  default: 100000 }
+  min_sources:             { type: integer, default: 2 }
+  position_for_disfavoured_outcome: { type: string, default: "side_favoured_by_resolution_change" }
+  THREAT_PATTERNS:         { type: list,    default: [] }   # extend with locale lexicons
+
+output_alert: [oak_technique, detection_path, severity, market,
+               reporter, threat_sample, corroborators, evidence]
+
+test_fixtures:
+  positive:
+    - 2026-03-polymarket-iran-strike-journalist-coercion   # Times of Israel / Fabian first-person + WaPo + Haaretz
+  negative:
+    - "Sports-betting market with multi-source canonical scoreboard, no single-reporter dependency"
+    - "Multi-outlet political-event market where bettor-side discussion is high but no threat patterns"
+
+false_positive_modes:
+  - high-volume reporter mentions during normal news cycle (no threat-pattern matches) — PATH B's pattern filter
+  - reporter publishes first-person about non-prediction-market harassment — PATH C requires linked_market
+  - automated negative-sentiment social-media noise from non-bettor accounts (botnets) — restrict to handles with provable bettor linkage
+  - markets with multi-source resolution where one named source happens to be a single reporter (the cohort is broad enough that no single reporter is load-bearing)
+
+mitigations: [OAK-M02, OAK-M16]
+
+reference_implementations:
+  - { target: chainalysis-polymarket-surveillance, chain: polygon, url: "" }
+  - { target: news-corpus-monitor, chain: polygon, url: "" }
+  - { target: dune,                chain: polygon, url: "" }

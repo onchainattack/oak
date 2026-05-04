@@ -1,0 +1,110 @@
+oak_techniques: [OAK-T9.006.004]
+spec_id: oak-detection-T9.006.004
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect prediction-market trading by participants with classified-
+  information access to (and operational involvement in) the underlying
+  real-world event — the bettor is one of the causal actors producing
+  the outcome they bet on. Detection is on-chain forensics + off-chain
+  KYC linkage. Excludes: T9.006.001/002/003 (oracle / spec / source
+  attacks); generic-information-asymmetry insider trading on resolved
+  markets where the bettor is merely informed (no operational role);
+  retroactive sharp-longshot wins explained by skill or public-
+  information exploitation.
+
+data_sources: [prediction_market_state, prediction_market_positions,
+               account_metadata, off_ramp_kyc, withdrawal_traces,
+               cohort_baseline_rates, counter_intelligence_links]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (newly-funded sharp longshot):
+    account created in pre-event window, places concentrated bets on
+    longshot outcomes of classified-event-gated markets, wins above
+    cohort baseline. PATH B (lateral disclosure cohort): pair of linked
+    accounts where one is operationally-involved-actor-linked via KYC
+    cross-reference and the other is the betting wallet. PATH C
+    (off-ramp KYC linkage): wallet-to-real-world identification through
+    Kraken / brokerage KYC linkage of withdrawal recipients to cleared-
+    personnel rosters or counter-intelligence flags.
+  pseudocode: |
+    SHARP_LONGSHOT(bet) := odds_at_placement(bet) ≤ longshot_odds_threshold
+                           and resolved_in_favour(bet)
+
+    # PATH A — newly-funded sharp longshot in classified-event window
+    for each market M gated by classified_event_categories:
+      participants ← addresses_with_first_bet_on(M)
+      for each a in participants:
+        age ← M.first_bet_time(a) − account_created_at(a)
+        if age > new_account_window: continue
+        bets ← bets_by(a, in_market_cohort = correlated_markets(M))
+        wins ← [b for b in bets if SHARP_LONGSHOT(b)]
+        win_rate ← |wins| / max(|bets|, 1)
+        baseline ← cohort_baseline_rate(M.category)
+        if |wins| ≥ min_sharp_wins
+           and win_rate ≥ baseline + baseline_margin
+           and Σ b.notional for b in wins ≥ min_position_usd:
+          emit(PATH_A, market=M, account=a, account_age=age,
+               wins=|wins|, win_rate, baseline,
+               severity=critical)
+
+    # PATH B — lateral-disclosure pair (operational actor → civilian bettor)
+    for each PATH_A emit at account a:
+      partners ← linked_accounts(a, hops = link_hops,
+                                 sources = [withdrawal_route, kyc_phone, kyc_email,
+                                            shared_off_ramp_funding, comm_metadata])
+      for p in partners:
+        if cleared_personnel_match(p, rosters = cleared_personnel_rosters)
+           or briefing_chain_link(p, M.classified_event_categories):
+          emit(PATH_B, market=M, civilian_bettor=a,
+               operational_actor_link=p, severity=critical)
+
+    # PATH C — off-ramp KYC + counter-intelligence cross-reference
+    for each withdrawal W from any account flagged by PATH_A:
+      kyc ← off_ramp_kyc_record(W.recipient)
+      if kyc == None: continue
+      if cleared_personnel_match(kyc, rosters = cleared_personnel_rosters)
+         or counter_intelligence_flag(kyc):
+        emit(PATH_C, withdrawal=W, kyc_identity=kyc.public_id,
+             match_basis=match.kind, severity=critical)
+
+parameters:
+  classified_event_categories: { type: list,    default: [military, intelligence, defense_ops, treasury_ops] }
+  new_account_window:          { type: duration, default: 30d }
+  longshot_odds_threshold:     { type: number,  default: 0.20 }      # ≤ 20% implied prob at placement
+  min_sharp_wins:              { type: integer, default: 3 }
+  baseline_margin:             { type: number,  default: 0.30 }      # > baseline + 30 pp
+  min_position_usd:            { type: number,  default: 10000 }
+  cohort_baseline_rate:        { type: object,  default: { military: 0.518, default: 0.14 } }   # ACDC analytics
+  link_hops:                   { type: integer, default: 2 }
+  cleared_personnel_rosters:   { type: object,  default: {} }        # restricted-access cross-ref source
+
+output_alert: [oak_technique, detection_path, severity, market,
+               account, account_age, win_rate, baseline,
+               operational_actor_link, kyc_match, evidence]
+
+test_fixtures:
+  positive:
+    - 2026-01-polymarket-venezuela-maduro-soldier-insider     # Van Dyke: account created 7d pre-event, ~$33K → ~$404K
+    - 2026-02-polymarket-iran-strike-idf-reservist-insider    # IDF reservist + civilian co-conspirator (PATH B)
+  negative:
+    - "Skilled long-time prediction-market trader with sustained sharp-longshot rate driven by public-information exploitation"
+    - "Newly-created account with sharp longshot win on a non-classified-event market (sports, weather, public elections)"
+
+false_positive_modes:
+  - skilled bettors with public-information advantage (research, model-driven) — PATH A's account-age + cohort filter handles this; calibrate baseline_margin per category
+  - copy-traders following a public alpha account — exclude when bet timing follows a public-broadcast lead
+  - markets that happened to gate on later-classified events but were public at trade time — verify event was classified at bet placement
+  - lateral-disclosure false positives where the linked account is a family member or unrelated co-funder — require briefing_chain_link or cleared_personnel_match, not generic shared-funding alone
+
+mitigations: [OAK-M02, OAK-M11, OAK-M16]
+
+reference_implementations:
+  - { target: chainalysis-polymarket-surveillance, chain: polygon, url: "" }
+  - { target: acdc-analytics,         chain: polygon,  url: "" }
+  - { target: kalshi-cross-blocklist, chain: polygon,  url: "" }
+  - { target: dune,                   chain: polygon,  url: "" }

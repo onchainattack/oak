@@ -1,0 +1,94 @@
+oak_techniques: [OAK-T9.006.001]
+spec_id: oak-detection-T9.006.001
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect direct corruption of the subjective-oracle layer by tokenholders
+  with material positions in the adjudicated market. Voter-bettor
+  identity overlap drives resolution against the underlying real-world
+  signal. Excludes: T9.006.002 (spec ambiguity — voters cite a reasonable
+  interpretation, not "vote against criteria"); T9.003 (protocol-
+  governance, not oracle-resolution); legitimate disputed resolutions
+  where the public information state genuinely supported the divergent
+  outcome (calibrate via media_consensus signal).
+
+data_sources: [oracle_vote_logs, prediction_market_positions,
+               token_holder_graph, off_chain_news_corpus]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (voter–bettor overlap): top-N
+    resolution voters hold material bettor-side positions on the
+    adjudicated market. PATH B (whale concentration): single voter or
+    small cluster captures > vote_concentration of resolution weight
+    on a high-volume market. PATH C (media divergence): oracle
+    resolution diverges from media consensus on the underlying claim
+    by > divergence_threshold.
+  pseudocode: |
+    # PATH A — voter–bettor identity overlap
+    for each disputed market M at resolution time t:
+      voters ← top_n_voters(M.oracle, M.resolution_round, n = top_n)
+      for each v in voters:
+        bettor_pos ← position_value_usd(v.address, M)
+        if bettor_pos > min_position_usd
+           and aligned(v.vote_choice, sign(bettor_pos)):
+          emit(PATH_A, market=M, voter=v.address,
+               vote_weight=v.weight, bettor_pos_usd=bettor_pos,
+               severity=critical)
+
+    # PATH B — whale / cluster vote concentration
+    for each resolution round R on market M:
+      cluster ← funder_graph_cluster(voters_in(R), hops = trace_hops)
+      max_share ← max(weight_of(c) / total_weight(R) for c in clusters(R))
+      if max_share > vote_concentration
+         and adjudicated_volume_usd(M) > min_market_volume_usd:
+        emit(PATH_B, market=M, top_cluster_share=max_share,
+             market_volume_usd=adjudicated_volume_usd(M),
+             severity=critical)
+
+    # PATH C — oracle vs media-consensus divergence
+    for each resolved market M:
+      consensus ← media_consensus(M.claim, sources = consensus_sources,
+                                   window = pre_resolution_window)
+      if consensus ≠ None
+         and disagreement(M.outcome, consensus) > divergence_threshold:
+        emit(PATH_C, market=M, oracle_outcome=M.outcome,
+             media_consensus=consensus, sources_count=|consensus.sources|,
+             severity=high)
+
+parameters:
+  top_n:                     { type: integer, default: 10 }
+  min_position_usd:          { type: number,  default: 10000 }
+  vote_concentration:        { type: number,  default: 0.20 }    # > 20% of vote
+  min_market_volume_usd:     { type: number,  default: 1000000 }
+  trace_hops:                { type: integer, default: 3 }
+  consensus_sources:         { type: list,    default: [reuters, ap, afp, bbc] }
+  pre_resolution_window:     { type: duration, default: 7d }
+  divergence_threshold:      { type: number,  default: 0.7 }     # 70% sources disagree with oracle
+
+output_alert: [oak_technique, detection_path, severity, market,
+               oracle, voter_or_cluster, share, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-03-polymarket-uma-ukraine-mineral-deal       # single whale ~25% vote, no real-world deal
+    - 2025-07-polymarket-zelenskyy-suit                 # top-10 voters ~30% / multi-source media consensus
+  negative:
+    - "Polymarket Trump-2024-election-winner market — UMA vote aligned with media consensus, no concentration"
+    - "Disputed market where the disputed outcome later proved correct (genuine new-information resolution)"
+
+false_positive_modes:
+  - long-term UMA delegates whose voting weight on many markets exceeds the threshold but whose pattern is non-strategic — calibrate via per-voter aligned-vs-bettor-position rate over time
+  - markets where the media-consensus signal is itself thin (< 3 sources) — require min |consensus.sources|
+  - voters whose position originated post-vote (no bettor-side payoff at vote time) — require position established pre-vote
+  - genuine ambiguity cases that should route to T9.006.002 — when voters cite a reasonable spec interpretation rather than vote-against-criteria
+
+mitigations: [OAK-M02, OAK-M11, OAK-M16, OAK-M17]
+
+reference_implementations:
+  - { target: dune,                chain: polygon, url: "" }
+  - { target: chainalysis-polymarket-surveillance, chain: polygon, url: "" }
+  - { target: uma-voter-analytics, chain: ethereum, url: "" }
