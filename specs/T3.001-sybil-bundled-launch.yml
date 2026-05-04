@@ -1,0 +1,115 @@
+oak_techniques: [OAK-T3.001]
+spec_id: oak-detection-T3.001
+version: 0.1.0
+maturity: stable
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect coordinated multi-wallet acquisition where nominally
+  independent buyers funded from a common upstream source acquire a
+  large supply share within the first blocks/slot of trading
+  (launch-time bundling) or qualifying activity windows (airdrop
+  sybil). Load-bearing surface is the funder graph, not individual
+  addresses. Excludes: T3.002 (wash-trade volume — different artefact);
+  T8.001 (cross-incident operator continuity — composes); legitimate
+  CEX-funded retail clusters with high temporal variance (calibrated
+  out via tight-window discriminator).
+
+data_sources: [pool_creation_log, dex_trades, jito_bundles,
+               funder_graph, airdrop_qualification_log,
+               token_transfer_events]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (launch-time bundling): early-
+    buyer funder-graph cluster acquires combined supply share above
+    threshold within the first blocks/slot of trading; on Solana,
+    multiple buys in the same Jito bundle as pool initialisation.
+    PATH B (airdrop sybil): qualifying-activity wallets share funder-
+    graph cluster + identical action sequences within short windows.
+    PATH C (cross-token recurrence): the same funder cluster appears
+    upstream of a new launch with prior T3.001 / T5 extraction history
+    (T8.001 link).
+  pseudocode: |
+    # PATH A — launch-time bundling
+    for each pool P with launch event:
+      window ← [P.launch_block, P.launch_block + launch_window_blocks]
+      buyers ← {b for b in dex_trades(P, in_window=window) if b.is_buy}
+      cluster ← funder_graph_cluster({b.from for b in buyers}, hops = trace_hops)
+      cluster_share ← Σ supply_acquired(b) for b in buyers if b.from ∈ cluster
+                       / total_supply(P.token)
+      time_variance ← funding_time_variance(cluster)
+      if cluster_share > launch_share_threshold
+         and time_variance < tight_funding_window_seconds
+         and shared_funding(cluster):
+        emit(PATH_A, pool=P, cluster_size=|cluster|,
+             supply_share=cluster_share, severity=critical)
+      # Solana-specific: same Jito bundle as pool initialisation
+      if chain(P) == solana:
+        bundle ← jito_bundle_containing(P.creation_slot)
+        bundle_buys ← [b for b in bundle if b.is_buy_of(P.token)]
+        if |bundle_buys| ≥ jito_bundle_buys_min:
+          emit(PATH_A, pool=P, mode="jito-bundle",
+               bundle_buy_count=|bundle_buys|, severity=critical)
+
+    # PATH B — airdrop sybil cluster
+    for each airdrop A with qualification window W:
+      qualifiers ← addresses_meeting_qualification(A, W)
+      cluster_groups ← funder_graph_clusters(qualifiers, hops = trace_hops)
+      for c in cluster_groups:
+        if |c| < min_sybil_cluster_size: continue
+        seq_similarity ← median(action_sequence_similarity(a, b)
+                                  for a, b in pairs(c))
+        if seq_similarity > sequence_similarity_threshold
+           and shared_funding(c):
+          emit(PATH_B, airdrop=A, cluster_size=|c|,
+               sequence_similarity=seq_similarity, severity=critical)
+
+    # PATH C — cross-token recurrence
+    for each cluster C from PATH_A or PATH_B:
+      prior ← prior_t3001_or_t5_extraction_events(C,
+                                                    lookback = recurrence_window)
+      if |prior| ≥ recurrence_threshold:
+        emit(PATH_C, cluster=C, prior_event_count=|prior|,
+             severity=critical)
+
+parameters:
+  launch_window_blocks:           { type: integer, default: 5 }
+  trace_hops:                     { type: integer, default: 3 }
+  launch_share_threshold:         { type: number,  default: 0.30 }    # > 30% in first blocks
+  tight_funding_window_seconds:   { type: integer, default: 3600 }    # < 1h funding variance
+  jito_bundle_buys_min:           { type: integer, default: 5 }
+  min_sybil_cluster_size:         { type: integer, default: 20 }
+  sequence_similarity_threshold:  { type: number,  default: 0.8 }
+  recurrence_window:              { type: duration, default: 365d }
+  recurrence_threshold:           { type: integer, default: 1 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               pool_address, airdrop, cluster_size, supply_share,
+               sequence_similarity, prior_event_count, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-2025-pump-fun-bonding-curve-rug-cohort       # Rug Republic 12-cluster cohort
+    - 2025-Q1-hayden-davis-kelsier-cluster              # Davis / Kelsier across LIBRA / MELANIA / M3M3 / WOLF
+    - 2024-07-neiro-solana-bundled-launch-rug           # bundled-launch concentration
+    - 2024-10-sharpei-solana-funnel-collapse-rug        # 60% concentration + funnel
+  negative:
+    - "Organic launch with diverse funding sources and < launch_share_threshold cluster concentration"
+    - "CEX-funded retail cluster with high temporal funding variance (> tight_funding_window_seconds)"
+
+false_positive_modes:
+  - shared CEX hot-wallet funder for multiple unrelated retail buyers — discriminator is intra-cluster timing variance (CEX retail funds across days, not minutes)
+  - launchpad-internal infrastructure that touches many tokens by design — allowlist via launchpad-infrastructure addresses
+  - airdrop qualifiers who legitimately followed identical onboarding tutorials — require funder-cluster overlap, not action-sequence similarity alone
+  - market-maker / aggregator bots sharing infrastructure (PATH A's tight_funding_window_seconds + supply_share filter handles)
+
+mitigations: [OAK-M02, OAK-M04, OAK-M05, OAK-M25]
+
+reference_implementations:
+  - { target: bubblemaps,      chain: cross-chain, url: "" }
+  - { target: trustalabs-sybil, chain: cross-chain, url: "" }
+  - { target: dune,            chain: cross-chain, url: "" }
+  - { target: rugcheck,        chain: solana, url: "" }
+  - { target: mg-detectors-rs, chain: cross-chain, url: "" }

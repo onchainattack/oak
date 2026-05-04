@@ -1,0 +1,95 @@
+oak_techniques: [OAK-T2.003]
+spec_id: oak-detection-T2.003
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect "LP locked" claims where the lock receipt is on chain A but
+  the actual tradable LP token lives on chain B — multi-chain extension
+  of T2.002 where defender tooling and locker-registry coverage are
+  weaker on the pool-side chain. Three sub-shapes: (a) chain mismatch
+  in the lock receipt; (b) address-overlap counterfeit locker on
+  chain B at the same address as a legitimate locker on chain A; (c)
+  multi-chain LP without per-chain lock receipts. Excludes: T2.002
+  (single-chain locker misrepresentation); T10.x (bridge incidents
+  proper); legitimate cross-chain deployments where each chain has its
+  own locker receipt.
+
+data_sources: [marketing_lock_claim, pool_state, locker_registry,
+               cross_chain_contract_bytecode, contract_creation_log]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (chain-binding mismatch): the LP
+    token referenced by the lock entry on chain A is not the same
+    token as the tradable pool on chain B. PATH B (address-overlap
+    counterfeit): a locker contract address on chain B matches a
+    canonical locker address on chain A but the deployed bytecode at
+    that address on chain B differs from the canonical reference.
+    PATH C (multi-chain LP without per-chain receipts): the project's
+    pool exists on ≥ 2 chains but only one chain has a lock receipt.
+  pseudocode: |
+    # PATH A — chain-binding mismatch in the lock receipt
+    for each project P with marketing claim "LP locked":
+      receipt ← lock_receipt(P.lock_claim)
+      receipt_chain ← receipt.chain
+      receipt_lp_token ← receipt.lp_token
+      pool_chain ← pool_chain_of(P.tradable_pool)
+      if receipt_chain ≠ pool_chain:
+        emit(PATH_A, project=P, receipt_chain, pool_chain,
+             receipt_url=P.lock_claim.url, severity=critical)
+      elif token_chain_of_origin(receipt_lp_token) ≠ pool_chain:
+        emit(PATH_A, project=P, mode="receipt-token-not-pool-token",
+             severity=critical)
+
+    # PATH B — address-overlap counterfeit on the pool's chain
+    for each lock_claim L on project P:
+      pool_chain ← pool_chain_of(P.tradable_pool)
+      claimed_locker ← L.locker_address
+      canonical ← canonical_locker_with_address(claimed_locker)
+      if canonical == None: continue
+      if canonical.chain == pool_chain: continue
+      deployed ← getCode(claimed_locker, on = pool_chain)
+      reference ← canonical_bytecode(canonical)
+      if deployed ≠ reference:
+        emit(PATH_B, project=P, locker=claimed_locker,
+             canonical_chain=canonical.chain, pool_chain,
+             severity=critical)
+
+    # PATH C — multi-chain LP without per-chain receipts
+    for each project P:
+      pool_chains ← {pool_chain_of(p) for p in pools_of(P)}
+      receipt_chains ← {r.chain for r in lock_receipts_of(P)}
+      missing ← pool_chains − receipt_chains
+      if missing ≠ ∅:
+        emit(PATH_C, project=P, pool_chains, receipt_chains,
+             missing_chains=missing, severity=high)
+
+parameters:
+  canonical_locker_registry: { type: object, default: {} }   # per-chain → [{address, codehash, vendor}]
+
+output_alert: [oak_technique, detection_path, severity,
+               project, pool_chain, receipt_chain, locker_address,
+               missing_chains, evidence]
+
+test_fixtures:
+  positive: []                            # cohort-level only at v0.1; no canonical incident anchor
+  negative:
+    - "Project with single-chain LP and chain-local lock receipt at a registry-canonical locker"
+    - "Multi-chain project with separate per-chain lock receipts at registry-canonical lockers"
+
+false_positive_modes:
+  - legitimate batch / aggregate lock receipts from a unified locker that genuinely covers multiple chains via signed cross-chain attestation (annotate via cross_chain_locker_allowlist)
+  - early-deployment phases where the project has not yet shipped per-chain locks (annotate via deployment_grace_window)
+  - PATH B false positives where the canonical locker has a documented cross-chain deployment with identical bytecode (require deployed ≠ reference, not address overlap alone)
+  - testnet pools that share addresses with mainnet lockers — restrict to mainnet pool-chains
+
+mitigations: [OAK-M02, OAK-M05, OAK-M25]
+
+reference_implementations:
+  - { target: dune,             chain: cross-chain, url: "" }
+  - { target: goldsky-subgraph, chain: cross-chain, url: "" }
+  - { target: goplus,           chain: cross-chain, url: "" }
+  - { target: rugcheck,         chain: solana,      url: "" }

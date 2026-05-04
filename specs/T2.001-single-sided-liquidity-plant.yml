@@ -1,0 +1,122 @@
+oak_techniques: [OAK-T2.001]
+spec_id: oak-detection-T2.001
+version: 0.1.0
+maturity: stable
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect AMM pools whose initial liquidity is overwhelmingly one-sided
+  vs claimed FDV — depth-to-FDV ratio under threshold, single-sided LP
+  burn / lock, or concentrated-liquidity range that constrains
+  realistic trading bands. Excludes: bonding-curve venues (Pump.fun,
+  Friend.tech) where single-sided "liquidity" is the disclosed venue
+  design, not concealed; T2.002 (locker-side misrepresentation —
+  different surface); T2.004 (creation-transaction backdoor authority,
+  not depth profile); legitimate low-FDV early-stage launches with
+  intentionally-thin LP and disclosed vesting.
+
+data_sources: [pool_creation_log, pool_state, dex_trades,
+               funder_graph, lp_position_nft]
+
+detection_logic:
+  description: |
+    Four orthogonal paths. PATH A (depth/FDV ratio): quote-side depth
+    at first observable block divided by token FDV is below threshold.
+    PATH B (asymmetric LP authority): only the smaller side is locked
+    or burned; deployer retains authority over the dominant side.
+    PATH C (concentrated-liquidity range): V3/V4 position tick range
+    excludes the realistic price-discovery zone or is unusually narrow
+    relative to venue baseline. PATH D (behavioural / first-hour):
+    price-impact-per-USD over the first N blocks exceeds the venue
+    threshold — operationally single-sided regardless of static
+    reserves. Combine with deployer-cluster signal (T8.001) for
+    confirmed-malicious classification.
+  pseudocode: |
+    BONDING_CURVE_VENUES = {pumpfun, friend_tech, bondicurve_set}
+
+    # PATH A — depth/FDV ratio at pool creation
+    on event PoolCreated(pool, token0, token1) on factory F:
+      if F.venue_class ∈ BONDING_CURVE_VENUES: continue
+      mint ← first_mint_event(pool)
+      quote_depth_usd ← usd_value(quote_side(mint, quote_token_set))
+      fdv_usd ← total_supply(token) × initial_price(pool)
+      ratio ← quote_depth_usd / max(fdv_usd, 1)
+      if ratio < depth_fdv_floor:
+        emit(PATH_A, pool, quote_depth_usd, fdv_usd, ratio, severity=high)
+
+    # PATH B — asymmetric LP authority
+    for each pool P:
+      lp_holders ← lp_token_holders(P)
+      cluster ← funder_graph_cluster(deployer(P), hops = trace_hops)
+      locked_or_burned ← Σ balance(h) for h in lp_holders
+                          if h ∈ canonical_lockers ∪ {burn_address}
+      retained ← Σ balance(h) for h in lp_holders if h ∈ cluster
+      sides ← inventory_by_side(P, locked_or_burned, retained)
+      if sides.dominant_side_retained_usd > sides.minor_side_retained_usd × asymmetry_factor:
+        emit(PATH_B, pool=P, dominant_side=sides.dominant,
+             cluster_retained_usd=sides.dominant_side_retained_usd,
+             severity=high)
+
+    # PATH C — concentrated-liquidity range coverage (V3/V4)
+    for each V3_or_V4_position N at pool initialisation:
+      tick_range ← (N.tickLower, N.tickUpper)
+      band ← venue_baseline_trading_band(P, lookback = baseline_window)
+      coverage ← tick_range_coverage(tick_range, band)
+      owner ← position_owner(N)
+      if coverage < range_coverage_floor and
+         owner ∈ funder_graph_cluster(deployer(P), hops = trace_hops):
+        emit(PATH_C, pool=P, position=N, coverage, owner,
+             severity=critical)
+
+    # PATH D — behavioural first-hour price-impact
+    for each pool P over blocks [P.creation_block, P.creation_block + behaviour_blocks]:
+      swaps ← swaps_in(P)
+      if |swaps| < min_swaps: continue
+      impact_per_usd ← median(price_impact(s) / max(usd_size(s), 1) for s in swaps)
+      if impact_per_usd > impact_per_usd_floor:
+        emit(PATH_D, pool=P, impact_per_usd, sample_count=|swaps|,
+             severity=high)
+
+parameters:
+  depth_fdv_floor:           { type: number, default: 0.005 }   # 0.5% of FDV
+  asymmetry_factor:          { type: number, default: 5.0 }
+  trace_hops:                { type: integer, default: 3 }
+  range_coverage_floor:      { type: number, default: 0.4 }     # < 40% of expected band
+  baseline_window:           { type: duration, default: 30d }
+  behaviour_blocks:          { type: integer, default: 1800 }   # ~6h on Ethereum
+  min_swaps:                 { type: integer, default: 10 }
+  impact_per_usd_floor:      { type: number, default: 0.001 }   # 0.1% per $1k
+  quote_token_set:           { type: list,   default: [WETH, USDC, USDT, SOL, native] }
+  canonical_lockers:         { type: list,   default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               pool_address, depth_usd, fdv_usd, ratio,
+               position, coverage, impact_per_usd, evidence]
+
+test_fixtures:
+  positive:
+    - 2021-11-squid                         # T1.001 + T2.001 thin counter-side liquidity
+    - 2021-10-anubisdao                     # T2.002 + T2.001 thin initial pool
+    - 2024-07-neiro-solana-bundled-launch-rug      # post-graduation single-sided
+    - 2024-10-sharpei-solana-funnel-collapse-rug   # post-graduation single-sided + funnel
+    - 2021-06-iron-finance
+  negative:
+    - "Pump.fun bonding-curve venue (intentional single-sided by design)"
+    - "Major DEX pool with deep two-sided liquidity above depth_fdv_floor"
+    - "V3 position with full-range liquidity owned by a non-deployer LP"
+
+false_positive_modes:
+  - bonding-curve venues by design — exclude via BONDING_CURVE_VENUES
+  - low-FDV early-stage launches with disclosed vesting and small genuine LP — combine with T8.001 cluster signal before classifying as malicious
+  - V3 narrow-range positions for legitimate stablecoin pairs / pegged-asset trades — calibrate range_coverage_floor per asset class
+  - first-hour price impact during organic launch surge with deep follow-on liquidity — require sustained impact across behaviour_blocks
+
+mitigations: [OAK-M02, OAK-M04, OAK-M11, OAK-M25]
+
+reference_implementations:
+  - { target: dune,            chain: evm,    url: "" }
+  - { target: forta-bot,       chain: evm,    url: "" }
+  - { target: goldsky-subgraph, chain: evm,   url: "" }
+  - { target: rugcheck,        chain: solana, url: "" }
+  - { target: mg-detectors-rs, chain: evm,    url: "" }

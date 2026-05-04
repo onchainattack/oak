@@ -1,0 +1,120 @@
+oak_techniques: [OAK-T2.004]
+spec_id: oak-detection-T2.004
+version: 0.1.0
+maturity: observed
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect creation-time LP-control retention: the pool-creation tx
+  embeds an LP-equivalent withdrawal authority outside the LP-token-
+  burn flow. Five sub-patterns: router-mediated multi-recipient LP
+  mint; upgradeable pool with admin LP-withdraw path; CL position-NFT
+  owned by deployer with attacker-controlled tick range; mint-recipient
+  indirection via deployer-clustered intermediary; per-pool privileged
+  role (emergency-withdraw / fee-collector) granted to deployer.
+  Excludes: T2.001 (depth profile, not authority structure — T2.004
+  pools can pass T2.001); T2.002 (locker-side misrepresentation —
+  T2.004 is creation-tx-internal); T2.003 (cross-chain receipt
+  mismatch); legitimate factories with timelock-gated admin paths.
+
+data_sources: [pool_creation_log, contract_bytecode, contract_storage,
+               proxy_admin_state, lp_position_nft, funder_graph]
+
+detection_logic:
+  description: |
+    Four orthogonal paths plus a behavioural cross-check. PATH A
+    (LP-mint recipient enumeration): the creation-tx routes LP supply
+    to a non-locker / non-LP-provider recipient. PATH B (proxy admin
+    on the pool itself): pool deployed behind a proxy whose admin
+    resolves to the deployer cluster. PATH C (CL position-NFT
+    ownership): V3/V4 position NFT minted at initialisation is owned
+    by the deployer cluster with a tick range inconsistent with the
+    marketed band. PATH D (per-pool privileged role): pool / reserve
+    contract enumerates an admin role with an LP-equivalent
+    withdrawal effect granted to the deployer cluster. CROSS-CHECK
+    (reserve-vs-LP-supply): reserves can move without corresponding
+    LP-burn — definitional T2.004 condition.
+  pseudocode: |
+    NON_BURN_WITHDRAW_ROLES = {EMERGENCY_WITHDRAW_ROLE, RESCUE_ROLE,
+                                ADMIN_ROLE, FEE_COLLECTOR_ROLE,
+                                ORACLE_SETTER_ROLE}
+
+    # PATH A — LP-mint recipient enumeration
+    on tx T containing PoolCreated for pool P:
+      mints ← lp_token_mint_events(P, in_tx = T)
+      cluster ← funder_graph_cluster(deployer(P), hops = trace_hops)
+      shadow ← [m for m in mints
+                if m.to ∉ canonical_lockers
+                and m.to ∉ canonical_custodians
+                and m.to ∉ {announced_lp_provider(P)}]
+      cluster_overlapping ← [m for m in shadow if m.to ∈ cluster]
+      if cluster_overlapping ≠ ∅:
+        emit(PATH_A, pool=P, tx=T, shadow_recipients=cluster_overlapping,
+             severity=critical)
+
+    # PATH B — proxy admin on the pool itself
+    impl ← getStorageAt(P, EIP1967_IMPL)
+    admin ← getStorageAt(P, EIP1967_ADMIN)
+    if impl ≠ 0 and admin ≠ 0
+       and admin ∈ funder_graph_cluster(deployer(P), hops = trace_hops):
+      emit(PATH_B, pool=P, proxy_admin=admin, severity=critical)
+
+    # PATH C — CL position-NFT deployer-cluster ownership
+    for each V3/V4 position N minted at pool initialisation:
+      owner ← position_owner(N)
+      if owner ∈ funder_graph_cluster(deployer(P), hops = trace_hops):
+        band_match ← tick_range_matches_marketed_band(N.range, P.marketed_band)
+        emit(PATH_C, pool=P, position=N, owner,
+             range_inconsistent = not band_match,
+             severity = critical if not band_match else high)
+
+    # PATH D — per-pool privileged role granted to deployer
+    for each role R in role_inventory(P) ∪ role_inventory(reserve_contract(P)):
+      members ← role_members(P, R)
+      if R ∈ NON_BURN_WITHDRAW_ROLES
+         and any(m ∈ funder_graph_cluster(deployer(P), hops=trace_hops) for m in members):
+        emit(PATH_D, pool=P, role=R, holders=members, severity=critical)
+
+    # CROSS-CHECK — reserve drift without LP burn
+    for each pool P over rolling window:
+      reserve_delta ← Δ reserves(P) over window
+      lp_burn_delta ← Σ burn_events(P.lp_token) over window
+      if |reserve_delta| > expected_from(lp_burn_delta) + reserve_drift_floor:
+        emit(CROSS_CHECK, pool=P, reserve_delta, lp_burn_delta,
+             severity=critical)
+
+parameters:
+  trace_hops:                 { type: integer, default: 3 }
+  canonical_lockers:          { type: list,    default: [] }
+  canonical_custodians:       { type: list,    default: [] }
+  reserve_drift_floor:        { type: number,  default: 1000 }   # $1k absolute
+  EIP1967_IMPL:               { type: string,  default: "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc" }
+  EIP1967_ADMIN:              { type: string,  default: "0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103" }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               pool_address, shadow_recipients, proxy_admin,
+               position_nft, role, holders, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-2025-pump-fun-bonding-curve-rug-cohort   # bonding-curve pre-graduation LP-control retention
+  negative:
+    - "Canonical Uniswap V2 / V3 / V4 pool created via the canonical factory router with LP routed only to the announced LP-provider"
+    - "Pool deployed without proxy, no admin roles, position NFTs held by external LPs"
+
+false_positive_modes:
+  - factory-internal proxy infrastructure where the admin is a canonical timelock or governance contract (annotate via canonical-admin allowlist)
+  - LP routed to a multisig-treasury where the multisig is governance-gated and disclosed (require deployer-cluster overlap, not just non-locker recipient)
+  - V3 position NFTs held by the deployer during a vesting / disclosed window with documented marketed band — distinguish via range_inconsistent gate
+  - per-pool fee-collector roles for legitimate fee-routing without withdrawal effect — restrict NON_BURN_WITHDRAW_ROLES to roles with documented LP-equivalent effect
+
+mitigations: [OAK-M02, OAK-M04, OAK-M05, OAK-M16, OAK-M25]
+
+reference_implementations:
+  - { target: dune,             chain: evm,    url: "" }
+  - { target: forta-bot,        chain: evm,    url: "" }
+  - { target: goldsky-subgraph, chain: evm,    url: "" }
+  - { target: tenderly-virtualnet, chain: evm, url: "" }
+  - { target: goplus,           chain: evm,    url: "" }
+  - { target: rugcheck,         chain: solana, url: "" }

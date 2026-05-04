@@ -1,0 +1,114 @@
+oak_techniques: [OAK-T3.004]
+spec_id: oak-detection-T3.004
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect P&D operations whose distribution surface is an external-to-
+  crypto influencer's audience reach (YouTube, X, Twitch, podcast,
+  mainstream-celebrity press) rather than within-crypto coordination
+  channels. Sub-Technique of T3.003 that adds the off-platform
+  promoter-graph axis. Two-fold structural feature: (1) external-
+  audience demand-side amplification; (2) bifurcated personal-
+  liability accountability (promoter typically insulated, operator
+  rarely faces criminal proceedings outside SafeMoon). Excludes:
+  T3.001 (launch-bundling — composes); T3.003 (parent — Telegram /
+  bundler / leaderboard sub-patterns); legitimate disclosed
+  promotional content with FTC compliance.
+
+data_sources: [dex_trades, token_transfer_events, holder_count_log,
+               off_chain_promoter_account_log, funder_graph,
+               press_investigation_corpus]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (on-chain joint-series alignment
+    anchored at promoter-post timestamp): same as T3.003 PATH A but
+    the demand-surge window anchors at the off-platform promoter's
+    first promotional post. PATH B (pre-promotion insider cluster):
+    Bubblemaps-style funding-source analysis showing wallet cluster
+    with single-source funding bought significant supply BEFORE the
+    promoter's first promotional post (canonical DADDY shape).
+    PATH C (promoter-cohort cluster fingerprint): the cohort facilitator
+    (Sahil Arora middleman class) recurs across multiple celebrity
+    launches with shared cohort-cluster fingerprint.
+  pseudocode: |
+    # PATH A — on-chain joint-series anchored at promoter-post timestamp
+    for each token T with off-platform promoter account A:
+      first_post ← first_promotional_post(A, mentions=T)
+      if first_post == None: continue
+      window ← [first_post.t, first_post.t + post_demand_window]
+      surge ← demand_surge_in(T, window)
+      top_cluster ← top_holder_cluster(T, k = top_cluster_k)
+      outflow ← Σ transfer_out(addr) for addr in top_cluster, in window
+      if surge and outflow > outflow_share_at_peak × top_cluster_balance(first_post.t):
+        emit(PATH_A, token=T, promoter=A.handle,
+             first_post_t=first_post.t, severity=critical)
+
+    # PATH B — pre-promotion insider cluster
+    for each token T with off-platform promoter A:
+      first_post ← first_promotional_post(A, mentions=T)
+      if first_post == None: continue
+      pre_window ← [T.launch_block, first_post.t]
+      pre_buyers ← {b for b in dex_trades(T, in_window=pre_window) if b.is_buy}
+      cluster ← funder_graph_cluster({b.from for b in pre_buyers},
+                                       hops = trace_hops)
+      cluster_supply ← Σ supply_acquired(b) for b in pre_buyers if b.from ∈ cluster
+                        / total_supply(T)
+      single_funder ← funding_source_concentration(cluster) > funding_source_share
+      similar_amounts ← median_amount_variance(cluster) < amount_variance_floor
+      if cluster_supply > pre_promo_supply_share
+         and single_funder and similar_amounts:
+        emit(PATH_B, token=T, promoter=A.handle, cluster_size=|cluster|,
+             pre_promo_supply_share=cluster_supply, severity=critical)
+
+    # PATH C — promoter-cohort cluster fingerprint (middleman class)
+    for each token T flagged by PATH_A or PATH_B:
+      facilitator ← promoter_facilitator_for(T)        # Sahil Arora-class middleman
+      if facilitator == None: continue
+      prior ← prior_facilitator_launches(facilitator, lookback = facilitator_window)
+      cohort_cluster ← shared_cluster_across(prior + [T])
+      if |prior| ≥ facilitator_recurrence_threshold and cohort_cluster ≠ ∅:
+        emit(PATH_C, token=T, facilitator, prior_launches=prior,
+             cohort_cluster, severity=critical)
+
+parameters:
+  post_demand_window:                  { type: duration, default: 24h }
+  top_cluster_k:                       { type: integer, default: 20 }
+  outflow_share_at_peak:               { type: number,  default: 0.30 }
+  trace_hops:                          { type: integer, default: 3 }
+  funding_source_share:                { type: number,  default: 0.6 }   # > 60% from one venue
+  amount_variance_floor:               { type: number,  default: 0.1 }   # < 10% variance ≈ "nearly identical"
+  pre_promo_supply_share:              { type: number,  default: 0.15 }  # > 15% before first post
+  facilitator_window:                  { type: duration, default: 365d }
+  facilitator_recurrence_threshold:    { type: integer, default: 2 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               token, promoter, first_post_t, cluster_size,
+               pre_promo_supply_share, facilitator, prior_launches,
+               evidence]
+
+test_fixtures:
+  positive:
+    - 2021-2026-influencer-amplified-non-memecoin-rug-cohort
+                # CryptoZoo / KIDS / DADDY / JENNER / MOTHER / DJT cohort
+  negative:
+    - "Disclosed promotional post by an influencer with FTC compliance and no pre-promotion insider cluster"
+    - "Celebrity mention without subsequent demand surge or cluster-outflow"
+
+false_positive_modes:
+  - legitimate disclosed promotional content with documented compensation and no insider buying — PATH B's pre-promo cluster gate handles
+  - mainstream-press coverage that organically drives demand without coordinated insider exit — PATH A's outflow gate filters
+  - facilitator false positives for legitimate marketing agencies — require shared cohort-cluster fingerprint across launches, not just multi-launch presence
+  - promoter accounts that mention many tokens generically without coordinated launches — anchor PATH A on the promoter's *first* post per token
+
+mitigations: [OAK-M02, OAK-M04, OAK-M11, OAK-M16, OAK-M25]
+
+reference_implementations:
+  - { target: bubblemaps,         chain: cross-chain, url: "" }
+  - { target: lookonchain,        chain: cross-chain, url: "" }
+  - { target: zachxbt-disclosures, chain: cross-chain, url: "" }
+  - { target: arkham-intelligence, chain: cross-chain, url: "" }
+  - { target: dune,               chain: cross-chain, url: "" }

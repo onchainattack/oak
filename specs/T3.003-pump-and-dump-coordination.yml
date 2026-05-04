@@ -1,0 +1,125 @@
+oak_techniques: [OAK-T3.003]
+spec_id: oak-detection-T3.003
+version: 0.1.0
+maturity: stable
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect coordinated pump-and-dump via the temporal joint distribution
+  of price, volume, holder growth, and concentrated-cluster outflow.
+  Four sub-patterns: Telegram/Discord/X coordinated pumps; Pump.fun
+  bundler-launch dumps (composes with T3.001); celebrity-shill pumps
+  (refined in T3.004); DEX-screener / leaderboard manipulation.
+  Excludes: T3.001 (the launch-bundling primitive — composes); T3.002
+  (wash-trade volume only — T3.003 has actual price/holder dynamics);
+  T17.001 (cross-venue arbitrage — different surface); legitimate
+  organic-momentum launches without cluster-outflow at peak.
+
+data_sources: [dex_trades, token_transfer_events, holder_count_log,
+               external_signal_feed, leaderboard_snapshot, funder_graph]
+
+detection_logic:
+  description: |
+    Three orthogonal paths plus a cross-token recurrence path.
+    PATH A (joint-series alignment): on rising volume, top-cluster
+    outflow leads price decline by characteristic lag; unique-holder
+    growth plateaus or declines while volume spikes. PATH B (external-
+    signal correlation): pre-spike promotional activity in known
+    P&D venues precedes the price move within calibrated lag. PATH C
+    (leaderboard manipulation): volume burst is narrowly aligned to
+    ranking-snapshot windows. PATH D (cross-token recurrence): same
+    cluster previously associated with similar P&D patterns (T8.001).
+  pseudocode: |
+    # PATH A — joint-series alignment
+    for each token T over rolling window W:
+      price_series ← price(T, W)
+      volume_series ← volume(T, W)
+      holder_growth ← unique_holders(T, W)
+      top_cluster ← top_holder_cluster(T, k = top_cluster_k)
+      outflow ← Σ transfer_out(addr) for addr in top_cluster
+      peak ← argmax(price_series)
+      decline_window ← [peak, peak + decline_window_blocks]
+      if (cluster_outflow_during(decline_window) >
+            outflow_share_at_peak × top_cluster_balance(peak))
+         and (Δ holder_growth in decline_window <= 0)
+         and (volume_series.spike_factor > volume_spike_floor):
+        emit(PATH_A, token=T, peak_block=peak,
+             cluster_outflow_share, severity=critical)
+
+    # PATH B — external-signal correlation
+    for each token T:
+      signals ← external_promotion_signals(T,
+                                            window = signal_lookback)
+      for s in signals:
+        spike ← price_spike_after(T, t = s.t,
+                                   max_lag = signal_lag_max)
+        if spike and (s.source ∈ known_pd_venues
+                       or s.account_history.prior_pd_count >= prior_pd_floor):
+          emit(PATH_B, token=T, signal=s,
+               spike_detected=True, severity=high)
+
+    # PATH C — leaderboard-snapshot alignment
+    LEADERBOARD_VENUES = {dexscreener, geckoterminal, coinmarketcap}
+    for each token T:
+      bursts ← volume_bursts(T, threshold = burst_threshold)
+      for b in bursts:
+        snap_distance ← min(|b.t − snap.t| for snap in
+                              leaderboard_snapshots(LEADERBOARD_VENUES))
+        if snap_distance < snapshot_alignment_seconds:
+          rank_change ← leaderboard_rank_delta(T, around = b.t)
+          if rank_change > rank_delta_threshold:
+            emit(PATH_C, token=T, burst=b, rank_change,
+                 severity=high)
+
+    # PATH D — cross-token recurrence (T8.001 link)
+    for each top_holder_cluster C of token T:
+      prior ← cluster_prior_pd_events(C, lookback = pd_history_window)
+      if |prior| ≥ recurrence_threshold:
+        emit(PATH_D, token=T, cluster=C, prior_event_count=|prior|,
+             severity=critical)
+
+parameters:
+  top_cluster_k:               { type: integer, default: 20 }
+  outflow_share_at_peak:       { type: number,  default: 0.30 }    # 30-60% canonical
+  decline_window_blocks:       { type: integer, default: 60 }      # ~12min on Ethereum
+  volume_spike_floor:          { type: number,  default: 5.0 }
+  signal_lookback:             { type: duration, default: 24h }
+  signal_lag_max:              { type: duration, default: 60m }
+  prior_pd_floor:              { type: integer, default: 2 }
+  burst_threshold:             { type: number,  default: 3.0 }     # 3× rolling-mean volume
+  snapshot_alignment_seconds:  { type: integer, default: 300 }
+  rank_delta_threshold:        { type: integer, default: 50 }
+  pd_history_window:           { type: duration, default: 365d }
+  recurrence_threshold:        { type: integer, default: 1 }
+  known_pd_venues:             { type: list,    default: [] }      # Telegram channels, X account watchlist
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               token, peak_block, cluster, signal, burst,
+               rank_change, prior_event_count, evidence]
+
+test_fixtures:
+  positive:
+    - 2018-big-pump-signal-telegram-cohort       # academic anchor — Telegram-coordinated cohort
+    - 2021-03-mcafee-cftc-pump-dump              # Twitter-amplified, CFTC + DOJ enforcement
+    - 2024-10-operation-token-mirrors-nexfundai  # FBI sting, market-maker cohort
+    - 2023-11-safemoon-charges                   # SEC + DOJ, celebrity-shill sub-pattern
+    - 2022-01-wonderland-sifu-patryn             # reserve-currency-coordination + operator-identity concealment
+  negative:
+    - "Organic launch with rising holder count alongside volume spike, no cluster outflow at peak"
+    - "Sustained mover with diverse holder distribution and no external-signal correlation"
+
+false_positive_modes:
+  - organic momentum launches with holder growth alongside volume spike (PATH A's holder-growth-≤-0 gate)
+  - external news-driven price spikes from non-coordinated sources (PATH B requires known_pd_venues membership or prior_pd_count history)
+  - legitimate rebalances by long-term holders that look like cluster outflow (PATH D's recurrence check filters)
+  - token launches that happen to coincide with leaderboard snapshots organically (PATH C's rank-delta + cluster-overlap gate)
+
+mitigations: [OAK-M04, OAK-M11, OAK-M16, OAK-M25]
+
+reference_implementations:
+  - { target: bubblemaps,      chain: cross-chain, url: "" }
+  - { target: dune,            chain: cross-chain, url: "" }
+  - { target: bolz-telegram-nlp, chain: cross-chain, url: "" }
+  - { target: karbalaii-microstructure, chain: cross-chain, url: "" }
+  - { target: mg-detectors-rs, chain: cross-chain, url: "" }
