@@ -4,7 +4,7 @@
   "description": "OnChain Attack Knowledge taxonomy and website.",
   "private": true,
   "scripts": {
-    "site:data": "python3 tools/export_json.py && python3 tools/export_stix.py && python3 tools/build_stats.py --json > tools/stats.json && python3 tools/build_stats.py > STATS.md && python3 tools/build_backlog.py > BACKLOG.md && node scripts/build-site-data.mjs && node scripts/build-sitemap.mjs",
+    "site:data": "python3 tools/export_json.py && python3 tools/export_stix.py && python3 tools/build_stats.py --json > tools/stats.json && python3 tools/build_stats.py > STATS.md && python3 tools/build_backlog.py > BACKLOG.md && node scripts/build-site-data.mjs && node scripts/build-embedded-snapshot.mjs && node scripts/build-sitemap.mjs",
     "dev": "npm run site:data && vite --host 0.0.0.0",
     "build": "npm run site:data && tsc --noEmit && vite build && node scripts/copy-static-content.mjs && node scripts/build-route-pages.mjs",
     "preview": "vite preview --host 0.0.0.0"

@@ -35,6 +35,7 @@ const copyTargets = [
   "citations.bib",
   "tools/oak.json",
   "tools/oak-stix.json",
+  "tools/embedded.json",
 ];
 
 await mkdir(outDir, { recursive: true });
