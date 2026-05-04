@@ -1,6 +1,6 @@
 # OAK-T10 — Bridge and Cross-Chain
 
-**Phase:** Realization (cross-chain infrastructure layer)
+**Phase:** Targeted compromise
 **Adjacent tactics:** T7 (Laundering — proceeds typically routed across chains), T9 (Smart-Contract Exploit — bridge contracts can also be vulnerable to oracle/access-control flaws independent of bridge-specific patterns)
 
 ## Scope

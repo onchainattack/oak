@@ -40,7 +40,7 @@ COVERAGE_TARGETS = [
     ("T5", "Value Extraction", 2020, 4),
     ("T6", "Defense Evasion", 2022, 2),
     ("T7", "Laundering", 2018, 4),
-    ("T8", "Operational Reuse", 2020, 3),
+    ("T8", "Operator Continuity / Attribution Signals", 2020, 3),
     ("T9", "Smart-Contract Exploit", 2020, 5),
     ("T10", "Bridge / Cross-Chain", 2021, 3),
     ("T11", "Custody / Signing", 2018, 3),

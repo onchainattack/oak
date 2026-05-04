@@ -1,6 +1,6 @@
 # OAK-T16 — Governance / Voting Manipulation
 
-**Phase:** Holder-state-derived control
+**Phase:** Realization
 **Adjacent tactics:** T3 (Holder Capture — launch-time concentration of holder state; T16 is the post-launch operational use of that state against the protocol), T9 (Smart-Contract Exploit — T16 sub-Techniques are operational refinements of the generic T9.003 governance-attack class), T8 (Operational Reuse — delegation-cluster takeover (T16.003) is load-bearing on cluster-attribution signal), T5 (Value Extraction — hostile-vote treasury drain (T16.002) lands as treasury-egress; T5.005 is the on-chain framing of the egress), T11 (Custody and Signing Infrastructure — multisig-to-governance pivots cross the T16 / T11 boundary).
 
 ## Description

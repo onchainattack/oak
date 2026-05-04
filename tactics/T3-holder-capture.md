@@ -1,6 +1,6 @@
 # OAK-T3 — Holder Capture
 
-**Phase:** Launch / growth
+**Phase:** Pre-launch / Launch
 **Adjacent tactics:** T2 (Liquidity Establishment), T5 (Value Extraction)
 
 ## Scope

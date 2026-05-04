@@ -1,6 +1,6 @@
 # OAK-T11 — Custody and Signing Infrastructure
 
-**Phase:** Realization (custody-and-signing-infrastructure layer)
+**Phase:** Targeted compromise
 **Adjacent tactics:** T7 (Laundering), T8 (Operational Reuse), T10 (Bridge and Cross-Chain — adjacent because validator-key compromise patterns overlap conceptually)
 
 ## Scope

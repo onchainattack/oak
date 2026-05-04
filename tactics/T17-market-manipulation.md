@@ -1,6 +1,6 @@
 # OAK-T17 — Market Manipulation
 
-**Phase:** Realisation (cross-asset / market-mechanism)
+**Phase:** Realization
 **Adjacent tactics:** T3 (Holder Capture — launch-time concentration of holder state; T17 is the post-launch *use* of price / order-book / oracle surfaces against other market participants and against the protocol itself), T5 (Value Extraction — T5 is direct on-chain value-egress; T17 is *market-distortion-mediated* extraction where the load-bearing surface is a price / book / window primitive rather than a treasury-pull primitive), T9 (Smart-Contract Exploit — T9 covers code-mechanism failures (reentrancy, oracle-feed exploitation, governance-attack class); T17 is market-mechanism *exploitation* where no contract bug is required and the design itself behaves as specified), T16 (Governance / Voting Manipulation — T16's load-bearing surface is voting power against the protocol; T17's load-bearing surface is price / order-book / window manipulation against other market participants), T8 (Operational Reuse — cross-venue arbitrage clusters and predatory liquidation-bot operators are typically cohort-attributable via funder-graph signal).
 
 ## Description

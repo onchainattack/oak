@@ -1,6 +1,6 @@
 # OAK-T2 — Liquidity Establishment
 
-**Phase:** Launch
+**Phase:** Pre-launch / Launch
 **Adjacent tactics:** T1 (Token Genesis), T3 (Holder Capture), T5 (Value Extraction)
 
 ## Scope

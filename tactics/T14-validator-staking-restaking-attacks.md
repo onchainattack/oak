@@ -1,6 +1,6 @@
 # OAK-T14 — Validator / Staking / Restaking Attacks
 
-**Phase:** Realization (consensus and staking-infrastructure layer)
+**Phase:** Targeted compromise
 **Adjacent tactics:** T10 (Bridge and Cross-Chain — adjacent because bridge validator-set compromises share the "compromised consensus participant" predicate but apply to bridge-specific validator sets, not to the underlying chain's staking layer), T9 (Smart-Contract Exploit — adjacent because liquid-staking-derivative contracts and restaking-protocol contracts can also fail at the application-correctness layer), T11 (Custody and Signing Infrastructure — adjacent because validator-key custody compromise extends T11-class signing-pipeline failures into the consensus role)
 
 ## Scope

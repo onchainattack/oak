@@ -1,6 +1,6 @@
 # OAK-T12 — NFT-Specific Patterns
 
-**Phase:** Realization (NFT-marketplace and collection layer)
+**Phase:** Realization
 **Adjacent tactics:** T1 (Token Genesis — fungible analogue at the deployment layer), T3 (Holder Capture — fungible analogue at the volume / market-signal layer), T4 (Access Acquisition — NFT drainer flows already covered under T4.005), T7 (Laundering — NFT-specific laundering already covered under T7.004)
 
 ## Scope

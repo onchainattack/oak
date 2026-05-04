@@ -1,6 +1,6 @@
 # OAK-T13 — Account Abstraction Attacks
 
-**Phase:** Realization (account-abstraction infrastructure layer)
+**Phase:** Targeted compromise
 **Adjacent tactics:** T11 (Custody and Signing Infrastructure — legacy EOA / multisig analogue), T9 (Smart-Contract Exploit — adjacent because account-abstraction modules and EntryPoint are smart contracts), T4 (Access Acquisition — adjacent because session-key and authorisation-tuple phishing flows extend the T4.004 / T4.005 surface into the smart-account era)
 
 ## Scope

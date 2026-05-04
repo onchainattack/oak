@@ -29,11 +29,15 @@ Snapshots are produced quarterly at minimum and on-demand for major events (taxo
 
 ### 3. Per-item maturity (controlled vocabulary)
 
-Each Tactic, Technique, Mitigation, Software, and Group has a `**Maturity:**` field on its page with one of:
+Each Tactic, Technique, Mitigation, Software, and Group has a `**Maturity:**` field on its page with **exactly one** of the five canonical values:
 
-- **stable** — definition fixed, multi-vendor agreement, multiple anchored worked examples. Renames or scope changes are breaking.
+- **stable** — definition fixed, multi-vendor agreement, ≥ 3 anchored worked examples. Renames or scope changes are breaking.
 - **emerging** — definition recently introduced, single-vendor or single-source attestation, ≤ 2 worked examples. Scope refinement expected; not yet rename-stable.
+- **observed** — occurred in the wild but field-confirmed at a single anchor; awaiting cross-vendor agreement. Pattern is real and documented; the breadth of independent attestation needed for `emerging` or `stable` has not yet landed.
 - **draft** — proposed in `TAXONOMY-GAPS.md`, no example anchors yet, definition open for community input. May be promoted, merged, or dropped.
+- **deprecated** — marked for removal, replaced by another ID. Carries a `**Replaced by:**` cross-reference and remains resolvable for at least one schema-minor cycle (see *Backwards-compatible deprecation* below).
+
+The five-value vocabulary was widened from four (stable / emerging / draft / deprecated) at schema 0.5 to canonicalise the `observed` distinction that v0.1–v0.4 files were already using to capture single-anchor in-the-wild patterns awaiting cross-vendor agreement. The structural difference between `emerging` and `observed` is breadth-of-independent-attestation: `emerging` is a recently-introduced definition with a small worked-example set; `observed` is a field-confirmed-at-a-single-anchor pattern whose cross-vendor agreement is still pending. Either may be promoted to `stable` once the ≥ 3 anchored worked-examples and multi-vendor-agreement bar is met.
 
 Worked examples carry an attribution-strength label instead of a maturity field — see CONTRIBUTING.md for the convention (`confirmed` / `inferred-strong` / `inferred-weak` / `pseudonymous` / `unattributed`).
 
@@ -83,6 +87,7 @@ When an item must be renamed or removed, OAK provides a deprecation window of on
 | 0.2 | 2026-05 | Additive: T15 Off-chain Entry-Vector / Pre-Positioning Tactic + 5 sub-Techniques (T15.001–T15.005). 15 Tactics, 63+ Techniques. Existing T1–T14 IDs unchanged; existing T11.x / T4.x worked-example mappings preserved. Schema-minor bump per the additive-Tactic rule. |
 | 0.3 | 2026-05 | Additive: T16 Governance / Voting Manipulation Tactic + 5 sub-Techniques (T16.001–T16.005). 16 Tactics, 93+ Techniques. Existing T9.003 / T9.001 / T8.001 / T5.005 / T9.002 mappings preserved on anchor examples; T16.x added as additional Technique mappings. |
 | 0.4 | 2026-05 | Additive: T17 Market Manipulation Tactic + 4 sub-Techniques (T17.001–T17.004). 17 Tactics. T3.002 / T3.003 / T3.004 / T5.004 / T9.001 / T9.006* now cross-reference T17 as additional parent. No existing IDs renamed; existing T3 / T5 / T9 parent-Tactic mappings preserved on every cross-referenced sub-Technique. |
+| 0.5 | 2026-05 | Additive cheap fixes from `TAXONOMY-AUDIT.md`. T11.004 (Insufficient-Entropy Key Generation) backfilled, anchored at Wintermute / Profanity (Sep 2022). Maturity vocabulary widened from four to five canonical values (`stable` / `emerging` / `observed` / `draft` / `deprecated`) — `observed` and `developing` files normalised to the canonical set. Tactic `**Phase:**` field canonicalised to a six-value vocabulary (Pre-positioning / Pre-launch-Launch / Targeted compromise / Realization / Post-extraction / Cross-cutting); documented at `tactics/README.md`. Optional `**Parent Techniques:**` and `**Adjacent Techniques:**` fields documented at `tactics/README.md` and `CONTRIBUTING.md`; applied to T11.001 / T11.002 / T10.001 / T9.003 / T7.004 / T12.001. T9.003 scope refined to governance-contract-bug case (T16.x covers voting-power abuse). T11.001 scope refined to on-chain manifestation (off-chain pre-positioning delegated to T15.x). T8 human-readable name updated to "Operator Continuity / Attribution Signals" (ID `OAK-T8` unchanged). T6 sub-cluster split (T6.001–004 pre-deployment-claim-falsification vs T6.005–007 operational-defense-evasion) documented. No OAK ID renamed. 17 Tactics, 94 Techniques. |
 
 ## Content snapshot history
 

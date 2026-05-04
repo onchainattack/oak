@@ -130,7 +130,7 @@ These are Techniques that fit cleanly inside an existing v0.1 Tactic but are fla
 
 ### T11 — Custody and Signing Infrastructure (additions for v0.x)
 
-- T11.004 Insufficient-Entropy Key Generation (proposed; canonical case is Wintermute Sep 2022 / Profanity vanity-address generator).
+- **T11.004 Insufficient-Entropy Key Generation** — **promoted** to `stable`; see [`techniques/T11.004-insufficient-entropy-key-generation.md`](techniques/T11.004-insufficient-entropy-key-generation.md). Canonical anchor: Wintermute / Profanity vanity-address generator (September 2022); paired with the Profanity cohort case at [`examples/2022-09-wintermute-profanity-cohort.md`](examples/2022-09-wintermute-profanity-cohort.md).
 - Multi-chain key-store co-location (canonical case is Poloniex Nov 2023; the simultaneous-multi-chain extraction pattern as architectural anti-pattern).
 - Custodial-private-key-storage trading-bot anti-pattern (canonical case is DEXX Sep-Nov 2024).
 - Legacy-version-maintenance attack-surface (canonical case is GMX V1 Jul 2025; the operator-side decision to maintain deprecated protocol versions as residual exploitable surface).

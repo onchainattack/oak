@@ -29,7 +29,9 @@ OAK is a **detection and defense** framework, not an offensive playbook. Every T
 # OAK-Tn.NNN — <Technique Name>
 
 **Parent Tactics:** OAK-Tn (...), OAK-Tm (...)
-**Maturity:** stable | observed | emerging
+**Parent Techniques:** OAK-Tn.NNN[, OAK-Tm.MMM] (optional; declares this Technique is a sub-class of one or more other Techniques)
+**Adjacent Techniques:** OAK-Tn.NNN[, OAK-Tm.MMM] (optional; declares peer relationship — same artefact / detection signal, different motive or scope)
+**Maturity:** stable | emerging | observed | draft | deprecated
 **Chains:** EVM | Solana | Tron | cross-chain
 **First documented:** YYYY
 **Aliases:** common informal names used by investigators

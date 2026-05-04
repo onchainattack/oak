@@ -1,6 +1,6 @@
 # OAK-T1 — Token Genesis
 
-**Phase:** Pre-launch / launch
+**Phase:** Pre-launch / Launch
 **Adjacent tactics:** T2 (Liquidity Establishment), T6 (Defense Evasion)
 
 ## Scope

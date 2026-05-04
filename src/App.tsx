@@ -1107,7 +1107,7 @@ const TACTIC_NAMES_SHORT: Record<string, string> = {
   T5: "Value Extraction",
   T6: "Defense Evasion",
   T7: "Laundering",
-  T8: "Operational Reuse",
+  T8: "Operator Continuity / Attribution",
   T9: "Smart-Contract Exploit",
   T10: "Bridge / Cross-Chain",
   T11: "Custody / Signing",

@@ -1,11 +1,14 @@
 # OAK-T6 — Defense Evasion
 
-**Phase:** Concurrent with T1–T5
+**Phase:** Cross-cutting
 **Adjacent tactics:** all
 
 ## Scope
 
-Defense Evasion covers actions taken to make adversarial setup or behavior harder for vendors, investigators, and risk teams to detect. T6 in v0.1 is populated with four standalone Techniques (T6.001–T6.004) whose primary failure modes are evasion-specific: source-verification mismatch, fake audit-claim, audit-of-different-bytecode-version, and audit-pending marketing-claim. Each documents observable artifacts that survive the obfuscation and can be checked by defenders.
+Defense Evasion covers actions taken to make adversarial setup or behavior harder for vendors, investigators, and risk teams to detect. T6 has **two operationally-distinct sub-clusters** that contributors should preserve when writing or mapping incidents — defenders working in either cluster face different mitigation surfaces:
+
+- **T6.001–T6.004 — Pre-deployment / off-chain claim falsification.** The attacker lies about the contract's audit status, source verification, or pre-deployment review. Surface: source-verification mismatch (T6.001), fake audit-claim (T6.002), audit-of-different-bytecode-version (T6.003), audit-pending marketing-claim (T6.004). Detection runs against pre-deployment claims vs deployed-bytecode evidence; mitigation is auditor-registry verification, deterministic recompile, and bytecode-vs-claim correlation.
+- **T6.005–T6.007 — Operational defense-evasion.** The attack hides itself from runtime detection or invalidates a defender's prior trust-substrate claim. Surface: proxy-upgrade malicious switching (T6.005), counterfeit token impersonation (T6.006), trust-substrate shift / vendor-side promise revocation (T6.007). Detection runs against runtime state changes, contract-identity signal, and vendor-policy-event monitoring; mitigation is upgrade-control review, brand / contract-identity registry coordination, and vendor-policy-change tracking.
 
 Secondarily, T6 also functions as a **modifier** label that may be tagged on Techniques in T1–T5 when the evasion pattern is tightly coupled to that Technique's own primary failure mode (e.g., OAK-T2.002 Locked-Liquidity Spoof lists T2 + T6 as parents because the spoof pattern is inseparable from the locked-liquidity surface). The standalone T6 Techniques are the canonical entries; the modifier-mode tagging is a secondary use that surfaces evasion concerns inside other Tactics' pages.
 

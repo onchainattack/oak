@@ -1,11 +1,13 @@
-# OAK-T8 — Operational Reuse
+# OAK-T8 — Operator Continuity / Attribution Signals
 
-**Phase:** Cross-incident
+**Phase:** Post-extraction
 **Adjacent tactics:** T1 (Token Genesis), T7 (Laundering)
 
 ## Scope
 
-Operational Reuse covers the ways adversaries reuse infrastructure — wallets, deployment patterns, funding sources, off-chain assets — across multiple incidents. From a defender's perspective, T8 is the Tactic that makes the cumulative cost of detection drop over time: each newly attributed incident provides priors for the next, and operators who reuse infrastructure can be tracked across campaigns even when individual tokens are short-lived.
+Operator Continuity / Attribution Signals captures **cross-incident attribution signals, not new attacker actions**. The "attack" was performed in some other Tactic (T1–T7, T9–T17); T8 sub-Techniques are forensic markers used to maintain operator-cluster identification across incidents — wallet reuse, deployment-pattern reuse, funding-source reuse, off-chain-asset reuse. From a defender's perspective, T8 is the Tactic that makes the cumulative cost of detection drop over time: each newly attributed incident provides priors for the next, and operators who reuse infrastructure can be tracked across campaigns even when individual tokens are short-lived.
+
+T8 is **categorically different** from the rest of the OAK Tactic axis. T1–T7 / T9–T17 document *adversarial actions* — things the attacker does on-chain or off-chain that produce loss. T8 documents *the forensic markers that connect those actions across incidents* — the signal that says "the same operator did multiple of these," not a separate attack the operator performed. Contributors writing T8 sub-Techniques (T8.001 Common-Funder Cluster Reuse, T8.002 Cross-Chain Operator Continuity, future additions) should preserve this framing: T8 sub-Techniques describe *attribution-signal patterns*, not *attacker actions*. The human-readable Tactic name was updated at schema 0.5 to make this distinction explicit; the underlying ID (`OAK-T8`) is unchanged.
 
 ## What defenders observe
 
