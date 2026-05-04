@@ -1,15 +1,15 @@
 <svg width="64" height="64" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="256" height="256" rx="48" fill="#0A0E14"/>
-  <polygon points="168,32 224,72 224,184 168,224 96,184 96,72" fill="rgba(0,209,178,0.06)" stroke="#F2F4F7" stroke-width="9"/>
-  <rect x="116" y="80" width="88" height="12" fill="#00D1B2"/>
-  <rect x="164" y="122" width="40" height="12" fill="#00D1B2"/>
-  <rect x="116" y="164" width="88" height="12" fill="#00D1B2"/>
-  <rect x="148" y="122" width="12" height="12" fill="#00D1B2" opacity="0.85"/>
-  <rect x="128" y="122" width="12" height="12" fill="#00D1B2" opacity="0.7"/>
-  <rect x="108" y="122" width="10" height="10" fill="#00D1B2" opacity="0.55"/>
-  <rect x="86" y="122" width="10" height="10" fill="#00D1B2" opacity="0.42"/>
-  <rect x="64" y="124" width="9" height="9" fill="#00D1B2" opacity="0.32"/>
-  <rect x="42" y="124" width="8" height="8" fill="#00D1B2" opacity="0.22"/>
-  <rect x="138" y="100" width="8" height="8" fill="#00D1B2" opacity="0.5"/>
-  <rect x="120" y="146" width="8" height="8" fill="#00D1B2" opacity="0.45"/>
+  <rect width="256" height="256" rx="48" fill="#0a0a0c"/>
+  <polygon points="168,32 224,72 224,184 168,224 96,184 96,72" fill="rgba(0,255,209,0.06)" stroke="#e8e9ec" stroke-width="9"/>
+  <rect x="116" y="80" width="88" height="12" fill="#00ffd1"/>
+  <rect x="164" y="122" width="40" height="12" fill="#00ffd1"/>
+  <rect x="116" y="164" width="88" height="12" fill="#00ffd1"/>
+  <rect x="148" y="122" width="12" height="12" fill="#00ffd1" opacity="0.85"/>
+  <rect x="128" y="122" width="12" height="12" fill="#00ffd1" opacity="0.7"/>
+  <rect x="108" y="122" width="10" height="10" fill="#00ffd1" opacity="0.55"/>
+  <rect x="86" y="122" width="10" height="10" fill="#00ffd1" opacity="0.42"/>
+  <rect x="64" y="124" width="9" height="9" fill="#00ffd1" opacity="0.32"/>
+  <rect x="42" y="124" width="8" height="8" fill="#00ffd1" opacity="0.22"/>
+  <rect x="138" y="100" width="8" height="8" fill="#00ffd1" opacity="0.5"/>
+  <rect x="120" y="146" width="8" height="8" fill="#00ffd1" opacity="0.45"/>
 </svg>
