@@ -153,6 +153,14 @@ function TacticGlyph({ id }: { id: string }) {
             <path d="M8 40h32" />
           </>
         )}
+        {n === 15 /* Off-chain Entry-Vector — laptop with phishing hook entering screen */ && (
+          <>
+            <rect x="10" y="14" width="28" height="18" rx="1" />
+            <path d="M6 36h36l-2 4H8z" />
+            <path d="M30 6c0 6-8 6-8 12 0 3 2 5 5 5" />
+            <circle cx="27" cy="23" r="2.5" className="fill-accent" />
+          </>
+        )}
       </svg>
     </span>
   );
@@ -1007,9 +1015,10 @@ const TACTIC_NAMES_SHORT: Record<string, string> = {
   T12: "NFT-Specific",
   T13: "Account Abstraction",
   T14: "Validator / Staking",
+  T15: "Off-chain Entry-Vector",
 };
 
-const TACTIC_ORDER = ["T1","T2","T3","T4","T5","T6","T7","T8","T9","T10","T11","T12","T13","T14"];
+const TACTIC_ORDER = ["T1","T2","T3","T4","T5","T6","T7","T8","T9","T10","T11","T12","T13","T14","T15"];
 const ATTRIBUTION_ORDER = ["confirmed","inferred-strong","inferred-weak","pseudonymous","unattributed","(missing)"];
 // Attribution colors derive from OAK's single accent (electric teal) with
 // decreasing opacity for decreasing rigor; lower-rigor categories fall onto
