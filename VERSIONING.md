@@ -80,6 +80,7 @@ When an item must be renamed or removed, OAK provides a deprecation window of on
 | Version | Date | Notes |
 |---|---|---|
 | 0.1 | 2026-04 | Initial public draft. 14 Tactics, 62 Techniques, 18 Threat Actors, 40 Mitigations, 40 Software, 12 Data Sources. |
+| 0.2 | 2026-05 | Additive: T15 Off-chain Entry-Vector / Pre-Positioning Tactic + 5 sub-Techniques (T15.001–T15.005). 15 Tactics, 63+ Techniques. Existing T1–T14 IDs unchanged; existing T11.x / T4.x worked-example mappings preserved. Schema-minor bump per the additive-Tactic rule. |
 
 ## Content snapshot history
 
