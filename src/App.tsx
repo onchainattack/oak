@@ -302,7 +302,8 @@ const workspaceRouteFromPath = (): WorkspaceView => {
 };
 
 const navigateTo = (path: string) => {
-  const target = `/${path.replace(/^\/+/, "")}`;
+  const cleanPath = path.replace(/^\/+/, "").replace(/\/+$/, "");
+  const target = cleanPath ? `/${cleanPath}/` : "/";
   if (window.location.pathname + window.location.search !== target) {
     window.history.pushState(null, "", target);
   }
@@ -2735,7 +2736,7 @@ function App() {
       pageDescription = `${pageLabel || "OAK"}: open vendor-neutral knowledge base of adversary Tactics and Techniques observed against on-chain assets.`;
     }
     const pageTitle = pageLabel ? `${pageLabel} · ${baseTitle}` : baseTitle;
-    const canonicalPath = window.location.pathname === "/" ? "/" : window.location.pathname.replace(/\/+$/, "");
+    const canonicalPath = window.location.pathname === "/" ? "/" : `${window.location.pathname.replace(/\/+$/, "")}/`;
     const canonicalUrl = `https://onchainattack.org${canonicalPath}`;
     const setMeta = (selector: string, attribute: "name" | "property", key: string, content: string) => {
       let el = document.head.querySelector<HTMLMetaElement>(selector);

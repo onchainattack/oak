@@ -8,12 +8,14 @@ const oak = JSON.parse(await readFile(path.join(root, "tools/oak.json"), "utf8")
 const today = new Date().toISOString().slice(0, 10);
 
 const urls = [];
+const canonicalLoc = (loc) => (loc === `${baseUrl}/` || loc.endsWith("/") ? loc : `${loc}/`);
 const push = (loc, priority = 0.6, changefreq = "weekly") => {
-  urls.push({ loc, lastmod: today, changefreq, priority });
+  urls.push({ loc: canonicalLoc(loc), lastmod: today, changefreq, priority });
 };
 
-// Clean, history-routed URLs (no `#/`, no `.md` suffix). Direct navigation is
-// supported via the GitHub Pages 404.html SPA-redirect trick.
+// Clean, history-routed URLs (no `#/`, no `.md` suffix). GitHub Pages serves
+// generated route entrypoints as directories, so canonical sitemap URLs use the
+// trailing slash that GitHub Pages returns as the final 200 URL.
 
 // Top-level views
 push(`${baseUrl}/`, 1.0, "weekly");

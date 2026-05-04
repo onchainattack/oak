@@ -62,8 +62,10 @@ const route = (pathname, title, description, priority = 0.5) => ({
   priority,
 });
 
+const canonicalUrlForPath = (pathname) => `${baseUrl}${pathname === "/" ? "/" : `${pathname}/`}`;
+
 const htmlForRoute = (template, { pathname, title, description }) => {
-  const canonicalUrl = `${baseUrl}${pathname}`;
+  const canonicalUrl = canonicalUrlForPath(pathname);
   const fullTitle = title === siteName ? siteName : `${title} · ${siteName}`;
   return template
     .replace(/<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(fullTitle)}</title>`)
