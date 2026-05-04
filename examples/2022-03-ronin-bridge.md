@@ -2,7 +2,7 @@
 
 **Loss:** \~\$625M (\~173,600 ETH and \~25.5M USDC at the time of the event).
 **Attribution:** **pseudonymous** — no public actor attribution at OAK v0.1 cutoff.
-**OAK Techniques observed:** OAK-T10.001 (Validator / Signer Key Compromise) — primary; OAK-T7.001 (Mixer-Routed Hop) — downstream laundering; OAK-T8.001 (Common-Funder Cluster Reuse) — operator continuity.
+**OAK Techniques observed:** OAK-T10.001 (Validator / Signer Key Compromise) — primary; OAK-T15.001 (Social Engineering of Operator Personnel) — off-chain entry vector (LinkedIn fake-job-offer pretext targeting a Sky Mavis engineer); OAK-T15.003 (Operator-Endpoint Compromise) — engineer workstation compromised by the malware-laden interview PDF, then lateral movement to validator-key access; OAK-T7.001 (Mixer-Routed Hop) — downstream laundering; OAK-T8.001 (Common-Funder Cluster Reuse) — operator continuity.
 **OAK-Gnn:** [OAK-G01 Lazarus Group / DPRK-attributed](../actors/OAK-G01-lazarus.md). **Confirmed** attribution: FBI public statement (April 2022), U.S. Treasury OFAC update of Lazarus Group sanctions list with the attacker wallet address.
 
 ## Summary
