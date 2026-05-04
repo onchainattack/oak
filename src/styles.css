@@ -4028,3 +4028,34 @@ button {
     font-size: 20px;
   }
 }
+
+/* Detail-page action buttons (Open full markdown / Report inaccuracy / View source on GitHub) */
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.detail-actions-stack {
+  flex-direction: column;
+  align-items: stretch;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.detail-actions-stack .button {
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .detail-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .detail-actions .button {
+    text-align: center;
+  }
+}

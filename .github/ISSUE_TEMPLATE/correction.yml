@@ -1,0 +1,84 @@
+name: Correction / inaccuracy report
+description: Report a factual error, missing source, attribution-strength dispute, or scope refinement on a Technique / worked example / Actor / Mitigation page.
+title: "[correction] "
+labels: ["correction"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to flag a factual inaccuracy, missing context, attribution-strength dispute, or scope refinement on any OAK page (Technique / worked example / Actor / Mitigation / Software / Tactic).
+
+        For broader feedback or new-Technique proposals, use the "New Technique proposal" or "New worked example" templates instead. For sensitive disclosures see SECURITY.md.
+
+  - type: input
+    id: doc-path
+    attributes:
+      label: Document path
+      description: Path of the file containing the inaccuracy (e.g. `examples/2025-02-bybit.md`, `techniques/T11.001-third-party-signing-vendor-compromise.md`).
+      placeholder: examples/YYYY-MM-name.md
+    validations:
+      required: true
+
+  - type: input
+    id: live-url
+    attributes:
+      label: Live URL (if filing from the website)
+      description: The URL on onchainattack.org where you saw the issue. Auto-prefilled when you click "Report inaccuracy" from the site.
+      placeholder: https://onchainattack.org/document/...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of correction
+      description: What's the nature of the issue?
+      options:
+        - Factual error (wrong number, wrong date, wrong actor)
+        - Missing or broken citation
+        - Attribution-strength dispute (e.g. should be `inferred-strong` not `confirmed`)
+        - Scope refinement (Technique definition is too broad / too narrow)
+        - Cross-reference correction (wrong T-ID mapping on this example)
+        - Naming / terminology
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: whats-wrong
+    attributes:
+      label: What's wrong
+      description: Describe the inaccuracy. Quote the affected passage if possible.
+      placeholder: |
+        The page states "$X loss" but per [source] the loss was $Y.
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested-fix
+    attributes:
+      label: Suggested fix
+      description: Concrete proposal — what should the page say instead?
+      placeholder: |
+        Replace "$X loss" with "$Y loss" and cite [primary source].
+    validations:
+      required: true
+
+  - type: textarea
+    id: sources
+    attributes:
+      label: Public sources supporting the fix
+      description: At least one public source (regulator action, primary investigative report, forensic provider write-up). OAK requires verifiable citations; do not link to live attacker infrastructure.
+      placeholder: |
+        - https://example.com/source1
+        - https://example.com/source2
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Acknowledgement
+      options:
+        - label: I confirm this is a correction to public information, not a sensitive disclosure (sensitive disclosures go through SECURITY.md).
+          required: true

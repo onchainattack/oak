@@ -291,6 +291,26 @@ const resolveMarkdownHref = (currentPath: string, href = "") => {
   return normalized;
 };
 
+// Build a prefilled GitHub-issue URL pointing at the `correction.yml` template.
+// Used by the "Report inaccuracy" button on every document view so a reader
+// who spots a factual error / attribution dispute / missing source can file a
+// structured correction in one click without leaving the site.
+const REPO_URL = "https://github.com/onchainattack/oak";
+const reportIssueUrl = (kind: string, path: string, title: string) => {
+  const liveUrl = typeof window !== "undefined" ? window.location.href : "";
+  const cleanTitle = title.replace(/[`*_\[\]]/g, "").slice(0, 80);
+  const issueTitle = `[correction] ${kind}: ${cleanTitle}`;
+  // Pre-fills the `template=correction.yml` form on the GitHub side. The
+  // `doc-path` and `live-url` fields are mapped by ID to the YAML form.
+  const params = new URLSearchParams({
+    template: "correction.yml",
+    title: issueTitle,
+    "doc-path": path,
+    "live-url": liveUrl,
+  });
+  return `${REPO_URL}/issues/new?${params.toString()}`;
+};
+
 // Categorize actors into broad classes. Title-prefix matching keeps it data-driven.
 const ACTOR_CATEGORIES: Array<{ id: string; label: string; match: (id: string, title: string) => boolean }> = [
   { id: "dprk", label: "DPRK / state-aligned", match: (_id, t) => /lazarus|trader|kimsuky|apt43|bluenoroff|andariel|dprk/i.test(t) },
@@ -1732,6 +1752,24 @@ function MarkdownDocument({
               })}
             </nav>
           )}
+          <div className="detail-actions detail-actions-stack">
+            <a
+              className="button button-secondary"
+              href={reportIssueUrl(documentKind, path, indexEntry?.title ?? path)}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Report inaccuracy
+            </a>
+            <a
+              className="button button-secondary"
+              href={`${REPO_URL}/blob/main/${path}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              View source on GitHub
+            </a>
+          </div>
         </aside>
 
         <article className="markdown-shell">
@@ -1874,13 +1912,23 @@ function TechniqueDetailPage({
               </small>
             )}
           </div>
-          <button
-            type="button"
-            className="button button-primary"
-            onClick={() => onOpenDoc(technique.sourcePath)}
-          >
-            Open full markdown
-          </button>
+          <div className="detail-actions">
+            <button
+              type="button"
+              className="button button-primary"
+              onClick={() => onOpenDoc(technique.sourcePath)}
+            >
+              Open full markdown
+            </button>
+            <a
+              className="button button-secondary"
+              href={reportIssueUrl("Technique", technique.sourcePath, `${technique.id} — ${technique.name}`)}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Report inaccuracy
+            </a>
+          </div>
         </aside>
 
         <article className="document-content technique-detail-content">
@@ -2116,13 +2164,23 @@ function MitigationDetailPage({
             )}
             <small><strong>Maps to:</strong> {mappedTechniques.length} {mappedTechniques.length === 1 ? "Technique" : "Techniques"}</small>
           </div>
-          <button
-            type="button"
-            className="button button-primary"
-            onClick={() => onOpenDoc(mitigation.sourcePath)}
-          >
-            Open full markdown
-          </button>
+          <div className="detail-actions">
+            <button
+              type="button"
+              className="button button-primary"
+              onClick={() => onOpenDoc(mitigation.sourcePath)}
+            >
+              Open full markdown
+            </button>
+            <a
+              className="button button-secondary"
+              href={reportIssueUrl("Mitigation", mitigation.sourcePath, `${mitigation.id} — ${mitigation.name}`)}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Report inaccuracy
+            </a>
+          </div>
         </aside>
         <article className="document-content technique-detail-content">
           <header className="technique-detail-header">
@@ -2229,13 +2287,23 @@ function SoftwareDetailPage({
               <small><strong>Platforms:</strong> {software.hostPlatforms.slice(0, 3).join(", ")}</small>
             )}
           </div>
-          <button
-            type="button"
-            className="button button-primary"
-            onClick={() => onOpenDoc(software.sourcePath)}
-          >
-            Open full markdown
-          </button>
+          <div className="detail-actions">
+            <button
+              type="button"
+              className="button button-primary"
+              onClick={() => onOpenDoc(software.sourcePath)}
+            >
+              Open full markdown
+            </button>
+            <a
+              className="button button-secondary"
+              href={reportIssueUrl("Software", software.sourcePath, `${software.id} — ${software.name}`)}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Report inaccuracy
+            </a>
+          </div>
         </aside>
         <article className="document-content technique-detail-content">
           <header className="technique-detail-header">
@@ -2366,13 +2434,23 @@ function GroupDetailPage({
             <small><strong>Uses Software:</strong> {usesSoftware.length}</small>
             <small><strong>Worked Examples:</strong> {groupExamples.length}</small>
           </div>
-          <button
-            type="button"
-            className="button button-primary"
-            onClick={() => onOpenDoc(`actors/${actor.file}`)}
-          >
-            Open full markdown
-          </button>
+          <div className="detail-actions">
+            <button
+              type="button"
+              className="button button-primary"
+              onClick={() => onOpenDoc(`actors/${actor.file}`)}
+            >
+              Open full markdown
+            </button>
+            <a
+              className="button button-secondary"
+              href={reportIssueUrl("Actor", `actors/${actor.file}`, `${actor.id} — ${actor.title}`)}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Report inaccuracy
+            </a>
+          </div>
         </aside>
         <article className="document-content technique-detail-content">
           <header className="technique-detail-header">
