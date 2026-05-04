@@ -1,0 +1,105 @@
+oak_techniques: [OAK-T11.005]
+spec_id: oak-detection-T11.005
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect operator-side fake-platform fraud — end-to-end operator-
+  controlled platforms (fake CEX, fake custodian, fake yield
+  product, pig-butchering investment site) where the platform
+  itself is the vehicle of theft. Three sub-patterns: (.001) fake-
+  CEX / pig-butchering platform; (.002) fake-custodian / MLM
+  Ponzi; (.003) compound-operated industrial-scale platform fraud.
+  Detection lives at off-chain OSINT (regulator registries,
+  corporate-registry verification, brand-impersonation surveillance)
+  + on-chain forensics (deposit-aggregation-without-trading-outflow,
+  Huione-substrate cluster overlap). Excludes: T11.001 (real
+  platform vendor UI compromise); T11.002 (real wallet binary
+  substitution); T2.x rug-pull tokens (token-side, not platform-
+  side); T4 phishing (real platform, real user holdings); T5.005
+  (real DeFi treasury exit).
+
+data_sources: [licensed_vasp_registry_feed,
+               regulator_warning_feed,
+               corporate_registry_lookup_service,
+               platform_brand_impersonation_log,
+               deposit_aggregation_pattern_log,
+               huione_substrate_cluster_index,
+               retail_bank_destination_blocklist_feed,
+               investigative_journalism_feed]
+
+detection_logic:
+  description: |
+    Three orthogonal paths matching the canonical detection
+    surfaces. PATH A (regulator-warning + absence-from-licensed-
+    VASP-registry): platform brand observed in user-acquisition
+    flows is absent from licensed-VASP registries and present in
+    one or more regulator warning feeds. PATH B (deposit-
+    aggregation without trading outflow): aggregated deposit fan-
+    in to a small operator-wallet set without observable matched
+    trading outflow consistent with claimed AUM — Ponzi-receivable
+    signature. PATH C (Huione / compound-substrate cluster
+    overlap): on-chain destination wallet clusters with Huione
+    Group laundering substrate or known compound-operated
+    cohorts.
+  pseudocode: |
+    # PATH A — regulator-warning + absence-from-licensed-VASP-registry
+    for each platform_brand B in observed_user_acquisition_flow:
+      licensed ← licensed_vasp_registry_feed.lookup(B)
+      warnings ← regulator_warning_feed.lookup(B)
+      registration ← corporate_registry_lookup_service.lookup(B)
+      if licensed == None and (warnings ≠ ∅ or registration == None):
+        emit(PATH_A, platform=B, warnings, licensed_status="absent",
+             registration_status="absent_or_unverified", severity=critical)
+
+    # PATH B — deposit-aggregation without trading outflow
+    for each operator_wallet W with deposit fan-in ≥ aggregation_floor:
+      deposits ← deposit_aggregation_pattern_log.events(W, window = W_window)
+      trading_outflow ← matched_trading_outflow(W, window = W_window)
+      ratio ← trading_outflow.value / max(deposits.total_value, 1)
+      if ratio < trading_outflow_floor:
+        emit(PATH_B, operator_wallet=W, deposit_total=deposits.total_value,
+             trading_outflow=trading_outflow.value, ratio,
+             severity=high)
+
+    # PATH C — Huione / compound-substrate cluster overlap
+    for each operator_wallet W:
+      cluster ← huione_substrate_cluster_index.match(W)
+      if cluster ≠ None:
+        emit(PATH_C, operator_wallet=W, cluster, severity=critical)
+
+parameters:
+  aggregation_floor:           { type: integer,  default: 1000 }     # distinct depositors
+  trading_outflow_floor:       { type: number,   default: 0.05 }     # < 5% trading vs deposit
+  W_window:                    { type: duration, default: 90d }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               platform, warnings, licensed_status, registration_status,
+               operator_wallet, deposit_total, trading_outflow, ratio,
+               cluster, evidence]
+
+test_fixtures:
+  positive:
+    - 2014-2017-onecoin-ignatova                     # historical anchor (T11.005.002 MLM-token Ponzi)
+    - 2022-09-cryptofx-chavez                        # T11.005.002 affinity-fraud Latino
+    - 2024-01-hyperverse-hyperfund                   # T11.005.002 global-MLM
+    - 2019-06-plus-token                             # T11.005.002 multi-asset-wallet Ponzi
+  negative:
+    - "Platform listed in a licensed-VASP registry with verifiable corporate registration and matched trading outflow"
+    - "Operator wallet whose deposit aggregation matches observable trading-outflow within tolerance"
+
+false_positive_modes:
+  - PATH A false positives for emerging legitimate platforms in jurisdictions with delayed licensing pipelines (require regulator-warning to fire, not just absence-from-registry)
+  - PATH B false positives for legitimate custodial wallets receiving routine user deposits without matched on-chain trading (require trading-outflow ratio low + brand-flag PATH A)
+  - PATH C false positives for legitimate exchanges with incidental Huione-substrate exposure during routine operations (require cluster-attribution strength)
+
+mitigations: [OAK-M21, OAK-M27, OAK-M30, OAK-M36]
+
+reference_implementations:
+  - { target: chainalysis-crypto-crime-report, chain: cross-chain, url: "" }
+  - { target: fbi-ic3-psa-feed,                chain: cross-chain, url: "" }
+  - { target: fincen-advisory-feed,            chain: cross-chain, url: "" }
+  - { target: ofac-sdn-feed,                   chain: cross-chain, url: "" }
+  - { target: trm-labs,                        chain: cross-chain, url: "" }

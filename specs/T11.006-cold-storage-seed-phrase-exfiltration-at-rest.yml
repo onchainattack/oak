@@ -1,0 +1,100 @@
+oak_techniques: [OAK-T11.006]
+spec_id: oak-detection-T11.006
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect cold-storage seed-phrase exfiltration at rest — seed
+  material held in third-party storage services compromised
+  independently of wallet vendor / on-chain hygiene. Two sub-
+  patterns: (.001) user-initiated plaintext-equivalent storage
+  (LastPass / 1Password Secure Notes / cloud-synced text files);
+  (.002) implicit cloud-custody via default-on OS-level cloud-
+  backup (iCloud / Google Drive / OneDrive) where wallet app did
+  not opt out. Detection surface is off-chain (storage-service
+  breach disclosure) + per-victim cohort process-of-elimination.
+  Excludes: T11.001 (vendor UI compromise); T11.002 (wallet-
+  binary distribution); T11.007 (active phishing for seed —
+  T11.007.003); T11.008 (embedded-wallet IdP compromise — no seed
+  phrase).
+
+data_sources: [storage_service_breach_disclosure_feed,
+               per_victim_cohort_attribution_feed,
+               wallet_app_cloud_backup_posture_registry,
+               cloud_account_compromise_feed,
+               cohort_outflow_log,
+               federal_forfeiture_filing_feed]
+
+detection_logic:
+  description: |
+    Three orthogonal paths matching the documented sub-shapes.
+    PATH A (storage-service breach + cohort-fingerprint
+    attribution): storage-service breach disclosure paired with a
+    per-victim cohort whose only commonality is having stored
+    seed-phrase material in the affected service. PATH B (wallet-
+    app cloud-backup posture audit): wallet apps that do not opt
+    out of OS-level cloud-backup defaults — pre-event surface
+    inventory across the wallet-app cohort. PATH C (cloud-account
+    compromise → wallet-vault decryption): cloud-account
+    compromise event (SIM-swap / Apple-ID phishing / Google-
+    account social-engineering) followed by wallet drain whose
+    address matches the affected cloud account's stored vault.
+  pseudocode: |
+    # PATH A — storage-service breach + cohort-fingerprint attribution
+    for each breach B in storage_service_breach_disclosure_feed:
+      cohort ← per_victim_cohort_attribution_feed
+                 .lookup_commonality(storage_service = B.service,
+                                       window = [B.t, B.t + cohort_tail_window])
+      if |cohort| ≥ cohort_attribution_floor:
+        emit(PATH_A, breach=B, cohort_size=|cohort|,
+             attribution_strength="inferred-strong-or-confirmed",
+             severity=critical)
+
+    # PATH B — wallet-app cloud-backup posture audit
+    for each wallet_app W:
+      posture ← wallet_app_cloud_backup_posture_registry[W]
+      if posture.ios_disable_backup == False
+         or posture.android_allow_backup == True:
+        emit(PATH_B, wallet_app=W, posture, severity=high)
+
+    # PATH C — cloud-account compromise → wallet-vault decryption
+    for each compromise C in cloud_account_compromise_feed:
+      window ← [C.t, C.t + post_compromise_window]
+      drains ← cohort_outflow_log
+                  .events_for_cloud_account(C.account, window)
+      if drains ≠ ∅:
+        emit(PATH_C, compromise=C, drain_count=|drains|,
+             severity=critical)
+
+parameters:
+  cohort_tail_window:           { type: duration, default: 1095d }   # 3y for offline brute-force tail
+  cohort_attribution_floor:     { type: integer,  default: 10 }
+  post_compromise_window:       { type: duration, default: 90d }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               breach, cohort_size, attribution_strength, wallet_app,
+               posture, compromise, drain_count, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-12-lastpass-vault-cohort                  # canonical T11.006.001 anchor
+    - 2022-04-icloud-metamask-seed-phrase-cohort     # canonical T11.006.002 anchor
+  negative:
+    - "Wallet app with iOS disableBackup / Android allowBackup=false posture verified"
+    - "Storage-service breach with no per-victim cohort attribution within tail window"
+
+false_positive_modes:
+  - PATH A false positives for storage-service breaches affecting only non-crypto credentials (require cohort-attribution evidence for crypto victims specifically)
+  - PATH B false positives for wallet apps with disclosed cloud-backup design (treat as design-disclosure rather than failure — annotate disclosed-design allowlist)
+  - PATH C false positives for cloud-account compromises that did not target stored wallet vaults (require drain correlation)
+
+mitigations: [OAK-M19, OAK-M21, OAK-M22, OAK-M30, OAK-M37]
+
+reference_implementations:
+  - { target: have-i-been-pwned,             chain: cross-chain, url: "" }
+  - { target: zachxbt-investigations,        chain: cross-chain, url: "" }
+  - { target: trm-labs-lastpass-tracking,    chain: cross-chain, url: "" }
+  - { target: chainalysis-reactor,           chain: cross-chain, url: "" }
+  - { target: metamask-security-advisories,  chain: evm,         url: "" }

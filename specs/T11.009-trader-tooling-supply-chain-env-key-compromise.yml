@@ -1,0 +1,108 @@
+oak_techniques: [OAK-T11.009]
+spec_id: oak-detection-T11.009
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect trader-tooling supply-chain compromise targeting `.env`
+  / `wallet.json` plaintext private keys in developer environments
+  — bot builders / quant developers whose runtime requires
+  automated signing. Distribution channels: npm package registry
+  (polymarket-clob, sha256-validation, sha256-validator-pro,
+  solana-utils-sdk), PyPI, hijacked GitHub organisations
+  (dev-protocol). Cohort overlaps DPRK-attributed BeaverTail /
+  InvisibleFerret npm operations at infrastructure-fingerprint
+  layer. Excludes: T11.002 (end-user wallet binary substitution);
+  T11.006 (storage-at-rest exfiltration); T11.007 (hardware-wallet
+  supply-chain); T8 (laundering / reuse pattern, not custody-
+  side).
+
+data_sources: [npm_registry_advisory_feed,
+               pypi_registry_advisory_feed,
+               github_organisation_compromise_feed,
+               package_install_time_filesystem_access_log,
+               vidar_stealer_c2_endpoint_index,
+               beavertail_invisibleferret_cohort_index,
+               developer_environment_extraction_log,
+               authoritative_tooling_registry_feed]
+
+detection_logic:
+  description: |
+    Three orthogonal paths matching the documented sub-shapes.
+    PATH A (package-registry advisory + install-time filesystem-
+    access fingerprint): malicious package whose install / build
+    / first-run code reads `.env`, `wallet.txt`, `wallets.json`,
+    `keys/*.json`, `~/.config/solana/id.json`, or `~/.aws/
+    credentials` and exfiltrates them. PATH B (GitHub-org-hijack
+    + sibling-repo cohort): legitimate organisation's credentials
+    compromised; sibling repositories under platform-tooling-
+    plausible names published by the hijacker. PATH C
+    (infrastructure-fingerprint cohort overlap with G01-attributed
+    npm operations): C2 endpoint reuse with Vidar Stealer /
+    BeaverTail / InvisibleFerret cohort.
+  pseudocode: |
+    SENSITIVE_KEYFILE_PATTERNS = [".env", "wallet.txt", "wallets.json",
+                                    "keys/*.json", "~/.config/solana/id.json",
+                                    "~/.aws/credentials"]
+
+    # PATH A — package-registry advisory + install-time keyfile access
+    for each package P in (npm_registry_advisory_feed ⊔
+                              pypi_registry_advisory_feed):
+      access ← package_install_time_filesystem_access_log
+                 .access_patterns(P)
+      sensitive_match ← {pat for pat in SENSITIVE_KEYFILE_PATTERNS
+                           if any(a.matches(pat) for a in access)}
+      if sensitive_match ≠ ∅:
+        emit(PATH_A, package=P, sensitive_match,
+             severity=critical)
+
+    # PATH B — GitHub-org-hijack + sibling-repo cohort
+    for each compromise C in github_organisation_compromise_feed:
+      sibling_repos ← repos_published_under_org_after(C.org, C.t)
+      platform_tooling_match ← [r for r in sibling_repos
+                                  if r.name_matches_platform_tooling_pattern()]
+      if |platform_tooling_match| ≥ sibling_repo_floor:
+        emit(PATH_B, org=C.org, compromise=C,
+             trojan_repo_count=|platform_tooling_match|,
+             severity=critical)
+
+    # PATH C — infrastructure-fingerprint cohort overlap with G01 npm ops
+    for each package_or_repo X with extraction artefact:
+      c2_endpoints ← X.exfiltration_targets
+      vidar_match ← vidar_stealer_c2_endpoint_index.match(c2_endpoints)
+      g01_match ← beavertail_invisibleferret_cohort_index.match(X)
+      if vidar_match ≠ ∅ or g01_match ≠ None:
+        emit(PATH_C, artefact=X, vidar_match, g01_match,
+             severity=critical)
+
+parameters:
+  sibling_repo_floor:           { type: integer,  default: 3 }
+  W:                            { type: duration, default: 30d }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               package, sensitive_match, org, compromise,
+               trojan_repo_count, artefact, vidar_match, g01_match,
+               evidence]
+
+test_fixtures:
+  positive:
+    - 2026-01-polymarket-trader-tooling-supply-chain  # canonical T11.009 anchor
+  negative:
+    - "Package whose install-time filesystem access does not touch sensitive keyfile patterns"
+    - "GitHub organisation with credentials hardware-MFA-protected and no unauthorised repository publication"
+
+false_positive_modes:
+  - PATH A false positives for legitimate packages that read `.env` for documented purposes (database / API config) — require sensitive keyfile match against wallet / chain-key paths specifically
+  - PATH B false positives for legitimate organisation expansion with new repository publications (require credential-compromise disclosure to anchor)
+  - PATH C false positives for legitimate developer-tooling C2-adjacent infrastructure (require G01 cohort match strength)
+
+mitigations: [OAK-M19, OAK-M20, OAK-M30, OAK-M37, OAK-M40]
+
+reference_implementations:
+  - { target: socket-dev,             chain: cross-chain, url: "" }
+  - { target: phylum,                 chain: cross-chain, url: "" }
+  - { target: stepsecurity,           chain: cross-chain, url: "" }
+  - { target: snyk-supply-chain,      chain: cross-chain, url: "" }
+  - { target: cyb3rhawk-disclosures,  chain: cross-chain, url: "" }

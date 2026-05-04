@@ -1,0 +1,107 @@
+oak_techniques: [OAK-T11.002]
+spec_id: oak-detection-T11.002
+version: 0.1.0
+maturity: stable
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect wallet-software distribution compromise — the wallet
+  software itself is compromised at build / distribution / update
+  time, producing coordinated extraction across thousands of end-
+  user wallets running the same software within a short window.
+  Includes wallet-integration-library compromise (Ledger Connect
+  Kit npm cohort) and developer-tooling supply-chain affecting
+  wallet-related code paths (BeaverTail / InvisibleFerret npm).
+  Excludes: T4 (phishing — user signed a bogus authority on real
+  software); T11.001 (third-party signing-vendor UI compromise);
+  T11.009 (developer-environment .env compromise — bot-runtime
+  victim cohort); T11.007 (hardware-wallet supply-chain).
+
+data_sources: [end_user_wallet_extraction_log,
+               wallet_software_fingerprint_index,
+               wallet_vendor_disclosure_feed,
+               package_registry_advisory_feed,
+               class_action_litigation_filing_feed,
+               attacker_destination_cluster_attribution]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (coordinated extraction burst
+    across same-software cohort): bursts of structurally-similar
+    extractions across thousands of distinct end-user wallets
+    sharing a wallet-software fingerprint within a short window.
+    PATH B (vendor-disclosure / package-registry compromise event
+    correlated with extraction wave): wallet vendor or package-
+    registry advisory paired with extraction wave at affected
+    cohort. PATH C (destination-cluster fan-in to small attacker
+    set): extracted funds from many distinct senders converge to
+    a small set of attacker-controlled destinations.
+  pseudocode: |
+    # PATH A — coordinated burst across same-software cohort
+    for each window W in rolling_window(burst_window):
+      events ← end_user_wallet_extraction_log.events(W)
+      grouped ← group_by(events, key = wallet_software_fingerprint)
+      for software, group in grouped:
+        if |group| ≥ burst_floor
+           and structural_similarity(group) ≥ similarity_threshold:
+          emit(PATH_A, software=software, victim_count=|group|,
+               window=W, severity=critical)
+
+    # PATH B — vendor / package-registry disclosure correlated with extraction wave
+    for each disclosure D in (wallet_vendor_disclosure_feed ⊔
+                                 package_registry_advisory_feed):
+      window ← [D.t − pre_disclosure_lookback, D.t + post_disclosure_window]
+      affected ← end_user_wallet_extraction_log
+                   .events_for_software(D.software, window)
+      if |affected| ≥ extraction_wave_floor:
+        emit(PATH_B, disclosure=D, software=D.software,
+             extraction_wave_size=|affected|, severity=critical)
+
+    # PATH C — destination-cluster fan-in
+    for each cluster C in attacker_destination_cluster_attribution:
+      sources ← end_user_wallet_extraction_log.sources_to(C, window = W)
+      if |sources| ≥ fan_in_floor and structural_similarity(sources) ≥ similarity_threshold:
+        emit(PATH_C, attacker_cluster=C, victim_count=|sources|,
+             severity=critical)
+
+parameters:
+  burst_window:                 { type: duration, default: 24h }
+  burst_floor:                  { type: integer,  default: 50 }
+  similarity_threshold:         { type: number,   default: 0.7 }
+  pre_disclosure_lookback:      { type: duration, default: 7d }
+  post_disclosure_window:       { type: duration, default: 30d }
+  extraction_wave_floor:        { type: integer,  default: 100 }
+  fan_in_floor:                 { type: integer,  default: 100 }
+  W:                            { type: duration, default: 30d }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               software, victim_count, window, disclosure,
+               extraction_wave_size, attacker_cluster, evidence]
+
+test_fixtures:
+  positive:
+    - 2023-06-atomic-wallet                          # canonical T11.002 anchor
+    - 2023-12-ledger-connect-kit                     # npm-supply-chain wallet-integration-library
+    - 2022-08-slope-phantom                          # Slope Wallet (Solana) cohort
+    - 2024-06-coinstats-snap                         # MetaMask-Snap-related compromise
+    - 2024-12-solana-web3js-npm-supply-chain         # @solana/web3.js v1.95.6/7 backdoor
+    - 2025-03-solflare-base-x-homograph-cve          # Solflare/base-x homograph CVE
+    - 2024-08-bittensor-coldkey-cohort               # Bittensor PyPI compromise
+  negative:
+    - "Single-wallet extraction with no software-cohort fingerprint correlation"
+    - "Wallet-vendor advisory with no observed extraction wave"
+
+false_positive_modes:
+  - PATH A false positives for cohorts of wallets sharing a software fingerprint that were independently phished (require structural-similarity high)
+  - PATH B false positives where vendor disclosure was a near-miss without realised extraction (require extraction wave to fire)
+  - PATH C false positives for legitimate aggregator / sweep wallets that fan-in many sources by design (require attacker-cluster attribution)
+
+mitigations: [OAK-M01, OAK-M03, OAK-M19, OAK-M40]
+
+reference_implementations:
+  - { target: chainalysis-reactor,    chain: cross-chain, url: "" }
+  - { target: trm-labs,               chain: cross-chain, url: "" }
+  - { target: elliptic-investigator,  chain: cross-chain, url: "" }
+  - { target: socket-dev,             chain: cross-chain, url: "" }
+  - { target: phylum,                 chain: cross-chain, url: "" }

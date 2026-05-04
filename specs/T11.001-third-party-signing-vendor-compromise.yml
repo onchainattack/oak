@@ -1,0 +1,112 @@
+oak_techniques: [OAK-T11.001]
+spec_id: oak-detection-T11.001
+version: 0.1.0
+maturity: stable
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect on-chain manifestation of third-party signing-vendor UI /
+  signing-flow compromise — UI-substitution → cold-to-warm transfer
+  redirection signed by the customer's intact signing-set. The
+  cryptographic signing layer is uncompromised; the customer's
+  signers approve what the vendor's UI displays; the on-chain
+  payload diverges from what was displayed. Off-chain entry vector
+  (vendor-pipeline / build-system / personnel social engineering)
+  is delegated to T15.001 / T15.002 / T15.003. Excludes: T11.002
+  (wallet-binary distribution); T11.003 (in-use multisig contract
+  modification — Liminal / WazirX); T10.001 (bridge validator-key
+  compromise — Ronin); T11.005 (operator-side fake-platform fraud
+  with no real platform).
+
+data_sources: [vendor_supply_chain_disclosure_feed,
+               customer_cold_wallet_outflow_log,
+               illicit_cluster_watchlist_g01,
+               t7003_bridge_deposit_correlation_log,
+               customer_signing_personnel_attestation,
+               vendor_breach_notification_sla_registry]
+
+detection_logic:
+  description: |
+    Three orthogonal paths matching the documented sub-shapes.
+    PATH A (vendor-disclosure → customer outflow within elevated-
+    risk window): vendor publishes supply-chain compromise
+    disclosure; customer organisations of the affected vendor
+    are flagged for elevated-risk monitoring; large outflow from
+    a flagged customer's cold wallet within the post-disclosure
+    window emits. PATH B (intent-vs-payload divergence at sign
+    time): customer signing personnel attest a different
+    destination at vendor UI than the on-chain payload — out-of-
+    band attestation diverges from on-chain transaction. PATH C
+    (cold-wallet outflow to G01-attributed cluster + T7.003
+    chain): single large outflow whose destination clusters with
+    OAK-G01 watchlist, paired with rapid downstream T7.003
+    cross-chain bridge deposit.
+  pseudocode: |
+    # PATH A — vendor disclosure + customer outflow within elevated-risk window
+    for each disclosure D in vendor_supply_chain_disclosure_feed:
+      affected_customers ← customer_organisations_of(D.vendor)
+      window ← [D.t, D.t + post_disclosure_window]
+      for C in affected_customers:
+        outflows ← customer_cold_wallet_outflow_log.events(C, window)
+        for o in outflows:
+          if o.value ≥ large_outflow_threshold:
+            emit(PATH_A, vendor=D.vendor, customer=C,
+                 outflow=o, disclosure=D, severity=critical)
+
+    # PATH B — intent-vs-payload divergence at sign time
+    for each high_value_outflow o:
+      attest ← customer_signing_personnel_attestation.lookup(o.signing_session)
+      if attest ≠ None and attest.destination ≠ o.on_chain_destination:
+        emit(PATH_B, customer=o.customer, signing_session=o.signing_session,
+             attested_destination=attest.destination,
+             on_chain_destination=o.on_chain_destination,
+             severity=critical)
+
+    # PATH C — outflow to OAK-G01 cluster + T7.003 chain
+    for each outflow o with value ≥ large_outflow_threshold:
+      cluster ← illicit_cluster_watchlist_g01.match(o.destination)
+      if cluster ≠ None:
+        bridge ← t7003_bridge_deposit_correlation_log
+                   .find_correlated(o, window = bridge_correlation_window)
+        if bridge ≠ None:
+          emit(PATH_C, customer=o.customer, outflow=o,
+               g01_cluster=cluster, bridge_deposit=bridge,
+               severity=critical)
+
+parameters:
+  post_disclosure_window:       { type: duration, default: 30d }
+  large_outflow_threshold:      { type: number,   default: 1000000 }   # USD-equivalent
+  bridge_correlation_window:    { type: duration, default: 24h }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               vendor, customer, outflow, disclosure, signing_session,
+               attested_destination, on_chain_destination,
+               g01_cluster, bridge_deposit, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-02-bybit                                  # canonical T11.001 anchor (Safe{Wallet} UI substitution)
+    - 2025-02-bybit-thorchain-laundering             # T11.001 → T7.003 downstream chain
+    - 2024-01-concentric                             # multisig signing-key social-engineering
+    - 2024-05-dmm-bitcoin                            # hot-wallet signing-flow compromise
+    - 2024-10-radiant-capital                        # cross-chain lending compromise via signing-flow
+    - 2025-09-sbi-crypto                             # mining-pool drain via signing-vendor surface
+    - 2025-09-swissborg                              # third-party-API supply-chain (SOL-Earn)
+    - 2026-04-drift-protocol-durable-nonces-dprk     # Solana durable-nonces social-engineering
+  negative:
+    - "Customer cold-wallet outflow to a customer-attested destination matching on-chain payload"
+    - "Vendor disclosure with no customer outflow within elevated-risk window"
+
+false_positive_modes:
+  - PATH A false positives for legitimate large outflows by customers of an affected vendor whose own infrastructure was uncompromised (require destination-cluster match or out-of-band attestation gap)
+  - PATH B false positives for legitimate destination changes between attestation and submission (require absence of documented change-control approval)
+  - PATH C false positives for legitimate market-making / treasury-rebalance flows whose destination happens to cluster with mixer-adjacent infrastructure (require G01-strength cluster match)
+
+mitigations: [OAK-M18, OAK-M19, OAK-M20, OAK-M21, OAK-M22]
+
+reference_implementations:
+  - { target: chainalysis-reactor,    chain: cross-chain, url: "" }
+  - { target: trm-labs,               chain: cross-chain, url: "" }
+  - { target: elliptic-investigator,  chain: cross-chain, url: "" }
+  - { target: fbi-ic3-psa-feed,       chain: cross-chain, url: "" }

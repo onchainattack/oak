@@ -1,0 +1,108 @@
+oak_techniques: [OAK-T11.007]
+spec_id: oak-detection-T11.007
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect hardware-wallet supply-chain / physical-access
+  compromise. Three sub-patterns: (.001) counterfeit-hardware
+  substitution via informal retail channels (AliExpress / Telegram
+  resellers / second-hand without packaging — 2025 Ledger Nano S
+  Plus cohort with ESP32-S3 + Wi-Fi/BLE radio exfiltration); (.002)
+  physical-access seed extraction via voltage-glitching / side-
+  channel against the microcontroller (Trezor RDP-downgrade
+  capability anchor); (.003) brand-trust-leveraged active phishing
+  for seed-phrase exfiltration (fake firmware-update emails,
+  trojanised Ledger Live / Trezor Suite, mailed-physical-letter
+  campaigns leveraging the 2020 Ledger customer-data leak).
+  Excludes: T11.002 (wallet-software distribution — software
+  substitution on legitimate device); T11.006 (passive storage-
+  at-rest exfiltration without active phishing); T4 phishing
+  (artefact is on-chain authority, not seed phrase).
+
+data_sources: [authorised_retailer_purchase_attestation,
+               vendor_genuineness_check_log,
+               counterfeit_hardware_disclosure_feed,
+               microcontroller_vulnerability_disclosure_feed,
+               vendor_phishing_campaign_advisory_feed,
+               trojanised_companion_app_advisory_feed,
+               mailed_letter_campaign_advisory_feed]
+
+detection_logic:
+  description: |
+    Three orthogonal paths matching the three sub-patterns.
+    PATH A (counterfeit-hardware substitution): device purchased
+    outside authorised retail channels and / or fails the vendor's
+    genuineness check; counterfeit-hardware disclosure feed
+    matches the device's distribution channel. PATH B (physical-
+    access seed-extraction capability against deployed device
+    population): vendor-acknowledged structural microcontroller
+    vulnerability against deployed device population (Trezor One
+    / Model T STM32 RDP-downgrade) — pre-event surface inventory.
+    PATH C (brand-impersonation active phishing): vendor's
+    phishing-campaign advisory or trojanised companion-app
+    advisory matches a user-side communication / installed app.
+  pseudocode: |
+    # PATH A — counterfeit-hardware substitution
+    for each device D under user custody:
+      retailer ← authorised_retailer_purchase_attestation.lookup(D)
+      genuine ← vendor_genuineness_check_log.lookup(D)
+      counterfeit_match ← counterfeit_hardware_disclosure_feed
+                            .match(D.distribution_channel,
+                                    D.serial, D.purchase_t)
+      if retailer == None or genuine == False or counterfeit_match ≠ None:
+        emit(PATH_A, device=D, retailer_status=retailer ≠ None,
+             genuine_status=genuine, counterfeit_match,
+             severity=critical)
+
+    # PATH B — physical-access seed-extraction capability vs deployed population
+    for each vulnerability V in microcontroller_vulnerability_disclosure_feed:
+      affected_devices ← deployed_population_with_microcontroller(V.mcu)
+      mitigation_present ← {d for d in affected_devices
+                              if has_passphrase_or_secure_element(d)}
+      exposed ← affected_devices − mitigation_present
+      if |exposed| ≥ exposed_population_floor:
+        emit(PATH_B, vulnerability=V, exposed_count=|exposed|,
+             severity=high)
+
+    # PATH C — brand-impersonation active phishing
+    for each advisory A in (vendor_phishing_campaign_advisory_feed ⊔
+                              trojanised_companion_app_advisory_feed ⊔
+                              mailed_letter_campaign_advisory_feed):
+      matched_users ← user_communication_index.match(A.indicators)
+      if matched_users ≠ ∅:
+        emit(PATH_C, advisory=A, matched_user_count=|matched_users|,
+             campaign_kind=A.kind, severity=critical)
+
+parameters:
+  exposed_population_floor:     { type: integer,  default: 1000 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               device, retailer_status, genuine_status, counterfeit_match,
+               vulnerability, exposed_count, advisory, matched_user_count,
+               campaign_kind, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-counterfeit-ledger-nano-s-plus-cohort     # canonical T11.007.001 deployed-attack anchor
+    - 2020-01-trezor-kraken-rdp-downgrade            # canonical T11.007.002 capability anchor
+    - 2023-2026-fake-firmware-update-phishing-cohort # canonical T11.007.003 active-phishing anchor
+  negative:
+    - "Device purchased through vendor authorised retailer with vendor genuineness check passing"
+    - "Vendor-disclosed phishing campaign with no matched user-side communication"
+
+false_positive_modes:
+  - PATH A false positives for legitimate informal-channel purchases that pass the vendor genuineness check (require failure on at least one signal — purchase channel + genuineness + counterfeit-disclosure)
+  - PATH B false positives where vulnerability is not realised (capability anchor — promote to incident only when extraction is observed)
+  - PATH C false positives for legitimate vendor communications mistakenly indicator-matched (require explicit non-vendor-channel signal — typosquat domain, unauthorised QR code, seed-phrase solicitation)
+
+mitigations: [OAK-M19, OAK-M21, OAK-M22, OAK-M30, OAK-M37, OAK-M40]
+
+reference_implementations:
+  - { target: ledger-genuineness-check,        chain: cross-chain, url: "" }
+  - { target: trezor-suite-genuineness-check,  chain: cross-chain, url: "" }
+  - { target: ledger-phishing-campaign-feed,   chain: cross-chain, url: "" }
+  - { target: kaspersky-threat-intelligence,   chain: cross-chain, url: "" }
+  - { target: cyble-cohort-tracking,           chain: cross-chain, url: "" }

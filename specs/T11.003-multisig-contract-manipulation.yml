@@ -1,0 +1,100 @@
+oak_techniques: [OAK-T11.003]
+spec_id: oak-detection-T11.003
+version: 0.1.0
+maturity: observed
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect in-use multisig smart-contract manipulation — attacker
+  with partial signing access modifies the on-chain multisig
+  contract (signer-set, threshold, proxy implementation) such that
+  subsequent extractions require no further signatures from the
+  legitimate signer set. Detection lives at the contract-
+  modification event itself: a multisig that operated under N-of-M
+  + 1 and then accepts unilateral signatures is the canonical
+  signal. Excludes: T11.001 (signing-vendor UI compromise without
+  on-chain multisig modification — Bybit / Safe{Wallet});
+  T9.004 (generic access-control); T6.005 (proxy-upgrade
+  switching outside the multisig surface).
+
+data_sources: [multisig_signer_set_change_log,
+               multisig_threshold_change_log,
+               proxy_implementation_change_log,
+               operator_change_control_announcement_feed,
+               post_modification_extraction_log,
+               cross_chain_bridge_deposit_log]
+
+detection_logic:
+  description: |
+    Three orthogonal paths matching the documented sub-shapes.
+    PATH A (multisig modification without operator change-control
+    announcement): signer-set / threshold / proxy implementation
+    change at a known custodial-multisig contract not preceded by
+    a published change-control announcement. PATH B (post-
+    modification extraction satisfies new-but-not-prior
+    predicate): extraction transaction whose authorisation
+    satisfies the new multisig predicate but would not have
+    satisfied the prior predicate. PATH C (modification + T7.003
+    chain): modification event paired with rapid downstream cross-
+    chain bridge laundering — the canonical T11.003 attack-chain
+    signature.
+  pseudocode: |
+    # PATH A — modification without operator change-control announcement
+    for each modification M in (multisig_signer_set_change_log ⊔
+                                  multisig_threshold_change_log ⊔
+                                  proxy_implementation_change_log):
+      announcement ← operator_change_control_announcement_feed
+                       .find_correlated(M.contract, M.t,
+                                         window = announcement_window)
+      if announcement == None:
+        emit(PATH_A, contract=M.contract, modification=M,
+             severity=critical)
+
+    # PATH B — post-modification extraction satisfies new-but-not-prior predicate
+    for each modification M:
+      extractions ← post_modification_extraction_log
+                       .events(M.contract, since = M.t)
+      for e in extractions:
+        if satisfies(e.auth, M.new_predicate)
+           and not satisfies(e.auth, M.prior_predicate):
+          emit(PATH_B, contract=M.contract, modification=M,
+               extraction=e, severity=critical)
+
+    # PATH C — modification + T7.003 cross-chain bridge chain
+    for each emit-PATH_A event A:
+      bridge ← cross_chain_bridge_deposit_log
+                  .find_correlated(A.contract, A.modification.t,
+                                    window = bridge_correlation_window)
+      if bridge ≠ None:
+        emit(PATH_C, contract=A.contract, modification=A.modification,
+             bridge_deposit=bridge, severity=critical)
+
+parameters:
+  announcement_window:          { type: duration, default: 7d }
+  bridge_correlation_window:    { type: duration, default: 24h }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               contract, modification, extraction, bridge_deposit, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-07-wazirx                                 # canonical T11.003 anchor (Liminal multisig)
+    - 2026-04-drift-protocol-durable-nonces-dprk     # Solana durable-nonces analogue
+  negative:
+    - "Multisig signer-set rotation paired with operator's published change-control announcement"
+    - "Proxy upgrade via canonical timelock-gated governance with documented proposal"
+
+false_positive_modes:
+  - PATH A false positives for modifications announced via channels not in the change-control feed (extend feed coverage; require absence of announcement across all channels)
+  - PATH B false positives during legitimate signer rotation where the new predicate temporarily admits both old and new signers (require absence of rotation-window annotation)
+  - PATH C false positives for legitimate post-modification treasury rebalancing across chains (require G01-strength cluster match on bridge destination)
+
+mitigations: [OAK-M03, OAK-M16, OAK-M17, OAK-M34, OAK-M39]
+
+reference_implementations:
+  - { target: forta-bot,             chain: evm, url: "" }
+  - { target: openzeppelin-defender, chain: evm, url: "" }
+  - { target: blocksec-phalcon,      chain: evm, url: "" }
+  - { target: chainalysis-reactor,   chain: cross-chain, url: "" }
+  - { target: tenderly-virtualnet,   chain: evm, url: "" }

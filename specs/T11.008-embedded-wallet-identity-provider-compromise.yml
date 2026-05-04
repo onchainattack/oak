@@ -1,0 +1,109 @@
+oak_techniques: [OAK-T11.008]
+spec_id: oak-detection-T11.008
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect embedded-wallet identity-provider compromise — the on-
+  chain wallet appears non-custodial, but key derivation runs
+  through a third-party auth provider (Magic Labs, Privy, Web3Auth,
+  Dynamic, Particle Network) whose compromise produces wallet
+  access without on-chain action. The "non-custodial" claim
+  collapses to "as custodial as the auth provider's security
+  posture." Excludes: T11.001 (signing-vendor UI compromise with
+  organisational-customer victim shape); T11.002 (wallet binary
+  substitution); T11.006 (storage-at-rest seed exfiltration —
+  user has no seed phrase in the embedded-wallet model); T4
+  (phishing — upstream of T11.008; T11.008 is the custody surface
+  the phishing chains into).
+
+data_sources: [embedded_wallet_platform_registry,
+               auth_provider_registry,
+               auth_provider_telemetry_feed,
+               auth_provider_breach_disclosure_feed,
+               cross_platform_compromise_wave_index,
+               affected_user_extraction_log]
+
+detection_logic:
+  description: |
+    Three orthogonal paths matching the documented sub-shapes.
+    PATH A (auth-provider breach + dependent-platform extraction
+    wave): auth-provider breach disclosure paired with extraction
+    wave at one or more platforms whose user onboarding runs
+    through that provider. PATH B (cross-platform wave correlation
+    on shared auth provider): compromise wave at one platform
+    sharing an auth provider with other platforms — leading
+    indicator for the broader cohort. PATH C (T4-T11.008 attack-
+    chain detection): T4 phishing event capturing email-magic-
+    link credentials chains into wallet extraction whose access
+    path runs through the embedded-wallet auth provider —
+    canonical Polymarket comment-section phishing pattern.
+  pseudocode: |
+    # PATH A — auth-provider breach + dependent-platform extraction wave
+    for each disclosure D in auth_provider_breach_disclosure_feed:
+      dependent_platforms ← embedded_wallet_platform_registry
+                              .filter(auth_provider = D.provider)
+      window ← [D.t − pre_disclosure_lookback, D.t + post_disclosure_window]
+      for P in dependent_platforms:
+        wave ← affected_user_extraction_log.events(P, window)
+        if |wave| ≥ extraction_wave_floor:
+          emit(PATH_A, auth_provider=D.provider, platform=P,
+               wave_size=|wave|, severity=critical)
+
+    # PATH B — cross-platform wave correlation
+    for each platform P with extraction wave detected:
+      provider ← embedded_wallet_platform_registry[P].auth_provider
+      sibling_platforms ← embedded_wallet_platform_registry
+                            .filter(auth_provider = provider) − {P}
+      for S in sibling_platforms:
+        cross_platform_compromise_wave_index.flag_elevated_risk(S)
+      if |sibling_platforms| ≥ cross_platform_floor:
+        emit(PATH_B, auth_provider=provider, anchor_platform=P,
+             dependent_platforms=sibling_platforms, severity=high)
+
+    # PATH C — T4 → T11.008 attack-chain detection
+    for each phishing_event E in t4_phishing_event_log:
+      if E.target_credential ∈ {email_magic_link, oauth_token, mpc_share}:
+        downstream ← affected_user_extraction_log
+                       .find_correlated(E.victim_email, E.t,
+                                          window = post_phishing_window)
+        if downstream ≠ None:
+          provider ← embedded_wallet_platform_registry[downstream.platform]
+                       .auth_provider
+          emit(PATH_C, phishing_event=E, auth_provider=provider,
+               extraction=downstream, severity=critical)
+
+parameters:
+  pre_disclosure_lookback:      { type: duration, default: 7d }
+  post_disclosure_window:       { type: duration, default: 30d }
+  post_phishing_window:         { type: duration, default: 24h }
+  extraction_wave_floor:        { type: integer,  default: 5 }
+  cross_platform_floor:         { type: integer,  default: 2 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               auth_provider, platform, wave_size, anchor_platform,
+               dependent_platforms, phishing_event, extraction, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-09-polymarket-magic-labs-takeover         # canonical T11.008 anchor
+    - 2025-11-polymarket-comment-section-phishing    # T4 → T11.008 attack chain
+  negative:
+    - "Embedded-wallet platform with disclosed auth-provider dependency, hardware-MFA enrolled, no compromise wave"
+    - "Auth-provider disclosure with no observed extraction wave at dependent platforms"
+
+false_positive_modes:
+  - PATH A false positives for auth-provider disclosures that did not produce realised extraction (require extraction wave to fire)
+  - PATH B false positives for shared auth provider with disclosed multi-tenant isolation that bounds blast radius (require absence of disclosed isolation)
+  - PATH C false positives for T4 phishing events whose downstream extraction is on a non-embedded-wallet platform (require platform's auth-provider dependency)
+
+mitigations: [OAK-M16, OAK-M19, OAK-M20, OAK-M21, OAK-M30]
+
+reference_implementations:
+  - { target: chainalysis-reactor,    chain: cross-chain, url: "" }
+  - { target: trm-labs,               chain: cross-chain, url: "" }
+  - { target: magic-labs-telemetry,   chain: cross-chain, url: "" }
+  - { target: privy-telemetry,        chain: cross-chain, url: "" }
+  - { target: web3auth-telemetry,     chain: cross-chain, url: "" }
