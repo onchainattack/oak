@@ -1886,12 +1886,23 @@ button {
   border-bottom: 1px solid var(--line);
 }
 
+/* Sticky double-header offsets: keep the 2nd header's top equal to the
+   1st row's box height so they butt up exactly. Both share --cov-h1
+   to avoid the half-pixel gap that otherwise shows when the 1st row's
+   actual content height drifts from the hardcoded offset. */
+.cov-matrix {
+  --cov-h1: 32px;
+  --cov-h2: 38px;
+}
+
 .cov-matrix thead tr:nth-child(1) th {
   top: 0;
+  height: var(--cov-h1);
 }
 
 .cov-matrix thead tr:nth-child(2) th {
-  top: 32px;
+  top: var(--cov-h1);
+  height: var(--cov-h2);
 }
 
 .cov-corner {
@@ -1912,7 +1923,7 @@ button {
 }
 
 .cov-corner-sub {
-  height: 38px;
+  height: var(--cov-h2);
 }
 
 .cov-tactic-header {
@@ -1925,6 +1936,7 @@ button {
   border-left: 1px solid var(--line);
   text-align: center;
   white-space: nowrap;
+  /* height set via .cov-matrix thead tr:nth-child(1) th */
 }
 
 .cov-tech-header {
