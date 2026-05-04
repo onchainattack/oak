@@ -44,8 +44,9 @@ OAK covers the operator-behaviour kill chain plus the on-chain realisation surfa
 | **T14 — Validator / Staking / Restaking** | Targeted compromise |
 | **T15 — Off-chain Entry-Vector / Pre-Positioning** | Pre-positioning |
 | **T16 — Governance / Voting Manipulation** | Realization |
+| **T17 — Market Manipulation** | Realization (cross-asset / market-mechanism) |
 
-Six populated axes:
+Seven populated axes:
 
 - **[Tactics](./tactics/) × [Techniques](./techniques/)** — the matrix.
 - **[Mitigations](./mitigations/)** — reusable defences (`OAK-MNN`), many-to-many with Techniques, classed as detection / architecture / operational / venue / wallet-UX / financial-recovery.
@@ -53,6 +54,7 @@ Six populated axes:
 - **[Threat Actors](./actors/)** — operator clusters (`OAK-Gnn`) with explicit attribution-strength language.
 - **[Data Sources](./data-sources/)** — telemetry inputs (`OAK-DS-NN`) — what defenders need to ingest.
 - **[Worked examples](./examples/)** — per-incident write-ups spanning 2014–present, each anchored to ≥ 1 Technique with attribution-strength labels (`confirmed` / `inferred-strong` / `inferred-weak` / `pseudonymous` / `unattributed`).
+- **[Detection Specs](./specs/)** — vendor-neutral, language-agnostic YAML specs (one per Technique) carrying detection logic as orthogonal `PATH A / PATH B / ...` pseudocode plus `data_sources`, `parameters`, `test_fixtures`, `false_positive_modes`, `mitigations` cross-refs, and `reference_implementations`. **100% coverage at v0.1: 98 specs / 98 Techniques / 17 Tactics.** Sigma+ATT&CK-shape, not Atomic Red Team — the specs are the primary detection artefact and are language-/runtime-portable; named reference implementations are secondary demos.
 
 Plus a machine-readable relationship graph in [`tools/oak.json`](./tools/oak.json) and a [STIX 2.1 export](./tools/oak-stix.json).
 
