@@ -68,7 +68,7 @@ Update VERSIONING.md to widen the vocabulary, then ensure all files use exactly 
 
 **Current values across 16 Tactics:**
 
-```
+```text
 Pre-launch / launch                              (T1)
 Launch                                           (T2)
 Launch / growth                                  (T3)
