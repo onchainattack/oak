@@ -1,0 +1,113 @@
+oak_techniques: [OAK-T7.004]
+spec_id: oak-detection-T7.004
+version: 0.1.0
+maturity: observed
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect NFT wash-trades motivated by laundering rather than price-
+  discovery distortion: attacker buys NFT from self-controlled wallet
+  at chosen valuation, converting illicit proceeds into nominally-
+  legitimate "art purchase / sale" income. Same on-chain artefact as
+  T12.001 — discriminator is downstream behaviour (T7.004 retains /
+  routes onward; T12.001 exits to external buyer at inflated price).
+  Excludes: T12.001 (price-discovery-distortion motive — same trace,
+  different goal); T3.002 (fungible DEX wash); marketplace-incentive-
+  driven wash (LooksRare / Blur airdrop farming, motive-ambiguous —
+  spec maps both T7.004 + T12.001 with goal discriminator).
+
+data_sources: [nft_marketplace_events, nft_token_transfer_events,
+               funder_graph, illicit_cluster_watchlist,
+               collection_floor_log]
+
+detection_logic:
+  description: |
+    Three orthogonal paths plus motive discrimination. PATH A (self-
+    financed cluster trade): high-value NFT trade where buyer-side
+    funding traces back to seller-side cluster. PATH B (illicit-source
+    correlation): the seller-side cluster receives upstream inflows
+    from T7.001 / T7.002 / T7.003 watchlists — distinguishes
+    laundering motive from incentive-farming motive. PATH C (outlier-
+    valuation cluster-overlap): trade price decoupled from
+    contemporaneous floor, executed between cluster-overlapping
+    wallets. MOTIVE DISCRIMINATION: T7.004 vs T12.001 by post-trade
+    behaviour — T7.004 retains or routes onward; T12.001 exits to
+    external buyer.
+  pseudocode: |
+    # PATH A — self-financed cluster trade
+    for each high-value NFT trade T:
+      buyer_funding ← trace_funding(T.buyer, hops = trace_hops)
+      seller_cluster ← funder_graph_cluster(T.seller, hops = trace_hops)
+      overlap ← buyer_funding ∩ seller_cluster
+      if overlap ≠ ∅ and usd_value(T) > min_trade_usd:
+        emit(PATH_A, trade=T.hash, buyer=T.buyer, seller=T.seller,
+             cluster_overlap=overlap, severity=high)
+
+    # PATH B — illicit-source upstream correlation
+    for each PATH_A emit:
+      upstream_illicit ← seller_cluster ∩ {illicit_cluster_watchlist
+                          ∪ t7001_cohort ∪ t7002_cohort ∪ t7003_cohort}
+      if upstream_illicit ≠ ∅:
+        emit(PATH_B, trade=T.hash, illicit_match=upstream_illicit,
+             severity=critical)
+
+    # PATH C — outlier-valuation cluster-overlap
+    for each NFT trade T:
+      floor ← collection_floor(T.collection, T.t)
+      if floor == 0: continue
+      ratio ← usd_value(T) / floor
+      if ratio > outlier_floor_ratio:
+        buyer_funding ← trace_funding(T.buyer, hops = trace_hops)
+        seller_cluster ← funder_graph_cluster(T.seller, hops = trace_hops)
+        if buyer_funding ∩ seller_cluster ≠ ∅:
+          emit(PATH_C, trade=T.hash, valuation_ratio=ratio,
+               severity=high)
+
+    # MOTIVE DISCRIMINATION — T7.004 vs T12.001
+    for each PATH_A or PATH_B or PATH_C emit:
+      post_window ← [T.t, T.t + post_trade_window]
+      asset_retained ← still_held_by(T.buyer, T.token_id, post_window.end)
+      external_exit ← any(s.buyer ∉ seller_cluster for s in
+                            sales_of(T.token_id, post_window))
+      if asset_retained or not external_exit:
+        emit(MOTIVE, trade=T.hash, classification="T7.004 (laundering)",
+             severity=critical)
+      elif external_exit:
+        emit(MOTIVE, trade=T.hash, classification="T12.001 (price-discovery)",
+             severity=high)
+
+parameters:
+  trace_hops:                { type: integer,  default: 3 }
+  min_trade_usd:             { type: number,   default: 10000 }
+  outlier_floor_ratio:       { type: number,   default: 5.0 }       # > 5× floor
+  post_trade_window:         { type: duration, default: 30d }
+  illicit_cluster_watchlist: { type: list,     default: [] }
+  t7001_cohort:              { type: list,     default: [] }
+  t7002_cohort:              { type: list,     default: [] }
+  t7003_cohort:              { type: list,     default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               trade_tx, buyer, seller, cluster_overlap,
+               valuation_ratio, classification, evidence]
+
+test_fixtures:
+  positive:
+    - 2023-02-blur-airdrop-wash-cohort       # motive-ambiguous T3.002 / T7.004 anchor
+  negative:
+    - "Legitimate intra-collector portfolio rebalance without illicit-cluster funding source"
+    - "Marketplace-incentive-farming wash with no upstream illicit attribution"
+
+false_positive_modes:
+  - intra-collector portfolio rebalancing (require buyer-funding ∩ seller-cluster + min_trade_usd)
+  - incentive-farming wash without illicit upstream (PATH B's watchlist requirement filters; PATH A alone is motive-ambiguous — route to T12.001)
+  - high-value sales between known institutional collectors with disclosed relationship (allowlist via institutional-collector-registry)
+  - PATH C outlier valuations on illiquid collections where floor is poorly defined — require collection_floor non-zero across reference window
+
+mitigations: [OAK-M07, OAK-M26, OAK-M27]
+
+reference_implementations:
+  - { target: chainalysis-reactor,   chain: evm,         url: "" }
+  - { target: trm-forensics,         chain: cross-chain, url: "" }
+  - { target: elliptic-investigator, chain: evm,         url: "" }
+  - { target: nansen-nft,            chain: evm,         url: "" }

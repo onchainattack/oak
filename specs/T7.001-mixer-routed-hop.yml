@@ -1,0 +1,108 @@
+oak_techniques: [OAK-T7.001]
+spec_id: oak-detection-T7.001
+version: 0.1.0
+maturity: stable
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect post-extraction routing through privacy-oriented services
+  (Tornado Cash / Sinbad / Blender / eXch / Railgun / YoMix) whose
+  explicit purpose is to break deposit-withdrawal linkage. Detection
+  is probabilistic via timing / amount / counterparty heuristics +
+  cluster-continuation signal across the hop. Substrate fragmented
+  post-2022 OFAC Tornado designation. Excludes: T7.003 (cross-chain
+  bridge laundering — composes when bridges act as mixer-equivalents);
+  T7.005 (privacy-chain hop — privacy at chain-architecture level,
+  not service level); legitimate privacy-service usage by individual
+  users without illicit-cluster attribution.
+
+data_sources: [mixer_deposit_addresses_sdn, mixer_withdrawal_log,
+               funder_graph, ofac_sdn_feed, illicit_cluster_watchlist,
+               linkage_heuristic_scores]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (deposit from flagged cluster):
+    deposit transactions from T5-flagged or T9-flagged clusters into
+    known privacy-service contracts on a live-updated SDN-anchored
+    list. PATH B (probabilistic linkage): timing-window + amount-class
+    + counterparty heuristics produce candidate withdrawal-side matches
+    above confidence threshold. PATH C (cluster continuation): post-
+    withdrawal activity resumes operator-cluster fingerprint (T1
+    deployment-funding, prior infrastructure reuse) — T8.001-style
+    continuity across the hop.
+  pseudocode: |
+    # PATH A — deposit from flagged illicit cluster
+    on tx T to addr A in mixer_deposit_addresses_sdn:
+      cluster ← funder_graph_cluster(T.from, hops = trace_hops)
+      if cluster ∩ illicit_cluster_watchlist ≠ ∅:
+        usd_value ← usd_at_block(T.value, T.token, T.block)
+        emit(PATH_A, mixer=A.service, deposit_tx=T.hash,
+             cluster_match=cluster ∩ illicit_cluster_watchlist,
+             usd_value, severity=critical)
+
+    # PATH B — probabilistic deposit-withdrawal linkage
+    for each deposit D from PATH_A:
+      window ← [D.t, D.t + linkage_window]
+      candidates ← mixer_withdrawals(D.mixer, window)
+      scored ← []
+      for w in candidates:
+        s ← amount_class_score(D, w) +
+            timing_score(D, w, window) +
+            counterparty_graph_score(D.from, w.to, hops = link_hops)
+        if s > linkage_score_floor:
+          scored += [(w, s)]
+      if scored ≠ ∅:
+        emit(PATH_B, deposit=D.hash, candidate_withdrawals=top_k(scored, 5),
+             severity=high)
+
+    # PATH C — operator-cluster continuation across hop
+    for each candidate withdrawal W from PATH_B:
+      post ← post_withdrawal_activity(W.to, lookback = continuation_window)
+      fingerprint ← compute_fingerprint(post)
+      original ← operator_fingerprint(D.from, lookback = pre_event_window)
+      if fingerprint_overlap(fingerprint, original) > continuity_floor:
+        emit(PATH_C, deposit=D.hash, withdrawal=W.hash,
+             continuity_score=fingerprint_overlap(fingerprint, original),
+             severity=critical)
+
+parameters:
+  trace_hops:                       { type: integer,  default: 3 }
+  linkage_window:                   { type: duration, default: 24h }
+  link_hops:                        { type: integer,  default: 2 }
+  linkage_score_floor:              { type: number,   default: 0.6 }
+  continuation_window:              { type: duration, default: 90d }
+  pre_event_window:                 { type: duration, default: 90d }
+  continuity_floor:                 { type: number,   default: 0.5 }
+  mixer_deposit_addresses_sdn:      { type: list,     default: [] }   # live-updated against OFAC SDN
+  illicit_cluster_watchlist:        { type: list,     default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               mixer, deposit_tx, candidate_withdrawals,
+               cluster_match, continuity_score, evidence]
+
+test_fixtures:
+  positive:
+    - 2021-10-anubisdao              # Tornado Cash 4-portion routing post-rug
+    - 2022-03-ronin-bridge           # pre-OFAC Lazarus / Tornado canonical
+    - 2022-06-harmony-horizon        # Railgun continuation post-OFAC
+    - 2025-02-bybit                  # eXch + cross-chain post-extraction
+    - 2025-04-exch-shutdown          # eXch instant-exchange shutdown
+  negative:
+    - "Individual user privacy-service deposit without illicit-cluster funding source"
+    - "Deposit from a known regulated counterparty within a documented compliance flow"
+
+false_positive_modes:
+  - legitimate user privacy-service usage (require illicit_cluster_watchlist match before classification)
+  - PATH B false positives in high-volume mixer pools where the heuristic-score floor is too permissive — calibrate per service and per chain
+  - PATH C false positives where the operator's fingerprint is generic (deployer-funding patterns shared across many actors) — combine with PATH A or B for confirmation
+  - SDN list staleness — mixer_deposit_addresses_sdn must be live-updated against OFAC, not frozen at a 2022 snapshot
+
+mitigations: [OAK-M07, OAK-M22, OAK-M27]
+
+reference_implementations:
+  - { target: chainalysis-reactor,    chain: cross-chain, url: "" }
+  - { target: trm-forensics,          chain: cross-chain, url: "" }
+  - { target: elliptic-investigator,  chain: cross-chain, url: "" }
+  - { target: ofac-sdn-feed,          chain: cross-chain, url: "" }

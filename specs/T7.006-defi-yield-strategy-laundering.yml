@@ -1,0 +1,124 @@
+oak_techniques: [OAK-T7.006]
+spec_id: oak-detection-T7.006
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect laundering via legitimate DeFi yield-farming / lending / LP /
+  liquid-staking protocols using "yield user" persona as cover. Per-
+  position behavioural pattern (deposit-to-withdrawal duration, yield-
+  claim absence, no APY-sensitivity, deposit-source / withdrawal-
+  recipient mismatch) discriminates from legitimate yield-seekers.
+  Cohort-density of legitimate users is the cover — strongest on
+  deepest-liquidity protocols. Excludes: T7.001 (mixer service —
+  explicit obfuscation purpose); T7.003 (cross-chain bridge); within-
+  protocol exploit (T9.x — different artefact); legitimate yield-
+  seeking users without illicit upstream attribution.
+
+data_sources: [defi_position_log, yield_claim_event_log,
+               funder_graph, illicit_cluster_watchlist,
+               per_protocol_user_baseline,
+               apy_change_feed]
+
+detection_logic:
+  description: |
+    Four orthogonal paths producing structural-and-aggregate signals
+    (per-event T7.006 alerts have high false-positive rate).
+    PATH A (per-deposit duration vs baseline): deposit attributed to
+    watchlisted source-cluster sits at lockup minimum / no yield
+    claim event. PATH B (no APY-sensitivity / no rebalancing): position
+    does not move when APYs shift across competing protocols.
+    PATH C (deposit-source / withdrawal-recipient mismatch): protocol
+    permits non-self recipient and recipient-cluster differs from
+    deposit-source-cluster. PATH D (cross-protocol rotation graph):
+    watchlisted-source-cluster trajectory traverses N≥3 yield protocols
+    within a short window without yield-claim events. AGGREGATE
+    (per-cluster aggregate-in matches aggregate-out at high
+    correlation within delay envelope).
+  pseudocode: |
+    # PATH A — per-deposit duration / no yield-claim
+    for each position P attributed to source_cluster:
+      if source_cluster ∉ illicit_cluster_watchlist: continue
+      duration ← P.withdrawal_t − P.deposit_t
+      protocol_baseline ← per_protocol_user_baseline[P.protocol]
+      claim_events ← yield_claim_events_during(P)
+      if duration ≤ protocol_baseline.lockup_minimum × duration_factor
+         and |claim_events| == 0:
+        emit(PATH_A, position=P, duration, baseline_p25=protocol_baseline.p25,
+             severity=high)
+
+    # PATH B — no APY-sensitivity / no rebalancing
+    for each position P attributed to source_cluster:
+      apy_changes ← apy_change_feed.during(P.deposit_t, P.withdrawal_t)
+      if |apy_changes| == 0: continue
+      rebalanced ← position_movement_after_apy_change(P, apy_changes)
+      if not rebalanced and source_cluster ∈ illicit_cluster_watchlist:
+        emit(PATH_B, position=P, apy_change_count=|apy_changes|,
+             severity=medium)
+
+    # PATH C — deposit-source / withdrawal-recipient mismatch
+    for each position P:
+      if not P.protocol.permits_non_self_withdrawal: continue
+      source_cluster ← funder_graph_cluster(P.deposit_source, hops = trace_hops)
+      recipient_cluster ← funder_graph_cluster(P.withdrawal_recipient, hops = trace_hops)
+      if source_cluster ∩ recipient_cluster == ∅
+         and source_cluster ∈ illicit_cluster_watchlist:
+        emit(PATH_C, position=P, source_cluster, recipient_cluster,
+             severity=high)
+
+    # PATH D — cross-protocol rotation graph
+    for each cluster C ∈ illicit_cluster_watchlist:
+      trajectory ← yield_protocol_trajectory(C, window = rotation_window)
+      protocols_visited ← {step.protocol for step in trajectory}
+      claims ← Σ |yield_claim_events_during(step)| for step in trajectory
+      if |protocols_visited| ≥ rotation_protocol_min and claims == 0:
+        emit(PATH_D, cluster=C, protocols_visited,
+             trajectory_length=|trajectory|, severity=high)
+
+    # AGGREGATE — per-cluster in/out flow correlation
+    for each cluster C ∈ illicit_cluster_watchlist:
+      for each protocol P over rolling window W:
+        in_flow ← Σ deposit_usd(c, P, W) for c in C.addresses
+        out_flow ← Σ withdrawal_usd(c, P, W) for c in C.addresses
+        if min(in_flow, out_flow) > min_aggregate_usd
+           and abs(in_flow − out_flow) / max(in_flow, 1) < aggregate_match_floor:
+          emit(AGGREGATE, cluster=C, protocol=P, in_flow, out_flow,
+               severity=critical)
+
+parameters:
+  trace_hops:                  { type: integer,  default: 3 }
+  duration_factor:             { type: number,   default: 1.2 }    # ≤ 1.2× lockup minimum
+  rotation_window:             { type: duration, default: 30d }
+  rotation_protocol_min:       { type: integer,  default: 3 }
+  min_aggregate_usd:           { type: number,   default: 100000 }
+  aggregate_match_floor:       { type: number,   default: 0.05 }   # < 5% delta
+  illicit_cluster_watchlist:   { type: list,     default: [] }
+  per_protocol_user_baseline:  { type: object,   default: {} }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               position, cluster, protocol, duration, in_flow,
+               out_flow, source_cluster, recipient_cluster, evidence]
+
+test_fixtures:
+  positive: []                    # cohort-only at v0.1; per-position behavioural detection
+  negative:
+    - "Legitimate yield user with multi-month duration and yield-claim events"
+    - "Position with active rebalancing tracked against APY changes"
+    - "Self-recipient withdrawal from canonical lending market"
+
+false_positive_modes:
+  - legitimate users with short-duration positions and no yield claim (require illicit_cluster_watchlist source attribution)
+  - PATH B false positives during stable-APY windows where no rebalancing is expected (require apy_change_count > 0)
+  - PATH C false positives from legitimate treasury operations / multisig migrations (require source-cluster watchlist hit)
+  - PATH D false positives from professional yield aggregators (require zero yield-claim events as discriminator)
+  - AGGREGATE false positives where in/out matching is coincidental at lower volumes (calibrate min_aggregate_usd)
+
+mitigations: [OAK-M07, OAK-M22, OAK-M27]
+
+reference_implementations:
+  - { target: chainalysis-reactor,    chain: cross-chain, url: "" }
+  - { target: trm-forensics,          chain: cross-chain, url: "" }
+  - { target: elliptic-investigator,  chain: cross-chain, url: "" }
+  - { target: defi-protocol-compliance, chain: cross-chain, url: "" }

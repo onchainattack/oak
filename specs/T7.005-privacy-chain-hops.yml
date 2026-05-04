@@ -1,0 +1,115 @@
+oak_techniques: [OAK-T7.005]
+spec_id: oak-detection-T7.005
+version: 0.1.0
+maturity: stable
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect routing through privacy-oriented blockchains (Monero, Zcash
+  shielded pool, Dash, Pirate Chain) where chain-architecture-level
+  opacity defeats on-chain attribution. Detection lives at the
+  source-chain leg (CEX deposit-side / instant-swap-service inflow)
+  and re-emergence inference (post-XMR amount-class match on alt
+  transparent chain). The privacy-chain leg itself is unattainable on-
+  chain. Excludes: T7.001 (transparent-chain mixer service); T7.003
+  (cross-chain bridge — different surface); legitimate privacy-coin
+  use without illicit upstream attribution.
+
+data_sources: [cex_deposit_log, instant_swap_service_log,
+               funder_graph, illicit_cluster_watchlist,
+               re_emergence_amount_class_index,
+               privacy_chain_pair_venue_inventory]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (CEX-side privacy-pair
+    deposit-then-withdraw): same-customer deposit-then-privacy-chain-
+    withdraw flow at a CEX whose source-side cluster is watchlisted.
+    PATH B (instant-swap-service inflow with no transparent
+    downstream): inflow into a known instant-swap-service deposit
+    address from illicit-cluster watchlist with no proportionate
+    downstream source-chain trail. PATH C (re-emergence inference):
+    inflow on a different transparent chain at a later date, amount-
+    class and timing-consistent with the original terminal-deposit
+    event, into addresses whose subsequent behaviour matches the
+    upstream operator's fingerprint.
+  pseudocode: |
+    # PATH A — CEX-side privacy-pair deposit-then-withdraw
+    for each customer C at venue V where V supports source ∧ privacy chains:
+      deposits ← deposits_by(C, V, source_chain, window)
+      withdrawals ← withdrawals_by(C, V, privacy_chain, window)
+      if deposits == ∅ or withdrawals == ∅: continue
+      source_cluster ← funder_graph_cluster({d.from for d in deposits},
+                                              hops = trace_hops)
+      if source_cluster ∩ illicit_cluster_watchlist ≠ ∅
+         and timing_match(deposits, withdrawals, max_lag = pair_window):
+        emit(PATH_A, venue=V, customer=C,
+             cluster_match=source_cluster ∩ illicit_cluster_watchlist,
+             usd_volume=Σ usd(deposits), severity=critical)
+
+    # PATH B — instant-swap-service inflow without proportionate downstream
+    for each inflow D to service S in instant_swap_service_inventory:
+      cluster ← funder_graph_cluster(D.from, hops = trace_hops)
+      if cluster ∩ illicit_cluster_watchlist == ∅: continue
+      downstream ← downstream_source_chain_trail(D.from, depth = downstream_depth,
+                                                   lookback = downstream_window)
+      proportion ← downstream.usd_total / max(usd_value(D), 1)
+      if proportion < downstream_proportion_floor:
+        emit(PATH_B, service=S, inflow_tx=D.hash, usd_value=usd_value(D),
+             downstream_proportion=proportion, severity=critical)
+
+    # PATH C — re-emergence inference on alt transparent chain
+    for each terminal deposit D from PATH_A or PATH_B:
+      window ← [D.t + min_re_emergence_lag, D.t + max_re_emergence_lag]
+      candidates ← inflows_on_alt_chains(amount_class = D.amount_class,
+                                           in_window = window)
+      for c in candidates:
+        post ← post_inflow_activity(c.to, lookback = continuation_window)
+        original ← operator_fingerprint(D.source_cluster, lookback = pre_event_window)
+        if fingerprint_overlap(post, original) > continuity_floor:
+          emit(PATH_C, terminal_deposit=D.hash, re_emergence=c,
+               continuity_score=fingerprint_overlap(post, original),
+               severity=high)
+
+parameters:
+  trace_hops:                       { type: integer,  default: 3 }
+  pair_window:                      { type: duration, default: 30d }
+  downstream_depth:                 { type: integer,  default: 5 }
+  downstream_window:                { type: duration, default: 30d }
+  downstream_proportion_floor:      { type: number,   default: 0.1 }     # < 10% remains visible downstream
+  min_re_emergence_lag:             { type: duration, default: 6h }
+  max_re_emergence_lag:             { type: duration, default: 90d }
+  continuation_window:              { type: duration, default: 90d }
+  pre_event_window:                 { type: duration, default: 90d }
+  continuity_floor:                 { type: number,   default: 0.5 }
+  illicit_cluster_watchlist:        { type: list,     default: [] }
+  instant_swap_service_inventory:   { type: list,     default: [] }
+  privacy_chain_pair_venue_inventory: { type: list,   default: [] }
+
+output_alert: [oak_technique, detection_path, severity,
+               venue, customer, service, inflow_tx,
+               cluster_match, usd_volume, re_emergence,
+               continuity_score, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-04-exch-shutdown          # eXch instant-swap-service T7.005 anchor
+  negative:
+    - "Individual user CEX deposit + XMR withdrawal with no illicit-cluster source attribution"
+    - "Instant-swap-service inflow with full proportionate transparent downstream visible"
+
+false_positive_modes:
+  - legitimate user privacy-coin off-ramp via CEX (require illicit_cluster_watchlist match on source-cluster)
+  - PATH B false positives where downstream visibility is incomplete due to data-coverage gaps (calibrate downstream_proportion_floor conservatively)
+  - PATH C false positives from coincidental amount-class match across unrelated operators (require continuity_score above floor)
+  - venue-side legitimate non-illicit-pattern flows (require source-cluster watchlist hit, not just venue support)
+
+mitigations: [OAK-M07, OAK-M22, OAK-M27]
+
+reference_implementations:
+  - { target: chainalysis-reactor,    chain: cross-chain, url: "" }
+  - { target: trm-forensics,          chain: cross-chain, url: "" }
+  - { target: elliptic-investigator,  chain: cross-chain, url: "" }
+  - { target: cex-internal-compliance, chain: cross-chain, url: "" }
+  - { target: instant-swap-compliance, chain: cross-chain, url: "" }

@@ -1,0 +1,116 @@
+oak_techniques: [OAK-T7.002]
+spec_id: oak-detection-T7.002
+version: 0.1.0
+maturity: stable
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect CEX deposit-address layering: illicit proceeds routed through
+  many distinct deposit addresses (often via "hop" intermediary
+  wallets) into one or more exchanges with per-address values
+  calibrated below freeze / reporting thresholds. Defining surface is
+  the *exchange's compliance posture* rather than on-chain artefact
+  alone. Excludes: T7.001 (mixer hop — pre-CEX obfuscation, frequently
+  composes); legitimate institutional / OTC / arbitrage flows
+  routing through many deposit addresses (require upstream illicit-
+  cluster attribution).
+
+data_sources: [cex_deposit_address_attribution, funder_graph,
+               illicit_cluster_watchlist, kyc_account_metadata,
+               threshold_structuring_distribution]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (per-cluster aggregate inflow):
+    aggregate inflow into an exchange's deposit-address cluster from
+    a single source-cluster crosses watchlist threshold over rolling
+    window. PATH B (threshold-structuring distribution): per-deposit
+    values cluster just below $1k / $3k / $10k reporting thresholds
+    with anomalous density spikes vs uniform expectation. PATH C (hop-
+    pattern intermediary): deposit funded by an intermediary wallet
+    that is funded once, deposits to CEX, then dormant. PATH D
+    (account-cohort time-correlation): time-correlated spike in
+    newly-KYCed customer accounts whose first deposits share a common
+    upstream source-cluster.
+  pseudocode: |
+    REPORTING_THRESHOLDS_USD = [1000, 3000, 10000]
+
+    # PATH A — per-cluster aggregate inflow above watchlist threshold
+    for each exchange E:
+      for each window W in {24h, 7d, 30d}:
+        deposits ← deposits_to(E, W)
+        groups ← group_by(deposits, key = upstream_cluster_root(d.from, hops = trace_hops))
+        for cluster_root, dep_list in groups.items():
+          if cluster_root ∉ illicit_cluster_watchlist: continue
+          aggregate_usd ← Σ usd_value(d) for d in dep_list
+          distinct_addresses ← {d.to for d in dep_list}
+          if aggregate_usd ≥ aggregate_threshold_usd
+             or |distinct_addresses| ≥ deposit_address_cardinality_floor:
+            emit(PATH_A, exchange=E, cluster_root,
+                 aggregate_usd, distinct_addresses=|distinct_addresses|,
+                 severity=critical)
+
+    # PATH B — threshold-structuring distribution
+    for each exchange E over window:
+      values ← [usd_value(d) for d in deposits_to(E, window)]
+      hist ← histogram(values, bin_width = 100)
+      for threshold in REPORTING_THRESHOLDS_USD:
+        below_density ← Σ hist.bin(v) for v in [threshold - 200, threshold]
+        above_density ← Σ hist.bin(v) for v in [threshold, threshold + 200]
+        if below_density / max(above_density, 1) > structuring_ratio_floor:
+          emit(PATH_B, exchange=E, threshold,
+               below_density, above_density, severity=high)
+
+    # PATH C — hop-pattern intermediary wallet
+    for each deposit D to E:
+      funder ← incoming_to(D.from, depth = 1)
+      lifetime_tx ← tx_count(D.from)
+      if |funder| == 1 and lifetime_tx ≤ hop_intermediary_tx_max
+         and funder[0].cluster_root ∈ illicit_cluster_watchlist:
+        emit(PATH_C, exchange=E, hop_wallet=D.from, funder=funder[0],
+             severity=high)
+
+    # PATH D — account-cohort time correlation
+    for each window W:
+      new_accounts ← kyc_account_metadata.created_in(W)
+      for account_set whose first_deposit_source_cluster overlaps:
+        if |account_set| ≥ cohort_account_floor
+           and shared_cluster(account_set) ∈ illicit_cluster_watchlist:
+          emit(PATH_D, exchange=E, account_count=|account_set|,
+               shared_cluster, severity=critical)
+
+parameters:
+  trace_hops:                          { type: integer, default: 3 }
+  aggregate_threshold_usd:             { type: number,  default: 100000 }
+  deposit_address_cardinality_floor:   { type: integer, default: 20 }
+  structuring_ratio_floor:             { type: number,  default: 2.0 }
+  hop_intermediary_tx_max:             { type: integer, default: 3 }
+  cohort_account_floor:                { type: integer, default: 10 }
+  illicit_cluster_watchlist:           { type: list,    default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               exchange, cluster_root, aggregate_usd,
+               distinct_addresses, threshold, account_count, evidence]
+
+test_fixtures:
+  positive:
+    - 2023-06-atomic-wallet           # Garantex via T7.002 structured deposits
+  negative:
+    - "Institutional liquidity provider routing through many deposit addresses with non-watchlist source-cluster"
+    - "OTC desk operating with documented per-customer KYC posture"
+    - "High-frequency arbitrage cluster with cardinality but no watchlist hit"
+
+false_positive_modes:
+  - legitimate institutional / OTC / HFT clusters with high deposit-address cardinality (require illicit_cluster_watchlist match)
+  - PATH B false positives where the deposit-amount distribution organically clusters near round-number values for non-structuring reasons (combine with watchlist source attribution)
+  - hop-intermediary patterns from privacy-conscious individual users (require upstream watchlist hit)
+  - cohort signups during airdrop / launch windows produce time-correlated KYC events without illicit attribution (require shared_cluster watchlist match)
+
+mitigations: [OAK-M07, OAK-M22, OAK-M27]
+
+reference_implementations:
+  - { target: chainalysis-reactor,    chain: cross-chain, url: "" }
+  - { target: trm-forensics,          chain: cross-chain, url: "" }
+  - { target: elliptic-investigator,  chain: cross-chain, url: "" }
+  - { target: cex-internal-compliance, chain: cross-chain, url: "" }

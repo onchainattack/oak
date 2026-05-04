@@ -1,0 +1,113 @@
+oak_techniques: [OAK-T7.003]
+spec_id: oak-detection-T7.003
+version: 0.1.0
+maturity: stable
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect post-extraction cross-chain laundering via swap / bridge
+  protocols (THORChain dominant; Maya, LI.FI, Across, Stargate,
+  Synapse) — break the single-chain trail by jumping across chains.
+  Dominant Lazarus / OAK-G01 rail post-2022 Tornado sanctions; Bybit
+  $1.4B / 10-day THORChain operation is canonical. Detection mixes
+  per-protocol illicit inflow, fee-accrual correlation with
+  attribution, and N≥3 chain-hop trajectories. Excludes: T7.001
+  (single-chain mixer — composes upstream); T7.005 (privacy-chain
+  destination — chain-arch opaque); legitimate cross-chain DeFi
+  arbitrage / portfolio rebalancing without illicit attribution.
+
+data_sources: [cross_chain_swap_log, bridge_deposit_log,
+               bridge_protocol_fee_feed, illicit_cluster_watchlist,
+               cross_chain_attribution_graph, funder_graph]
+
+detection_logic:
+  description: |
+    Three orthogonal paths plus a protocol-economics signal. PATH A
+    (per-protocol illicit-cluster inflow): bridge / swap deposit from
+    illicit-cluster watchlist. PATH B (speed-from-extraction):
+    extraction-to-bridge-deposit time within hours-to-days
+    (canonical Lazarus pattern). PATH C (chain-hop trajectory):
+    funds traverse N≥3 chain hops within a short window. PATH D
+    (fee-accrual-vs-attribution): per-protocol fee spike in window
+    correlated with illicit-cluster inflow — protocol-economics
+    indicator that a bridge is being used as a laundering rail at
+    scale.
+  pseudocode: |
+    # PATH A — per-protocol illicit-cluster inflow
+    for each bridge / swap protocol P:
+      for each deposit D to P:
+        cluster ← funder_graph_cluster(D.from, hops = trace_hops)
+        if cluster ∩ illicit_cluster_watchlist ≠ ∅:
+          emit(PATH_A, protocol=P, deposit_tx=D.hash,
+               usd_value=usd_value(D),
+               cluster_match=cluster ∩ illicit_cluster_watchlist,
+               severity=critical)
+
+    # PATH B — speed-from-extraction-to-bridge
+    for each PATH_A emit:
+      extraction_event ← upstream_extraction_event(D.from, lookback)
+      if extraction_event == None: continue
+      delta ← D.t − extraction_event.t
+      if delta < speed_window:
+        emit(PATH_B, deposit=D.hash, extraction=extraction_event,
+             delta_seconds=delta, severity=critical)
+
+    # PATH C — multi-chain-hop trajectory
+    for each address A flagged on chain X:
+      hops ← cross_chain_attribution_graph.trace(A, max_hops = trace_max_hops,
+                                                   window = chain_hop_window)
+      chains_visited ← {h.chain for h in hops}
+      if |chains_visited| ≥ chain_hop_min:
+        emit(PATH_C, address=A, chains_visited,
+             hop_count=|hops|, severity=critical)
+
+    # PATH D — fee-accrual correlated with attribution
+    for each protocol P over window W:
+      fees_total ← Σ protocol_fee_event(P, W)
+      illicit_share ← Σ usd_value(d) for d in PATH_A.deposits(P, W)
+      total_inflow ← Σ usd_value(d) for d in deposits_to(P, W)
+      if total_inflow == 0: continue
+      illicit_ratio ← illicit_share / total_inflow
+      if illicit_ratio > illicit_share_floor and fees_total > fee_spike_floor_usd:
+        emit(PATH_D, protocol=P, window=W,
+             illicit_ratio, fees_usd=fees_total, severity=high)
+
+parameters:
+  trace_hops:                  { type: integer,  default: 3 }
+  speed_window:                { type: duration, default: 7d }
+  trace_max_hops:              { type: integer,  default: 6 }
+  chain_hop_window:            { type: duration, default: 14d }
+  chain_hop_min:               { type: integer,  default: 3 }
+  illicit_share_floor:         { type: number,   default: 0.10 }     # > 10% illicit ratio
+  fee_spike_floor_usd:         { type: number,   default: 1000000 }   # > $1M fees in window
+  illicit_cluster_watchlist:   { type: list,     default: [] }
+
+output_alert: [oak_technique, detection_path, severity,
+               protocol, deposit_tx, address, chains_visited,
+               hop_count, illicit_ratio, fees_usd, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-02-bybit-thorchain-laundering    # canonical $1.4B / 10 days / $12M fees
+    - 2022-03-ronin-bridge                  # pre-THORChain-dominance Lazarus T7.003
+    - 2022-06-harmony-horizon               # Railgun + chain-hopping
+    - 2024-07-wazirx                        # OAK-G01 multi-chain laundering
+  negative:
+    - "Cross-chain DEX aggregator routing organic users — no illicit-cluster source attribution"
+    - "Protocol with high cross-chain volume but no fee-spike correlated with illicit watchlist hits"
+
+false_positive_modes:
+  - legitimate cross-chain arbitrage / yield rotation flows (PATH A's illicit_cluster_watchlist filter)
+  - PATH B false positives where extraction window is broad — calibrate speed_window per cohort
+  - PATH C false positives from professional rebalancing services that legitimately traverse chains (require flagged source attribution)
+  - PATH D false positives during high-volume launches that legitimately accrue protocol fees (require illicit_ratio > floor, not absolute fees alone)
+
+mitigations: [OAK-M07, OAK-M22, OAK-M27, OAK-M39]
+
+reference_implementations:
+  - { target: chainalysis-reactor,    chain: cross-chain, url: "" }
+  - { target: trm-forensics,          chain: cross-chain, url: "" }
+  - { target: elliptic-investigator,  chain: cross-chain, url: "" }
+  - { target: thorchain-explorer,     chain: cross-chain, url: "" }
+  - { target: lifi-api,               chain: cross-chain, url: "" }
