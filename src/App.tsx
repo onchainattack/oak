@@ -1,33 +1,14 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { siteData } from "./data/generated";
 import {
   TACTIC_ORDER,
   cleanInlineText,
   chainOptions,
   includes,
-  techniqueById,
   techniqueMatches,
-  useDocumentHtml,
 } from "./lib";
-import {
-  currentPath,
-  docPathToUrl,
-  groupRouteFromPath,
-  markdownRouteFromPath,
-  mitigationRouteFromPath,
-  navigateTo,
-  REPO_URL,
-  reportIssueUrl,
-  resolveMarkdownHref,
-  softwareRouteFromPath,
-  techniqueRouteFromPath,
-  workspaceRouteFromPath,
-} from "./routing";
-import type {
-  IconName,
-  SearchResult,
-  WorkspaceView,
-} from "./types";
+import { REPO_URL, navigateTo } from "./routing";
+import type { WorkspaceView } from "./types";
 import ActorsView from "./components/views/ActorsView";
 import IncidentsView from "./components/views/IncidentsView";
 import CorpusStats from "./components/views/CorpusStats";
@@ -44,164 +25,46 @@ import TechniqueDetailPage from "./components/detail-pages/TechniqueDetailPage";
 import MitigationDetailPage from "./components/detail-pages/MitigationDetailPage";
 import SoftwareDetailPage from "./components/detail-pages/SoftwareDetailPage";
 import GroupDetailPage from "./components/detail-pages/GroupDetailPage";
+import { useAppRouting } from "./hooks/useAppRouting";
+import { useDocumentMeta } from "./hooks/useDocumentMeta";
+import { useGlobalSearch } from "./hooks/useGlobalSearch";
 
 function App() {
-  const [docPath, setDocPath] = useState(markdownRouteFromPath);
-  const [techniqueRoute, setTechniqueRoute] = useState(techniqueRouteFromPath);
-  const [mitigationRoute, setMitigationRoute] = useState(mitigationRouteFromPath);
-  const [softwareRoute, setSoftwareRoute] = useState(softwareRouteFromPath);
-  const [groupRoute, setGroupRoute] = useState(groupRouteFromPath);
+  const {
+    docPath,
+    techniqueRoute,
+    mitigationRoute,
+    softwareRoute,
+    groupRoute,
+    activeView,
+    sidebarOpen,
+    setActiveView,
+    setSidebarOpen,
+    clearAllRoutes,
+    navigateView,
+    openDoc,
+    openTechnique,
+    openMitigation,
+    openSoftware,
+    openGroup,
+  } = useAppRouting();
+
+  useDocumentMeta({
+    activeView,
+    techniqueRoute,
+    mitigationRoute,
+    softwareRoute,
+    groupRoute,
+    docPath,
+  });
+
+  const { query, setQuery, results: searchResults } = useGlobalSearch();
+
   const [activeTactic, setActiveTactic] = useState("all");
-  const [activeView, setActiveView] = useState<WorkspaceView>(workspaceRouteFromPath);
-  const [query, setQuery] = useState("");
   const [chainFilter, setChainFilter] = useState("all");
   const [maturityFilter, setMaturityFilter] = useState("all");
   const [relationshipFilter, setRelationshipFilter] = useState<string>("all");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const clearAllRoutes = () => {
-    setDocPath("");
-    setTechniqueRoute("");
-    setMitigationRoute("");
-    setSoftwareRoute("");
-    setGroupRoute("");
-  };
-  const navigateView = (view: WorkspaceView) => {
-    navigateTo(view === "about" ? "" : view);
-    setActiveView(view);
-    clearAllRoutes();
-    setSidebarOpen(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-  const openDoc = (path: string) => {
-    navigateTo(docPathToUrl(path));
-    clearAllRoutes();
-    setDocPath(path);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-  const openTechnique = (id: string) => {
-    navigateTo(`technique/${id}`);
-    clearAllRoutes();
-    setTechniqueRoute(id);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-  const openMitigation = (id: string) => {
-    navigateTo(`mitigation/${id}`);
-    clearAllRoutes();
-    setMitigationRoute(id);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-  const openSoftware = (id: string) => {
-    navigateTo(`software/${id}`);
-    clearAllRoutes();
-    setSoftwareRoute(id);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-  const openGroup = (id: string) => {
-    navigateTo(`group/${id}`);
-    clearAllRoutes();
-    setGroupRoute(id);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
 
-  useEffect(() => {
-    // Normalize legacy hash URLs once at boot — strip `#/` and rewrite to a
-    // clean pathname so old links keep resolving.
-    if (window.location.hash && window.location.hash.startsWith("#/")) {
-      const stripped = window.location.hash.replace(/^#\/?/, "");
-      const target = `/${stripped.replace(/\.md$/, "").replace(/^([^/]+\.md)$/, (_m, p) => `document/${p.replace(/\.md$/, "")}`)}`;
-      window.history.replaceState(null, "", target);
-    }
-    const onPopState = () => {
-      const nextDocPath = markdownRouteFromPath();
-      const nextTechnique = techniqueRouteFromPath();
-      const nextMitigation = mitigationRouteFromPath();
-      const nextSoftware = softwareRouteFromPath();
-      const nextGroup = groupRouteFromPath();
-      setDocPath(nextDocPath);
-      setTechniqueRoute(nextTechnique);
-      setMitigationRoute(nextMitigation);
-      setSoftwareRoute(nextSoftware);
-      setGroupRoute(nextGroup);
-      if (!nextDocPath && !nextTechnique && !nextMitigation && !nextSoftware && !nextGroup) {
-        setActiveView(workspaceRouteFromPath());
-      }
-    };
-    onPopState();
-    window.addEventListener("popstate", onPopState);
-    return () => window.removeEventListener("popstate", onPopState);
-  }, []);
-
-  // Keep route metadata aligned with the visible page for crawlers and sharing.
-  useEffect(() => {
-    const baseTitle = "OAK — OnChain Attack Knowledge";
-    const baseDescription =
-      "OAK is a common language for on-chain adversary behavior — open vendor-neutral taxonomy of crypto attack Tactics and Techniques.";
-    let pageLabel = "";
-    let pageDescription = baseDescription;
-    if (techniqueRoute) {
-      const t = techniqueById.get(techniqueRoute);
-      pageLabel = t ? `${t.id} ${t.name}` : techniqueRoute;
-      pageDescription = t
-        ? `${t.id} ${t.name}: OAK Technique covering ${t.parentTactics.join(", ")} across ${t.chains.join(", ")} attack surfaces.`
-        : `${techniqueRoute}: OAK Technique in the OnChain Attack Knowledge taxonomy.`;
-    } else if (mitigationRoute) {
-      const m = siteData.mitigations.find((x) => x.id === mitigationRoute);
-      pageLabel = m ? `${m.id} ${m.name}` : mitigationRoute;
-      pageDescription = m
-        ? `${m.id} ${m.name}: OAK Mitigation for ${m.audience || "defenders"} mapped to ${m.mapsToTechniques.length} Technique(s).`
-        : `${mitigationRoute}: OAK Mitigation in the OnChain Attack Knowledge taxonomy.`;
-    } else if (softwareRoute) {
-      const s = siteData.software.find((x) => x.id === softwareRoute);
-      pageLabel = s ? `${s.id} ${s.name}` : softwareRoute;
-      pageDescription = s
-        ? `${s.id} ${s.name}: OAK Software entry with observed links to ${s.observedTechniques.length} Technique(s).`
-        : `${softwareRoute}: OAK Software entry in the OnChain Attack Knowledge taxonomy.`;
-    } else if (groupRoute) {
-      const g = siteData.actors.find((x) => x.id === groupRoute);
-      pageLabel = g ? g.title : groupRoute;
-      pageDescription = g
-        ? `${g.title}: OAK Threat Actor entry with observed links to ${g.observedTechniques.length} Technique(s).`
-        : `${groupRoute}: OAK Threat Actor entry in the OnChain Attack Knowledge taxonomy.`;
-    } else if (docPath) {
-      const idx = siteData.documentIndex[docPath as keyof typeof siteData.documentIndex];
-      pageLabel = (idx as { title?: string } | undefined)?.title ?? docPath;
-      pageDescription = `${pageLabel}: source document in the OAK on-chain adversary behavior knowledge base.`;
-    } else {
-      const viewLabel: Record<string, string> = {
-        about: "Overview",
-        matrix: "Matrix",
-        incidents: "Incidents",
-        actors: "Threat Actors",
-        mitigations: "Mitigations",
-        software: "Software",
-        coverage: "Coverage & Gaps",
-        contribute: "Contribute",
-      };
-      pageLabel = viewLabel[activeView] ?? "";
-      pageDescription = `${pageLabel || "OAK"}: open vendor-neutral knowledge base of adversary Tactics and Techniques observed against on-chain assets.`;
-    }
-    const pageTitle = pageLabel ? `${pageLabel} · ${baseTitle}` : baseTitle;
-    const canonicalPath = window.location.pathname === "/" ? "/" : `${window.location.pathname.replace(/\/+$/, "")}/`;
-    const canonicalUrl = `https://onchainattack.org${canonicalPath}`;
-    const setMeta = (selector: string, attribute: "name" | "property", key: string, content: string) => {
-      let el = document.head.querySelector<HTMLMetaElement>(selector);
-      if (!el) {
-        el = document.createElement("meta");
-        el.setAttribute(attribute, key);
-        document.head.appendChild(el);
-      }
-      el.content = content;
-    };
-
-    document.title = pageTitle;
-    document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute("href", canonicalUrl);
-    setMeta('meta[name="description"]', "name", "description", pageDescription);
-    setMeta('meta[property="og:title"]', "property", "og:title", pageTitle);
-    setMeta('meta[property="og:description"]', "property", "og:description", pageDescription);
-    setMeta('meta[property="og:url"]', "property", "og:url", canonicalUrl);
-    setMeta('meta[name="twitter:title"]', "name", "twitter:title", pageTitle);
-    setMeta('meta[name="twitter:description"]', "name", "twitter:description", pageDescription);
-  }, [activeView, techniqueRoute, mitigationRoute, softwareRoute, groupRoute, docPath]);
   const maturityOptions = useMemo(
     () => ["all", ...Array.from(new Set(siteData.techniques.map((technique) => technique.maturity).filter(Boolean)))],
     [],
@@ -256,131 +119,6 @@ function App() {
     .filter((example) => example.techniques.length > 0)
     .slice(0, 8);
 
-  const searchResults = useMemo<SearchResult[]>(() => {
-    const needle = query.trim().toLowerCase();
-    if (!needle) return [];
-
-    const tacticResults = siteData.tactics
-      .filter((t) =>
-        [t.id, t.name, t.phase].join(" ").toLowerCase().includes(needle),
-      )
-      .slice(0, 3)
-      .map((t) => {
-        // Try to find the tactic doc — its key in documentIndex looks like "tactics/T1-token-genesis.md"
-        const idShort = t.id.replace("OAK-", "");
-        const docKey = Object.keys(siteData.documentIndex).find(
-          (k) => k.startsWith(`tactics/${idShort}-`),
-        );
-        return {
-          kind: "Tactic" as const,
-          title: `${t.id} — ${t.name}`,
-          subtitle: `${t.techniques.length} techniques · ${t.phase}`,
-          path: docKey ?? `tactics/${idShort}.md`,
-        };
-      });
-
-    const techniqueResults = siteData.techniques
-      .filter((technique) =>
-        [
-          technique.id,
-          technique.name,
-          technique.maturity,
-          technique.firstDocumented,
-          ...technique.chains,
-          ...technique.aliases,
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(needle),
-      )
-      .slice(0, 5)
-      .map((technique) => {
-        // Surface matching alias if the match was on alias rather than name
-        const matchedAlias = (technique.aliases as readonly string[]).find((a) =>
-          a.toLowerCase().includes(needle),
-        );
-        const nameMatches = technique.name.toLowerCase().includes(needle);
-        const chains = technique.chains.slice(0, 2).join(" / ") || technique.maturity;
-        const subtitle = matchedAlias && !nameMatches
-          ? `alias "${matchedAlias}" · ${chains}`
-          : chains;
-        return {
-          kind: "Technique" as const,
-          title: `${technique.id} — ${technique.name}`,
-          subtitle,
-          path: technique.id,
-        };
-      });
-
-    const exampleResults = siteData.examples
-      .filter((example) =>
-        [example.title, example.file, example.loss, ...example.techniques, ...example.actors]
-          .join(" ")
-          .toLowerCase()
-          .includes(needle),
-      )
-      .slice(0, 4)
-      .map((example) => ({
-        kind: "Incident" as const,
-        title: example.title,
-        subtitle: [example.year, ...example.techniques.slice(0, 2)].filter(Boolean).join(" · "),
-        path: `examples/${example.file}`,
-      }));
-
-    const actorResults = siteData.actors
-      .filter((actor) =>
-        [actor.id, actor.title, actor.status, ...actor.observedTechniques]
-          .join(" ")
-          .toLowerCase()
-          .includes(needle),
-      )
-      .slice(0, 3)
-      .map((actor) => ({
-        kind: "Actor" as const,
-        title: actor.title,
-        subtitle: actor.status || "attribution profile",
-        path: `actors/${actor.file}`,
-      }));
-
-    const mitigationResults = siteData.mitigations
-      .filter((m) =>
-        [m.id, m.name, m.class, ...(m.audience as readonly string[]), ...(m.mapsToTechniques as readonly string[])]
-          .join(" ")
-          .toLowerCase()
-          .includes(needle),
-      )
-      .slice(0, 3)
-      .map((m) => ({
-        kind: "Mitigation" as const,
-        title: `${m.id} — ${m.name}`,
-        subtitle: `${m.class} · maps to ${m.mapsToTechniques.length} technique${m.mapsToTechniques.length === 1 ? "" : "s"}`,
-        path: m.id,
-      }));
-
-    const softwareResults = siteData.software
-      .filter((s) =>
-        [s.id, s.name, s.type, ...(s.aliases as readonly string[] ?? []), ...(s.usedByGroups as readonly string[])]
-          .join(" ")
-          .toLowerCase()
-          .includes(needle),
-      )
-      .slice(0, 3)
-      .map((s) => ({
-        kind: "Software" as const,
-        title: `${s.id} — ${s.name}`,
-        subtitle: s.usedByGroups.length > 0 ? `${s.type} · ${s.usedByGroups.join(", ")}` : s.type,
-        path: s.id,
-      }));
-
-    return [
-      ...tacticResults,
-      ...techniqueResults,
-      ...exampleResults,
-      ...actorResults,
-      ...mitigationResults,
-      ...softwareResults,
-    ].slice(0, 14);
-  }, [query]);
 
   let detailNode: ReactNode = null;
   if (techniqueRoute) {
@@ -444,7 +182,7 @@ function App() {
         onOpenDoc={openDoc}
         onClose={() => {
           window.location.hash = "/matrix";
-          setDocPath("");
+          clearAllRoutes();
           setActiveView("matrix");
         }}
       />
