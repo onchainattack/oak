@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { siteData } from "./data/generated";
+import { highlightYaml, highlightPseudo } from "./highlight";
 
 type Tactic = (typeof siteData.tactics)[number];
 type Technique = (typeof siteData.techniques)[number];
@@ -2060,7 +2061,13 @@ function MarkdownDocument({
           )}
           {indexEntry && documentHtml.status === "loaded" && !path.endsWith(".md") && (
             <pre className="raw-document">
-              <code>{documentHtml.html}</code>
+              <code
+                dangerouslySetInnerHTML={{
+                  __html: path.endsWith(".yml") || path.endsWith(".yaml")
+                    ? highlightYaml(documentHtml.html)
+                    : documentHtml.html,
+                }}
+              />
             </pre>
           )}
           {indexEntry && documentHtml.status === "loaded" && path.endsWith(".md") && (
@@ -2183,7 +2190,11 @@ function DetectionSpecSection({
       )}
       {body.detection_logic?.pseudocode && (
         <pre className="detection-spec-pseudocode">
-          <code>{body.detection_logic.pseudocode}</code>
+          <code
+            dangerouslySetInnerHTML={{
+              __html: highlightPseudo(body.detection_logic.pseudocode),
+            }}
+          />
         </pre>
       )}
 
@@ -2191,6 +2202,11 @@ function DetectionSpecSection({
         <div className="detection-spec-params">
           <h3>Parameters ({params.length})</h3>
           <table>
+            <colgroup>
+              <col className="col-name" />
+              <col className="col-type" />
+              <col className="col-default" />
+            </colgroup>
             <thead>
               <tr>
                 <th>Name</th>

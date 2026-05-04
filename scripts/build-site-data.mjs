@@ -130,6 +130,11 @@ const listMarkdownFiles = async (dir) =>
     .filter((name) => name.endsWith(".md"))
     .sort((a, b) => a.localeCompare(b));
 
+const listSpecFiles = async (dir) =>
+  (await readdir(rel(dir)))
+    .filter((name) => name.endsWith(".yml"))
+    .sort((a, b) => a.localeCompare(b));
+
 const readMarkdownCollection = async (dir, filter = () => true) => {
   const files = (await listMarkdownFiles(dir)).filter(filter);
   return Promise.all(
@@ -270,9 +275,13 @@ const documentSpecs = [
   ...(await listMarkdownFiles("software")).map((file) => `software/${file}`),
 ];
 
+const specDocPaths = (await listSpecFiles("specs")).map(
+  (file) => `specs/${file}`,
+);
+
 const documents = Object.fromEntries(
-  await Promise.all(
-    documentSpecs.map(async (docPath) => {
+  await Promise.all([
+    ...documentSpecs.map(async (docPath) => {
       const raw = await readFile(rel(docPath), "utf8");
       const markdown = cleanMarkdownEscapes(raw);
       const documentMeta = extractDocumentMeta(markdown);
@@ -287,7 +296,27 @@ const documents = Object.fromEntries(
         },
       ];
     }),
-  ),
+    ...specDocPaths.map(async (docPath) => {
+      const raw = await readFile(rel(docPath), "utf8");
+      const specIdMatch = raw.match(/^spec_id:\s*(\S+)/m);
+      const techMatch = raw.match(/^oak_techniques:\s*\[([^\]]+)\]/m);
+      const title = specIdMatch
+        ? `${specIdMatch[1]} (${docPath.replace(/^specs\//, "")})`
+        : docPath;
+      return [
+        docPath,
+        {
+          path: docPath,
+          title,
+          toc: [],
+          meta: techMatch
+            ? [{ label: "Techniques", value: techMatch[1].trim() }]
+            : [],
+          html: raw,
+        },
+      ];
+    }),
+  ]),
 );
 
 // Detailed coverage stats — computed by tools/build_stats.py and read here.
