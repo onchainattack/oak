@@ -2791,6 +2791,115 @@ button {
   margin: 0;
 }
 
+.detection-spec {
+  background: rgba(13, 18, 26, 0.6);
+  border: 1px solid rgba(0, 255, 209, 0.18);
+  border-radius: 14px;
+  padding: 20px 24px;
+}
+
+.detection-spec > h2 {
+  border-bottom-color: rgba(0, 255, 209, 0.18);
+}
+
+.detection-spec h3 {
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  margin: 20px 0 8px;
+  text-transform: uppercase;
+}
+
+.detection-spec h4 {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  margin: 12px 0 6px;
+  text-transform: uppercase;
+}
+
+.detection-spec-meta {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+
+.detection-spec-scope,
+.detection-spec-description {
+  margin: 8px 0 12px;
+}
+
+.detection-spec-tags {
+  margin: 8px 0;
+}
+
+.detection-spec-tags code {
+  background: rgba(0, 255, 209, 0.06);
+  border-radius: 6px;
+  margin-right: 6px;
+  padding: 2px 6px;
+}
+
+.detection-spec-pseudocode {
+  background: rgba(8, 12, 18, 0.95);
+  border: 1px solid rgba(242, 244, 247, 0.08);
+  border-radius: 10px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  margin: 10px 0 16px;
+  overflow-x: auto;
+  padding: 14px 16px;
+  white-space: pre;
+}
+
+.detection-spec-params table {
+  border-collapse: collapse;
+  font-size: 13px;
+  width: 100%;
+}
+
+.detection-spec-params th,
+.detection-spec-params td {
+  border-bottom: 1px solid rgba(242, 244, 247, 0.06);
+  padding: 6px 10px;
+  text-align: left;
+}
+
+.detection-spec-params th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.detection-spec-fixtures ul,
+.detection-spec-fp ul,
+.detection-spec-refs ul {
+  margin: 6px 0 12px;
+  padding-left: 18px;
+}
+
+.detection-spec-fixtures li,
+.detection-spec-fp li,
+.detection-spec-refs li {
+  margin: 4px 0;
+}
+
+.link-row.inline {
+  background: none;
+  border: none;
+  color: var(--accent, #00ffd1);
+  display: inline;
+  padding: 0;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: rgba(0, 255, 209, 0.4);
+  width: auto;
+}
+
+.link-row.inline:hover {
+  border: none;
+  color: var(--accent, #00ffd1);
+  transform: none;
+}
+
 .link-row {
   background:
     linear-gradient(180deg, rgba(0, 255, 209, 0.04), transparent 50%),

@@ -319,6 +319,21 @@ try {
   );
 }
 
+// Detection specs — produced by tools/build_specs.py from specs/*.yml. Drives
+// the per-Technique "Detection spec" tab. Carries full parsed body so the UI
+// renders structured sections without re-parsing YAML in the browser.
+let specsPayload = { specs: [], by_technique: {} };
+try {
+  const raw = await readFile(rel("tools/specs.json"), "utf8");
+  specsPayload = JSON.parse(raw);
+} catch (err) {
+  console.warn(
+    "build-site-data: tools/specs.json not found — run "
+    + "`python3 tools/build_specs.py` first. "
+    + "Continuing without detection specs.",
+  );
+}
+
 // Lightweight metadata index — keeps initial JS bundle small.
 const siteData = {
   generatedAt: new Date().toISOString(),
@@ -357,6 +372,8 @@ const siteData = {
   actors: actors.sort((a, b) => a.id.localeCompare(b.id)),
   coverageRows,
   coverageMatrix,
+  specs: specsPayload.specs ?? [],
+  specsByTechnique: specsPayload.by_technique ?? {},
   // Lightweight document index: per-document title + path + meta + toc; HTML body is loaded lazily.
   documentIndex: Object.fromEntries(
     Object.entries(documents).map(([key, doc]) => [

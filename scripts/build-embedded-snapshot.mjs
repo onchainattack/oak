@@ -4,10 +4,13 @@
  * artifact that downstream consumers (oak-mcp v0.2+) fetch at runtime instead
  * of reassembling oak.json + N markdown bodies on every install.
  *
- * Output shape mirrors what oak-mcp/scripts/fetch-data.mjs LOCAL mode wrote:
- *   { oak, docs, fetchedAt, source }
- * where `oak` is the canonical tools/oak.json and `docs` is a map of
- * <relative path> → <markdown body> for every body referenced from oak.json.
+ * Output shape:
+ *   { oak, docs, specs, specs_by_technique, spec_yaml, fetchedAt, source }
+ * where `oak` is the canonical tools/oak.json, `docs` is a map of
+ * <relative path> → <markdown body> for every body referenced from oak.json,
+ * `specs` mirrors tools/specs.json `specs` (full parsed body per spec),
+ * `specs_by_technique` is the OAK-Tn.NNN → [spec_id] index, and `spec_yaml`
+ * maps spec_id → raw source YAML for round-trip access.
  *
  * Run as part of `npm run site:data`. The artifact is served at
  * https://onchainattack.org/tools/embedded.json after copy-static-content.mjs
@@ -29,6 +32,25 @@ async function listLocalDir(rel) {
 }
 
 const oak = JSON.parse(await readLocalText("tools/oak.json"));
+
+let specsPayload = { specs: [], by_technique: {} };
+try {
+  specsPayload = JSON.parse(await readLocalText("tools/specs.json"));
+} catch {
+  /* specs.json optional — empty embed if absent */
+}
+const specs = specsPayload.specs ?? [];
+const specsByTechnique = specsPayload.by_technique ?? {};
+const specYaml = {};
+for (const s of specs) {
+  if (s.path) {
+    try {
+      specYaml[s.spec_id] = await readLocalText(s.path);
+    } catch {
+      /* missing source — skip raw embed */
+    }
+  }
+}
 
 const docs = {};
 
@@ -72,6 +94,9 @@ for (const f of topLevel) {
 const data = {
   oak,
   docs,
+  specs,
+  specs_by_technique: specsByTechnique,
+  spec_yaml: specYaml,
   fetchedAt: new Date().toISOString(),
   source: "build-embedded-snapshot.mjs",
 };
@@ -82,5 +107,5 @@ const bytes = (await readFile(OUT_FILE)).byteLength;
 console.log(
   `OK: wrote tools/embedded.json — ${oak.tactics?.length ?? 0} tactics, ${
     oak.techniques?.length ?? 0
-  } techniques, ${Object.keys(docs).length} bodies, ${(bytes / 1024 / 1024).toFixed(2)} MB`,
+  } techniques, ${Object.keys(docs).length} bodies, ${specs.length} specs, ${(bytes / 1024 / 1024).toFixed(2)} MB`,
 );

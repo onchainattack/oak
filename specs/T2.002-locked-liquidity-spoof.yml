@@ -1,0 +1,102 @@
+oak_techniques: [OAK-T2.002]
+spec_id: oak-detection-T2.002
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect off-chain "locked liquidity" claims whose on-chain LP-locker
+  binding does not constrain deployer removal in practice. Covers four
+  sub-patterns: partial-coverage, short-duration, lookalike-locker,
+  authority-override. Excludes: T2.003 (cross-chain locked-liquidity
+  spoof — different resolution methodology); T2.001 (single-sided
+  liquidity plant — different on-chain artefact); legitimate
+  short-duration locks where coverage and authority are sound and the
+  marketing claim matches the on-chain reality.
+
+data_sources: [pool_state, contract_bytecode, contract_storage,
+               locker_registry, funder_graph]
+
+detection_logic:
+  description: |
+    Four orthogonal paths over the LP / locker pair. PATH A (coverage):
+    locked fraction of total LP supply below minimum. PATH B (allowlist):
+    locker contract is not in the canonical multi-chain registry.
+    PATH C (authority): locker exposes onlyOwner-gated early-release
+    selectors. PATH D (duration): unlock window shorter than threshold.
+    Sub-pattern (lookalike) is a refinement of PATH B — locker bytecode
+    is a near-clone of a canonical locker but the address is not.
+  pseudocode: |
+    OVERRIDE_SELECTORS = {withdraw, transferOwnership, setUnlockTime,
+                          renounceLock, emergencyWithdraw, emergencyUnlock,
+                          unlock, extend, migrate}
+
+    for each pool P observed at launch:
+      total_lp ← lp_total_supply(P)
+      if total_lp == 0: continue
+
+      lockers ← {addr : balanceOf(addr, P.lp_token) > 0
+                       and is_locker_like(addr)}
+      locked  ← Σ balanceOf(L, P.lp_token) for L in lockers
+      coverage ← locked / total_lp
+
+      # PATH A — coverage
+      if coverage < min_coverage:
+        emit(PATH_A, pool=P, coverage, locked, total_lp, severity=high)
+
+      for L in lockers:
+        # PATH B — allowlist (with lookalike refinement)
+        if L ∉ canonical_locker_registry[chain(P)]:
+          near ← nearest_canonical_by_bytecode(L, threshold = lookalike_distance)
+          if near ≠ None:
+            emit(PATH_B, locker=L, lookalike_of=near, severity=critical)
+          else:
+            emit(PATH_B, locker=L, severity=high)
+
+        # PATH C — authority override
+        gated ← onlyOwner_gated_selectors(getCode(L)) ∩ OVERRIDE_SELECTORS
+        if gated ≠ ∅:
+          owner ← eth_call(L, "owner()")
+          deployer_cluster ← funder_graph_cluster(deployer(P.token), hops=3)
+          collusion ← owner ∈ deployer_cluster
+          emit(PATH_C, locker=L, gated_selectors=gated, owner,
+               collusion, severity = critical if collusion else high)
+
+        # PATH D — duration
+        unlock_at ← read_unlock_time(L, P.lp_token)
+        if unlock_at − now < min_lock_duration:
+          emit(PATH_D, locker=L, unlock_at,
+               days_remaining=(unlock_at − now) / 1d, severity=high)
+
+parameters:
+  min_coverage:              { type: number,   default: 0.95 }
+  min_lock_duration:         { type: duration, default: 180d }
+  lookalike_distance:        { type: number,   default: 0.05 }   # bytecode hamming-norm
+  canonical_locker_registry: { type: object,   default: {} }      # per-chain allowlist
+
+output_alert: [oak_technique, detection_path, severity, pool_address,
+               chain, coverage, locker, locker_status, unlock_at, evidence]
+
+test_fixtures:
+  positive:
+    - 2023-11-safemoon-charges                 # partial-coverage, SEC-documented
+    - 2021-10-anubisdao                        # liquidity-removal cohort anchor
+  negative:
+    - "Major DEX pool with full LP locked at Unicrypt / Team Finance / UNCX > 1y"
+    - "Protocol-owned-liquidity DAO — LP held by canonical timelock, allowlisted"
+
+false_positive_modes:
+  - protocol-owned liquidity held by governance timelock (allowlist the timelock as canonical locker)
+  - vesting schedules with legitimate short cliffs by design (DAO-disclosed, not marketed as long-term lock)
+  - multi-locker splits where aggregate coverage is sufficient but per-locker coverage is not (sum across lockers before flagging PATH A)
+  - lockers whose `transferOwnership` was already called to 0x0 (read owner before flagging PATH C)
+
+mitigations: [OAK-M01, OAK-M02, OAK-M05, OAK-M25]
+
+reference_implementations:
+  - { target: dune,            chain: evm,    url: "" }
+  - { target: forta-bot,       chain: evm,    url: "" }
+  - { target: goldsky-subgraph, chain: evm,   url: "" }
+  - { target: mg-detectors-rs, chain: evm,    url: "" }
+  - { target: rugcheck,        chain: solana, url: "" }

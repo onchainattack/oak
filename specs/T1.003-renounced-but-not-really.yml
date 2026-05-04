@@ -1,0 +1,107 @@
+oak_techniques: [OAK-T1.003]
+spec_id: oak-detection-T1.003
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect contracts whose surface-level renouncement claim (Ownable
+  `owner() == 0x0`) is not bound to the full authority surface — proxy
+  admin slot, beacon, AccessControl roles, or dependency contracts
+  retain privileged authority. Excludes: T1.001 (mutable fees with
+  acknowledged authority); T6.001 (source-bytecode mismatch — frequently
+  combined, separate Technique); legitimate timelock-gated upgrade
+  authority (suppressed via `timelock_allowlist`).
+
+data_sources: [contract_bytecode, contract_storage, contract_events,
+               authority_graph, simulation_environment, funder_graph]
+
+detection_logic:
+  description: |
+    Five orthogonal paths. PATH A (static authority enumeration): any
+    non-owner authority surface non-empty after surface renouncement.
+    PATH B (bytecode-diff): deployed runtime contains authority-mutating
+    selectors absent from verified source. PATH C (continuous): privileged
+    event after `OwnershipTransferred(_, 0x0)`. PATH D (simulation):
+    privileged tx from residual authority succeeds in fork. PATH E
+    (cluster): deployer cluster reuses the pattern across deployments.
+  pseudocode: |
+    EIP1967_ADMIN  = 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103
+    EIP1967_IMPL   = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc
+    EIP1967_BEACON = 0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50
+
+    # PATH A — static authority-graph enumeration
+    if eth_call(C, "owner()") == 0x0:
+      residual ← {}
+      a ← getStorageAt(C, EIP1967_ADMIN);   if a ≠ 0: residual += {proxy_admin: a}
+      b ← getStorageAt(C, EIP1967_BEACON);  if b ≠ 0: residual += {beacon: b}
+      for n in 0..getRoleMemberCount(C, DEFAULT_ADMIN_ROLE):
+        residual += {default_admin: getRoleMember(C, DEFAULT_ADMIN_ROLE, n)}
+      for dep in dependency_contracts(C):           # fee, staking, governance
+        if eth_call(dep, "owner()") ≠ 0x0: residual += {dep_owner: dep}
+      residual_filtered ← residual − timelock_allowlist
+      if residual_filtered ≠ ∅:
+        emit(PATH_A, residual=residual_filtered, severity=high)
+
+    # PATH B — bytecode-diff (verified-source contracts)
+    if has_verified_source(C):
+      canonical ← compile(verified_source(C))
+      runtime  ← getCode(C)
+      auth_selectors ← selectors_mutating(authority_state, runtime) −
+                       selectors_mutating(authority_state, canonical)
+      if auth_selectors ≠ ∅:
+        emit(PATH_B, hidden_selectors=auth_selectors, severity=critical)
+
+    # PATH C — continuous event monitoring
+    on event Upgraded | RoleGranted | Initialized | AdminChanged on C:
+      last_renounce ← last(OwnershipTransferred(_, 0x0) on C)
+      if last_renounce ≠ None and event.block ≥ last_renounce.block:
+        emit(PATH_C, event=event.name, tx=event.tx, severity=high)
+
+    # PATH D — simulation matrix
+    if simulation_available:
+      for actor in {prior_owner(C)} ∪ residual.values():
+        with chain_fork():
+          ok ← as(actor): try_call(C, upgrade_or_setOwner_or_grantRole)
+          if ok: emit(PATH_D, actor, severity=critical)
+
+    # PATH E — deployer cluster reuse
+    cluster ← funder_graph_cluster(deployer(C), hops = trace_hops)
+    prior   ← contracts_deployed_by(cluster) - {C}
+    hits    ← {p ∈ prior : matched_PATH_A_or_B(p)}
+    if |hits| ≥ cluster_hit_threshold:
+      emit(PATH_E, cluster_size=|cluster|, prior_hits=hits, severity=high)
+
+parameters:
+  timelock_allowlist:    { type: list,    default: [] }
+  trace_hops:            { type: integer, default: 3 }
+  cluster_hit_threshold: { type: integer, default: 1 }
+
+output_alert: [oak_technique, detection_path, severity, contract_address,
+               chain, residual_authority, evidence]
+
+test_fixtures:
+  positive:
+    - 2023-06-chibi-finance-onlygov-arbitrum
+    - 2023-08-magnate-finance-base-deployer-cluster
+    - 2022-01-frosties
+    - 2021-2026-influencer-amplified-non-memecoin-rug-cohort
+  negative:
+    - "Compound / Aave / Uniswap governance — non-renounced but timelock-gated, suppressed via timelock_allowlist"
+    - "Truly-immutable non-proxy ERC-20 (e.g., USDC implementation slot owned by canonical proxy admin allowlisted)"
+
+false_positive_modes:
+  - legitimate timelocked upgrade authority (canonical timelock_allowlist)
+  - emergency-pause guardian retained intentionally (binary pause, not authority over economic params)
+  - multisig-held DEFAULT_ADMIN_ROLE that is itself the renouncement target (operational lag)
+  - beacon proxy where the beacon owner is a canonical, allowlisted governance contract
+
+mitigations: [OAK-M01, OAK-M02, OAK-M03, OAK-M05, OAK-M16, OAK-M17, OAK-M25]
+
+reference_implementations:
+  - { target: slither-plugin,    chain: evm, url: "" }
+  - { target: forta-bot,         chain: evm, url: "" }
+  - { target: tenderly-virtualnet, chain: evm, url: "" }
+  - { target: dune,              chain: evm, url: "" }
+  - { target: mg-detectors-rs,   chain: evm, url: "" }
