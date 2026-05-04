@@ -113,6 +113,103 @@ html {
   scroll-behavior: smooth;
 }
 
+/* ==========================================================================
+   Centralized typography — element defaults.
+
+   Every text-bearing element gets its size / weight / line-height / family
+   here, ONCE. Components stop writing their own `font-size: ...;` for plain
+   headings + body and instead pick a utility class (.t-display, .t-eyebrow,
+   .t-meta, .t-label, .t-code-inline) when they need a non-default role.
+
+   When you find a component declaring its own font-size: that's a bug —
+   either the role belongs in this block, or there's a missing utility class
+   for it. Don't re-introduce per-component sizes.
+   ========================================================================== */
+
+body {
+  font-family: var(--sans);
+  font-size: var(--fs-body);
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--sans);
+  color: var(--ink-strong);
+  margin: 0;
+  letter-spacing: var(--ls-tight);
+}
+h1 { font-size: var(--fs-h1); font-weight: 700; line-height: 1.05; }
+h2 { font-size: var(--fs-h2); font-weight: 700; line-height: 1.15; }
+h3 { font-size: var(--fs-h3); font-weight: 600; line-height: 1.3; }
+h4 { font-size: var(--fs-h4); font-weight: 600; line-height: 1.4; letter-spacing: 0; }
+h5, h6 { font-size: var(--fs-body); font-weight: 600; line-height: 1.4; letter-spacing: 0; }
+
+p, li {
+  font-size: var(--fs-body);
+  line-height: 1.55;
+  margin: 0;
+}
+
+small {
+  font-size: var(--fs-small);
+}
+
+strong {
+  font-weight: 600;
+}
+
+code, kbd, samp {
+  font-family: var(--mono);
+  font-size: 0.92em;     /* slight tighten so inline mono sits with surrounding sans */
+}
+
+/* Utility classes — apply where the element default isn't the right role */
+
+.t-display {                           /* page hero / banner number */
+  font-family: var(--sans);
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: var(--ls-tight);
+  color: var(--ink-strong);
+}
+
+.t-eyebrow {                           /* section pre-title (uppercase mono) */
+  font-family: var(--mono);
+  font-size: var(--fs-mono-sm);
+  font-weight: 600;
+  letter-spacing: var(--ls-mono-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.t-label {                             /* form labels, table heads, micro labels */
+  font-family: var(--mono);
+  font-size: var(--fs-mono-sm);
+  font-weight: 600;
+  letter-spacing: var(--ls-mono-wide);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.t-meta {                              /* secondary line under titles */
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.t-code-inline {                       /* IDs / hashes inline */
+  font-family: var(--mono);
+  font-size: var(--fs-mono);
+  letter-spacing: var(--ls-mono-tight);
+}
+
+
 /* Global focus indicator — :focus-visible only (keyboard / programmatic
    focus), so mouse clicks don't draw a ring. Anything that sets its
    own outline (e.g. inputs styled with border-color shifts) overrides
@@ -273,7 +370,7 @@ button {
 
 .brand-text strong {
   color: var(--ink);
-  font-size: 22px;
+  font-size: var(--fs-h2);
   font-weight: 600;
   letter-spacing: 0.32em;
   line-height: 1;
@@ -731,7 +828,7 @@ button {
 
 .stat-card strong {
   align-self: end;
-  font-size: 32px;
+  font-size: var(--fs-h1);
   letter-spacing: -0.04em;
   line-height: 1;
   margin-top: 18px;
@@ -1223,7 +1320,7 @@ button {
 }
 
 .tactic-column h3 {
-  font-size: 15px;
+  font-size: var(--fs-md);
   font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1.25;
@@ -1360,7 +1457,7 @@ button {
   align-self: start;
   color: var(--muted);
   display: -webkit-box;
-  font-size: 13.5px;
+  font-size: var(--fs-body);
   -webkit-line-clamp: 4;
   line-clamp: 4;
   -webkit-box-orient: vertical;
@@ -2528,7 +2625,7 @@ button {
 
 .markdown-shell h2 {
   border-top: 1px solid var(--line);
-  font-size: 22px;
+  font-size: var(--fs-h2);
   font-weight: 600;
   margin: 40px 0 14px;
   padding-top: 24px;
@@ -2544,7 +2641,7 @@ button {
 .markdown-shell p,
 .markdown-shell li {
   color: var(--muted-strong);
-  font-size: 15px;
+  font-size: var(--fs-md);
   line-height: 1.65;
   max-width: 760px;
 }
@@ -2611,7 +2708,7 @@ button {
 
 .markdown-shell code {
   font-family: var(--mono);
-  font-size: 0.9em;
+  font-size: 1em;
   background: rgba(255, 255, 255, 0.05);
   padding: 1px 5px;
   border-radius: 3px;
@@ -2755,7 +2852,7 @@ button {
   }
 
   .wordmark {
-    font-size: 34px;
+    font-size: var(--fs-h1);
   }
 
   .tagline {
@@ -2808,7 +2905,7 @@ button {
 }
 
 .technique-detail-header h1 {
-  font-size: 32px;
+  font-size: var(--fs-h1);
   letter-spacing: -0.02em;
   line-height: 1.15;
   margin: 0 0 16px;
@@ -2816,7 +2913,7 @@ button {
 
 .technique-detail-tactic {
   color: var(--muted);
-  font-size: 15px;
+  font-size: var(--fs-md);
   line-height: 1.5;
   margin: 0;
 }
@@ -2833,7 +2930,7 @@ button {
 
 .technique-detail-section > h2 {
   border-bottom: 1px solid rgba(242, 244, 247, 0.08);
-  font-size: 20px;
+  font-size: var(--fs-h3);
   letter-spacing: -0.02em;
   margin: 0 0 16px;
   padding-bottom: 8px;
@@ -2917,7 +3014,7 @@ button {
   background: rgba(8, 12, 18, 0.95);
   border: 1px solid rgba(242, 244, 247, 0.08);
   border-radius: 10px;
-  font-size: 12.5px;
+  font-size: var(--fs-small);
   line-height: 1.55;
   margin: 10px 0 16px;
   overflow-x: auto;
@@ -3022,7 +3119,7 @@ button {
 
 .link-row strong {
   color: var(--ink);
-  font-size: 15px;
+  font-size: var(--fs-md);
   letter-spacing: -0.01em;
   line-height: 1.3;
 }
@@ -3112,7 +3209,7 @@ button {
 }
 
 .sb-logo .brand-text small {
-  font-size: 8px;
+  font-size: var(--fs-mono-sm);
   letter-spacing: 0.18em;
   margin-top: 2px;
 }
@@ -3474,7 +3571,7 @@ button {
 }
 
 .howto-step h3 {
-  font-size: 18px;
+  font-size: var(--fs-h3);
   font-weight: 600;
   letter-spacing: -0.01em;
   margin: 0;
@@ -3639,7 +3736,7 @@ button {
   border-radius: 3px;
   color: var(--ink);
   padding: 1px 5px;
-  font-size: 0.88em;
+  font-size: 1em;
 }
 
 .overview-hero .howto-grid {
@@ -4222,7 +4319,7 @@ button {
 }
 
 .stat-num {
-  font-size: 32px;
+  font-size: var(--fs-h1);
   font-weight: 700;
   font-family: var(--mono);
   color: var(--ink-strong);
@@ -4569,7 +4666,7 @@ button {
     gap: 8px;
   }
   .stat-num {
-    font-size: 26px;
+    font-size: var(--fs-h2);
   }
   .stat-label {
     font-size: var(--fs-mono);
@@ -4686,7 +4783,7 @@ button {
     font-size: var(--fs-mono-sm);
   }
   .section-heading h2 {
-    font-size: 20px;
+    font-size: var(--fs-h3);
   }
 }
 
