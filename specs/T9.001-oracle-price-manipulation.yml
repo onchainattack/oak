@@ -1,0 +1,118 @@
+oak_techniques: [OAK-T9.001]
+spec_id: oak-detection-T9.001
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect protocol actions whose outcome depends on a price oracle that
+  was driven to an artificial value within the consumption window.
+  Covers three sub-classes documented under T9.001: spot-AMM-feed
+  manipulation (single-venue thin liquidity), yield-vault-share /
+  book-value manipulation (donation-driven `pricePerShare` inflation),
+  and pull-reporter-oracle manipulation (Tellor / UMA dispute-window
+  bypass). Excludes: T9.002 (flash-loan capital — frequently chained,
+  separate primitive); T17.004 (TWAP window manipulation against a
+  downstream contract's settlement math, not the oracle itself);
+  T9.006 (subjective oracle resolution).
+
+data_sources: [oracle_feed, dex_trades, contract_storage,
+               tx_call_trace, reference_price_feed, funder_graph]
+
+detection_logic:
+  description: |
+    Four orthogonal paths. PATH A (deviation): consumed oracle vs wider-
+    liquidity reference exceeds threshold sustained ≥ min_blocks. PATH B
+    (cross-action correlation): same actor (or funder-cluster) moves
+    price on an input venue and consumes the price in the target protocol
+    within the same tx / same block. PATH C (vault-share invariant):
+    `pricePerShare`-class read jumps > threshold within a single block
+    while the underlying basket's reference price does not. PATH D
+    (pull-oracle dispute-window): `submitValue`-class report with
+    deviation > threshold consumed inside the active dispute window.
+  pseudocode: |
+    VAULT_SHARE_SELECTORS = {pricePerShare, getPricePerFullShare,
+                             convertToAssets, sharePrice, exchangeRate}
+    PULL_ORACLE_SUBMIT    = {submitValue, proposePrice, reportData}
+
+    dev(O, b) := |O.price(b) − reference_price(O.asset, b, reference_venues)|
+                  / reference_price(O.asset, b, reference_venues)
+
+    # PATH A — oracle vs reference deviation, sustained
+    for each oracle O consumed by protocol P at block b:
+      if all(dev(O, b−i) > deviation_threshold for i in 0..min_blocks-1):
+        emit(PATH_A, oracle=O, deviation=dev(O,b), severity=high)
+
+    # PATH B — same-tx input-move + price-consume by one cluster
+    for each tx T:
+      moves    ← [a in T.actions : a.venue ∈ oracle_input_venues(O)
+                                    and price_impact(a) > input_move_threshold]
+      consumes ← [a in T.actions : a.contract == P and reads_price(a, O)]
+      if moves and consumes
+         and shared_funding(funder_graph_cluster({a.from for a in moves+consumes},
+                                                  hops = trace_hops)):
+        emit(PATH_B, tx=T.hash, oracle=O, protocol=P, severity=critical)
+
+    # PATH C — vault-share invariant (donation-driven pricePerShare)
+    for each vault V whose share is oracle input, for each block b:
+      sel ← VAULT_SHARE_SELECTORS ∩ V.read_selectors
+      if sel == ∅: continue
+      share_jump  ← Δ(eth_call(V, sel, b), b−1) ratio
+      basket_jump ← Δ(Σ ref_price(a,b) × V.weights[a] for a in V.underlying, b−1) ratio
+      if share_jump > vault_share_jump and
+         share_jump − basket_jump > vault_basket_decoupling:
+        emit(PATH_C, vault=V, share_jump, basket_jump, severity=critical)
+
+    # PATH D — pull-oracle dispute-window respect
+    for each event E ∈ contract_events
+        where E.signature ∈ PULL_ORACLE_SUBMIT:
+      d ← |E.value − reference_price(E.asset, E.block, reference_venues)|
+            / reference_price(E.asset, E.block, reference_venues)
+      consumers ← tx_consumers(E.oracle, E.asset, between=[E.block, E.block + dispute_window_blocks])
+      if d > pull_oracle_deviation and consumers ≠ ∅:
+        emit(PATH_D, oracle=E.oracle, reporter=E.from, deviation=d, consumers,
+             severity=critical)
+
+parameters:
+  deviation_threshold:        { type: number,   default: 0.02 }
+  min_blocks:                 { type: integer,  default: 1 }
+  reference_venues:           { type: list,     default: [cex_mid, multi_venue_twap_30m] }
+  oracle_input_venues:        { type: object,   default: {} }
+  input_move_threshold:       { type: number,   default: 0.01 }
+  trace_hops:                 { type: integer,  default: 3 }
+  vault_share_jump:           { type: number,   default: 0.01 }
+  vault_basket_decoupling:    { type: number,   default: 0.005 }
+  pull_oracle_deviation:      { type: number,   default: 0.02 }
+  dispute_window_blocks:      { type: integer,  default: 1800 }      # ~6h on Ethereum
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               oracle_address, asset, deviation, reference_sources,
+               actor, tx, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-10-mango-markets
+    - 2021-10-cream-finance
+    - 2023-02-bonqdao
+    - 2021-09-vee-finance
+    - 2024-06-uwu-lend
+    - 2025-04-kiloex
+  negative:
+    - "Chainlink-fed pool with multi-venue TWAP + deviation halt: deviation < threshold, must not flag"
+    - "Yield vault sweep / harvest accrual producing legitimate <0.5% pricePerShare drift over many blocks"
+
+false_positive_modes:
+  - genuine market dislocation across venues during high-volatility windows (CEX outage, depeg event) — calibrate reference_venues to multi-venue, not single-CEX
+  - vault rebase / reward harvest (legitimate cross-block accrual, not single-block donation) — use vault_basket_decoupling delta, not raw share_jump
+  - pull-oracle disputed-and-corrected reports (dispute fired before consumption) — suppress when dispute resolution observed inside window
+  - protocol's own keeper-driven oracle update from a known operator (allowlist trusted submitters)
+
+mitigations: [OAK-M09, OAK-M10, OAK-M11, OAK-M16, OAK-M17]
+
+reference_implementations:
+  - { target: forta-bot,           chain: evm,    url: "" }
+  - { target: blocksec-phalcon,    chain: evm,    url: "" }
+  - { target: oz-defender-sentinel, chain: evm,   url: "" }
+  - { target: dune,                chain: evm,    url: "" }
+  - { target: chainlink-deviation-monitor, chain: evm, url: "" }
