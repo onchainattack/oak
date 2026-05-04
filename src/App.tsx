@@ -218,6 +218,18 @@ function TacticGlyph({ id }: { id: string }) {
             <path d="M20 13l3 3 5-6" className="fill-accent" />
           </>
         )}
+        {n === 17 /* Market Manipulation — candlestick cluster with cross-venue arrow distorting price discovery */ && (
+          <>
+            <rect x="10" y="18" width="4" height="14" />
+            <path d="M12 14v4M12 32v4" />
+            <rect x="20" y="12" width="4" height="20" className="fill-accent" />
+            <path d="M22 8v4M22 32v4" />
+            <rect x="30" y="22" width="4" height="10" />
+            <path d="M32 18v4M32 32v4" />
+            <path d="M6 40h36" />
+            <path d="M40 12l-4-2 4-2" className="fill-accent" />
+          </>
+        )}
       </svg>
     </span>
   );
@@ -1104,9 +1116,10 @@ const TACTIC_NAMES_SHORT: Record<string, string> = {
   T14: "Validator / Staking",
   T15: "Off-chain Entry-Vector",
   T16: "Governance / Voting",
+  T17: "Market Manipulation",
 };
 
-const TACTIC_ORDER = ["T1","T2","T3","T4","T5","T6","T7","T8","T9","T10","T11","T12","T13","T14","T15","T16"];
+const TACTIC_ORDER = ["T1","T2","T3","T4","T5","T6","T7","T8","T9","T10","T11","T12","T13","T14","T15","T16","T17"];
 const ATTRIBUTION_ORDER = ["confirmed","inferred-strong","inferred-weak","pseudonymous","unattributed","(missing)"];
 // Attribution colors derive from OAK's single accent (electric teal) with
 // decreasing opacity for decreasing rigor; lower-rigor categories fall onto
