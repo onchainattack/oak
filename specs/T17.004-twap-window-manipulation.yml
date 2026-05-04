@@ -1,0 +1,114 @@
+oak_techniques: [OAK-T17.004]
+spec_id: oak-detection-T17.004
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect manipulation of a downstream contract's TWAP / time-window
+  settlement math (lending oracle TWAP, DAO treasury-swap window,
+  vesting-rate-conversion window, oracle-update boundary). Load-bearing
+  surface is the *window-selection / window-settlement primitive*, not
+  the input-venue feed itself. Four sub-shapes: TWAP-window
+  concentration, DAO treasury-swap window timing, vesting-rate-
+  conversion window, oracle-update-window boundary. Excludes: T9.001
+  (input-venue oracle manipulation — composes when the manipulator
+  uses thin-pool moves *during* the window, but T17.004 reserves the
+  framing for cases where the window-timing primitive is load-bearing);
+  T5.006 (vesting-cliff dump — holder-side post-unlock dump, not
+  manipulator-side rate shaping); legitimate trading inside a TWAP
+  window (distinguished by cohort-attribution + window-vs-surrounding-
+  period divergence).
+
+data_sources: [dex_trades, oracle_feed, twap_window_state,
+               dao_proposal_log, vesting_contract_state, funder_graph]
+
+detection_logic:
+  description: |
+    Four orthogonal paths. PATH A (volume concentration inside a
+    predictable window): trading volume on the input venue concentrates
+    inside an upcoming TWAP / settlement window above
+    concentration_factor of surrounding-period mean. PATH B (window-
+    settlement vs surrounding-period divergence): the window-settled
+    average price diverges from the surrounding-period TWAP by more
+    than asset_intra_day_drift. PATH C (cohort-attribution + benefit
+    correlation): the cohort that profits from the window-settlement
+    direction overlaps the cohort that concentrated volume inside the
+    window via funder-graph clustering. PATH D (pre-deployment design
+    review): downstream contract consumes a single-window snapshot
+    without randomisation, multi-window quorum, or post-hoc snapshot.
+  pseudocode: |
+    # PATH A — volume concentration inside the window
+    for each upcoming settlement window W on protocol P:
+      pre_window ← surrounding_period(W, span = surrounding_span,
+                                       exclude = W)
+      pre_mean_volume ← mean_volume_per_block(P.input_venue, pre_window)
+      win_volume     ← Σ volume(P.input_venue, b) for b ∈ W.blocks
+      win_mean       ← win_volume / |W.blocks|
+      ratio ← win_mean / max(pre_mean_volume, 1)
+      if ratio > concentration_factor:
+        emit(PATH_A, protocol=P, window=W, concentration_ratio=ratio,
+             severity=high)
+
+    # PATH B — window-settlement vs surrounding-period divergence
+    for each settled window W:
+      win_twap ← twap_over(W)
+      surround_twap ← twap_over(surrounding_period(W, span=surrounding_span))
+      div ← |win_twap − surround_twap| / max(surround_twap, 1e-9)
+      if div > asset_intra_day_drift(asset_of(W)):
+        emit(PATH_B, window=W, win_twap, surround_twap, divergence=div,
+             severity=high)
+
+    # PATH C — cohort-attribution + benefit correlation
+    for each PATH_A or PATH_B emit on window W:
+      conc_actors ← top_volume_actors_in(W)
+      benefit_direction ← sign(win_twap − surround_twap)
+      benefits ← actors_profiting_from_settlement(W, direction = benefit_direction)
+      cluster ← funder_graph_cluster(conc_actors ∪ benefits, hops = trace_hops)
+      if shared_funding(cluster):
+        emit(PATH_C, window=W, cluster_size=|cluster|,
+             benefit_direction, severity=critical)
+
+    # PATH D — pre-deployment design review
+    for each downstream_contract C with window_settlement_math:
+      props ← window_selection_properties(C)
+      hardened ← props.randomised
+                 or props.multi_window_quorum
+                 or props.post_hoc_snapshot
+      if not hardened:
+        emit(PATH_D, contract=C, window_kind=props.kind,
+             severity=medium)
+
+parameters:
+  surrounding_span:             { type: duration, default: 24h }
+  concentration_factor:         { type: number,   default: 3.0 }
+  asset_intra_day_drift:        { type: object,
+                                   default: { default: 0.02 } }   # asset-specific overrides
+  trace_hops:                   { type: integer,  default: 3 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               protocol, window_id, concentration_ratio, divergence,
+               cluster, evidence]
+
+test_fixtures:
+  positive: []                            # no canonical extraction-scale anchor at v0.1; class is draft
+  negative:
+    - "Lending protocol consuming a randomised TWAP window across 5+ deep venues"
+    - "DAO treasury swap executed at a post-hoc multi-venue VWAP snapshot, not a single window"
+    - "Trading inside a TWAP window without volume concentration or cohort overlap with beneficiaries"
+
+false_positive_modes:
+  - legitimate trading inside TWAP windows (operationally routine — discriminator is concentration + cohort overlap with beneficiary, not "trading occurred")
+  - cases where input-venue manipulation is load-bearing rather than window-timing (route to T9.001 instead — see scope)
+  - settlement-window divergence caused by genuine market events outside the window (news, exogenous depeg) — PATH C requires cohort overlap to escalate
+  - high concentration_factor on illiquid pairs where surrounding-period volume is near zero (calibrate floor on pre_mean_volume)
+
+mitigations: [OAK-M02, OAK-M09, OAK-M11, OAK-M16]
+
+reference_implementations:
+  - { target: gauntlet,        chain: evm,         url: "" }
+  - { target: chaos-labs,      chain: evm,         url: "" }
+  - { target: risk-dao,        chain: evm,         url: "" }
+  - { target: kaiko,           chain: cross-chain, url: "" }
+  - { target: trail-of-bits,   chain: evm,         url: "" }

@@ -1,0 +1,118 @@
+oak_techniques: [OAK-T17.003]
+spec_id: oak-detection-T17.003
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect order-book DEX / perpetuals spoofing — large limit orders
+  posted without intent to fill, cancelled before they would otherwise
+  execute. Load-bearing forensic signal lives at the per-order event
+  stream (post / modify / cancel / fill), not at the executed-trade
+  record. Four sub-shapes: layering, cancel-flood / quote stuffing,
+  one-sided spoof, cross-venue spoof. Excludes: T3.002 (wash-trade —
+  fakes executed volume; T17.003 fakes resting-order state); T5.004
+  (sandwich-MEV — manipulates executed transaction order); legitimate
+  market-making (high cancellation rate by construction — discriminator
+  is one-sided economic exposure). Detection assumes access to per-
+  order venue data; pure on-chain signal is insufficient for off-chain-
+  matched DEXes.
+
+data_sources: [orderbook_event_stream, executed_trade_log,
+               funder_graph, account_metadata]
+
+detection_logic:
+  description: |
+    Three orthogonal paths matching layering / cancel-flood,
+    one-sided-spoof, and cross-account/cross-venue. PATH A (layering /
+    cancel-flood): per-account cancellation rate approaches 1.0 with
+    short order lifetime and orders posted at multiple price levels.
+    PATH B (one-sided economic exposure): the cohort's executed trades
+    are systematically opposite the cohort's posted-order direction.
+    PATH C (cross-account / cross-venue spoof): spoof orders posted
+    from one account; economically-real trades executed from a
+    different account whose funder-graph clusters with the spoof
+    account, possibly on a different venue.
+  pseudocode: |
+    OL_OK_LIFETIME = order_lifetime_p99(honest_makers)
+
+    # PATH A — layering / cancel-flood per-account
+    for each account a on venue V over window W:
+      events ← order_lifecycle_events(a, V, W)
+      placed ← count(events.post) ; cancelled ← count(events.cancel)
+      filled  ← count(events.fill)
+      cancel_rate ← cancelled / max(placed, 1)
+      median_lifetime ← median(e.cancel_t - e.post_t for e in events.cancelled)
+      levels ← distinct_price_levels(events.post)
+      if cancel_rate ≥ cancel_rate_threshold
+         and filled / max(placed, 1) < fill_floor
+         and median_lifetime < min_lifetime_seconds
+         and levels ≥ layering_levels:
+        emit(PATH_A, venue=V, account=a, cancel_rate, median_lifetime,
+             levels, severity=high)
+
+    # PATH B — one-sided economic exposure
+    for each account a on venue V:
+      bid_size ← Σ size for o in posted_bids(a, W)
+      ask_size ← Σ size for o in posted_asks(a, W)
+      buy_exec  ← Σ size for t in executed_buys(a, W)
+      sell_exec ← Σ size for t in executed_sells(a, W)
+      bid_oneside ← (bid_size > posted_imbalance_threshold × ask_size)
+                     and (sell_exec > buy_exec)
+      ask_oneside ← (ask_size > posted_imbalance_threshold × bid_size)
+                     and (buy_exec > sell_exec)
+      if bid_oneside or ask_oneside:
+        emit(PATH_B, venue=V, account=a,
+             posted_imbalance=(bid_size, ask_size),
+             executed_imbalance=(buy_exec, sell_exec), severity=critical)
+
+    # PATH C — cross-account / cross-venue economic-real leg
+    for each PATH_A or PATH_B emit on account a (venue V):
+      cluster ← funder_graph_cluster({a}, hops = trace_hops)
+      siblings ← (cluster − {a})
+      hits ← []
+      for s ∈ siblings:
+        for V' ∈ venues:
+          executed ← executed_trades_in(s, V', window = correlation_window,
+                                         opposite_to = posted_direction(a, V))
+          if executed ≠ ∅:
+            hits += [(s, V', executed)]
+      if hits ≠ ∅:
+        emit(PATH_C, spoof_account=a, spoof_venue=V,
+             real_legs=hits, severity=critical)
+
+parameters:
+  cancel_rate_threshold:        { type: number,   default: 0.95 }
+  fill_floor:                   { type: number,   default: 0.05 }
+  min_lifetime_seconds:         { type: number,   default: 0.5 }
+  layering_levels:              { type: integer,  default: 3 }
+  posted_imbalance_threshold:   { type: number,   default: 3.0 }
+  trace_hops:                   { type: integer,  default: 3 }
+  correlation_window:           { type: duration, default: 5m }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               venue, account, cancel_rate, posted_imbalance,
+               executed_imbalance, sibling_account, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-11-hyperliquid-popcat-spoof-and-pull            # canonical crypto T17.003 anchor (~$4.5M HLP bad debt)
+  negative:
+    - "Honest market-maker with high cancellation rate but balanced posted-vs-executed direction"
+    - "Aggregator-routed taker activity (no resting orders, no spoof surface)"
+
+false_positive_modes:
+  - legitimate market-making with high cancellation rate but two-sided executed exposure (PATH B's one-sidedness filter handles)
+  - aggressive taker accounts that post short-lived orders to chase fills (PATH A's fill_floor filter handles when fills > 5%)
+  - news-driven order cancellations during volatility windows (broad pattern across many accounts; spoof signature is per-account / per-cohort)
+  - benign multi-account market-making by one team where directional split across accounts is intentional and balanced (require funder-cluster + opposite-direction executed legs)
+
+mitigations: [OAK-M02, OAK-M11, OAK-M16]
+
+reference_implementations:
+  - { target: kaiko,            chain: cross-chain, url: "" }
+  - { target: amberdata,        chain: cross-chain, url: "" }
+  - { target: hyperliquid-internal, chain: hyperliquid, url: "" }
+  - { target: dydx-internal,    chain: cosmos,      url: "" }
+  - { target: eigenphi,         chain: evm,         url: "" }

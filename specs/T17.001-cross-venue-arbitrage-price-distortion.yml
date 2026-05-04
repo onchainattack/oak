@@ -1,0 +1,112 @@
+oak_techniques: [OAK-T17.001]
+spec_id: oak-detection-T17.001
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect cross-venue spread manipulation where the attacker's lead-
+  venue action manufactures (or pre-positions for) a spread the
+  arbitrage cohort then captures, distorting price discovery on a
+  lagging venue and creating a victim cohort. Detection requires
+  multi-venue forensics (CEX + DEX + oracle update timing) — on-chain-
+  only signal is the lagging-venue settlement against distorted
+  reference. Excludes: T5.004 (per-block / single-venue sandwich —
+  T17.001 is cross-venue / cross-block); T9.001 (load-bearing surface
+  is the oracle's input venue, not the cross-venue spread); generic
+  spread-closing arbitrage (socially-positive — distinguished by
+  whether the attacker opened or closed the spread).
+
+data_sources: [cex_orderbook_feed, dex_trades, oracle_update_log,
+               cross_venue_spread_feed, funder_graph]
+
+detection_logic:
+  description: |
+    Three orthogonal paths producing cohort-attribution-grade output.
+    PATH A (lead-venue depth-anomaly + arbitrage capture): a directional
+    trade on venue A produces price impact exceeding the venue's depth-
+    vs-trade-size response, and the arbitrage cohort that captures the
+    cross-venue spread funder-clusters with the lead-venue actor.
+    PATH B (lagging-venue settlement against distorted reference): a
+    protocol or victim cohort on venue B settles against the lagging
+    price during the propagation window, while the spread is wider than
+    the asset's typical inter-venue spread distribution. PATH C (single-
+    venue oracle quorum exposure): protocol consumes a single-venue or
+    thin-quorum price feed during a window where cross-venue spread
+    excursion is observed — pre-event surface inventory.
+  pseudocode: |
+    # PATH A — lead-venue depth anomaly + cohort-attribution
+    for each tx / order T on lead venue A:
+      impact ← realised_price_move(A, T) / typical_impact(A, T.size)
+      if impact < lead_venue_anomaly_factor: continue
+      window ← [T.t, T.t + propagation_window]
+      arb_capture ← cross_venue_arbitrage_in(A, B, window)
+      if arb_capture == ∅: continue
+      arb_cluster ← funder_graph_cluster({a.actor for a in arb_capture},
+                                          hops = trace_hops)
+      if T.actor ∈ arb_cluster or shared_funding(arb_cluster ∪ {T.actor}):
+        emit(PATH_A, lead_venue=A, lead_actor=T.actor,
+             impact_factor=impact, arb_cohort=arb_cluster,
+             severity=critical)
+
+    # PATH B — lagging-venue settlement against distorted reference
+    for each settlement event S on venue B (oracle read, AMM swap,
+                                              perp settlement):
+      ref ← reference_price(S.asset, S.t, sources=multi_venue_quorum_feed)
+      if ref == None: continue
+      spread ← |S.price − ref| / ref
+      hist ← typical_spread_distribution(S.asset, lookback)
+      if spread > max(hist.p99, lagging_venue_spread_floor):
+        victim ← S.subject_or_protocol
+        emit(PATH_B, venue=B, settlement=S, spread, asset=S.asset,
+             victim, severity=high)
+
+    # PATH C — single-venue / thin-quorum oracle exposure (pre-event)
+    for each protocol P consuming oracle O:
+      sources ← oracle_input_venues(O)
+      if |sources| < min_oracle_quorum:
+        observed ← cross_venue_spread_excursions(O.asset,
+                                                  window = lookback,
+                                                  min_excursion = surface_excursion)
+        if |observed| > 0:
+          emit(PATH_C, protocol=P, oracle=O, source_count=|sources|,
+               recent_excursions=|observed|, severity=medium)
+
+parameters:
+  lead_venue_anomaly_factor:    { type: number,   default: 3.0 }
+  propagation_window:           { type: duration, default: 60s }
+  trace_hops:                   { type: integer,  default: 3 }
+  lookback:                     { type: duration, default: 7d }
+  lagging_venue_spread_floor:   { type: number,   default: 0.005 }   # 0.5%
+  min_oracle_quorum:            { type: integer,  default: 3 }
+  surface_excursion:            { type: number,   default: 0.01 }    # 1% spread
+  multi_venue_quorum_feed:      { type: list,     default: [cex_top, dex_top, twap_30m] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               lead_venue, lagging_venue, lead_actor, arb_cohort,
+               asset, spread, oracle, victim, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-03-hyperliquid-jelly-self-liquidation-cross-venue   # cross-venue propagation as input
+    - 2025-11-hyperliquid-popcat-spoof-and-pull                # cross-venue profit-realisation
+    - 2022-10-mango-markets                                    # cross-venue manipulation step (T9.001-primary)
+  negative:
+    - "Generic CEX-DEX latency arbitrage closing pre-existing spreads (no lead-venue action)"
+    - "Cross-venue trade by a market-maker rebalancing inventory across owned wallets"
+
+false_positive_modes:
+  - generic spread-closing arbitrage (socially positive) — PATH A's lead-venue impact threshold + cohort co-clustering filter handles
+  - sequential market-maker inventory rebalance across own wallets (cluster collapses to one entity, no third-party victim) — exclude when arb_cluster ≡ {T.actor}
+  - exogenous news event causing cross-venue spread excursion not attributable to a lead-venue actor — PATH A requires a specific lead-venue tx with disproportionate impact
+  - oracle update lag during normal volatility (PATH B's spread > p99 threshold should accommodate; tighten lagging_venue_spread_floor per asset)
+
+mitigations: [OAK-M09, OAK-M11, OAK-M16]
+
+reference_implementations:
+  - { target: kaiko,           chain: cross-chain, url: "" }
+  - { target: ccdata,          chain: cross-chain, url: "" }
+  - { target: amberdata,       chain: cross-chain, url: "" }
+  - { target: eigenphi,        chain: evm,         url: "" }
+  - { target: dune,            chain: evm,         url: "" }

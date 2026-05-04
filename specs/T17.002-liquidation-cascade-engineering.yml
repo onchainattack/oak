@@ -1,0 +1,129 @@
+oak_techniques: [OAK-T17.002]
+spec_id: oak-detection-T17.002
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect liquidation-bot cohorts that intentionally trigger or
+  accelerate liquidation cascades to harvest collateral at distressed
+  prices. Load-bearing surface is the *attacker-side liquidation-bot
+  operation*, not the oracle (which may be reading honest market
+  state). Four sub-shapes: depeg-driven cascade, thin-liquidity-window
+  cascade, collateral-volatility cascade, stablecoin-issuer cascade.
+  Excludes: T9.001 (oracle-side manipulation that fires the
+  liquidation — composes as ignition mechanism); T5.004 (per-block
+  sandwich — T17.002 is multi-block / cross-position); legitimate
+  liquidation participation (operationally essential to lending-
+  protocol solvency — distinguished by cohort-level cascade-engineering
+  signature).
+
+data_sources: [lending_protocol_state, liquidation_event_log,
+               oracle_feed, venue_depth_feed, withdrawal_queue_state,
+               funder_graph]
+
+detection_logic:
+  description: |
+    Four orthogonal paths matching the four sub-shapes plus a cross-
+    cutting cohort-attribution path. PATH A (cascade-ignition): a
+    single-position liquidation produces price impact exceeding venue
+    depth-vs-size response and is followed by rapid sequential
+    liquidations across positions not previously in eligibility, with
+    a single cohort on the receiving side. PATH B (depeg-cascade pre-
+    event): LSD / restaking-token / pegged-asset depegs from redemption
+    rate while a lending market consumes secondary-market price as the
+    liquidation-eligibility reference. PATH C (thin-liquidity-window
+    pre-event): liquidation-eligibility-band density at a venue exceeds
+    venue depth at the band, during a low-volume window. PATH D
+    (cohort capital pre-deployment): a funder-graph cluster pre-
+    deploys capital at the eligibility threshold ahead of a forecast
+    cascade trigger.
+  pseudocode: |
+    # PATH A — cascade-ignition + cohort harvest
+    for each window W of size cascade_window:
+      liqs ← liquidation_events_in(W)
+      if |liqs| < min_cascade_liqs: continue
+      ignition ← liqs[0]
+      impact ← realised_price_move(ignition) / typical_impact(ignition.size)
+      if impact < ignition_anomaly_factor: continue
+      harvesters ← {l.recipient for l in liqs}
+      cluster ← funder_graph_cluster(harvesters, hops = trace_hops)
+      pre_eligible ← {l for l in liqs[1:]
+                      if not was_eligible_before(l.position, ignition.t)}
+      if shared_funding(cluster) and |pre_eligible| ≥ cascade_propagation_min:
+        emit(PATH_A, ignition_tx=ignition.tx, propagated_count=|pre_eligible|,
+             harvest_cluster=cluster, severity=critical)
+
+    # PATH B — depeg-cascade pre-event surface
+    for each lending market M consuming asset A as collateral:
+      if A.kind ∉ {LSD, restaking_token, pegged_stable}: continue
+      oracle_kind ← M.oracle_for(A).kind
+      if oracle_kind ≠ secondary_market_spot: continue
+      depeg ← |spot_price(A) − redemption_rate(A)| / redemption_rate(A)
+      if depeg > depeg_threshold:
+        emit(PATH_B, market=M, asset=A, depeg, oracle_kind,
+             severity=high)
+
+    # PATH C — thin-liquidity-window surface
+    for each lending market M:
+      band ← Σ position_size_in_eligibility_band(M)
+      depth ← venue_depth(M.collateral_disposal_venue,
+                          window = thin_window_window)
+      if band > thin_band_density × depth and is_low_volume_window():
+        emit(PATH_C, market=M, eligibility_band=band, venue_depth=depth,
+             severity=medium)
+
+    # PATH D — cohort capital pre-deployment
+    for each cluster C with profile_match(liquidation_bot):
+      pre_deployed ← capital_at_eligibility_threshold(C,
+                                                      window = pre_event_window)
+      cascades_after ← cascades_in_which_cluster_was_recipient(
+                         C, window = post_event_window)
+      if pre_deployed > pre_deploy_floor and |cascades_after| > 0:
+        emit(PATH_D, cluster=C, pre_deployed_usd=pre_deployed,
+             cascade_count=|cascades_after|, severity=high)
+
+parameters:
+  cascade_window:               { type: duration, default: 30m }
+  min_cascade_liqs:             { type: integer,  default: 3 }
+  ignition_anomaly_factor:      { type: number,   default: 3.0 }
+  cascade_propagation_min:      { type: integer,  default: 2 }
+  trace_hops:                   { type: integer,  default: 3 }
+  depeg_threshold:              { type: number,   default: 0.01 }    # 1% deviation
+  thin_window_window:           { type: duration, default: 1h }
+  thin_band_density:            { type: number,   default: 1.5 }
+  pre_event_window:             { type: duration, default: 24h }
+  post_event_window:            { type: duration, default: 24h }
+  pre_deploy_floor:             { type: number,   default: 100000 }  # $100K
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               market, asset, ignition_tx, propagated_count,
+               harvest_cluster, depeg, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-06-lido-steth-depeg                              # depeg-cascade canonical anchor
+    - 2024-04-renzo-ezeth-depeg                             # ezETH depeg + cascade
+    - 2025-07-lido-steth-aave-cascade                       # queue-saturation cascade
+    - 2025-03-hyperliquid-jelly-self-liquidation-cross-venue   # self-liquidation-into-vault sub-shape
+    - 2025-11-hyperliquid-popcat-spoof-and-pull             # spoof-ignited cascade
+  negative:
+    - "Single isolated liquidation against a fully-collateralised position with no propagation"
+    - "Routine liquidation participation by a market-maker without multi-position positioning"
+
+false_positive_modes:
+  - legitimate liquidation participation during a market-wide drop without cohort-level multi-position positioning — PATH A's pre-eligible + cluster filter handles
+  - cascade events on assets whose redemption-rate ≡ spot price (no depeg surface) — PATH B should suppress
+  - high eligibility-band density during expected volatility (post-funding-rate, post-airdrop) without thin-window — calibrate thin_window_window
+  - pre-deployment capital that is genuinely market-making (provides liquidity rather than harvests cascade) — discriminator: harvester is consistently on the receiving side of cascades, not just present at threshold
+
+mitigations: [OAK-M09, OAK-M11, OAK-M16, OAK-M17]
+
+reference_implementations:
+  - { target: eigenphi,        chain: evm,         url: "" }
+  - { target: flashbots,       chain: evm,         url: "" }
+  - { target: mev-watch,       chain: evm,         url: "" }
+  - { target: gauntlet,        chain: evm,         url: "" }
+  - { target: chaos-labs,      chain: evm,         url: "" }
+  - { target: mg-detectors-rs, chain: evm,         url: "" }
