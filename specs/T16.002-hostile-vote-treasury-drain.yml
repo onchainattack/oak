@@ -1,7 +1,7 @@
 oak_techniques: [OAK-T16.002]
 spec_id: oak-detection-T16.002
 version: 0.1.0
-maturity: draft
+maturity: emerging
 maintainer: "@iZonex"
 license: Apache-2.0
 

@@ -52,7 +52,7 @@ REQUIRED = {
     "scope", "data_sources", "detection_logic",
     "output_alert", "test_fixtures",
 }
-VALID_MATURITY = {"draft", "review", "stable"}
+VALID_MATURITY = {"draft", "emerging", "observed", "stable", "deprecated"}
 VALID_LICENSE = {"Apache-2.0", "MIT", "CC-BY-SA-4.0"}
 
 

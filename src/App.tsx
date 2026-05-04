@@ -2277,6 +2277,11 @@ function DetectionSpecSection({
       {refImpls.length > 0 && (
         <div className="detection-spec-refs">
           <h3>Reference implementations ({refImpls.length})</h3>
+          <p className="detection-spec-refs-note">
+            Candidate vendor surfaces — listed without claiming a published
+            implementation. Filled URLs link to specific public detectors
+            where they exist; empty entries are aspirational.
+          </p>
           <ul>
             {refImpls.map((r, idx) => (
               <li key={`${r.target}-${idx}`}>
@@ -2285,7 +2290,7 @@ function DetectionSpecSection({
                 {r.url ? (
                   <> — <a href={r.url} target="_blank" rel="noreferrer">{r.url}</a></>
                 ) : (
-                  <> — <em>not yet linked</em></>
+                  <> — <em>vendor candidate</em></>
                 )}
               </li>
             ))}

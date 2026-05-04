@@ -1,7 +1,7 @@
 oak_techniques: [OAK-T1.001]
 spec_id: oak-detection-T1.001
 version: 0.1.0
-maturity: draft
+maturity: stable
 maintainer: "@iZonex"
 license: Apache-2.0
 

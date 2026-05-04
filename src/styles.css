@@ -2882,6 +2882,13 @@ button {
   margin: 4px 0;
 }
 
+.detection-spec-refs-note {
+  color: var(--muted);
+  font-size: 12px;
+  font-style: italic;
+  margin: 4px 0 8px;
+}
+
 .link-row.inline {
   background: none;
   border: none;
