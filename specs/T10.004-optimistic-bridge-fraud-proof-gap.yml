@@ -1,0 +1,115 @@
+oak_techniques: [OAK-T10.004]
+spec_id: oak-detection-T10.004
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect optimistic-message-verification or optimistic-rollup-style
+  bridges whose security reduces to a 1-of-N honest-live-economically-
+  motivated challenger assumption — but the assumption fails in
+  practice (no funded challenger; inadequate window; fraud-proof
+  contract bugs; censorship/liveness defeat). Detection is primarily
+  architecture-review and operational-readiness audit, plus runtime
+  challenger-set liveness telemetry. Excludes: T10.001 (key compromise);
+  T10.002 (verification-predicate bug — bypass, not out-race); T10.005
+  (cryptographic-primitive-layer flaw — fundamentally upfront, not
+  deferred); validator-multisig bridges (different architectural class).
+
+data_sources: [bridge_architecture_doc, fraud_proof_contract,
+               challenger_set_registry, bond_balance_feed,
+               heartbeat_telemetry, sequencer_inclusion_log]
+
+detection_logic:
+  description: |
+    Four orthogonal paths matching the four sub-cases. PATH A (absent
+    challenger network): no funded, contractually-bonded, public
+    challenger has produced a non-fault-confirmation within
+    liveness_window. PATH B (inadequate window): challenge_window <
+    response_time_budget(reorg + inclusion + cross-chain proof
+    construction + escalation). PATH C (fraud-proof contract bug):
+    fraud-proof contract has never processed a successful challenge
+    (cold path) OR has operator-controllable parameters without
+    timelock. PATH D (censorship): the same operator producing
+    messages also controls inclusion of fraud-proof transactions, or
+    fraud-proof submissions have been observed dropped by a single
+    sequencer.
+  pseudocode: |
+    # PATH A — absent challenger network
+    for each optimistic bridge B:
+      challengers ← public_funded_challengers(B)
+      live ← [c for c in challengers
+              if c.last_heartbeat_age < liveness_window
+              and c.bond_balance ≥ min_bond_usd]
+      if |live| < min_challengers:
+        emit(PATH_A, bridge=B, configured=|challengers|, live=|live|,
+             severity = critical if |live| == 0 else high)
+
+    # PATH B — inadequate challenge window
+    for each B:
+      budget ← reorg_depth(B.src_chain).p99_seconds
+                + inclusion_latency(B.dst_chain).p99_seconds_under_congestion
+                + cross_chain_proof_seconds(B)
+                + human_escalation_seconds
+      if B.challenge_window < budget × budget_safety_factor:
+        emit(PATH_B, bridge=B, configured=B.challenge_window,
+             required_budget=budget, severity=high)
+
+    # PATH C — fraud-proof contract bug / cold path
+    fp ← fraud_proof_contract(B)
+    if fp ≠ None:
+      successful ← count_successful_challenges(fp, all_time = true)
+      if successful == 0 and bridge_age(B) > cold_path_age:
+        emit(PATH_C, bridge=B, mode="cold-path", age=bridge_age(B),
+             severity=high)
+      operator_params ← operator_settable_params(fp,
+                                                  filter = {window_length, bond_size, prover_set})
+      ungated ← [p for p in operator_params
+                 if not gated_by_timelock(p, timelock_allowlist)]
+      if ungated ≠ ∅:
+        emit(PATH_C, bridge=B, mode="ungated-params", params=ungated,
+             severity=high)
+
+    # PATH D — censorship / liveness defeat
+    if message_producer(B) ⊆ inclusion_authority(B):
+      emit(PATH_D, bridge=B, mode="self-censorship-surface",
+           operator=message_producer(B), severity=critical)
+    drops ← fraud_proof_tx_inclusion_drops(B, window = censorship_window)
+    if drops > drop_threshold:
+      emit(PATH_D, bridge=B, mode="observed-drops", drop_count=drops,
+           severity=high)
+
+parameters:
+  liveness_window:           { type: duration, default: 6h }
+  min_challengers:           { type: integer,  default: 2 }
+  min_bond_usd:              { type: number,   default: 100000 }
+  budget_safety_factor:      { type: number,   default: 2.0 }
+  human_escalation_seconds:  { type: integer,  default: 1800 }    # 30 min
+  cold_path_age:             { type: duration, default: 90d }
+  censorship_window:         { type: duration, default: 30d }
+  drop_threshold:            { type: integer,  default: 1 }
+  timelock_allowlist:        { type: list,     default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               bridge_address, sub_case, evidence]
+
+test_fixtures:
+  positive: []                           # class-level Technique; no per-incident anchor at v0.1
+  negative:
+    - "Optimistic bridge with multiple independent funded challengers + adversarial-drill history + timelock-gated params"
+    - "Cryptographic-light-client bridge (T10.005 architectural class — no challenge window applies)"
+
+false_positive_modes:
+  - early-deployment phase where challenger set is being bootstrapped (annotate bridge as "stage-0" pre-deployment)
+  - testnet bridges with deliberately-short windows for fast-iteration (filter by mainnet only)
+  - fraud-proof systems with successful drills but no production challenges (the drill counts as evidence; require successful_challenges OR drill_artifact)
+  - bridges where the operator publishes inclusion-fairness commitments enforced by a separate force-inclusion path (annotate force_inclusion_allowlist)
+
+mitigations: [OAK-M11, OAK-M16, OAK-M17]
+
+reference_implementations:
+  - { target: l2beat-stage-classification, chain: evm, url: "" }
+  - { target: trail-of-bits,         chain: evm, url: "" }
+  - { target: halborn,               chain: evm, url: "" }
+  - { target: openzeppelin,          chain: evm, url: "" }

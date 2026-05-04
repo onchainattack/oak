@@ -1,0 +1,115 @@
+oak_techniques: [OAK-T10.005]
+spec_id: oak-detection-T10.005
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect bridges whose security reduces to a cryptographic verification
+  primitive (zk-SNARK / zk-STARK proof, Tendermint/IBC light client,
+  Bitcoin SPV) where the primitive is mis-specified, under-constrained,
+  or its trusted setup compromised. A successful bypass produces a
+  valid proof of a false statement. Detection is primarily pre-
+  deployment (circuit audit, formal verification of consensus-rule
+  encoding, ceremony transparency, verifier-contract / circuit
+  bytecode pinning); runtime defence requires redundant verification
+  paths. Excludes: T10.001 (no validator threshold to compromise);
+  T10.002 (handwritten Solidity bug, not circuit/proof-system);
+  T10.004 (deferred/economic verification, not upfront/cryptographic).
+
+data_sources: [bridge_architecture_doc, circuit_artefacts,
+               trusted_setup_ceremony, audit_reports, verifier_contract,
+               proof_event_log]
+
+detection_logic:
+  description: |
+    Five orthogonal paths matching the five sub-cases. PATH A (circuit
+    soundness — under-constrained): no circuit-specialist audit
+    artefact or audit report identifies missing constraints / range
+    checks / Fiat-Shamir transcript checks. PATH B (trusted-setup
+    compromise): SRS lacks public-participant ceremony, transcript, or
+    independently-verifiable destruction attestation. PATH C (consensus-
+    rule modelling mismatch): circuit verifies header signatures only
+    and does not encode validator-set updates / fork-choice / slashing.
+    PATH D (reorg/finality bug): light-client logic does not handle
+    reorgs / equivocations / unbonding (Dragonberry-class). PATH E
+    (verifier-contract bug): on-chain verifier bytecode does not match
+    the audited circuit's expected verifier; public-input binding
+    decouples proof from message.
+  pseudocode: |
+    # PATH A — circuit-soundness audit absence
+    for each bridge B with verification_class == cryptographic:
+      audit ← circuit_specialist_audit_artefact(B)
+      if audit == None:
+        emit(PATH_A, bridge=B, surface="no-specialist-audit",
+             severity=critical)
+      elif audit.findings.includes(under_constrained_class):
+        emit(PATH_A, bridge=B, findings=audit.findings,
+             severity=critical)
+
+    # PATH B — trusted-setup transparency
+    for each B with proof_system in TRUSTED_SETUP_SYSTEMS:
+      srs ← trusted_setup(B)
+      ok ← srs.public_participants and srs.transcript_published
+            and srs.attestation_chain_verifiable
+      if not ok:
+        emit(PATH_B, bridge=B, missing=missing_transparency_fields(srs),
+             severity=critical)
+
+    # PATH C — consensus-rule modelling
+    spec ← source_chain_consensus_spec(B)
+    enc  ← circuit_consensus_encoding(B)
+    gaps ← spec.required_rules − enc.encoded_rules
+                                  # validator-set updates, fork-choice, slashing
+    if gaps ≠ ∅:
+      emit(PATH_C, bridge=B, missing_rules=gaps, severity=critical)
+
+    # PATH D — reorg/finality handling
+    handlers ← finality_handlers_in(B.light_client_logic)
+    required ← {reorg, equivocation, unbonding, fork_resolution}
+    missing ← required − handlers
+    if missing ≠ ∅:
+      emit(PATH_D, bridge=B, missing_handlers=missing, severity=critical)
+
+    # PATH E — verifier-contract / circuit binding
+    expected ← verifier_bytecode_hash(audited_circuit(B))
+    actual   ← code_hash(deployed_verifier(B))
+    if expected ≠ actual:
+      emit(PATH_E, bridge=B, expected_hash=expected, actual_hash=actual,
+           severity=critical)
+    pubins ← public_input_bindings(deployed_verifier(B))
+    if "message_hash" not in pubins or "chain_id" not in pubins:
+      emit(PATH_E, bridge=B, missing_public_inputs=pubins,
+           severity=high)
+
+parameters:
+  TRUSTED_SETUP_SYSTEMS:    { type: list, default: [groth16, plonk_kzg] }
+  under_constrained_class:  { type: list,
+                              default: [missing_range_check, ambiguous_bit_decomposition,
+                                        unchecked_fiat_shamir, arithmetic_overflow] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               bridge_address, sub_case, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-10-binance-bsc-bridge          # IAVL-proof verification flaw — closest cross-Tactic anchor
+  negative:
+    - "Bridge with circuit-specialist audit + transparent ceremony + spec-consensus-rule match + finality handlers"
+    - "Validator-multisig bridge (different architectural class — T10.001 surface, not T10.005)"
+
+false_positive_modes:
+  - bridges with transparent-setup proof systems (STARKs, PLONK with shared powers-of-tau) — PATH B should detect transparent-setup family and skip
+  - upgrade-in-progress bridges where the new circuit is mid-audit (annotate audit_in_progress)
+  - light clients that intentionally verify a strict subset of consensus rules with a documented defence-in-depth fallback (e.g., committee attestation as backup) — PATH C must check fallback presence
+  - circuit bugs caught and disclosed pre-exploitation (Dragonberry-class) — these should surface but with severity adjusted by patched-status
+
+mitigations: [OAK-M02, OAK-M16, OAK-M17, OAK-M01]
+
+reference_implementations:
+  - { target: veridise,            chain: evm,    url: "" }
+  - { target: trail-of-bits,       chain: evm,    url: "" }
+  - { target: zk-security,         chain: evm,    url: "" }
+  - { target: zellic,              chain: evm,    url: "" }
+  - { target: zkbugtracker,        chain: evm,    url: "" }

@@ -1,0 +1,111 @@
+oak_techniques: [OAK-T10.002]
+spec_id: oak-detection-T10.002
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect bridge incidents where on-chain message-verification logic
+  permits messages with invalid / missing / trivially-constructible
+  proofs, with no validator-key compromise required. The contract is
+  acting on what it believes is a verified message. Detection is
+  primarily pre-deployment / post-upgrade; runtime signal exists in
+  the form of templated "mob attack" replay (Nomad signature) and
+  mint/release-from-nothing anomalies. Excludes: T10.001 (validator-
+  key compromise at the off-chain custody layer); T10.005 (cryptographic-
+  primitive-layer flaw); T9.004 (generic access-control — Wormhole sits
+  at boundary, cross-referenced under both); T10.003 (cross-chain
+  replay — distinct binding-completeness shape).
+
+data_sources: [contract_bytecode, contract_source, contract_storage,
+               tx_call_trace, bridge_lock_release_events,
+               simulation_environment]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (post-upgrade smoke test): after
+    every bridge contract upgrade, simulate randomly-chosen invalid
+    messages against the verification function — expect revert; alert
+    on success. Specifically check trusted-root storage slots for
+    zero / default values that match the "untrusted" sentinel
+    (Nomad-class). PATH B (templated mob-attack replay): the same
+    structurally-equivalent verification call repeated by ≥
+    mob_distinct_senders distinct senders within a short window with
+    successful release. PATH C (lock-release imbalance): bridge
+    releases on chain X exceed corresponding locks on chain Y
+    (per-asset balance invariant) — runtime surface for "mint from
+    nothing" outcomes.
+  pseudocode: |
+    UNTRUSTED_SENTINELS = {0x00, 0xFFFF...FF, default_hash}
+
+    # PATH A — post-upgrade smoke test (Nomad-class)
+    on event Upgraded | Initialized on bridge contract B:
+      with chain_fork(post_upgrade_block):
+        # Trusted-root sentinel check
+        for slot in verification_state_slots(B):
+          v ← getStorageAt(B, slot, post_upgrade_block)
+          if v ∈ UNTRUSTED_SENTINELS:
+            emit(PATH_A, bridge=B, slot, value=v,
+                 mode="trusted-root-sentinel", severity=critical)
+        # Random-invalid-message smoke test
+        for _ in 0..smoke_iterations:
+          msg ← random_invalid_message(B)
+          ok ← simulate_call(B, "process", msg).succeeded
+          if ok:
+            emit(PATH_A, bridge=B, mode="invalid-msg-accepted",
+                 sample=msg, severity=critical)
+
+    # PATH B — templated mob-attack replay
+    for each window W of size mob_window_blocks:
+      calls ← verification_calls_to(bridge_contracts, in = W)
+      groups ← group_by(calls, key = canonical_form(call.args))
+      for shape, instances in groups.items():
+        senders ← {c.from for c in instances}
+        if |senders| ≥ mob_distinct_senders
+           and any(c.released ≠ ∅ for c in instances):
+          emit(PATH_B, bridge=instances[0].contract, shape, sender_count=|senders|,
+               sample_txs=top_k(instances, 5), severity=critical)
+
+    # PATH C — lock-release imbalance
+    for each (bridge_pair B, asset A):
+      locked   ← Σ amount for e in lock_events(B, A, since = invariant_window)
+      released ← Σ amount for e in release_events(B, A, since = invariant_window)
+      if released − locked > imbalance_tolerance × locked + imbalance_floor:
+        emit(PATH_C, bridge_pair=B, asset=A,
+             excess=released-locked, severity=critical)
+
+parameters:
+  smoke_iterations:           { type: integer, default: 16 }
+  mob_window_blocks:          { type: integer, default: 30 }
+  mob_distinct_senders:       { type: integer, default: 5 }
+  invariant_window:           { type: duration, default: 24h }
+  imbalance_tolerance:        { type: number,  default: 0.001 }    # 0.1% of locked
+  imbalance_floor:            { type: number,  default: 50 }       # absolute USD floor
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               bridge_address, tx, mode, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-08-nomad-bridge                # trusted-root 0x00 + mob-attack
+    - 2022-02-wormhole                    # missing guardian-account validation (also T9.004)
+    - 2021-08-poly-network                # inter-contract privilege boundary (T9.004 boundary case)
+  negative:
+    - "Bridge upgrade where post-upgrade smoke test rejects all invalid messages"
+    - "Templated arbitrage routed through a bridge — diverse args, lock/release balanced"
+
+false_positive_modes:
+  - templated cross-chain swap orders processed by an aggregator (PATH B's diverse-args canonical_form filter handles)
+  - rounding / accounting drift in long-running bridges (PATH C's imbalance_tolerance + floor handles)
+  - chain-reorg-induced temporary lock/release skew that resolves within the invariant window — re-evaluate on confirmation
+  - oracle / sentinel storage values legitimately set to 0 during initialisation phase (PATH A should compare against post-upgrade-finalised state, not mid-init)
+
+mitigations: [OAK-M02, OAK-M16, OAK-M17, OAK-M01]
+
+reference_implementations:
+  - { target: forta-bot,             chain: evm, url: "" }
+  - { target: oz-defender-sentinel,  chain: evm, url: "" }
+  - { target: blocksec-phalcon,      chain: evm, url: "" }
+  - { target: tenderly-virtualnet,   chain: evm, url: "" }
+  - { target: dune,                  chain: evm, url: "" }

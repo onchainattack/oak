@@ -1,0 +1,94 @@
+oak_techniques: [OAK-T10.003]
+spec_id: oak-detection-T10.003
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect bridge designs where a valid authorisation message generated
+  for one chain or one bridge instance can be replayed on a different
+  chain or instance because the message lacks chain-ID / instance-
+  address / nonce binding. Detection is primarily pre-deployment
+  (message-binding completeness review) plus runtime per-instance
+  monitoring for cross-instance forgery shapes. Excludes: T10.001
+  (key compromise); T10.002 (verification-predicate bug); same-instance
+  replay-protection bugs which are application-logic flaws (handle as
+  T9.004); legitimate batch-relay protocols where one message is
+  intentionally consumable on multiple chains under a documented
+  binding scheme.
+
+data_sources: [contract_bytecode, contract_source,
+               cross_chain_message_log, signing_keyset_inventory,
+               bridge_instance_registry]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (binding completeness — static):
+    inspect the data signed by the bridge's authority and verify it
+    carries chain ID, instance address, and a per-instance nonce.
+    PATH B (operator-family key reuse): bridge instances in the same
+    operator family share a signing keyset, accept structurally
+    similar messages, and lack per-instance binding. PATH C (runtime
+    cross-instance forgery): a verified message on instance X has a
+    payload structurally identical to a previously-processed message
+    on instance Y of the same operator family, signed by the shared
+    keyset.
+  pseudocode: |
+    REQUIRED_FIELDS = {chain_id, instance_address, nonce}
+
+    # PATH A — binding completeness (static)
+    for each bridge contract C:
+      msg ← signed_message_construction(C)         # what bytes are signed
+      fields ← decode_or_infer_fields(msg, abi=C)
+      missing ← REQUIRED_FIELDS − {f.name for f in fields}
+      if missing ≠ ∅:
+        emit(PATH_A, contract=C, missing_fields=missing, severity=critical)
+
+    # PATH B — operator-family key reuse without binding
+    by_keyset ← group_by(bridge_instance_registry, key = signing_keyset_hash)
+    for keyset, instances in by_keyset.items():
+      if |instances| < 2: continue
+      shared_format ← all(message_format(i) == instances[0].format for i in instances)
+      bound ← all("instance_address" in signed_fields(i) for i in instances)
+      if shared_format and not bound:
+        emit(PATH_B, keyset=keyset, instances=[i.address for i in instances],
+             severity=high)
+
+    # PATH C — runtime cross-instance forgery
+    for each verification on instance X:
+      sig ← signature(X.event)
+      payload_canonical ← canonical_payload(X.event)
+      hits ← prior_messages_with(payload_canonical = payload_canonical,
+                                  signed_by = signers_of(sig),
+                                  on_instance ≠ X)
+      if hits ≠ ∅:
+        emit(PATH_C, instance=X, replayed_from=hits[0].instance,
+             tx=X.tx, severity=critical)
+
+parameters:
+  bridge_instance_registry:  { type: object, default: {} }    # operator-family → [{address, format, signing_keyset_hash}]
+  REQUIRED_FIELDS:           { type: list,   default: [chain_id, instance_address, nonce] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               bridge_address, missing_fields, replayed_from, evidence]
+
+test_fixtures:
+  positive: []                            # no canonical T10.003 anchor at v0.1 (completeness move per Technique markdown)
+  negative:
+    - "EIP-712-typed bridge messages that include chain_id + verifying_contract + nonce by construction"
+    - "Multi-instance bridge with explicit per-instance binding and ceremony-rotated keysets"
+
+false_positive_modes:
+  - documented batch-relay protocols where one signed message is intentionally consumable on multiple chains under a stated binding scheme — annotate via known-batch-protocol allowlist
+  - early-deployment instances that share keyset by design during testnet phases — restrict PATH B to mainnet instances
+  - canonical-payload collisions on truly distinct semantic content (PATH C should compare full content, not just hash of low-entropy fields)
+  - per-instance binding present in a non-obvious field (off-chain salt, EIP-712 domain separator) — PATH A's decode_or_infer_fields must include domain-separator fields
+
+mitigations: [OAK-M02, OAK-M16]
+
+reference_implementations:
+  - { target: trail-of-bits,         chain: evm, url: "" }
+  - { target: halborn,               chain: evm, url: "" }
+  - { target: certora-spec,          chain: evm, url: "" }
+  - { target: dune,                  chain: evm, url: "" }

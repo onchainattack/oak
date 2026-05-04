@@ -1,0 +1,105 @@
+oak_techniques: [OAK-T10.001]
+spec_id: oak-detection-T10.001
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect bridge incidents where the attacker obtains a threshold of
+  validator/signer keys (or MPC shares) required to authorise an asset
+  movement, without compromising the bridge contracts themselves. The
+  on-chain manifestation is typically one final transaction; the
+  load-bearing surface is off-chain (operator-personnel security).
+  Detection mixes pre-event posture (low-threshold inventory, off-chain
+  CTI signals) with on-chain signing-pattern divergence and post-event
+  outflow shape. Excludes: T10.002 (on-chain verification-predicate
+  bug); T11.001 (generic signing-vendor compromise — T10.001 is the
+  bridge sub-class); T16.001 (PoS-validator vote takeover via flash-
+  borrow stake — co-occurs as composing primitive in 2025-09 Shibarium).
+
+data_sources: [bridge_validator_set, signing_event_log,
+               funder_graph, off_chain_cti, withdrawal_traces]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (signing-pattern divergence): a
+    threshold-signing event whose key composition diverges from the
+    operator's published key-rotation cadence and geographic
+    distribution. PATH B (post-event outflow shape): a single tx (or
+    same-block batch) drains > drain_fraction of bridge custody assets
+    to a small set of fresh recipients, followed by mixer-class
+    laundering. PATH C (off-chain CTI correlation): bridge whose
+    validator-operator personnel appear in phishing / supply-chain
+    compromise CTI feeds within pre-event window.
+  pseudocode: |
+    # PATH A — signing-pattern divergence
+    for each authorisation event E on bridge B:
+      composition ← {signer for signer in signers(E)}
+      historical ← key_compositions_observed(B, last = composition_window)
+      if composition ∉ historical:
+        emit(PATH_A, bridge=B, tx=E.tx, composition,
+             historical_compositions=top_k(historical, 5),
+             severity=high)
+
+    # PATH B — post-event drain shape
+    for each tx T on bridge B's custody contracts:
+      out_usd ← Σ usd_value(transfer.amount, transfer.token)
+                  for transfer in outflows(T)
+      tvl ← bridge_tvl_usd(B, at = T.block − 1)
+      if out_usd / tvl > drain_fraction:
+        recipients ← {transfer.to for transfer in outflows(T)}
+        fresh ← {r for r in recipients if account_age(r) < fresh_account_window}
+        mixer_chain ← any(reaches_mixer(r, hops = laundering_hops)
+                           for r in recipients)
+        if |recipients| ≤ recipient_concentration and (|fresh| ≥ 1 or mixer_chain):
+          emit(PATH_B, bridge=B, tx=T.hash, drain_usd=out_usd,
+               drain_fraction=out_usd/tvl, recipients, mixer_chain,
+               severity=critical)
+
+    # PATH C — off-chain CTI correlation
+    for each bridge B with low_threshold(B):     # ≤ 3-of-N for small N
+      personnel ← validator_operator_personnel(B)
+      hits ← cti_phishing_or_supply_chain_hits(personnel,
+                                                window = pre_event_window)
+      if hits ≠ ∅:
+        emit(PATH_C, bridge=B, threshold=B.threshold, total=B.validator_count,
+             personnel_hits=hits, severity=high)
+
+parameters:
+  composition_window:        { type: duration, default: 90d }
+  drain_fraction:             { type: number,   default: 0.5 }       # >50% TVL in one tx/batch
+  recipient_concentration:    { type: integer,  default: 3 }
+  fresh_account_window:       { type: duration, default: 14d }
+  laundering_hops:            { type: integer,  default: 5 }
+  pre_event_window:           { type: duration, default: 90d }
+  low_threshold:              { type: object,   default: { ratio_max: 0.6, count_max: 3 } }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               bridge_address, tx, drain_usd, composition,
+               personnel_hits, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-03-ronin-bridge                    # 5/9 keys via LinkedIn fake-job-offer phishing
+    - 2022-06-harmony-horizon                 # 2/5 multisig, Lazarus
+    - 2023-07-multichain                      # MPC key shares lost post-CEO arrest
+    - 2025-09-shibarium-bridge                # T10.001 + T16.001 PoS-validator vote takeover
+  negative:
+    - "Bridge with high threshold (≥7-of-N) and routine signing pattern, normal volumes"
+    - "Custody-rotation event by a multisig+timelock-gated governance flow"
+
+false_positive_modes:
+  - planned validator-set rotations (new composition is documented operator practice) — calibrate composition_window from operator's published cadence
+  - PoL / treasury rebalance from operator (high TVL fraction but recipients are operator's own custody) — exclude when recipients ∈ operator_owned
+  - emergency-pause + planned migration to new bridge (whole-TVL movement) — annotate via planned_migration_allowlist
+  - off-chain CTI noise / unrelated phishing campaigns against personnel (calibrate by requiring multi-source CTI corroboration)
+
+mitigations: [OAK-M02, OAK-M05, OAK-M16, OAK-M17, OAK-M22]
+
+reference_implementations:
+  - { target: forta-bot,             chain: evm, url: "" }
+  - { target: oz-defender-sentinel,  chain: evm, url: "" }
+  - { target: chainalysis-monitoring, chain: evm, url: "" }
+  - { target: trm-labs,              chain: evm, url: "" }
+  - { target: dune,                  chain: evm, url: "" }
