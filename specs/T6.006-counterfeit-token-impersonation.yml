@@ -1,0 +1,118 @@
+oak_techniques: [OAK-T6.006]
+spec_id: oak-detection-T6.006
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect counterfeit tokens impersonating legitimate assets via
+  symbol / branding / contract-identity overlap. Three sub-classes
+  ranked by severity: (a) fake-symbol-matching (separate unrelated
+  contract sharing symbol — dust-attack lures, fake LP-tokens);
+  (b) fake-bridge-token (counterfeit bridged-asset deployment);
+  (c) bridge-internal-mint (legitimate bridge mints counterfeit via
+  attacker-acquired admin authority — chains with T6.005). Excludes:
+  T1.006 (honeypot-by-design — hostile transfer-logic, T6.006 transfer-
+  logic may be benign and attack is at identity layer); T4.003
+  (address-poisoning — different UX-confusion target); T2.x rug-pull
+  tokens where the token itself is the asset of fraud.
+
+data_sources: [token_deployment_log, canonical_token_registry,
+               bridge_deployment_registry, mint_event_log,
+               bridge_deposit_log, dust_transfer_pattern_log,
+               drainer_kit_substrate_attribution]
+
+detection_logic:
+  description: |
+    Three orthogonal paths matching the three sub-classes plus a
+    chained-Technique correlator. PATH A (sub-class a — fake-symbol-
+    matching): newly-deployed token with symbol matching major asset
+    but contract address divergent from canonical registry; small-
+    amount dust transfers to victim addresses; presence in fake LP
+    pools. PATH B (sub-class b — fake-bridge-token): branding
+    consistent with legitimate bridge but contract address not in
+    bridge's official deployment registry. PATH C (sub-class c —
+    bridge-internal-mint): legitimate bridge contract emits mint
+    events without source-chain deposit correlation; admin-authority
+    change events without governance correlation. Chain into T6.005
+    on-chain-forgery sub-class.
+  pseudocode: |
+    POPULAR_SYMBOLS = ["USDC", "USDT", "WETH", "WBTC", "DAI", "DOT",
+                       "ETH", "BTC", "BNB", "SOL"]
+
+    # PATH A — fake-symbol-matching
+    for each newly_deployed_token T:
+      claimed_symbol ← eth_call(T, "symbol()")
+      if claimed_symbol ∉ POPULAR_SYMBOLS: continue
+      canonical ← canonical_token_registry[claimed_symbol][chain(T)]
+      if T.address == canonical: continue
+      dust_pattern ← dust_transfer_pattern_log.events(T,
+                                                        window = dust_window)
+      kit_match ← drainer_kit_substrate_attribution(T)
+      if dust_pattern ≠ ∅ or kit_match ≠ None:
+        emit(PATH_A, contract=T, claimed_symbol,
+             canonical_address=canonical, dust_count=|dust_pattern|,
+             kit=kit_match, severity=critical)
+
+    # PATH B — fake-bridge-token
+    for each token T claiming bridge affiliation B:
+      registry ← bridge_deployment_registry[B]
+      if T.address ∉ registry.authorised_token_deployments[chain(T)]:
+        upstream_reserve ← upstream_source_chain_reservation(B, T)
+        if upstream_reserve == None:
+          emit(PATH_B, bridge=B, contract=T,
+               registry_status="not-in-authorised-deployments",
+               severity=critical)
+
+    # PATH C — bridge-internal-mint
+    for each bridge B and destination-chain token T managed by B:
+      mints ← mint_event_log.events(T, window)
+      for m in mints:
+        deposit ← bridge_deposit_log.find_correlated(B, m,
+                                                      window = deposit_correlation_window)
+        if deposit == None:
+          emit(PATH_C, bridge=B, token=T, mint=m,
+               severity=critical)
+      admin_changes ← admin_authority_change_log.events(T)
+      for ac in admin_changes:
+        gov_event ← governance_event_log.find_correlated(T, ac.t,
+                                                           window = governance_correlation_window)
+        if gov_event == None:
+          emit(PATH_C, bridge=B, token=T, admin_change=ac,
+               severity=critical)
+
+parameters:
+  canonical_token_registry:           { type: object,  default: {} }
+  bridge_deployment_registry:         { type: object,  default: {} }
+  dust_window:                        { type: duration, default: 7d }
+  deposit_correlation_window:         { type: duration, default: 1h }
+  governance_correlation_window:      { type: duration, default: 7d }
+  window:                             { type: duration, default: 24h }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               contract, claimed_symbol, canonical_address,
+               bridge, mint_event, admin_change, kit, evidence]
+
+test_fixtures:
+  positive:
+    - 2026-04-hyperbridge-merkle-proof-counterfeit-mint   # canonical sub-class (c) anchor
+  negative:
+    - "Token with symbol matching major asset whose contract address is in canonical registry"
+    - "Bridge token deployment in the bridge's authorised registry with upstream-source-chain reservation"
+    - "Mint event correlated with confirmed source-chain deposit"
+
+false_positive_modes:
+  - new chains where canonical-registry coverage is incomplete (calibrate canonical_token_registry per chain)
+  - legitimate community-deployed forks of popular tokens with disclosed branding (require dust_pattern OR kit_match for sub-class a)
+  - PATH B false positives for legacy-bridge tokens that pre-date current registry (extend bridge_deployment_registry historically)
+  - PATH C false positives during bridge bootstrap / canonical genesis mint (annotate genesis window)
+
+mitigations: [OAK-M02, OAK-M11, OAK-M16, OAK-M25]
+
+reference_implementations:
+  - { target: scamsniffer,         chain: cross-chain, url: "" }
+  - { target: etherscan-token-list, chain: evm,        url: "" }
+  - { target: bscscan-token-list,  chain: bsc,         url: "" }
+  - { target: chainalysis-reactor, chain: cross-chain, url: "" }
+  - { target: forta-bot,           chain: evm,         url: "" }

@@ -1,0 +1,108 @@
+oak_techniques: [OAK-T6.007]
+spec_id: oak-detection-T6.007
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect non-attack defender-credibility events: vendor / regulatory /
+  infrastructure-policy decisions that revoke load-bearing trust-
+  substrate claims previously informing user-side threat-model
+  construction. Realised loss is non-financial (trust revocation +
+  cohort-level effect on category trust posture + competing-vendor
+  user-acquisition opportunities). Excludes: T6.001-T6.006 (defense-
+  evasion-by-attacker-action — T6.007 is defense-evasion-by-vendor-
+  policy-change with no attacker involved); legitimate routine
+  product updates that don't revoke trust-substrate claims.
+
+data_sources: [vendor_official_communications_feed,
+               competing_vendor_messaging_log, industry_press_corpus,
+               vendor_communication_quality_anomaly_log,
+               user_community_threat_model_discussion]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (vendor-policy announcement
+    revokes trust-substrate claim): vendor publicly announces policy
+    decision (firmware update, ToS change, custodial-flow
+    introduction, sequencer-policy change) that materially changes
+    a previously load-bearing trust-substrate surface. PATH B
+    (vendor-side communication-quality anomaly): deleted-and-
+    reposted communications, CEO walk-back statements, emergency
+    CTO clarifications during the announcement window — qualitative
+    signal that the policy change is being received as trust-substrate
+    revocation. PATH C (competing-vendor user-acquisition campaigns):
+    competing vendors run user-acquisition campaigns capitalising on
+    the announcement — category-level secondary signal of structural
+    significance.
+  pseudocode: |
+    TRUST_SUBSTRATE_KEYWORDS = ["seed never leaves the device",
+                                  "non-custodial", "censorship resistance",
+                                  "no third party", "fully on-chain",
+                                  "trustless", "decentralised"]
+
+    # PATH A — vendor-policy announcement revoking trust-substrate
+    for each vendor V over rolling window W:
+      announcements ← vendor_official_communications_feed.events(V, W)
+      for a in announcements:
+        prior_claims ← prior_load_bearing_claims(V, lookback = prior_claim_window)
+        revocations ← [c for c in prior_claims
+                        if announcement_revokes_claim(a, c, TRUST_SUBSTRATE_KEYWORDS)]
+        if revocations ≠ ∅:
+          emit(PATH_A, vendor=V, announcement=a,
+               revoked_claims=revocations, severity=high)
+
+    # PATH B — communication-quality anomaly during window
+    for each vendor V with PATH_A emit:
+      window ← [a.t, a.t + comm_anomaly_window]
+      anomalies ← vendor_communication_quality_anomaly_log.events(V, window)
+      kinds ← {kind for kind in {deleted_post, ceo_walkback,
+                                   emergency_clarification, ambiguous_capability_admission}
+                if any(an.kind == kind for an in anomalies)}
+      if kinds ≠ ∅:
+        emit(PATH_B, vendor=V, announcement_t=a.t,
+             anomaly_kinds=kinds, severity=critical)
+
+    # PATH C — competing-vendor user-acquisition campaigns
+    for each vendor V with PATH_A emit:
+      window ← [a.t, a.t + competing_window]
+      competing ← competing_vendor_messaging_log.events(category = V.category,
+                                                          window = window)
+      acquisition_campaigns ← [m for m in competing
+                                if mentions_v_controversy(m, V)
+                                or contrasts_trust_substrate(m, revocations)]
+      if |acquisition_campaigns| ≥ competing_campaign_floor:
+        emit(PATH_C, vendor=V, competing_campaigns=acquisition_campaigns,
+             severity=high)
+
+parameters:
+  prior_claim_window:           { type: duration, default: 1825d }   # 5 years
+  comm_anomaly_window:          { type: duration, default: 14d }
+  competing_window:              { type: duration, default: 30d }
+  competing_campaign_floor:     { type: integer,  default: 3 }
+
+output_alert: [oak_technique, detection_path, severity,
+               vendor, announcement, revoked_claims, anomaly_kinds,
+               competing_campaigns, evidence]
+
+test_fixtures:
+  positive:
+    - 2023-05-ledger-recover-trust-substrate-shift   # canonical T6.007 anchor
+  negative:
+    - "Routine firmware update that doesn't change trust-substrate claims"
+    - "Product launch by a vendor with no prior load-bearing trust-substrate to revoke"
+
+false_positive_modes:
+  - PATH A false positives for routine product updates that touch security surface without revoking trust-substrate claims (require revocation against prior load-bearing claim, not just any security change)
+  - PATH B false positives where deletions are routine corrections (require multiple anomaly_kinds, not just one)
+  - PATH C false positives for ordinary competitive marketing without controversy reference (require explicit mentions_v_controversy or trust-substrate contrast)
+  - emerging vendors whose prior trust-substrate claims weren't load-bearing in user threat models (calibrate prior_claim_window per vendor's market presence)
+
+mitigations: [OAK-M21, OAK-M22, OAK-M40]
+
+reference_implementations:
+  - { target: industry-press-monitor, chain: cross-chain, url: "" }
+  - { target: vendor-comms-feed,      chain: cross-chain, url: "" }
+  - { target: competing-vendor-msg-monitor, chain: cross-chain, url: "" }
+  - { target: wayback-machine,        chain: cross-chain, url: "" }

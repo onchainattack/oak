@@ -1,0 +1,121 @@
+oak_techniques: [OAK-T6.005]
+spec_id: oak-detection-T6.005
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect proxy-upgrade malicious switching: contract verified at
+  deployment with benign implementation, then proxy-upgraded to
+  malicious bytecode. Two sub-classes: (a) operator-key-compromise
+  (upgrade authority reached via stolen / compromised keys —
+  detection lives off-chain at key-handling layer); (b) on-chain-
+  message-forgery (upgrade authority reached via forged cryptographic
+  proof — detection lives at message-verification correctness layer).
+  Excludes: T6.001 (deployment-time bytecode-source mismatch — T6.005
+  divergence is post-deployment); T9.004 (generic access-control —
+  T6.005 specialises on upgrade-as-vector); T11.001 (signing-vendor
+  compromise — composes upstream of operator-key sub-class).
+
+data_sources: [proxy_implementation_change_log, eip1967_storage_log,
+               cross_chain_message_log, governance_event_log,
+               admin_authority_change_log, mint_event_log,
+               bridge_deposit_log]
+
+detection_logic:
+  description: |
+    Four orthogonal paths matching the two sub-classes plus runtime
+    monitoring. PATH A (proxy-impl change without governance event):
+    `upgradeTo` / `upgradeAndCall` / EIP-1967 implementation slot
+    change emitted from a contract whose standing pattern is
+    governance-only upgrades. PATH B (admin-authority change without
+    governance correlation): admin-authority change event from a
+    non-deployer / non-governance EOA, especially following a cross-
+    chain message receipt or proof-verification call. PATH C (bridge
+    mint without deposit-correlation): mint events on destination-
+    chain token contract without corresponding upstream deposit event
+    on source chain — chain into T6.006. PATH D (cross-chain proof
+    binding strength): cryptographic proof admits replay / forgery /
+    signature-aliasing — pre-event surface inventory.
+  pseudocode: |
+    UPGRADE_SELECTORS = {upgradeTo, upgradeAndCall,
+                          upgradeImplementation, _setImplementation}
+
+    # PATH A — proxy-impl change without governance event
+    for each contract C with proxy pattern:
+      changes ← proxy_implementation_change_log.events(C)
+      for ch in changes:
+        gov_event ← governance_event_log.find_correlated(C, ch.t,
+                                                           window = governance_correlation_window)
+        if gov_event == None:
+          emit(PATH_A, contract=C, change_event=ch,
+               new_impl=ch.new_implementation, severity=critical)
+
+    # PATH B — admin-authority change without governance correlation
+    for each contract C with admin role:
+      admin_changes ← admin_authority_change_log.events(C)
+      for ac in admin_changes:
+        gov_event ← governance_event_log.find_correlated(C, ac.t,
+                                                           window = governance_correlation_window)
+        cross_chain_msg ← cross_chain_message_log.find_correlated(C, ac.t,
+                                                                    window = msg_correlation_window)
+        if gov_event == None:
+          emit(PATH_B, contract=C, admin_change=ac,
+               cross_chain_msg, new_admin=ac.new_admin, severity=critical)
+
+    # PATH C — bridge mint without deposit-correlation
+    for each bridge B and destination-chain token T:
+      mints ← mint_event_log.events(T, window = window)
+      for m in mints:
+        deposit ← bridge_deposit_log.find_correlated(B, m,
+                                                      window = deposit_correlation_window)
+        if deposit == None:
+          emit(PATH_C, bridge=B, token=T, mint_event=m,
+               severity=critical)
+
+    # PATH D — cross-chain proof binding strength (pre-event surface)
+    for each bridge B:
+      proof_kind ← bridge_proof_kind(B)        # mmr / merkle / signed-message / etc.
+      binding ← message_commitment_binding(proof_kind)
+      if not binding.per_message_unique
+         or binding.admits_replay
+         or binding.admits_signature_aliasing:
+        emit(PATH_D, bridge=B, proof_kind=proof_kind,
+             binding_weakness=binding.weaknesses, severity=high)
+
+parameters:
+  governance_correlation_window:  { type: duration, default: 7d }
+  msg_correlation_window:         { type: duration, default: 1h }
+  deposit_correlation_window:     { type: duration, default: 1h }
+  window:                         { type: duration, default: 24h }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               contract, change_event, new_impl, admin_change,
+               new_admin, mint_event, bridge, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-12-uspd-cpimp-clandestine-proxy           # deploy-init frontrun + shadow proxy
+    - 2026-04-hyperbridge-merkle-proof-counterfeit-mint   # canonical on-chain-forgery sub-class
+    - 2022-07-audius                                  # storage-collision EVM-internal analogue
+    - 2023-08-magnate-finance-base-deployer-cluster   # operator-key sub-class adjacent
+  negative:
+    - "Proxy upgrade via canonical timelock-gated governance with documented proposal"
+    - "Bridge mint correlated with confirmed source-chain deposit event"
+    - "Bridge with per-message-unique commitment proof-binding"
+
+false_positive_modes:
+  - planned upgrades via canonical timelock-gated governance (PATH A's gov_event correlation handles)
+  - admin rotation events that follow documented governance flow (PATH B's gov_event correlation)
+  - PATH C false positives during bridge bootstrap / minting from initial reserves (annotate genesis_window)
+  - PATH D false positives where the proof system is novel but binds correctly via different commitment scheme (require expert review of binding semantics)
+
+mitigations: [OAK-M01, OAK-M02, OAK-M03, OAK-M16, OAK-M17]
+
+reference_implementations:
+  - { target: forta-bot,             chain: evm, url: "" }
+  - { target: oz-defender-sentinel,  chain: evm, url: "" }
+  - { target: blocksec-phalcon,      chain: evm, url: "" }
+  - { target: tenderly-virtualnet,   chain: evm, url: "" }
+  - { target: dune,                  chain: evm, url: "" }

@@ -1,0 +1,80 @@
+oak_techniques: [OAK-T6.002]
+spec_id: oak-detection-T6.002
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect false audit-claim impersonation — project claims security
+  audit by named firm (CertiK / Halborn / Trail of Bits / OpenZeppelin)
+  without an actual audit existing. Verification surface lives at the
+  audit-firm's public registry. Excludes: T6.003 (real audit but
+  audited bytecode differs from deployed — different failure mode);
+  T6.004 (forward-looking "audit pending" claim — temporal axis);
+  legitimate audit claims confirmable in firm registry.
+
+data_sources: [audit_firm_public_registries, project_marketing_claim_log,
+               firm_public_denial_feed, fake_audit_certificate_template_db]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (registry-absence): named-firm
+    audit-claim cannot be confirmed against the firm's public registry
+    of completed audits. PATH B (firm public denial): the named firm
+    publishes an explicit non-affiliation / non-engagement statement
+    regarding the project. PATH C (fabricated-certificate template):
+    the project's audit-certificate artefact matches a known fake-
+    template fingerprint (cohort-level signal — operators often reuse
+    forged-certificate templates).
+  pseudocode: |
+    # PATH A — registry absence
+    for each project P claiming audit by firm F:
+      registry_entry ← public_registry_lookup(F, project = P)
+      if registry_entry == None:
+        # registry-absence is necessary but not sufficient for fake-claim
+        # — could also be T6.004 pending claim. Check for completed-claim language.
+        if claim_is_backward_looking(P.audit_claim):
+          emit(PATH_A, project=P, firm=F, severity=high)
+
+    # PATH B — firm public denial
+    for each project P with audit-claim against firm F:
+      denials ← firm_public_denial_feed.matches(project = P, firm = F)
+      if denials ≠ ∅:
+        emit(PATH_B, project=P, firm=F, denial_statements=denials,
+             severity=critical)
+
+    # PATH C — fabricated-certificate template fingerprint
+    for each project P with audit-certificate artefact A:
+      template_match ← fake_audit_certificate_template_db.match(A)
+      if template_match ≠ None:
+        emit(PATH_C, project=P, template=template_match,
+             severity=critical)
+
+parameters:
+  audit_firm_public_registries:        { type: object, default: {} }   # firm → registry endpoint
+  firm_public_denial_feed:             { type: list,   default: [] }
+  fake_audit_certificate_template_db:  { type: list,   default: [] }
+
+output_alert: [oak_technique, detection_path, severity,
+               project, firm, denial_statements, template, evidence]
+
+test_fixtures:
+  positive: []                       # cohort-only (CertiK ATMA / Lymex denials documented but no per-OAK-fixture-file at v0.1)
+  negative:
+    - "Project with audit confirmable in firm's public registry (CertiK Skynet, Halborn audits, etc.)"
+    - "Project with no audit claim — out of scope for T6.002"
+
+false_positive_modes:
+  - registry-staleness producing transient absence (validate against firm's authoritative API rather than scraping cached pages)
+  - audit-claim language ambiguity between "audit completed" and "audit pending" — PATH A's claim_is_backward_looking discriminator routes pending claims to T6.004
+  - private / NDA'd audits that are not in the public registry (require firm's cooperation to verify)
+  - PATH C false positives for legitimate firm certificates that share visual templates — require non-trivial template-match score
+
+mitigations: [OAK-M02, OAK-M16, OAK-M25]
+
+reference_implementations:
+  - { target: certik-skynet,       chain: cross-chain, url: "" }
+  - { target: halborn-audits,      chain: cross-chain, url: "" }
+  - { target: openzeppelin-audits, chain: cross-chain, url: "" }
+  - { target: trail-of-bits-audits, chain: cross-chain, url: "" }

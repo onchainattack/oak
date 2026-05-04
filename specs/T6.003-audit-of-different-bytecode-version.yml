@@ -1,0 +1,114 @@
+oak_techniques: [OAK-T6.003]
+spec_id: oak-detection-T6.003
+version: 0.1.0
+maturity: stable
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect audit-attestation drift: project cites real registry-listed
+  audit but audited bytecode does not match deployed bytecode (post-
+  audit redeploy, fork-conflation, multi-contract scope drift, proxy
+  current-impl ≠ audited-impl, audit covers single contract while
+  user-funds-at-risk contracts are out of scope). Excludes: T6.001
+  (explorer-source-vs-deployed-bytecode — different layer); T6.002
+  (audit doesn't exist); T6.005 (post-deployment proxy-upgrade
+  switching); legitimate audited contracts whose deployed bytecode
+  matches the audit attestation.
+
+data_sources: [audit_firm_attestation_db, contract_bytecode,
+               proxy_implementation_state, audit_scope_manifest,
+               redeploy_log, fork_origin_db]
+
+detection_logic:
+  description: |
+    Five orthogonal paths matching the documented sub-shapes.
+    PATH A (audited-bytecode-hash mismatch): audited bytecode hash
+    (from machine-readable audit attestation, or from deterministic
+    recompile of audited commit) ≠ deployed bytecode hash. PATH B
+    (proxy current-impl ≠ audited-impl): cited contract is a proxy
+    whose current implementation address differs from the implementation
+    audited in the cited report. PATH C (multi-contract scope drift):
+    audit scope covers a subset of the deployed system; authority-
+    holding contracts (factory, router, treasury, governor, upgrader)
+    fall outside scope. PATH D (post-audit redeploy): redeploy event
+    post-dating the cited audit at the project's claimed address
+    without follow-up audit. PATH E (fork-conflation): project cites
+    upstream-reference-codebase audit but local-fork deployment differs
+    from the upstream audited commit.
+  pseudocode: |
+    # PATH A — audited-bytecode-hash mismatch
+    for each project P with cited audit A on contract C:
+      audited_hash ← audit_firm_attestation_db.audited_bytecode_hash(A)
+      if audited_hash == None:
+        # fall back to deterministic recompile from audited commit
+        audited_hash ← recompile_hash_from_audited_commit(A)
+      deployed_hash ← code_hash(getCode(C))
+      if audited_hash ≠ None and audited_hash ≠ deployed_hash:
+        emit(PATH_A, project=P, contract=C,
+             audited_hash, deployed_hash, severity=critical)
+
+    # PATH B — proxy current-impl ≠ audited-impl
+    if is_proxy(C):
+      current_impl ← getStorageAt(C, EIP1967_IMPL)
+      audited_impl ← audit_scope_manifest(A).implementation_address
+      if audited_impl ≠ None and current_impl ≠ audited_impl:
+        emit(PATH_B, project=P, proxy=C,
+             current_impl, audited_impl, severity=critical)
+
+    # PATH C — multi-contract scope drift
+    deployed_system ← contract_graph_of(P)         # factory, router, treasury, governor
+    audit_scope ← audit_scope_manifest(A).contracts
+    out_of_scope ← deployed_system − audit_scope
+    authority_holding ← {c for c in out_of_scope if holds_upgrade_or_treasury(c)}
+    if authority_holding ≠ ∅:
+      emit(PATH_C, project=P, audit=A,
+           out_of_scope_authority_contracts=authority_holding,
+           severity=critical)
+
+    # PATH D — post-audit redeploy
+    redeploys ← redeploy_log.events(C, since = A.audit_completion_t)
+    if redeploys ≠ ∅:
+      followup ← any(later_audit_covers(r, audit_firm_attestation_db) for r in redeploys)
+      if not followup:
+        emit(PATH_D, project=P, redeploy_count=|redeploys|,
+             since_audit_t=A.audit_completion_t, severity=critical)
+
+    # PATH E — fork-conflation
+    if A.audit_target ∈ upstream_reference_codebases:
+      upstream_commit ← A.audited_commit
+      deployed_recompiled ← recompile_from_commit(upstream_commit)
+      if not bytecode_match(deployed_recompiled, getCode(C)):
+        emit(PATH_E, project=P, upstream_audit=A,
+             local_fork_diverges=True, severity=critical)
+
+parameters:
+  audit_firm_attestation_db:    { type: object, default: {} }
+  upstream_reference_codebases: { type: list,   default: [uniswap_v2, compound_v2, openzeppelin_contracts] }
+
+output_alert: [oak_technique, detection_path, severity,
+               project, contract, audit, audited_hash, deployed_hash,
+               proxy, current_impl, audited_impl,
+               out_of_scope_authority_contracts, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-01-arbix-finance     # canonical audit-scope-mismatch (audit on token, unverified pools out of scope)
+  negative:
+    - "Project whose cited audit attestation hash matches deployed bytecode (PATH A clean)"
+    - "Multi-contract audit covering all authority-holding contracts in deployed system (PATH C clean)"
+
+false_positive_modes:
+  - audit-firm registry without machine-readable bytecode hash forces fall-back to recompile-from-commit (calibrate compiler version match)
+  - PATH B false positives during legitimate planned proxy upgrades with announced upgrade-audit (require absence of follow-up attestation)
+  - PATH C false positives where the out-of-scope contracts are non-load-bearing (require holds_upgrade_or_treasury filter)
+  - PATH E false positives for documented fork modifications with separate fork-specific audit (require absence of fork-audit attestation)
+
+mitigations: [OAK-M01, OAK-M16, OAK-M25]
+
+reference_implementations:
+  - { target: certik-skynet,       chain: cross-chain, url: "" }
+  - { target: halborn-audits,      chain: cross-chain, url: "" }
+  - { target: openzeppelin-audits, chain: cross-chain, url: "" }
+  - { target: sourcify,            chain: evm,         url: "" }
+  - { target: etherscan-verified,  chain: evm,         url: "" }

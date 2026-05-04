@@ -1,0 +1,99 @@
+oak_techniques: [OAK-T6.004]
+spec_id: oak-detection-T6.004
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect forward-looking "audit pending / forthcoming / in progress
+  with [firm]" marketing claims with no actual engagement at the named
+  firm. Temporal axis sibling of T6.002 (backward-looking) and T6.003
+  (audited-vs-deployed). Verification surface is the firm's
+  engagement-tracking layer (which most firms do not expose publicly
+  at v0.1). Excludes: T6.002 (claim of completed audit, not pending);
+  T6.003 (real audit, scope drift); legitimate engagements with
+  registry / quote / firm-side acknowledgement.
+
+data_sources: [project_marketing_claim_log, project_marketing_archive,
+               firm_engagement_acknowledgement_feed,
+               firm_public_denial_feed, marketing_template_db]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (engagement-confirmation absence):
+    pending-audit claim against firm F — no public engagement
+    artefact (engagement contract reference, firm-side
+    acknowledgement, public quote) backing the claim. PATH B
+    (firm-side denial of engagement): named firm publishes a
+    non-engagement statement regarding the project. PATH C (timeline-
+    slip pattern): project marketing-claim history shows audit
+    timeline slipping repeatedly across multiple windows with no
+    engagement artefact ever surfacing.
+  pseudocode: |
+    PENDING_LANGUAGE = ["audit pending", "audit in progress",
+                        "audit forthcoming", "working with [firm]",
+                        "audit Q[X]", "audit scheduled",
+                        "currently undergoing audit"]
+
+    # PATH A — engagement-confirmation absence
+    for each project P with marketing claim C matching PENDING_LANGUAGE:
+      firm ← extract_named_firm(C)
+      if firm == None: continue
+      engagement_ack ← firm_engagement_acknowledgement_feed.lookup(P, firm)
+      contract_ref ← extract_engagement_contract_ref(P.marketing)
+      quote_artefact ← extract_public_quote_artefact(P.marketing)
+      if engagement_ack == None and contract_ref == None and quote_artefact == None:
+        emit(PATH_A, project=P, firm=firm, claim=C,
+             severity=high)
+
+    # PATH B — firm-side denial of engagement
+    for each project P with pending-audit claim against firm F:
+      denials ← firm_public_denial_feed.matches(P, F,
+                                                  scope = "engagement")
+      if denials ≠ ∅:
+        emit(PATH_B, project=P, firm=F, denial_statements=denials,
+             severity=critical)
+
+    # PATH C — timeline-slip pattern
+    for each project P:
+      claims ← project_marketing_archive.audit_claims(P, since = lookback)
+      slip_count ← 0
+      for c1, c2 in zip(claims, claims[1:]):
+        if both_match_pending(c1, c2)
+           and c1.timeline_anchor < c2.timeline_anchor
+           and (c2.t − c1.t) > slip_window_min:
+          slip_count += 1
+      engagement_ack ← firm_engagement_acknowledgement_feed.lookup(P, firm)
+      if slip_count ≥ slip_threshold and engagement_ack == None:
+        emit(PATH_C, project=P, slip_count, severity=critical)
+
+parameters:
+  lookback:                  { type: duration, default: 365d }
+  slip_window_min:           { type: duration, default: 30d }
+  slip_threshold:            { type: integer, default: 2 }
+
+output_alert: [oak_technique, detection_path, severity,
+               project, firm, claim, slip_count,
+               denial_statements, evidence]
+
+test_fixtures:
+  positive: []                # cohort-only at v0.1; no per-OAK-fixture-file anchor
+  negative:
+    - "Project with documented engagement contract / firm acknowledgement backing pending claim"
+    - "Project with public quote artefact from named firm at marketing surface"
+    - "Pending claim where firm publishes engagement-confirmation"
+
+false_positive_modes:
+  - legitimate engagements without public-facing engagement-tracking surface (most firms don't publish in-progress audits — calibrate against firm's known practice)
+  - early-stage exploratory conversations framed as "exploring audit" rather than "audit pending" (PATH A's PENDING_LANGUAGE filter)
+  - PATH C false positives where the timeline slip is documented and explained publicly (annotate via timeline_slip_allowlist)
+  - missing engagement_ack due to feed-coverage gaps rather than absent engagement (cross-reference with firm's API where available)
+
+mitigations: [OAK-M02, OAK-M16, OAK-M25]
+
+reference_implementations:
+  - { target: certik-skynet,            chain: cross-chain, url: "" }
+  - { target: halborn-audits,           chain: cross-chain, url: "" }
+  - { target: wayback-machine,          chain: cross-chain, url: "" }
+  - { target: project-marketing-archive, chain: cross-chain, url: "" }

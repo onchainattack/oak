@@ -1,0 +1,98 @@
+oak_techniques: [OAK-T6.001]
+spec_id: oak-detection-T6.001
+version: 0.1.0
+maturity: stable
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect contracts whose deployed bytecode differs from the source
+  claimed at block-explorer / off-chain marketing — verified-source
+  recompile produces a different bytecode than what's running on-chain
+  (proxy upgrade, CREATE2 redeploy, partial-match misrepresentation).
+  Generic T6 modifier on T1 / T9 Techniques. Excludes: T6.005 (proxy-
+  upgrade-malicious-switching — divergence introduced post-deployment
+  via legitimate upgrade primitive); T6.003 (audit-of-different-
+  bytecode-version — audit attestation rather than explorer source);
+  legitimate partial-match verification with disclosed scope.
+
+data_sources: [contract_bytecode, contract_source_explorer,
+               proxy_implementation_state, eip1967_storage_log,
+               create2_redeploy_log, sourcify_metadata]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (deterministic recompile mismatch):
+    pull verified source, recompile under claimed compiler version +
+    flags, compare against deployed bytecode — non-match beyond
+    compiler-deterministic noise is the canonical signal. PATH B (proxy
+    implementation drift): contract is a proxy whose runtime
+    implementation address ≠ verified-source claim. PATH C (CREATE2
+    redeploy): contract deployed via CREATE2 with subsequent
+    selfdestruct + redeploy at the same address — any post-redeploy
+    bytecode divergence is a candidate T6.001 vector.
+  pseudocode: |
+    EIP1967_IMPL = "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc"
+
+    # PATH A — deterministic recompile mismatch
+    for each contract C with verified source S:
+      try:
+        recompiled ← deterministic_recompile(S, compiler = S.compiler_version,
+                                                flags = S.optimisation_flags)
+        deployed ← getCode(C)
+        if not bytecode_match(recompiled, deployed,
+                                tolerance = compiler_deterministic_noise):
+          emit(PATH_A, contract=C, recompiled_hash=hash(recompiled),
+               deployed_hash=hash(deployed), severity=critical)
+      except CompileError as e:
+        emit(PATH_A, contract=C, mode="recompile-error",
+             error=e, severity=high)
+
+    # PATH B — proxy implementation drift
+    impl ← getStorageAt(C, EIP1967_IMPL)
+    if impl ≠ 0:
+      claimed_impl ← verified_source_referenced_implementation(C)
+      if claimed_impl ≠ None and claimed_impl ≠ impl:
+        emit(PATH_B, proxy=C, current_impl=impl,
+             claimed_impl, severity=critical)
+
+    # PATH C — CREATE2 redeploy detection
+    creations ← create2_redeploy_log.events_at(C.address)
+    if |creations| > 1:
+      latest ← creations[-1]
+      prior_verified ← any(c.was_verified for c in creations[:-1])
+      latest_verified ← latest.was_verified
+      if prior_verified and not latest_verified:
+        emit(PATH_C, contract=C, redeploy_count=|creations|,
+             latest_redeploy=latest, severity=critical)
+
+parameters:
+  compiler_deterministic_noise:  { type: number,  default: 0.001 }   # tolerance ratio for metadata-hash diff
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               contract_address, recompiled_hash, deployed_hash,
+               proxy, current_impl, claimed_impl,
+               redeploy_count, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-12-uspd-cpimp-clandestine-proxy   # engineered-verification-surface CPIMP sub-class
+    - 2022-01-wonderland-sifu-patryn         # adjacent operator-identity-concealment T6.x
+  negative:
+    - "Verified contract whose deterministic recompile matches deployed bytecode"
+    - "Proxy whose current implementation matches the verified-source-referenced implementation"
+
+false_positive_modes:
+  - compiler-version drift between verified-source metadata and the actual compile pipeline (require deterministic recompile match within tolerance)
+  - partial-match verification where the project documented partial-match scope (annotate via partial-match-allowlist)
+  - PATH B false positives during planned proxy upgrades with documented governance announcement (correlate with governance event)
+  - CREATE2 patterns used legitimately for deterministic deployment without selfdestruct + redeploy (PATH C requires multiple creations at the same address)
+
+mitigations: [OAK-M01, OAK-M03]
+
+reference_implementations:
+  - { target: sourcify,            chain: evm, url: "" }
+  - { target: etherscan-verified,  chain: evm, url: "" }
+  - { target: forta-bot,           chain: evm, url: "" }
+  - { target: oz-defender-sentinel, chain: evm, url: "" }
+  - { target: mg-detectors-rs,     chain: evm, url: "" }
