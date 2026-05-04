@@ -1,0 +1,105 @@
+oak_techniques: [OAK-T5.002]
+spec_id: oak-detection-T5.002
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect gradual LP removal over an extended window where individual
+  outflows fall below T5.001 per-tx thresholds but cumulative cluster-
+  level outflow is substantial. Tran et al. 2025 Fragmented Rug Pull
+  (FRP) recipe: keep the lid on, chop thin slices, pass the ladle.
+  Excludes: T5.001 (single-event hard drain — different threshold
+  shape); T1.005 (transfer-tax extraction at the token-mechanics layer,
+  not LP-removal); legitimate market-maker rebalances and DAO-disclosed
+  treasury operations.
+
+data_sources: [pool_state, lp_token_transfers,
+               funder_graph, off_chain_operator_signals]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (windowed cumulative net-flow):
+    cluster-aggregated net outflow over a rolling window crosses
+    cumulative_drain_fraction of original LP. PATH B (depth-trend
+    decay): EWMA / linear-fit on pool-depth time series shows
+    monotonic-ish decline against baseline volatility envelope.
+    PATH C (off-chain operator-disengagement): cumulative outflow
+    correlates with social-media inactivity onset, domain expiry,
+    or governance-forum disengagement (per fullycryptosoftrug
+    methodology).
+  pseudocode: |
+    # PATH A — windowed cumulative net-flow per cluster
+    for each pool P:
+      cluster ← funder_graph_cluster(deployer(P), hops = trace_hops)
+      for each window W in {24h, 7d, 30d}:
+        outs ← Σ lp_outflow(addr) for addr in cluster, in W
+        ins  ← Σ lp_inflow(addr)  for addr in cluster, in W
+        cumulative_net ← (outs − ins) / max(original_lp_at_launch(P), 1)
+        if cumulative_net > cumulative_drain_fraction:
+          micro_count ← Σ 1 for tx in cluster_outs(W)
+                          if drain_fraction(tx) < t5001_threshold
+          if micro_count ≥ ladle_min_txs:
+            emit(PATH_A, pool=P, window=W, cumulative_net,
+                 micro_tx_count=micro_count, severity=critical)
+
+    # PATH B — depth-trend decay
+    for each pool P over window W = trend_window:
+      depth_series ← pool_depth_usd(P, t) for t in W
+      slope ← linear_fit_slope(depth_series)
+      baseline_vol ← rolling_std(pool_depth_usd, lookback = baseline_window)
+      decay_rate ← −slope / max(baseline_vol, 1e-9)
+      if decay_rate > decay_z_threshold:
+        emit(PATH_B, pool=P, decay_rate, slope, severity=high)
+
+    # PATH C — operator disengagement correlation
+    for each project P with social-media + domain telemetry:
+      disengagement_t ← min(t for t in {social_inactive_t(P),
+                                          domain_expiry_t(P),
+                                          governance_silence_t(P)})
+      if disengagement_t == None: continue
+      pre  ← pool_depth_usd(P.pool, disengagement_t − 30d)
+      post ← pool_depth_usd(P.pool, disengagement_t + 30d)
+      decline ← (pre − post) / max(pre, 1)
+      if decline > disengagement_decline_floor:
+        emit(PATH_C, project=P, disengagement_t, decline,
+             severity=high)
+
+parameters:
+  trace_hops:                  { type: integer, default: 3 }
+  cumulative_drain_fraction:   { type: number,  default: 0.25 }   # > 25% over window
+  t5001_threshold:             { type: number,  default: 0.5 }    # T5.001 per-tx threshold
+  ladle_min_txs:               { type: integer, default: 5 }      # multi-wallet "ladle"
+  trend_window:                { type: duration, default: 14d }
+  baseline_window:             { type: duration, default: 90d }
+  decay_z_threshold:           { type: number,  default: 2.0 }
+  disengagement_decline_floor: { type: number,  default: 0.3 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               pool_address, window, cumulative_net,
+               micro_tx_count, decay_rate, disengagement_t, evidence]
+
+test_fixtures:
+  positive:
+    - 2019-01-cryptopia                  # exchange sustained drain (cohort context)
+    - 2021-10-anubisdao                  # adjacency
+    - 2023-11-safemoon-charges           # transfer-tax sustained extraction (T1.005 + T5.002 boundary)
+  negative:
+    - "Pool with steady organic trading volume and no cluster-aggregated net outflow trend"
+    - "Long-term pool with declining TVL due to disclosed market sentiment shift (no operator disengagement signal)"
+
+false_positive_modes:
+  - organic LP rebalance during sentiment shifts where the cluster does not appear (cluster-aggregation is the discriminator)
+  - market-makers withdrawing during high-volatility windows — calibrate trend_window + cumulative_drain_fraction higher
+  - protocol-disclosed gradual LP migration to a successor pool (annotate via planned_migration_allowlist)
+  - PATH C false positives where social-media inactivity is unrelated to extraction (correlate with on-chain decline before flagging)
+
+mitigations: [OAK-M04, OAK-M11, OAK-M17, OAK-M25]
+
+reference_implementations:
+  - { target: dune,            chain: cross-chain, url: "" }
+  - { target: forta-bot,       chain: evm,    url: "" }
+  - { target: bubblemaps,      chain: cross-chain, url: "" }
+  - { target: rugcheck,        chain: solana, url: "" }
+  - { target: mg-detectors-rs, chain: cross-chain, url: "" }

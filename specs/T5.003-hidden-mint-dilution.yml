@@ -1,0 +1,113 @@
+oak_techniques: [OAK-T5.003]
+spec_id: oak-detection-T5.003
+version: 0.1.0
+maturity: stable
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect post-launch supply expansion against existing holders — either
+  via retained mint authority (ERC-20 / SPL mint role; SPL Token-2022
+  permanent-delegate materialisation) exercised against deployer-
+  cluster recipients, or via smart-contract-platform balance-tracking
+  bugs (reentrancy-into-mint, dual-counted balances) that produce
+  unauthorised supply expansion. Excludes: T1.005 (transfer-fee
+  extraction — different primitive); T5.001 / T5.002 (LP-side
+  removal); T1.002 (PD-extension presence per se — T5.003 fires when
+  the extension is exercised to materialise tokens).
+
+data_sources: [contract_bytecode, contract_source, mint_event_log,
+               total_supply_oracle, funder_graph, lending_pool_state]
+
+detection_logic:
+  description: |
+    Three orthogonal paths plus a balance-tracking cross-check.
+    PATH A (post-launch mint to deployer cluster): Mint / Transfer-from-
+    zero events post-launch where the recipient is in the deployer
+    funder cluster. PATH B (totalSupply vs published-tokenomics
+    reconciliation): on-chain totalSupply trajectory diverges from
+    the published emission schedule by > schedule_divergence. PATH C
+    (Solana SPL permanent-delegate exercise): non-renounced mint
+    authority + Token-2022 PD extension materialises tokens at
+    deployer-controlled accounts. CROSS-CHECK (balance-tracking):
+    sum of Transfer-from-zero events does not match Δ totalSupply —
+    indicates a non-standard supply-mutation path (reentrancy-into-
+    mint, dual-counted-balance bug).
+  pseudocode: |
+    # PATH A — post-launch mint to deployer-cluster recipients
+    cluster ← funder_graph_cluster(deployer(C), hops = trace_hops)
+    for each event E ∈ contract_events(C)
+        where E.kind == Mint or (E.kind == Transfer and E.from == 0x0):
+      if E.block < C.deployment_block + grace_blocks: continue
+      if E.recipient ∈ cluster:
+        share ← E.amount / max(circulating_supply(C, E.block), 1)
+        if share > mint_share_threshold:
+          emit(PATH_A, contract=C, event=E, recipient=E.recipient,
+               share, severity=critical)
+
+    # PATH B — totalSupply vs tokenomics schedule
+    for each rolling block b on contract C:
+      observed ← totalSupply(C, b)
+      scheduled ← tokenomics_schedule(C).at(b)
+      if scheduled == None: continue       # no published schedule
+      divergence ← (observed − scheduled) / max(scheduled, 1)
+      if divergence > schedule_divergence:
+        emit(PATH_B, contract=C, block=b, observed, scheduled,
+             divergence, severity=critical)
+
+    # PATH C — Solana SPL permanent-delegate exercise
+    for each Token-2022 mint M with EXT_PERM_DELEGATE configured:
+      delegate ← M.permanent_delegate_authority
+      if delegate == 0 or delegate ∈ vetted_delegate_allowlist: continue
+      for ix ∈ tx_history(M, after = M.creation_slot):
+        if ix.kind ∈ {MintTo, MintToChecked} and ix.authority == delegate:
+          target ← ix.account.owner
+          if target ∈ deployer_cluster(M, hops = trace_hops):
+            emit(PATH_C, mint=M, delegate, target, amount=ix.amount,
+                 severity=critical)
+
+    # CROSS-CHECK — balance-tracking integrity
+    for each block b on contract C:
+      mints_in_block ← Σ E.amount for E in events(C, b)
+                          if (E.kind == Transfer and E.from == 0x0)
+      delta_supply ← totalSupply(C, b) − totalSupply(C, b−1)
+      if delta_supply > mints_in_block + accounting_floor:
+        emit(CROSS_CHECK, contract=C, block=b,
+             unaccounted_delta=delta_supply − mints_in_block,
+             severity=critical)
+
+parameters:
+  trace_hops:               { type: integer, default: 3 }
+  grace_blocks:             { type: integer, default: 100 }    # ignore launch initialisation
+  mint_share_threshold:     { type: number,  default: 0.05 }   # > 5% of circulating
+  schedule_divergence:      { type: number,  default: 0.10 }   # > 10% above schedule
+  vetted_delegate_allowlist: { type: list,   default: [] }
+  accounting_floor:         { type: number,  default: 1 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               contract_address, mint, recipient, share,
+               divergence, unaccounted_delta, evidence]
+
+test_fixtures:
+  positive:
+    - 2020-12-cover-protocol-blacksmith-mint    # canonical balance-tracking bug → infinite-mint
+  negative:
+    - "ERC-20 with renounced mint authority and totalSupply tracking schedule exactly"
+    - "Solana SPL mint without Token-2022 permanent-delegate extension"
+    - "Vested-team-allocation mint to a documented vesting contract"
+
+false_positive_modes:
+  - rebase / yield-bearing tokens that legitimately mutate supply per a documented model — annotate via tokenomics_schedule
+  - liquid-staking protocols whose mint events fund staked-asset wrapping (recipients are users, not deployer cluster)
+  - airdrop-claim contracts that mint to recipients on demand (PATH A's mint_share_threshold + cluster filter handles)
+  - PATH B false positives where the published schedule is informal / approximate (require non-trivial divergence and tokenomics_schedule presence)
+
+mitigations: [OAK-M02, OAK-M03, OAK-M05, OAK-M17, OAK-M25]
+
+reference_implementations:
+  - { target: slither-plugin,    chain: evm,    url: "" }
+  - { target: forta-bot,         chain: evm,    url: "" }
+  - { target: goplus,            chain: cross-chain, url: "" }
+  - { target: rugcheck,          chain: solana, url: "" }
+  - { target: helius-indexer,    chain: solana, url: "" }
+  - { target: mg-detectors-rs,   chain: cross-chain, url: "" }

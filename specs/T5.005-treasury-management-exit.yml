@@ -1,0 +1,119 @@
+oak_techniques: [OAK-T5.005]
+spec_id: oak-detection-T5.005
+version: 0.1.0
+maturity: stable
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect substantive misuse of legitimate treasury authority — team-
+  controlled multisig outflows framed as treasury management / salary /
+  marketing / team-unlock that diverge from publicly-stated purpose
+  (size, cadence, destination clustering, lack of corresponding
+  deliverables). Authority is *legitimately retained*; failure mode is
+  in authority *use*, not *structure*. Excludes: T5.001 (LP-control
+  authority drain — different authority class); T1.003 (renounced-but-
+  not-really — false claim of giving up authority); legitimate
+  disclosed-budget treasury operations to vendor / payroll
+  counterparties.
+
+data_sources: [multisig_outflow_log, treasury_balance_feed,
+               published_budget_corpus, funder_graph, off_ramp_kyc]
+
+detection_logic:
+  description: |
+    Four orthogonal paths producing measurement-grade outputs (T5.005
+    is necessarily probabilistic — on-chain artefact alone is not
+    conclusive without off-chain stated-purpose reference). PATH A
+    (cumulative-vs-published-budget): treasury cumulative net-outflow
+    over rolling window exceeds published budget by > budget_overrun.
+    PATH B (destination-cluster classification): outflows terminate
+    at CEX deposits, mixers, or operator-cluster wallets within
+    laundering_hops, OR overlap T8.001 / T8.002 watchlist clusters.
+    PATH C (governance posture): multisig signer set is operator-
+    cluster-internal, lacks timelock, lacks independent-stakeholder
+    seat. PATH D (cohort recurrence): the deployer cluster previously
+    operated treasuries that exhibited the same signature.
+  pseudocode: |
+    # PATH A — cumulative outflow vs published budget
+    for each treasury multisig M:
+      published ← published_budget_for(M, window = budget_window)
+      if published == None: continue
+      out_total ← Σ outflow_usd(M, t) for t in budget_window
+      overrun ← (out_total − published) / max(published, 1)
+      if overrun > budget_overrun:
+        emit(PATH_A, multisig=M, out_total, published, overrun,
+             severity=high)
+
+    # PATH B — destination-cluster classification
+    for each outflow O from treasury M:
+      class ← classify_destination(O.to, hops = laundering_hops,
+                                    target_set = {cex_deposit, mixer,
+                                                   operator_cluster})
+      if class == None: continue
+      cluster_match ← funder_graph_cluster(O.to, hops = trace_hops) ∩
+                       (operator_cluster ∪ t8001_watchlist ∪ t8002_watchlist)
+      if class ∈ {cex_deposit, mixer} or cluster_match ≠ ∅:
+        emit(PATH_B, multisig=M, outflow=O, destination_class=class,
+             matched_clusters=cluster_match, severity=high)
+
+    # PATH C — governance posture (pre-event surface inventory)
+    for each treasury multisig M:
+      signers ← multisig_signers(M)
+      cluster ← funder_graph_cluster(deployer_of(protocol_of(M)),
+                                       hops = trace_hops)
+      timelock ← has_timelock_gate(M)
+      indep_seat ← any(s ∉ cluster for s in signers)
+      if not timelock or not indep_seat:
+        emit(PATH_C, multisig=M, signer_count=|signers|,
+             timelock, independent_seat=indep_seat, severity=medium)
+
+    # PATH D — cohort recurrence (T8.001 link)
+    deployer_cluster ← funder_graph_cluster(deployer_of(protocol_of(M)),
+                                             hops = trace_hops)
+    prior ← prior_t5005_events(deployer_cluster, lookback = recurrence_window)
+    if |prior| ≥ recurrence_threshold:
+      emit(PATH_D, multisig=M, prior_event_count=|prior|,
+           severity=critical)
+
+parameters:
+  budget_window:           { type: duration, default: 90d }
+  budget_overrun:          { type: number,  default: 1.0 }     # > 100% above published
+  laundering_hops:         { type: integer, default: 5 }
+  trace_hops:              { type: integer, default: 3 }
+  recurrence_window:       { type: duration, default: 365d }
+  recurrence_threshold:    { type: integer, default: 1 }
+  t8001_watchlist:         { type: list,    default: [] }
+  t8002_watchlist:         { type: list,    default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               multisig_address, out_total, published_budget,
+               destination_class, matched_clusters, prior_event_count,
+               evidence]
+
+test_fixtures:
+  positive:
+    - 2020-09-sushiswap-chef-nomi          # canonical T5.005-with-recovery (returned)
+    - 2023-11-safemoon-charges             # T2.002 + T5.005 (regulatory record)
+    - 2019-06-plus-token                   # PlusToken Ponzi treasury
+    - 2024-05-cypher-hoak-insider-redemption-theft   # T5.005-class against recovery surface
+    - 2025-04-meteora-m3m3-class-action    # alleged treasury / launch-mechanic exit
+    - 2022-05-pixelmon-reveal              # NFT mint-proceeds-on-treasury repurposing
+  negative:
+    - "Multisig outflow to documented payroll vendor with timelock + 3-of-5 independent signers"
+    - "Treasury swap executed at canonical-DEX through governance-vote-gated proposal"
+
+false_positive_modes:
+  - legitimate large vendor payments to disclosed counterparties (require destination not in operator_cluster + cex/mixer set)
+  - vesting-cliff distributions executed via canonical vesting contract (route to T5.006 instead)
+  - PATH A false positives where the budget is informal / approximate — require published budget non-empty
+  - PATH C false positives for early-stage protocols pre-DAO — annotate via stage_pre_dao allowlist with deployment_grace_window
+
+mitigations: [OAK-M02, OAK-M04, OAK-M05, OAK-M17, OAK-M25]
+
+reference_implementations:
+  - { target: tally-analytics,     chain: evm, url: "" }
+  - { target: deepdao,             chain: evm, url: "" }
+  - { target: defillama-treasury,  chain: cross-chain, url: "" }
+  - { target: chainalysis-reactor, chain: cross-chain, url: "" }
+  - { target: trm-forensics,       chain: cross-chain, url: "" }

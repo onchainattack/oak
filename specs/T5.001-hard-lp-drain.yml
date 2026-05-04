@@ -1,0 +1,106 @@
+oak_techniques: [OAK-T5.001]
+spec_id: oak-detection-T5.001
+version: 0.1.0
+maturity: stable
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect single-event removal of substantial pool quote-side liquidity
+  by the LP-controlling deployer cluster, after which depth collapses
+  and remaining holders cannot exit at the prior price. Also covers
+  the NFT analogue (mint-proceeds wallet sweep within hours of mint-
+  out). Detection-at-the-moment is straightforward; defensive value is
+  in pre-event T1/T2/T3 classification. Excludes: T5.002 (slow-trickle
+  fragmented removal — same motive, evades T5.001 thresholds); T5.005
+  (treasury-management exit, multisig draws); T9 contract exploits
+  draining LP via bug rather than authority.
+
+data_sources: [pool_state, lp_token_transfers, dex_trades,
+               funder_graph, nft_mint_proceeds_wallet, mempool_log]
+
+detection_logic:
+  description: |
+    Three orthogonal paths plus a pre-event T1/T2/T3 correlation.
+    PATH A (single-block depth collapse): a transaction by a deployer-
+    cluster address removes > drain_fraction of pool LP / quote-side
+    reserves within one block. PATH B (NFT mint-proceeds sweep): NFT
+    project's mint-proceeds wallet outflows > sweep_fraction within
+    sweep_window of mint-out, with destinations clustering to mixers
+    / CEX deposits. PATH C (mempool pre-event signal): large LP-burn
+    call observed in mempool from deployer-cluster wallet — gives
+    defenders a head-start window.
+  pseudocode: |
+    # PATH A — single-block depth collapse by deployer cluster
+    for each pool P:
+      cluster ← funder_graph_cluster(deployer(P), hops = trace_hops)
+      for each tx T affecting P.lp_token or P.reserves:
+        if T.from ∉ cluster: continue
+        depth_before ← pool_depth_usd(P, T.block − 1)
+        depth_after  ← pool_depth_usd(P, T.block)
+        delta ← (depth_before − depth_after) / max(depth_before, 1)
+        if delta > drain_fraction:
+          prior ← prior_t1_t2_t3_signals(P)            # T2.002 / T1.001 / T3.001
+          emit(PATH_A, pool=P, tx=T.hash,
+               depth_before, depth_after, delta,
+               prior_signals=prior, severity=critical)
+
+    # PATH B — NFT mint-proceeds sweep
+    for each NFT project N:
+      mint_proceeds_wallet ← project_mint_payment_recipient(N)
+      cluster ← funder_graph_cluster(deployer(N), hops = trace_hops)
+      mint_out_t ← mint_completion_time(N)
+      window ← [mint_out_t, mint_out_t + sweep_window]
+      out_total ← Σ outflow_usd(mint_proceeds_wallet, in window)
+      pre_balance ← wallet_balance_usd(mint_proceeds_wallet, mint_out_t)
+      if out_total / max(pre_balance, 1) > sweep_fraction:
+        downstream ← {classify_destination(o.to, hops = laundering_hops)
+                       for o in outflows(mint_proceeds_wallet, window)}
+        if downstream ∩ {mixer, cex_deposit} ≠ ∅:
+          emit(PATH_B, project=N, wallet=mint_proceeds_wallet,
+               sweep_fraction=out_total/pre_balance, downstream,
+               severity=critical)
+
+    # PATH C — mempool pre-event signal (block-builder telemetry)
+    on mempool tx T from deployer-cluster wallet:
+      if matches(T.calldata, lp_burn_or_remove_signature)
+         and T.target ∈ known_pool_set
+         and estimated_drain_fraction(T) > drain_fraction:
+        emit(PATH_C, mempool_tx=T, target_pool=T.target,
+             estimated_drain=estimated_drain_fraction(T), severity=high)
+
+parameters:
+  drain_fraction:        { type: number,   default: 0.5 }
+  trace_hops:            { type: integer,  default: 3 }
+  sweep_fraction:        { type: number,   default: 0.7 }
+  sweep_window:          { type: duration, default: 24h }
+  laundering_hops:       { type: integer,  default: 5 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               pool_address, tx, depth_before, depth_after,
+               delta, project, sweep_fraction, downstream, evidence]
+
+test_fixtures:
+  positive:
+    - 2021-10-anubisdao                          # ~13,556 ETH single-event LP drain
+    - 2021-11-squid                              # T1.001 + T2.001 + T5.001 chain
+    - 2022-01-frosties                           # NFT analogue — mint-proceeds sweep
+    - 2021-2026-influencer-amplified-non-memecoin-rug-cohort   # KIDS / cohort
+  negative:
+    - "Governance-authorised LP migration via canonical timelock-gated multisig"
+    - "Routine LP rebalance by a market-maker within typical depth envelope"
+
+false_positive_modes:
+  - DAO-vote-driven LP redistribution within governance-disclosed parameters (allowlist via canonical timelock + governance contract)
+  - market-maker / aggregator routing through pool that incidentally drops depth temporarily — calibrate via cluster check (T.from ∉ cluster filters)
+  - bridge migration / pool sunset with announced timeline (annotate via planned_migration_allowlist)
+  - NFT projects with disclosed roadmap-funded sweep to operational vendors (require downstream ∩ {mixer, cex_deposit} ≠ ∅ as escalator)
+
+mitigations: [OAK-M02, OAK-M04, OAK-M05, OAK-M11, OAK-M25]
+
+reference_implementations:
+  - { target: dune,             chain: cross-chain, url: "" }
+  - { target: forta-bot,        chain: evm,    url: "" }
+  - { target: oz-defender-sentinel, chain: evm, url: "" }
+  - { target: rugcheck,         chain: solana, url: "" }
+  - { target: mg-detectors-rs,  chain: cross-chain, url: "" }

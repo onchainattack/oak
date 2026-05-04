@@ -1,0 +1,121 @@
+oak_techniques: [OAK-T5.007]
+spec_id: oak-detection-T5.007
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect off-platform services that brand themselves with a legitimate
+  platform's name without contractual basis, accumulate user deposits
+  in operator-controlled custody, and exit citing an unverifiable
+  "hack." Substrate is brand-trust, not a token / LP. Excludes: T5.001/
+  .002 (token / LP-level extraction); T5.005 (treasury exit on a real
+  platform with fiduciary relationship); T11.001 (third-party signing-
+  vendor compromise — has actual vendor relationship); T11.005
+  (operator-controlled fake platform with no legitimate counterpart —
+  T5.007's brand has a legitimate counterpart whose trust is exploited);
+  T4 phishing (no user-deposit; T5.007 users deposit willingly).
+
+data_sources: [brand_monitoring_feed, authoritative_partner_registry,
+               telegram_x_handle_log, custodial_wallet_outflows,
+               press_investigation_corpus, on_chain_exit_pattern_log]
+
+detection_logic:
+  description: |
+    Four orthogonal paths. PATH A (registry mismatch): off-platform
+    service brands itself with a platform name and is absent from the
+    platform's authoritative-partner registry. PATH B (custodial-
+    deposit pattern): users deposit into a service-controlled wallet
+    rather than via smart-contract integration; deposits accumulate
+    over a public operating window. PATH C (exit-as-hack signature):
+    "hack" announcement on Telegram / X / Discord followed by
+    communication blackout, no public operator identification, no
+    recovery effort. PATH D (on-chain exit-pattern): single
+    coordinated outflow transfer (operator-exit fingerprint) rather
+    than dispersion / fragmented-extraction (external-attacker
+    fingerprint).
+  pseudocode: |
+    # PATH A — registry mismatch
+    for each off-platform service S branding itself with platform name P:
+      registry ← authoritative_partner_registry_of(P)
+      if registry ≠ None and S ∉ registry:
+        cease_and_desist ← P.cease_and_desist_outreach(S)
+        emit(PATH_A, service=S, platform=P,
+             registry_present=(registry ≠ None), cease_and_desist,
+             severity=high)
+
+    # PATH B — custodial-deposit pattern
+    for each service S with custodial_wallet W:
+      deposits ← user_deposit_count(W, window = operating_window)
+      cumulative ← Σ deposit_usd(W, in operating_window)
+      smart_contract_integration ← has_smart_contract_integration(S)
+      if not smart_contract_integration
+         and deposits ≥ deposit_count_threshold
+         and cumulative ≥ cumulative_deposit_threshold:
+        emit(PATH_B, service=S, wallet=W,
+             cumulative_usd=cumulative, deposit_count=deposits,
+             severity=high)
+
+    # PATH C — exit-as-hack announcement signature
+    for each public_announcement A from service S:
+      if matches(A.text, HACK_ANNOUNCEMENT_PATTERNS):
+        followup ← public_followup_within(S, window = blackout_window)
+        operator_id_disclosed ← any(a.operator_identification for a in followup)
+        recovery_effort ← any(a.recovery_action for a in followup)
+        if not operator_id_disclosed and not recovery_effort
+           and len(followup) < followup_count_floor:
+          emit(PATH_C, service=S, announcement=A,
+               blackout_observed=True, severity=critical)
+
+    # PATH D — on-chain exit-pattern (operator-exit vs external attacker)
+    for each service S with custodial wallet W after exit announcement:
+      outflows ← outflow_events(W, window = exit_outflow_window)
+      tx_count ← |outflows|
+      max_consolidation ← max(o.amount for o in outflows) / max(Σ o.amount, 1)
+      coordinated_single ← (tx_count == 1) or (max_consolidation > consolidation_floor)
+      if coordinated_single:
+        emit(PATH_D, service=S, mode="operator-exit-fingerprint",
+             tx_count, max_consolidation, severity=critical)
+
+parameters:
+  operating_window:                { type: duration, default: 365d }
+  deposit_count_threshold:         { type: integer, default: 50 }
+  cumulative_deposit_threshold:    { type: number,  default: 100000 }   # $100k
+  blackout_window:                 { type: duration, default: 14d }
+  followup_count_floor:            { type: integer, default: 3 }
+  exit_outflow_window:             { type: duration, default: 24h }
+  consolidation_floor:             { type: number,  default: 0.8 }
+  HACK_ANNOUNCEMENT_PATTERNS:
+    type: list
+    default:
+      - "wallet was hacked"
+      - "we have been compromised"
+      - "drained by attacker"
+      - "exploit on our hot wallet"
+
+output_alert: [oak_technique, detection_path, severity,
+               service, platform, wallet, cumulative_usd,
+               announcement, tx_count, evidence]
+
+test_fixtures:
+  positive:
+    - 2026-01-polymarket-polycule-bot     # canonical T5.007 anchor (~$230K, exit-as-hack + blackout)
+  negative:
+    - "Service in the platform's authoritative-partner registry with smart-contract integration (no custodial deposit)"
+    - "Service that experienced a real exploit with public forensic disclosure + operator identification + recovery effort"
+
+false_positive_modes:
+  - legitimate authorised partner with custodial features but full disclosure (PATH A's registry check filters)
+  - service with real third-party-attacker exploit + transparent forensic disclosure (PATH C's blackout check filters; PATH D's dispersion-vs-consolidation discriminates)
+  - small-scale service below cumulative_deposit_threshold — risk to individuals, not class-cohort
+  - PATH A false positive when authoritative partner registry doesn't exist for the platform — gate on registry ≠ None
+
+mitigations: [OAK-M02, OAK-M11, OAK-M16, OAK-M25]
+
+reference_implementations:
+  - { target: zachxbt-disclosures,    chain: cross-chain, url: "" }
+  - { target: seal-threat-intel,      chain: cross-chain, url: "" }
+  - { target: chainalysis-reactor,    chain: cross-chain, url: "" }
+  - { target: domain-trademark-monitor, chain: cross-chain, url: "" }
+  - { target: dune,                   chain: cross-chain, url: "" }

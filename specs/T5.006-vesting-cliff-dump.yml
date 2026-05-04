@@ -1,0 +1,113 @@
+oak_techniques: [OAK-T5.006]
+spec_id: oak-detection-T5.006
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect coordinated cliff-window selling by team / investor / advisor
+  recipients of contractually-vested allocations. Activity is fully
+  contractually legitimate — the spec captures the defensive
+  measurement surface (cliff-window concentration, pre-cliff price /
+  derivatives signals, cohort coordination, public-statement
+  reconciliation). Excludes: T3.003 (anonymous coordinated speculators
+  with no contractual claim); T5.005 (treasury-multisig contractual
+  basis under scrutiny — T5.006 contractual basis is intact); T5.001
+  (LP-control authority — T5.006 is recipient-side sell flow).
+
+data_sources: [vesting_contract_state, token_unlock_calendar,
+               recipient_outflow_log, dex_trades, perp_open_interest,
+               public_statement_corpus]
+
+detection_logic:
+  description: |
+    Four orthogonal paths producing pre-positioning + post-event
+    measurement. PATH A (cliff-window concentration): share of
+    unlocked supply reaching CEX / DEX-swap destinations within first
+    N days of the cliff exceeds concentration_threshold. PATH B
+    (pre-cliff price / derivatives signal): sustained price weakness
+    + perp open-interest skew + borrow-rate spikes in the T-14d
+    window before each scheduled cliff. PATH C (cohort coordination):
+    clustered destinations, timing, and routing across nominally-
+    independent recipient cohorts. PATH D (public-statement
+    reconciliation): cliff-window outflow profile diverges materially
+    from publicly-stated disposal intent.
+  pseudocode: |
+    # PATH A — cliff-window concentration
+    for each scheduled cliff event C in token_unlock_calendar:
+      recipients ← allocation_recipients(C)
+      window ← [C.t, C.t + cliff_window_days]
+      out_to_exchange_or_swap ← Σ outflow(r, classify ∈ {cex_deposit, dex_swap})
+                                  for r in recipients, in window
+      unlocked_supply ← C.unlocked_amount
+      share ← out_to_exchange_or_swap / max(unlocked_supply, 1)
+      if share > concentration_threshold:
+        emit(PATH_A, cliff=C, share, recipients_count=|recipients|,
+             severity=high)
+
+    # PATH B — pre-cliff price / derivatives signal
+    for each scheduled cliff C:
+      pre ← [C.t − 14d, C.t]
+      price_drift ← (price(C.t) − price(C.t − 14d)) / max(price(C.t − 14d), 1)
+      oi_skew ← perp_short_oi(token_of(C), pre) / max(perp_long_oi(token_of(C), pre), 1)
+      borrow_rate_jump ← borrow_rate(token_of(C), C.t) − borrow_rate(token_of(C), C.t − 14d)
+      if price_drift < pre_cliff_drift_floor
+         and (oi_skew > oi_skew_threshold or borrow_rate_jump > borrow_jump_threshold):
+        emit(PATH_B, cliff=C, price_drift, oi_skew, borrow_rate_jump,
+             severity=medium)
+
+    # PATH C — cohort coordination
+    for each cliff C with PATH_A emit:
+      cluster ← cluster_by(recipients(C), axes = {destination_address,
+                                                    timing_block, routing_path})
+      if shared_destination_share(cluster) > destination_overlap_floor
+         or block_range_concentration(cluster) < block_range_floor:
+        emit(PATH_C, cliff=C, cluster_size=|cluster|,
+             destination_overlap, severity=high)
+
+    # PATH D — public-statement reconciliation
+    for each cliff C with PATH_A emit:
+      stated_intent ← extract_disposal_intent(public_statements(C, lookback))
+      if stated_intent == None: continue
+      observed ← actual_disposal_share(C, cliff_window_days)
+      if abs(observed − stated_intent.expected_disposal_share) > intent_divergence:
+        emit(PATH_D, cliff=C, stated=stated_intent, observed,
+             divergence=observed − stated_intent.expected_disposal_share,
+             severity=high)
+
+parameters:
+  cliff_window_days:           { type: duration, default: 30d }
+  concentration_threshold:     { type: number,  default: 0.4 }    # > 40% to exchange/DEX
+  pre_cliff_drift_floor:       { type: number,  default: -0.05 }  # > 5% drop
+  oi_skew_threshold:           { type: number,  default: 1.5 }
+  borrow_jump_threshold:       { type: number,  default: 0.05 }   # +5pp APR jump
+  destination_overlap_floor:   { type: number,  default: 0.5 }
+  block_range_floor:           { type: integer, default: 1000 }
+  intent_divergence:           { type: number,  default: 0.3 }    # 30pp gap
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               cliff_id, cliff_t, share, price_drift, oi_skew,
+               cluster_size, divergence, evidence]
+
+test_fixtures:
+  positive: []                                # cohort-only at v0.1; no canonical incident anchor
+  negative:
+    - "Cliff event with disclosed disposal intent + observed disposal matching the intent"
+    - "Linear-vesting curve with no cliff event (no concentration risk by construction)"
+    - "Cliff with recipient OTC pre-placement disclosed pre-event"
+
+false_positive_modes:
+  - market-wide moves coinciding with cliff date (PATH B's drift floor must reflect asset-specific intra-period drift)
+  - recipients selling for legitimate liquidity needs without coordination (PATH C's destination/timing overlap filters)
+  - OTC pre-placement that disclosed publicly results in low on-chain concentration (PATH A returns under threshold; not a false positive)
+  - PATH D requires non-empty stated_intent — projects with no disposal-intent statement should not flag PATH D
+
+mitigations: [OAK-M02, OAK-M11, OAK-M17, OAK-M25]
+
+reference_implementations:
+  - { target: tokenunlocks-tokenomist, chain: cross-chain, url: "" }
+  - { target: cryptorank-unlock,       chain: cross-chain, url: "" }
+  - { target: defillama-unlocks,       chain: cross-chain, url: "" }
+  - { target: dropstab,                chain: cross-chain, url: "" }
+  - { target: dune,                    chain: cross-chain, url: "" }
