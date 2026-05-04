@@ -1,0 +1,100 @@
+oak_techniques: [OAK-T13.001.004]
+spec_id: oak-detection-T13.001.004
+version: 0.1.0
+maturity: observed
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect ERC-4337 paymaster griefing — UserOps that drain the
+  paymaster's deposited balance without producing useful protocol
+  activity. Three sub-patterns: (i) unused-gas-penalty abuse on
+  EntryPoint <v0.7 builds; (ii) temporary-revert griefing on
+  EntryPoint <v0.9 builds — attacker creates a "must-revert"
+  condition, victim's UserOp validates and inner call reverts,
+  paymaster pays gas; (iii) bundle-level reputation drain — single
+  UserOp causes validatePaymasterUserOp to fail for the rest of
+  the bundle, exhausting the paymaster's bundler-reputation budget.
+  Excludes: T13.001.001 (accounting-drain — funds extracted to
+  attacker, not destroyed); T13.001.002 (policy-bypass).
+
+data_sources: [entrypoint_version_registry, entrypoint_deposit_balance_log,
+               paymaster_sponsored_userop_log, bundler_reputation_feed,
+               userop_bundle_log, target_contract_revert_log]
+
+detection_logic:
+  description: |
+    Three orthogonal paths matching the three sub-patterns plus a
+    version-pinning audit path. PATH A (EntryPoint version pinning
+    audit): paymaster running against EntryPoint <v0.7 (unused-gas-
+    penalty) or <v0.9 (temporary-revert griefing) — pre-event
+    surface. PATH B (deposited-balance drawdown without protocol
+    activity): paymaster's deposited balance trends downward
+    without matching trend in sponsored-protocol activity. PATH C
+    (bundle-level reputation drain): paymaster's reputation score
+    at major bundlers is throttled without legitimate UserOp
+    volume spike.
+  pseudocode: |
+    GRIEFING_FIXES = {v0_7: "unused_gas_penalty",
+                       v0_9: "temporary_revert_griefing"}
+
+    # PATH A — EntryPoint version pinning audit
+    for each paymaster P:
+      pinned ← entrypoint_version_registry.pinned_version(P)
+      missing_fixes ← [fix for v, fix in GRIEFING_FIXES
+                         if version_lt(pinned, v)]
+      if missing_fixes ≠ ∅:
+        emit(PATH_A, paymaster=P, pinned_version=pinned,
+             missing_fixes, severity=high)
+
+    # PATH B — deposited-balance drawdown without protocol activity
+    for each paymaster P:
+      window ← rolling_window(W)
+      drawdown ← entrypoint_deposit_balance_log.delta(P, window)
+      sponsored ← paymaster_sponsored_userop_log.events(P, window)
+      reverts ← [u for u in sponsored if u.inner_call_reverted]
+      revert_share ← |reverts| / max(|sponsored|, 1)
+      if drawdown > drawdown_threshold and revert_share > revert_share_threshold:
+        emit(PATH_B, paymaster=P, drawdown, revert_share,
+             severity=critical)
+
+    # PATH C — bundle-level reputation drain
+    for each paymaster P:
+      reps ← bundler_reputation_feed.scores(P, window = W)
+      throttled ← [r for r in reps if r.throttled]
+      legitimate_volume ← paymaster_sponsored_userop_log
+                            .legitimate_volume(P, window = W)
+      if throttled ≠ ∅ and legitimate_volume < legitimate_volume_floor:
+        emit(PATH_C, paymaster=P, throttled_bundlers=[r.bundler for r in throttled],
+             legitimate_volume, severity=high)
+
+parameters:
+  drawdown_threshold:           { type: number,   default: 0.1 }     # 10% deposited balance over W
+  revert_share_threshold:       { type: number,   default: 0.3 }     # 30% inner-call revert share
+  legitimate_volume_floor:      { type: integer,  default: 100 }     # legitimate UserOps over W
+  W:                            { type: duration, default: 24h }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               paymaster, pinned_version, missing_fixes, drawdown,
+               revert_share, throttled_bundlers, legitimate_volume, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-09-erc4337-entrypoint-v09-griefing-disclosure   # canonical sub-case (ii) anchor
+  negative:
+    - "Paymaster pinned to EntryPoint ≥v0.9 with per-call gas caps and balance circuit breaker"
+    - "Paymaster whose deposited-balance drawdown matches sponsored protocol activity within tolerance"
+
+false_positive_modes:
+  - PATH A false positives for paymasters explicitly carrying their own implementation of the griefing fix despite older EntryPoint pin (require absence of compensating implementation)
+  - PATH B false positives during legitimate spikes in target-contract reverts (e.g., DEX pool-drained, oracle-frozen) — calibrate revert_share_threshold per target-contract category
+  - PATH C false positives during legitimate bundler-reputation policy changes (cross-reference bundler advisory feed)
+
+mitigations: [OAK-M02, OAK-M11, OAK-M16, OAK-M34]
+
+reference_implementations:
+  - { target: forta-bot,              chain: evm, url: "" }
+  - { target: openzeppelin-defender,  chain: evm, url: "" }
+  - { target: blocksec-phalcon,       chain: evm, url: "" }
+  - { target: pimlico-bundler-feed,   chain: evm, url: "" }
+  - { target: stackup-bundler-feed,   chain: evm, url: "" }

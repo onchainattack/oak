@@ -1,0 +1,123 @@
+oak_techniques: [OAK-T13.003]
+spec_id: oak-detection-T13.003
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect ERC-4337 / ERC-7579 smart-account session-key hijacking:
+  attacker obtains usable authority over an ephemeral session key
+  the smart account delegated to a dApp for time-bounded / scope-
+  bounded actions, then exercises that authority against the
+  delegating account. Four sub-patterns: (a) dApp-side key
+  compromise (leaked via logging / dependency / breach / frontend
+  inlining); (b) over-broad scope at delegation; (c) revocation /
+  expiry failure; (d) cross-application reuse. Excludes: T4.001
+  (Permit2 — different artefact, EIP-712 over EOA allowance);
+  T4.005 (setApprovalForAll — blanket NFT collection authority);
+  T4.006 (WalletConnect transport session); T11 (custody / signing
+  infrastructure compromise outside the session-key artefact).
+
+data_sources: [session_key_registration_log, smart_account_userop_log,
+               session_key_scope_registry, session_key_revocation_log,
+               cross_consumer_session_key_index, dapp_breach_disclosure_feed,
+               cti_credential_leak_corpus]
+
+detection_logic:
+  description: |
+    Four orthogonal paths matching the four sub-patterns. PATH A
+    (dApp-side compromise — usage past leaked-credential disclosure
+    or frontend-inlined key fingerprint): session key signing
+    UserOps after the dApp's backend leak / frontend-inline
+    disclosure. PATH B (over-broad scope at delegation):
+    registered scope is permissive — any-target / any-selector /
+    large spend cap / long expiry — relative to the dApp's stated
+    category. PATH C (revocation / expiry failure): session-key
+    UserOps signed and accepted past registered expiry, or per-
+    app revocation paths absent. PATH D (cross-application
+    reuse): same session-key public key delegated by smart
+    accounts across multiple consumer dApps.
+  pseudocode: |
+    PERMISSIVE_SCOPE_FLAGS = {any_target, any_selector,
+                                large_spend_cap, long_expiry,
+                                large_gas_budget}
+
+    # PATH A — dApp-side key compromise
+    for each session_key K registered for dApp D:
+      leak_event ← dapp_breach_disclosure_feed.find(D, K) ⊔
+                    cti_credential_leak_corpus.find(K) ⊔
+                    frontend_inline_key_scan(D)
+      if leak_event ≠ None:
+        post_leak_usage ← smart_account_userop_log
+                            .events(signer = K, since = leak_event.t)
+        if post_leak_usage ≠ ∅:
+          emit(PATH_A, dapp=D, session_key=K,
+               leak_event, post_leak_userop_count=|post_leak_usage|,
+               severity=critical)
+
+    # PATH B — over-broad scope at delegation
+    for each registration R ∈ session_key_registration_log:
+      scope ← session_key_scope_registry[R.key]
+      flags ← {f for f in PERMISSIVE_SCOPE_FLAGS if scope.has(f)}
+      stated_category ← dapp_stated_category(R.dapp)
+      if flags ≠ ∅ and not scope_consistent_with_category(scope, stated_category):
+        emit(PATH_B, registration=R, dapp=R.dapp, key=R.key,
+             permissive_flags=flags, stated_category, severity=high)
+
+    # PATH C — revocation / expiry failure
+    for each UserOp U signed by session_key K:
+      scope ← session_key_scope_registry[K]
+      if U.t > scope.expiry:
+        emit(PATH_C, session_key=K, registered_expiry=scope.expiry,
+             userop_t=U.t, mode="signature-accepted-past-expiry",
+             severity=critical)
+      observed_selectors ← {U.selector}
+      observed_targets ← {U.target}
+      if observed_selectors ⊄ scope.selectors
+         or observed_targets ⊄ scope.targets:
+        emit(PATH_C, session_key=K, drift_selectors=observed_selectors − scope.selectors,
+             drift_targets=observed_targets − scope.targets,
+             mode="scope-drift-on-validation", severity=critical)
+
+    # PATH D — cross-application reuse
+    for each session_key K:
+      consumers ← cross_consumer_session_key_index[K].dapps
+      delegators ← cross_consumer_session_key_index[K].smart_accounts
+      if |consumers| ≥ cross_consumer_floor and |delegators| ≥ cross_delegator_floor:
+        emit(PATH_D, session_key=K, consumer_count=|consumers|,
+             delegator_count=|delegators|, severity=high)
+
+parameters:
+  cross_consumer_floor:        { type: integer,  default: 2 }
+  cross_delegator_floor:       { type: integer,  default: 50 }
+  W:                           { type: duration, default: 24h }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               session_key, dapp, registration, leak_event,
+               post_leak_userop_count, permissive_flags,
+               registered_expiry, userop_t, drift_selectors,
+               drift_targets, consumer_count, delegator_count, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-02-cardex-session-key-frontend-leak       # canonical sub-pattern (a) anchor + (d) multiplier
+    - 2024-03-coinbase-smart-wallet-disclosure        # adjacent ownership-management surface anchor (audit cohort)
+  negative:
+    - "Session key with default-tight scope, working revocation, no leak signal"
+    - "Session key whose scope is exercised exclusively within registered selectors / targets / spend cap / expiry"
+
+false_positive_modes:
+  - PATH A false positives where the leak signal is itself unverified (require corroborating signal — multiple sources or backend-disclosure SLA)
+  - PATH B false positives for legitimate productivity-tier dApps whose stated category genuinely justifies broad scope (require absence of category match)
+  - PATH C false positives during session-key implementation upgrade windows where expiry semantics are intentionally relaxed (annotate upgrade-window allowlist)
+  - PATH D false positives for vendor-shared infrastructure session keys with disclosed cross-consumer design (require absence of disclosed design)
+
+mitigations: [OAK-M02, OAK-M08, OAK-M21, OAK-M30, OAK-M31]
+
+reference_implementations:
+  - { target: rhinestone-smartsessions,    chain: evm, url: "" }
+  - { target: argent-session-key-monitor,  chain: evm, url: "" }
+  - { target: biconomy-session-module,     chain: evm, url: "" }
+  - { target: privy-smart-wallet,          chain: evm, url: "" }
+  - { target: openzeppelin-defender,       chain: evm, url: "" }

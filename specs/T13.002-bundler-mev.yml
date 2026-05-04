@@ -1,0 +1,119 @@
+oak_techniques: [OAK-T13.002]
+spec_id: oak-detection-T13.002
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect ERC-4337 bundler-attributed MEV — value extraction by a
+  bundler against UserOps it is supposed to neutrally aggregate.
+  Four sub-patterns: (a) UserOp front-running; (b) UserOp
+  sandwiching inside a bundler-controlled bundle; (c) UserOp
+  censorship by a bundler against unprofitable / competitive
+  UserOps; (d) bundler-paymaster collusion on sponsored flows.
+  Architectural distinction from T5.004: actor role (bundler is
+  expected to be neutral; defender's leverage point is at the
+  bundler — allowlists, reputation, encryption — not at the
+  trader). Excludes: T5.004 (generic mempool searcher); T13.001
+  (paymaster compromise); T9.001 (oracle manipulation).
+
+data_sources: [alt_mempool_propagation_log, handleops_call_log,
+               bundler_address_registry, userop_bundle_decoded_log,
+               dex_swap_log, paymaster_sponsored_userop_log,
+               bundler_reputation_feed]
+
+detection_logic:
+  description: |
+    Four orthogonal paths matching the four sub-patterns. PATH A
+    (front-run): UserOp visible in alt-mempool first-seen by
+    bundler X is included by bundler Y in the same or next block,
+    with bundler X's handleOps reverting. PATH B (sandwich): inside
+    a single handleOps bundle (or adjacent bundles in the same
+    block), bundler EOA submits opening swap, victim UserOp,
+    closing swap on the same pool. PATH C (censorship): persistent
+    gap between alt-mempool propagation and on-chain inclusion for
+    a UserOp class at a specific bundler. PATH D (bundler-
+    paymaster collusion): paymaster's sponsored UserOps cluster
+    into a single bundler's bundles with worse-than-cohort
+    execution quality.
+  pseudocode: |
+    # PATH A — UserOp front-run
+    for each handleOps revert event R from bundler X:
+      victim_userop ← R.userop_hash
+      first_seen ← alt_mempool_propagation_log.first_bundler(victim_userop)
+      success_inclusion ← handleops_call_log.find_success(victim_userop,
+                                                           window = ±1_block)
+      if success_inclusion.bundler ≠ X
+         and first_seen == X:
+        same_pool_pair ← bundler_eoa_pair_on_same_pool(success_inclusion)
+        emit(PATH_A, victim_userop=R, original_bundler=X,
+             stealing_bundler=success_inclusion.bundler,
+             same_pool_pair=same_pool_pair, severity=high)
+
+    # PATH B — UserOp sandwich
+    for each handleOps call H from bundler Y:
+      bundle ← userop_bundle_decoded_log(H)
+      sandwich ← detect_sandwich_pattern(bundle, dex_swap_log,
+                                           bundler_eoa = Y)
+      if sandwich ≠ None:
+        emit(PATH_B, bundler=Y, victim_userop=sandwich.victim,
+             open_swap=sandwich.open, close_swap=sandwich.close,
+             severity=critical)
+
+    # PATH C — UserOp censorship
+    for each bundler B:
+      window ← rolling_window(W)
+      gap_distribution ← [u.inclusion_t − u.first_seen_t
+                            for u in alt_mempool_propagation_log
+                                       .userops_seen_by(B, window)]
+      cohort_baseline ← cohort_inclusion_gap_baseline(window)
+      if persistent_excess_gap(gap_distribution, cohort_baseline,
+                                  threshold = censorship_threshold):
+        emit(PATH_C, bundler=B, gap_excess=gap_distribution,
+             severity=high)
+
+    # PATH D — bundler-paymaster collusion
+    for each (paymaster P, bundler B) pair with joint volume:
+      sponsored ← paymaster_sponsored_userop_log.events(P, window = W)
+      bundle_share ← sponsored.share_via_bundler(B)
+      if bundle_share > collusion_share_threshold:
+        execution_quality ← victim_execution_quality(P, B)
+        cohort_quality ← cohort_execution_quality(P)
+        if execution_quality < cohort_quality − collusion_quality_gap:
+          emit(PATH_D, paymaster=P, bundler=B,
+               bundle_share, execution_quality, cohort_quality,
+               severity=critical)
+
+parameters:
+  censorship_threshold:        { type: number,   default: 0.5 }    # 50% above cohort baseline
+  collusion_share_threshold:   { type: number,   default: 0.6 }    # 60% of paymaster volume via single bundler
+  collusion_quality_gap:       { type: number,   default: 0.01 }   # 1% execution quality gap
+  W:                           { type: duration, default: 24h }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               bundler, paymaster, victim_userop, original_bundler,
+               stealing_bundler, open_swap, close_swap, bundle_share,
+               execution_quality, cohort_quality, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-09-erc4337-entrypoint-v09-griefing-disclosure   # bundler-revert-cost margin (secondary T13.002 anchor)
+  negative:
+    - "Bundler whose handleOps reverts are not paired with competing-bundler success on the same UserOp hash"
+    - "Paymaster whose sponsored UserOps are distributed across bundlers with cohort-baseline execution quality"
+
+false_positive_modes:
+  - PATH A false positives for legitimate handleOps revert + retry by same operator across infrastructure (require different bundler EOA with same-pool pair)
+  - PATH B false positives where bundler EOA legitimately operates a market-making strategy — distinguishing requires victim/open/close pool identity within bundle ordering controlled by bundler
+  - PATH C false positives during bundler-vendor maintenance / reputation-policy changes (cross-reference vendor advisory feed)
+  - PATH D false positives for vertically-integrated bundler-paymaster stacks (Coinbase, Alchemy, Pimlico — bundler and paymaster share operator legitimately) — require execution-quality gap to fire
+
+mitigations: [OAK-M06, OAK-M11, OAK-M30, OAK-M39]
+
+reference_implementations:
+  - { target: eigenphi-aa-mev,        chain: evm, url: "" }
+  - { target: flashbots-research,     chain: evm, url: "" }
+  - { target: etherspot-skandha,      chain: evm, url: "" }
+  - { target: pimlico-bundler-feed,   chain: evm, url: "" }
+  - { target: stackup-bundler-feed,   chain: evm, url: "" }

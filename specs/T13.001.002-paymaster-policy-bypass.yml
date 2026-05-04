@@ -1,0 +1,97 @@
+oak_techniques: [OAK-T13.001.002]
+spec_id: oak-detection-T13.001.002
+version: 0.1.0
+maturity: observed
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect ERC-4337 (and Solana / Token-2022 analogue) paymaster
+  policy-bypass: the paymaster believes a UserOp matches an
+  authorised pattern, but its actual on-chain effect differs from
+  what the policy engine evaluated. Two canonical worked patterns:
+  (a) off-chain-signer / on-chain-hash parity violation — Alchemy
+  / OpenZeppelin 2023 UserOperation-packing disclosure; (b) fail-
+  open instruction-parser default — Kora paymaster Solana / Token-
+  2022 advisory. Excludes: T13.001.001 (accounting-drain via postOp
+  / gas-token mechanic); T13.001.003 (reentrancy); T13.001.004
+  (griefing); T9.004 (generic access-control outside the
+  policy-engine surface).
+
+data_sources: [verifying_paymaster_signer_implementation,
+               onchain_userop_pack_implementation,
+               paymaster_policy_engine_source,
+               paymaster_policy_decision_log,
+               entrypoint_version_registry,
+               paymaster_audit_attestation]
+
+detection_logic:
+  description: |
+    Three orthogonal paths matching the two canonical sub-cases
+    plus an audit-coverage path. PATH A (off-chain-signer / on-
+    chain-hash parity violation): off-chain hash construction in
+    a VerifyingPaymaster's signer disagrees with the on-chain
+    UserOperationLib.pack — a deviation of even a single dynamic
+    field (initCode, callData, paymasterAndData) is the canonical
+    bypass surface. PATH B (fail-open instruction parser): policy
+    engine's unknown-instruction default is permissive empty-stub
+    rather than deny-by-default. PATH C (per-UserOp policy-rule
+    audit drift): logged policy-rule decision diverges from the
+    UserOp's actual on-chain effect.
+  pseudocode: |
+    DYNAMIC_FIELDS = {initCode, callData, paymasterAndData,
+                       accountGasLimits, gasFees, preVerificationGas}
+
+    # PATH A — off-chain-signer / on-chain-hash parity violation
+    for each VerifyingPaymaster VP:
+      onchain_pack ← onchain_userop_pack_implementation(VP.entrypoint)
+      offchain_pack ← verifying_paymaster_signer_implementation(VP)
+      diff_fields ← {f for f in DYNAMIC_FIELDS
+                       if pack_treats_differently(onchain_pack, offchain_pack, f)}
+      if diff_fields ≠ ∅:
+        emit(PATH_A, paymaster=VP, parity_diff_fields=diff_fields,
+             severity=critical)
+
+    # PATH B — fail-open instruction parser
+    for each paymaster P with policy engine E:
+      default ← unknown_instruction_default(E)
+      if default == "permissive_empty_stub" or default == "fail_open":
+        emit(PATH_B, paymaster=P, parser_default=default,
+             severity=critical)
+
+    # PATH C — per-UserOp policy-rule audit drift
+    for each paymaster P:
+      decisions ← paymaster_policy_decision_log.events(P, window = W)
+      for d in decisions:
+        actual_effect ← onchain_userop_effect(d.userop_hash)
+        if not effect_matches_rule(d.matched_rule, actual_effect):
+          emit(PATH_C, paymaster=P, userop_hash=d.userop_hash,
+               matched_rule=d.matched_rule, actual_effect, severity=critical)
+
+parameters:
+  W:                              { type: duration, default: 24h }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               paymaster, parity_diff_fields, parser_default,
+               userop_hash, matched_rule, actual_effect, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-04-erc4337-paymaster                      # canonical T13.001.002 anchor (off-chain-signer parity sub-case)
+  negative:
+    - "VerifyingPaymaster pinned to EntryPoint ≥v0.6 patched build with verified hash-parity"
+    - "Paymaster policy engine with deny-by-default for unknown instructions / token extensions"
+
+false_positive_modes:
+  - PATH A false positives where the off-chain signer's pack rule is provably equivalent under a different but valid encoding (require expert review of representation equivalence)
+  - PATH B false positives for paymasters whose unknown-instruction handling is intentionally permissive within a documented allowlist (require absence of allowlist semantics)
+  - PATH C false positives where the actual_effect / matched_rule difference is within documented tolerance (require absence of explicit rule extension)
+
+mitigations: [OAK-M02, OAK-M16, OAK-M22, OAK-M23]
+
+reference_implementations:
+  - { target: forta-bot,                chain: evm,        url: "" }
+  - { target: openzeppelin-defender,    chain: evm,        url: "" }
+  - { target: blocksec-phalcon,         chain: evm,        url: "" }
+  - { target: kora-policy-monitor,      chain: solana,     url: "" }
+  - { target: tenderly-virtualnet,      chain: evm,        url: "" }

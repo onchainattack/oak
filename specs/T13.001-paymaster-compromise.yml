@@ -1,0 +1,78 @@
+oak_techniques: [OAK-T13.001]
+spec_id: oak-detection-T13.001
+version: 0.1.0
+maturity: observed
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect ERC-4337 paymaster compromise — umbrella over four sub-
+  Techniques sharing the paymaster contract surface: T13.001.001
+  (accounting-drain via postOp revert / gas-token-mechanic),
+  T13.001.002 (policy-bypass via off-chain-signer / on-chain-hash
+  parity violation or fail-open instruction parser), T13.001.003
+  (validatePaymasterUserOp / postOp reentrancy), T13.001.004
+  (griefing via unused-gas-penalty abuse / temporary-revert /
+  bundle-level reputation drain). Excludes: T9.004 (generic access-
+  control — paymaster is exercising its deployed role); T9.001
+  (oracle corruption); T9.005 generic reentrancy outside the
+  paymaster validation surface.
+
+data_sources: [paymaster_contract_bytecode, paymaster_audit_attestation,
+               entrypoint_deposit_balance_log, paymaster_postop_outcome_log,
+               paymaster_policy_decision_log, bundler_reputation_feed,
+               entrypoint_version_registry]
+
+detection_logic:
+  description: |
+    Umbrella aggregator over the four sub-Technique paths. Emits
+    a single PATH_UMBRELLA finding when any sub-Technique fires,
+    plus the per-sub-Technique finding from the dedicated spec.
+    Used by risk teams reviewing a paymaster integration as one
+    decision surface; per-sub-Technique specs (T13.001.001-004)
+    drive engineering review.
+  pseudocode: |
+    SUB_TECHNIQUES = {T13.001.001, T13.001.002, T13.001.003, T13.001.004}
+
+    # PATH UMBRELLA — aggregate any sub-Technique finding for the same paymaster
+    for each paymaster P:
+      sub_findings ← [f for t in SUB_TECHNIQUES for f in detector_emit(t, P)]
+      if sub_findings ≠ ∅:
+        emit(PATH_UMBRELLA, paymaster=P,
+             sub_techniques=[f.technique for f in sub_findings],
+             severity=max(f.severity for f in sub_findings))
+
+    # PATH PRE-DEPLOY — paymaster lacks 4337-specialist audit attestation
+    for each paymaster P deployed within audit_lookback:
+      attest ← paymaster_audit_attestation(P)
+      if attest == None or attest.firm ∉ ERC4337_SPECIALIST_FIRMS:
+        emit(PATH_PRE_DEPLOY, paymaster=P,
+             attestation_status="missing-or-non-specialist",
+             severity=high)
+
+parameters:
+  audit_lookback:                 { type: duration, default: 730d }
+  ERC4337_SPECIALIST_FIRMS:       { type: list,     default: [openzeppelin, trail_of_bits, quantstamp, osec, otter_sec, halborn, consensys_diligence, veridise] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               paymaster, sub_techniques, attestation_status, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-04-erc4337-paymaster                      # umbrella cohort anchor
+  negative:
+    - "Paymaster with current 4337-specialist audit attestation, no sub-Technique findings open"
+    - "Paymaster pinned to EntryPoint ≥v0.9 with deny-by-default policy and balance circuit breaker"
+
+false_positive_modes:
+  - PATH UMBRELLA inherits sub-Technique false-positive surface; calibrate per sub-Technique
+  - PATH PRE-DEPLOY false positives for paymasters audited by non-specialist firms with strong adjacent practice (manually allowlist firm reputation)
+  - audit-attestation registry coverage gaps for boutique audit firms (extend ERC4337_SPECIALIST_FIRMS as the field matures)
+
+mitigations: [OAK-M02, OAK-M16, OAK-M23, OAK-M34]
+
+reference_implementations:
+  - { target: openzeppelin-defender,  chain: evm, url: "" }
+  - { target: forta-bot,              chain: evm, url: "" }
+  - { target: blocksec-phalcon,       chain: evm, url: "" }
+  - { target: pimlico-bundler-feed,   chain: evm, url: "" }

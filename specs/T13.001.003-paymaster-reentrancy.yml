@@ -1,0 +1,104 @@
+oak_techniques: [OAK-T13.001.003]
+spec_id: oak-detection-T13.001.003
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect paymaster-specific reentrancy on the validatePaymaster-
+  UserOp / postOp call surface — strict subset of T9.005 in
+  mechanism, but specific to the ERC-4337 contract layout
+  (paymaster sponsorship accounting + EntryPoint deposit-balance
+  ledger). Three sub-patterns: (i) re-validation against pre-
+  finalised paymaster state, (ii) read-only reentrancy on paymaster
+  view functions consumed by peer protocols, (iii) cross-function
+  reentrancy across the validation / postOp set. Excludes: T9.005
+  (generic reentrancy outside the paymaster surface); T13.001.001
+  (accounting-drain without reentrancy).
+
+data_sources: [paymaster_contract_source, paymaster_contract_bytecode,
+               paymaster_call_trace_log, paymaster_static_analysis_report,
+               gas_token_metadata_registry, paymaster_view_function_registry]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (CEI violation on
+    validatePaymasterUserOp / postOp): static analysis — external
+    call before sponsorship-accounting state finalisation on the
+    validation surface. PATH B (reentrancy-guard granularity gap):
+    guard installed per-function rather than across the state-
+    sharing set (validatePaymasterUserOp + postOp + deposit /
+    withdraw helpers). PATH C (runtime call-trace reentrancy
+    signature): paymaster contract appearing multiple times
+    within a single outer EntryPoint call's internal trace, or
+    staticcall against paymaster view function while paymaster's
+    outermost frame in the same transaction has not yet returned
+    (read-only reentrancy).
+  pseudocode: |
+    PAYMASTER_STATE_SHARING_SET = {validatePaymasterUserOp, postOp,
+                                     deposit, withdraw, addStake}
+
+    # PATH A — CEI violation on validation surface
+    for each paymaster P:
+      report ← paymaster_static_analysis_report(P)
+      for finding in report.cei_violations:
+        if finding.function ∈ {validatePaymasterUserOp, postOp}
+           and finding.external_call_before_state_finalisation:
+          emit(PATH_A, paymaster=P, function=finding.function,
+               call_target=finding.call_target, severity=critical)
+
+    # PATH B — reentrancy-guard granularity gap
+    for each paymaster P:
+      guards ← paymaster_reentrancy_guards(P)
+      covered ← {f for g in guards for f in g.covered_functions}
+      gap ← PAYMASTER_STATE_SHARING_SET − covered
+      cross_function_unprotected ← {(a, b) for a, b in pairs(PAYMASTER_STATE_SHARING_SET)
+                                       if not same_guard(guards, a, b)}
+      if gap ≠ ∅ or cross_function_unprotected ≠ ∅:
+        emit(PATH_B, paymaster=P, unguarded_functions=gap,
+             cross_function_pairs=cross_function_unprotected,
+             severity=high)
+
+    # PATH C — runtime call-trace reentrancy
+    for each transaction t with paymaster P involvement:
+      trace ← paymaster_call_trace_log.events(t)
+      paymaster_frames ← [f for f in trace if f.to == P]
+      if |paymaster_frames| ≥ 2 and not all_returned_before_next(paymaster_frames):
+        emit(PATH_C, paymaster=P, transaction=t,
+             frame_count=|paymaster_frames|, severity=critical)
+      view_reads ← [f for f in trace if f.to == P
+                       and f.kind == staticcall
+                       and f.target ∈ paymaster_view_function_registry[P]]
+      if view_reads ≠ ∅ and outer_paymaster_frame_open(trace, view_reads):
+        emit(PATH_C, paymaster=P, transaction=t,
+             read_only_reentrancy=True, severity=critical)
+
+parameters:
+  W:                              { type: duration, default: 24h }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               paymaster, function, call_target, unguarded_functions,
+               cross_function_pairs, transaction, frame_count,
+               read_only_reentrancy, evidence]
+
+test_fixtures:
+  positive: []                                     # cohort-level audit-disclosed surface; no realised-loss anchor at v0.1
+  negative:
+    - "Paymaster with strict CEI on validatePaymasterUserOp / postOp and reentrancy guard spanning the state-sharing set"
+    - "Paymaster restricted to gas tokens without transfer-hook surface"
+
+false_positive_modes:
+  - PATH A false positives where the external call is provably to a trusted target with verified state-finalisation discipline (manual allowlist)
+  - PATH B false positives where cross-function reentrancy is logically impossible (e.g., one function has no callers reachable from the other)
+  - PATH C false positives during legitimate batched UserOps where the same paymaster handles multiple inner calls in sequence (require frames not properly nested for reentry)
+  - read-only reentrancy false positives where the view function is provably immutable in the relevant state-window
+
+mitigations: [OAK-M02, OAK-M10, OAK-M16]
+
+reference_implementations:
+  - { target: slither,                chain: evm, url: "" }
+  - { target: forta-bot,              chain: evm, url: "" }
+  - { target: openzeppelin-defender,  chain: evm, url: "" }
+  - { target: blocksec-phalcon,       chain: evm, url: "" }
+  - { target: certora-prover,         chain: evm, url: "" }

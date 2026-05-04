@@ -1,0 +1,94 @@
+oak_techniques: [OAK-T13.001.001]
+spec_id: oak-detection-T13.001.001
+version: 0.1.0
+maturity: observed
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect ERC-4337 paymaster accounting-drain: validation-time
+  payment to the EntryPoint not unwound when postOp reverts, or
+  postOp revert paths un-enumerated against gas-token mechanic
+  (fee-on-transfer T1.005, rebasing, pausable / blacklist T1.004).
+  Excludes: T13.001.002 (policy-bypass — sponsorship rules
+  bypassed by representation drift, not accounting drift);
+  T13.001.003 (paymaster reentrancy); T13.001.004 (griefing —
+  drain without useful protocol activity); generic T9 contract
+  exploits outside the paymaster's postOp surface.
+
+data_sources: [paymaster_contract_bytecode, paymaster_postop_outcome_log,
+               entrypoint_deposit_balance_log, gas_token_metadata_registry,
+               paymaster_sponsored_userop_log, paymaster_audit_attestation]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (postOp revert without
+    deposit-debit unwinding): static / runtime detection of postOp
+    paths that revert (arithmetic, external-call, ERC-20 transfer
+    failure) while leaving the validation-time deposit-balance
+    debit un-unwound. PATH B (hostile gas-token mechanic accepted
+    without explicit accounting): paymaster accepts ERC-20 gas
+    tokens with fee-on-transfer / rebasing / pausable / blacklist
+    mechanics without per-mechanic accounting. PATH C (deposited-
+    balance drawdown anomaly): paymaster's deposited balance at
+    the EntryPoint trends downward faster than its policy-rule-
+    accounted sponsorship volume predicts.
+  pseudocode: |
+    HOSTILE_TOKEN_MECHANICS = {fee_on_transfer, rebasing,
+                                 pausable, blacklist, transfer_hook}
+
+    # PATH A — postOp revert without validation-time debit unwinding
+    for each paymaster P:
+      revert_paths ← analyse_postop_revert_paths(P)
+      for r in revert_paths:
+        if not r.unwinds_validation_debit:
+          emit(PATH_A, paymaster=P, revert_path=r,
+               severity=critical)
+
+    # PATH B — hostile gas-token mechanic accepted
+    for each paymaster P:
+      gas_tokens ← gas_token_allowlist(P)
+      for t in gas_tokens:
+        mechanics ← gas_token_metadata_registry[t].mechanics
+        hostile ← mechanics ∩ HOSTILE_TOKEN_MECHANICS
+        if hostile ≠ ∅ and not paymaster_handles_mechanic(P, hostile):
+          emit(PATH_B, paymaster=P, gas_token=t,
+               mechanics=hostile, severity=high)
+
+    # PATH C — deposited-balance drawdown anomaly
+    for each paymaster P:
+      window ← rolling_window(W)
+      observed_drawdown ← entrypoint_deposit_balance_log.delta(P, window)
+      accounted ← Σ paymaster_sponsored_userop_log.expected_cost(P, window)
+      drift ← observed_drawdown − accounted
+      if drift > drawdown_anomaly_threshold:
+        emit(PATH_C, paymaster=P, observed_drawdown,
+             accounted, drift, severity=critical)
+
+parameters:
+  drawdown_anomaly_threshold:    { type: number,   default: 0.05 }   # 5% drift
+  W:                             { type: duration, default: 24h }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               paymaster, revert_path, gas_token, mechanics,
+               observed_drawdown, accounted, drift, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-04-erc4337-paymaster                      # canonical T13.001.001 anchor
+  negative:
+    - "Paymaster whose postOp unconditionally unwinds the validation-time debit on every revert path"
+    - "Paymaster with gas-token allowlist limited to audited non-hostile tokens"
+
+false_positive_modes:
+  - PATH A false positives where a revert path is provably unreachable (require dynamic analysis or fuzzing to confirm reachability)
+  - PATH B false positives for paymasters that explicitly handle the hostile mechanic in accounting (require absence of mechanic-aware code)
+  - PATH C false positives during paymaster bootstrap or unusual sponsorship-policy launches (calibrate W and drawdown_anomaly_threshold per paymaster)
+
+mitigations: [OAK-M02, OAK-M11, OAK-M16, OAK-M34]
+
+reference_implementations:
+  - { target: forta-bot,             chain: evm, url: "" }
+  - { target: openzeppelin-defender, chain: evm, url: "" }
+  - { target: blocksec-phalcon,      chain: evm, url: "" }
+  - { target: tenderly-virtualnet,   chain: evm, url: "" }

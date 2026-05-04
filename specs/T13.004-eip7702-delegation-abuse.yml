@@ -1,0 +1,120 @@
+oak_techniques: [OAK-T13.004]
+spec_id: oak-detection-T13.004
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect EIP-7702 set-code-transaction delegation abuse — vanilla
+  EOA signs a single authorisation tuple registering a delegator
+  contract whose bytecode replaces the EOA's execution model
+  persistently for every subsequent transaction. Four sub-patterns:
+  (a) malicious-delegator phishing (CrimeEnjoyor cluster — >90%
+  of observed delegations malicious per Wintermute / GoPlus); (b)
+  batch-transaction signing-prompt abuse (Inferno / Pink Drainer
+  pivots); (c) chain-agnostic-replay amplification (delegations
+  signed without chain-id binding); (d) future-deposit-trapping
+  optionality (delegation captures future inbound transfers).
+  Excludes: T4.001 (Permit2 — bounded spending authority over
+  specific tokens, not execution-model replacement); T13.001-T13.003
+  (ERC-4337 sub-Techniques — distinct primitive layer); T11
+  (custody / signing-vendor compromise outside the EOA-resident
+  delegation artefact).
+
+data_sources: [eip7702_authorization_log, eip7702_delegator_bytecode_registry,
+               crimeenjoyor_signature_cluster, inferno_pink_drainer_cluster,
+               cross_chain_delegation_state_index, eoa_inbound_transfer_log,
+               relay_protocol_hop_log]
+
+detection_logic:
+  description: |
+    Four orthogonal paths matching the four sub-patterns. PATH A
+    (malicious-delegator bytecode signature): EOA delegates to
+    bytecode matching CrimeEnjoyor / known-drainer clusters via
+    on-chain bytecode-signature regex / clustering. PATH B (batch-
+    transaction drainer pattern): EIP-7702 set-code transaction
+    followed by single user-authorised batched execute() that
+    sweeps multiple tokens to drainer infrastructure. PATH C
+    (chain-agnostic-replay surface): authorisation tuple signed
+    without chain-id binding — same delegation observable on
+    multiple EIP-7702-activated chains for the same EOA. PATH D
+    (future-deposit-trapping forensic): inbound transfer to an
+    EOA with active malicious delegation auto-routes to attacker
+    infrastructure on the same block.
+  pseudocode: |
+    MALICIOUS_DELEGATOR_CLUSTERS = {crimeenjoyor, inferno_drainer,
+                                       pink_drainer, fake_uniswap_7702,
+                                       quant_pool_drainer}
+
+    # PATH A — malicious-delegator bytecode signature
+    for each EIP-7702 authorization A:
+      delegator ← A.delegator_address
+      bytecode ← eip7702_delegator_bytecode_registry[delegator]
+      cluster ← bytecode_cluster_match(bytecode, MALICIOUS_DELEGATOR_CLUSTERS)
+      if cluster ≠ None:
+        emit(PATH_A, eoa=A.eoa, delegator, cluster,
+             severity=critical)
+
+    # PATH B — batch-transaction drainer pattern
+    for each set_code_tx T:
+      execute_call ← next_userauth_tx_after(T.eoa, T.t)
+      if execute_call.is_batch_execute()
+         and execute_call.transfers_count ≥ batch_drain_floor
+         and any(d ∈ MALICIOUS_DELEGATOR_CLUSTERS
+                  for d in execute_call.recipients):
+        emit(PATH_B, eoa=T.eoa, set_code_tx=T,
+             execute_call, transfer_count=execute_call.transfers_count,
+             severity=critical)
+
+    # PATH C — chain-agnostic-replay surface
+    for each authorization A:
+      if A.chain_id == 0 or A.chain_id == None:
+        replicated_chains ← cross_chain_delegation_state_index
+                              .lookup(eoa = A.eoa)
+        if |replicated_chains| ≥ replay_chain_floor:
+          emit(PATH_C, eoa=A.eoa, replicated_chains,
+               binding="chain-agnostic", severity=high)
+
+    # PATH D — future-deposit-trapping forensic
+    for each EOA E with active malicious delegation:
+      inbound ← eoa_inbound_transfer_log.events(E, window = W)
+      for t in inbound:
+        same_block_outbound ← detect_auto_routed_outbound(E, t)
+        if same_block_outbound ≠ None
+           and recipient_in_drainer_cluster(same_block_outbound):
+          emit(PATH_D, eoa=E, inbound_transfer=t,
+               outbound_transfer=same_block_outbound,
+               severity=critical)
+
+parameters:
+  batch_drain_floor:           { type: integer,  default: 2 }
+  replay_chain_floor:          { type: integer,  default: 2 }
+  W:                           { type: duration, default: 24h }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               eoa, delegator, cluster, set_code_tx, execute_call,
+               transfer_count, replicated_chains, binding,
+               inbound_transfer, outbound_transfer, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-05-eip7702-crimeenjoyor-delegation-phishing-cohort   # canonical T13.004 cohort anchor
+  negative:
+    - "EIP-7702 delegation to a benign smart-wallet implementation with chain-id-bound authorisation tuple"
+    - "EOA whose set-code authorisation registers a documented vendor-published delegator and exercises the EOA only via bounded batched calls"
+
+false_positive_modes:
+  - PATH A false positives for community-deployed forks of legitimate smart-wallet implementations whose bytecode incidentally resembles flagged clusters (require cluster-attribution verification beyond bytecode regex)
+  - PATH B false positives for legitimate batch transactions through audited smart-wallet UX (require recipient cluster match)
+  - PATH C false positives where chain-id binding is omitted intentionally for vendor-managed multi-chain deployment with disclosed scope (require absence of disclosed scope)
+  - PATH D false positives for legitimate auto-routing wallet UX (e.g., gas-abstraction routers) — require recipient cluster match in drainer set
+
+mitigations: [OAK-M02, OAK-M21, OAK-M22, OAK-M30, OAK-M31, OAK-M39]
+
+reference_implementations:
+  - { target: wintermute-crimeenjoyor-dune,  chain: evm, url: "" }
+  - { target: goplus-delegation-state-api,    chain: evm, url: "" }
+  - { target: slowmist-7702-forensic,         chain: evm, url: "" }
+  - { target: metamask-7702-warn-ux,          chain: evm, url: "" }
+  - { target: hacken-7702-monitor,            chain: evm, url: "" }
