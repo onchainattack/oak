@@ -280,12 +280,15 @@ const resolveMarkdownHref = (currentPath: string, href = "") => {
     return href;
   }
 
+  // Resolve relative .md href against the document's filesystem path.
+  // Returns the canonical filesystem path (e.g. `examples/2025-02-bybit.md`)
+  // — the click handler maps this to the in-app `/document/...` route.
   const base = currentPath.includes("/") ? currentPath.split("/").slice(0, -1).join("/") : "";
   const normalized = new URL(href, `https://oak.local/${base ? `${base}/` : ""}`).pathname.replace(
     /^\//,
     "",
   );
-  return `#/${normalized}`;
+  return normalized;
 };
 
 // Categorize actors into broad classes. Title-prefix matching keeps it data-driven.
@@ -1760,9 +1763,15 @@ function MarkdownDocument({
                   if (!(target instanceof HTMLAnchorElement)) return;
                   const href = target.getAttribute("href") ?? "";
                   const resolvedHref = resolveMarkdownHref(path, href);
-                  const docTarget = resolvedHref.startsWith("#/")
-                    ? resolvedHref.replace(/^#\//, "")
-                    : "";
+                  // Intra-corpus markdown link → open in-app via the React
+                  // router instead of letting the browser navigate to the
+                  // raw .md file.
+                  const isExternal =
+                    resolvedHref.startsWith("http://") ||
+                    resolvedHref.startsWith("https://") ||
+                    resolvedHref.startsWith("mailto:") ||
+                    resolvedHref.startsWith("#");
+                  const docTarget = !isExternal && resolvedHref.endsWith(".md") ? resolvedHref : "";
                   if (!docTarget) return;
                   event.preventDefault();
                   onOpenDoc(docTarget);
