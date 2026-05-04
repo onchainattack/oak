@@ -1,8 +1,6 @@
 :root {
   color-scheme: dark;
-  font-family:
-    "Geist", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
+  font-family: var(--sans);
   background: #0a0a0c;
   color: #e8e9ec;
 
@@ -37,6 +35,8 @@
   --chain-bnb: #f0b90b;
   --chain-tron: #ff060a;
 
+  /* font families */
+  --sans: "Geist", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --shadow: 0 32px 64px -16px rgba(0, 0, 0, 0.7);
   --shadow-sharp: 0 1px 0 rgba(232, 233, 236, 0.04), 0 8px 24px -8px rgba(0, 0, 0, 0.5);
@@ -71,6 +71,25 @@
   --t-fast: 120ms ease;
   --t-base: 180ms ease;
   --t-slow: 240ms ease;
+
+  /* secondary data accents — used sparingly, only as flags */
+  --gold: #e6c14a;
+  --blue: #9ec0ff;
+
+  /* accent fade variants (faint surface tints) */
+  --accent-faint: rgba(0, 255, 209, 0.06);
+  --accent-fade: rgba(0, 255, 209, 0.04);
+  --accent-mist: rgba(0, 255, 209, 0.025);
+
+  /* ink fade variants (subtle borders / muted overlays) */
+  --line-soft: rgba(232, 233, 236, 0.04);
+  --line-medium: rgba(232, 233, 236, 0.13);
+  --ink-faint: rgba(232, 233, 236, 0.32);
+
+  /* additional surface tints */
+  --surface-fade: rgba(255, 255, 255, 0.015);
+  --surface-soft: rgba(255, 255, 255, 0.02);
+  --surface-medium: rgba(255, 255, 255, 0.03);
 }
 
 * {
@@ -180,7 +199,7 @@ button {
 }
 
 .oak-logo-mark .mark-hex {
-  fill: rgba(0, 255, 209, 0.04);
+  fill: var(--accent-fade);
   stroke: var(--ink);
   stroke-linejoin: miter;
   stroke-width: 2.4;
@@ -245,7 +264,7 @@ button {
 
 .ui-icon {
   align-items: center;
-  background: rgba(0, 255, 209, 0.06);
+  background: var(--accent-faint);
   border: 1px solid var(--accent-line);
   border-radius: var(--r-sm);
   color: var(--accent);
@@ -297,7 +316,7 @@ button {
 .top-search {
   align-items: center;
   background: rgba(8, 9, 12, 0.72);
-  border: 1px solid rgba(232, 233, 236, 0.13);
+  border: 1px solid var(--line-medium);
   border-radius: 16px;
   display: flex;
   gap: 12px;
@@ -422,7 +441,7 @@ button {
 
 .nav-links a:hover,
 .nav-links button:hover {
-  background: rgba(0, 255, 209, 0.06);
+  background: var(--accent-faint);
   color: var(--ink);
 }
 
@@ -521,7 +540,7 @@ button {
 }
 
 .hero-proof span {
-  border: 1px solid rgba(232, 233, 236, 0.13);
+  border: 1px solid var(--line-medium);
   border-radius: 999px;
   color: var(--muted);
   font-family: var(--mono);
@@ -589,7 +608,7 @@ button {
 }
 
 .button-secondary {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-soft);
   border: 1px solid var(--line);
   color: var(--ink);
 }
@@ -648,7 +667,7 @@ button {
 
 .stat-card {
   align-content: start;
-  background: rgba(255, 255, 255, 0.015);
+  background: var(--surface-fade);
   border: 1px solid var(--line);
   border-radius: var(--r-md);
   display: grid;
@@ -660,7 +679,7 @@ button {
 
 .stat-card:hover {
   border-color: var(--line-strong);
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--surface-2);
 }
 
 .stat-card > span {
@@ -755,7 +774,7 @@ button {
   flex-wrap: wrap;
   align-items: stretch;
   gap: 4px;
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--surface-1);
   border: 1px solid var(--line);
   border-radius: var(--r-md);
 }
@@ -785,7 +804,7 @@ button {
 
 .kc-chip:hover {
   border-color: var(--line-strong);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-soft);
 }
 
 .kc-chip.active {
@@ -804,7 +823,7 @@ button {
   font-size: 11px;
   font-weight: 500;
   color: var(--ink);
-  font-family: "Geist", sans-serif;
+  font-family: var(--sans);
   white-space: nowrap;
 }
 
@@ -849,7 +868,7 @@ button {
 }
 
 .kc-aux-chip.active {
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--surface-2);
   border-color: var(--ink);
   border-style: solid;
 }
@@ -887,7 +906,7 @@ button {
   align-items: flex-end;
   margin-top: 24px;
   padding: 14px;
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--surface-1);
   border: 1px solid var(--line);
   border-radius: var(--r-md);
 }
@@ -917,7 +936,7 @@ button {
 }
 
 .matrix-console input {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-soft);
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   color: var(--ink);
@@ -930,7 +949,7 @@ button {
 .matrix-console input:focus {
   border-color: var(--accent-line);
   outline: none;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-3);
 }
 
 .chip-group > div {
@@ -941,7 +960,7 @@ button {
 
 .chip-group button,
 .reset-button {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-soft);
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   color: var(--muted);
@@ -972,7 +991,7 @@ button {
 }
 
 .relationship-filter select {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-soft);
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   color: var(--ink);
@@ -1065,7 +1084,7 @@ button {
 }
 
 .tactic-column {
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--surface-1);
   border: 1px solid var(--line);
   border-radius: var(--r-md);
   min-width: 220px;
@@ -1079,7 +1098,7 @@ button {
 
 .tactic-column header {
   align-content: start;
-  background: rgba(255, 255, 255, 0.015);
+  background: var(--surface-fade);
   border-bottom: 1px solid var(--line);
   display: grid;
   gap: 8px;
@@ -1183,7 +1202,7 @@ button {
 }
 
 .technique-card {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-soft);
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   color: inherit;
@@ -1202,7 +1221,7 @@ button {
 }
 
 .technique-card:hover {
-  background: rgba(0, 255, 209, 0.04);
+  background: var(--accent-fade);
   border-color: var(--accent-line);
 }
 
@@ -1254,7 +1273,7 @@ button {
 }
 
 .example-card {
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--surface-1);
   border: 1px solid var(--line);
   border-radius: var(--r-md);
   color: inherit;
@@ -1275,7 +1294,7 @@ button {
 }
 
 .example-card:hover {
-  background: rgba(0, 255, 209, 0.025);
+  background: var(--accent-mist);
   border-color: var(--accent-line);
 }
 
@@ -1324,7 +1343,7 @@ button {
 }
 
 .example-meta em {
-  background: rgba(0, 255, 209, 0.06);
+  background: var(--accent-faint);
   border: 1px solid rgba(0, 255, 209, 0.22);
   border-radius: 6px;
   color: var(--accent);
@@ -1350,7 +1369,7 @@ button {
 .actor-card,
 .mitigation-card,
 .software-card {
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--surface-1);
   border: 1px solid var(--line);
   border-radius: var(--r-md);
   color: inherit;
@@ -1373,7 +1392,7 @@ button {
 .actor-card:hover,
 .mitigation-card:hover,
 .software-card:hover {
-  background: rgba(0, 255, 209, 0.025);
+  background: var(--accent-mist);
   border-color: var(--accent-line);
 }
 
@@ -1430,7 +1449,7 @@ button {
 }
 
 .contributor-grid button {
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--surface-1);
   border: 1px solid var(--line);
   border-radius: var(--r-md);
   color: inherit;
@@ -1446,7 +1465,7 @@ button {
 
 .contributor-grid button:hover {
   border-color: var(--accent-line);
-  background: rgba(0, 255, 209, 0.025);
+  background: var(--accent-mist);
 }
 
 .contributor-grid button > span:not(.ui-icon) {
@@ -1499,7 +1518,7 @@ button {
   height: 14px;
   border-radius: 8px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-3);
   border: 1px solid var(--line);
 }
 
@@ -1513,7 +1532,7 @@ button {
 }
 
 .cov-seg.cov-partial {
-  background: #e6c14a;
+  background: var(--gold);
 }
 
 .cov-seg.cov-gap {
@@ -1561,7 +1580,7 @@ button {
 
 .cov-pill.cov-partial {
   border-color: rgba(230, 193, 74, 0.5);
-  color: #e6c14a;
+  color: var(--gold);
 }
 
 .cov-pill.cov-partial.active,
@@ -1612,7 +1631,7 @@ button {
 }
 
 .coverage-table thead th {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-3);
   text-align: left;
   padding: 12px 14px;
   font-size: 11px;
@@ -1630,7 +1649,7 @@ button {
 }
 
 .coverage-table tbody tr:hover {
-  background: rgba(0, 255, 209, 0.04);
+  background: var(--accent-fade);
 }
 
 .coverage-table td {
@@ -1646,7 +1665,7 @@ button {
 }
 
 .coverage-table .cov-name {
-  font-family: "Geist", sans-serif;
+  font-family: var(--sans);
   font-size: 13px;
   color: var(--ink);
 }
@@ -1662,7 +1681,7 @@ button {
 }
 
 .cov-row-partial td:first-child {
-  border-left: 3px solid #e6c14a;
+  border-left: 3px solid var(--gold);
 }
 
 .cov-row-full td:first-child {
@@ -1714,7 +1733,7 @@ button {
 
 .cov-stat-pill.cov-tier-partial {
   border-color: rgba(230, 193, 74, 0.5);
-  color: #e6c14a;
+  color: var(--gold);
 }
 
 .cov-stat-pill.cov-tier-partial.active,
@@ -1724,7 +1743,7 @@ button {
 
 .cov-stat-pill.cov-tier-documented {
   border-color: rgba(120, 170, 255, 0.4);
-  color: #9ec0ff;
+  color: var(--blue);
 }
 
 .cov-stat-pill.cov-tier-documented.active,
@@ -1882,7 +1901,7 @@ button {
   min-width: 22px;
   max-width: 22px;
   transition: color 180ms ease;
-  border-left: 1px solid rgba(255, 255, 255, 0.03);
+  border-left: 1px solid var(--surface-medium);
 }
 
 .cov-tech-header:hover {
@@ -1942,8 +1961,8 @@ button {
   padding: 0;
   text-align: center;
   vertical-align: middle;
-  border-left: 1px solid rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  border-left: 1px solid var(--surface-medium);
+  border-bottom: 1px solid var(--surface-medium);
   cursor: pointer;
   transition: transform 120ms ease;
 }
@@ -1971,15 +1990,15 @@ button {
 
 .cov-cell.cov-tier-full .cov-cell-dot {
   background: var(--accent);
-  box-shadow: 0 0 6px rgba(0, 255, 209, 0.4);
+  box-shadow: 0 0 6px var(--accent-line);
 }
 
 .cov-cell.cov-tier-partial .cov-cell-dot {
-  background: #e6c14a;
+  background: var(--gold);
 }
 
 .cov-cell.cov-tier-documented .cov-cell-dot {
-  background: #9ec0ff;
+  background: var(--blue);
   opacity: 0.6;
 }
 
@@ -2054,10 +2073,10 @@ button {
 }
 
 .cov-vendor-stats details {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-soft);
   border-radius: 8px;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--surface-3);
   overflow: hidden;
 }
 
@@ -2074,8 +2093,8 @@ button {
 }
 
 .cov-vendor-stats details.cov-tier-full summary { color: var(--accent); }
-.cov-vendor-stats details.cov-tier-partial summary { color: #e6c14a; }
-.cov-vendor-stats details.cov-tier-documented summary { color: #9ec0ff; }
+.cov-vendor-stats details.cov-tier-partial summary { color: var(--gold); }
+.cov-vendor-stats details.cov-tier-documented summary { color: var(--blue); }
 .cov-vendor-stats details.cov-tier-gap summary { color: var(--red); }
 .cov-vendor-stats details.cov-tier-na summary { color: #aaa; }
 
@@ -2085,8 +2104,8 @@ button {
   border-radius: 2px;
 }
 .cov-vendor-stats details.cov-tier-full .cov-cell-dot { background: var(--accent); }
-.cov-vendor-stats details.cov-tier-partial .cov-cell-dot { background: #e6c14a; }
-.cov-vendor-stats details.cov-tier-documented .cov-cell-dot { background: #9ec0ff; opacity: 0.7; }
+.cov-vendor-stats details.cov-tier-partial .cov-cell-dot { background: var(--gold); }
+.cov-vendor-stats details.cov-tier-documented .cov-cell-dot { background: var(--blue); opacity: 0.7; }
 .cov-vendor-stats details.cov-tier-gap .cov-cell-dot { background: var(--red); opacity: 0.6; }
 .cov-vendor-stats details.cov-tier-na .cov-cell-dot { background: #777; }
 
@@ -2171,7 +2190,7 @@ button {
 }
 
 .rg-key-m {
-  background: #00ffd1;
+  background: var(--accent);
 }
 
 .rg-key-s {
@@ -2184,7 +2203,7 @@ button {
 
 .rg-legend-hint {
   margin-left: auto;
-  color: rgba(232, 233, 236, 0.32);
+  color: var(--ink-faint);
   font-size: 10px;
   letter-spacing: 0.04em;
 }
@@ -2353,7 +2372,7 @@ button {
 }
 
 .document-facts div {
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--surface-1);
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   min-height: auto;
@@ -2406,7 +2425,7 @@ button {
 }
 
 .document-notes article {
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--surface-1);
   border: 1px solid var(--line);
   border-left: 2px solid var(--accent);
   border-radius: var(--r-sm);
@@ -2512,7 +2531,7 @@ button {
 }
 
 .markdown-shell blockquote {
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--surface-1);
   border: 1px solid var(--line);
   border-left: 2px solid var(--accent);
   border-radius: var(--r-sm);
@@ -2526,7 +2545,7 @@ button {
 }
 
 .markdown-shell pre {
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--surface-2);
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   overflow-x: auto;
@@ -2574,7 +2593,7 @@ button {
 }
 
 .markdown-shell th {
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--surface-2);
   color: var(--ink);
   font-family: var(--mono);
   font-size: 11px;
@@ -2589,12 +2608,12 @@ button {
 }
 
 .markdown-shell tbody tr:hover td {
-  background: rgba(0, 255, 209, 0.025);
+  background: var(--accent-mist);
 }
 
 .markdown-shell td:first-child,
 .markdown-shell th:first-child {
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--surface-1);
   color: var(--ink);
   font-family: var(--mono);
   font-size: 11px;
@@ -2837,7 +2856,7 @@ button {
 }
 
 .detection-spec-tags code {
-  background: rgba(0, 255, 209, 0.06);
+  background: var(--accent-faint);
   border-radius: 6px;
   padding: 2px 6px;
   word-break: break-all;
@@ -2912,24 +2931,24 @@ button {
 .link-row.inline {
   background: none;
   border: none;
-  color: var(--accent, #00ffd1);
+  color: var(--accent, var(--accent));
   display: inline;
   padding: 0;
   text-align: left;
   text-decoration: underline;
-  text-decoration-color: rgba(0, 255, 209, 0.4);
+  text-decoration-color: var(--accent-line);
   width: auto;
 }
 
 .link-row.inline:hover {
   border: none;
-  color: var(--accent, #00ffd1);
+  color: var(--accent, var(--accent));
   transform: none;
 }
 
 .link-row {
   background:
-    linear-gradient(180deg, rgba(0, 255, 209, 0.04), transparent 50%),
+    linear-gradient(180deg, var(--accent-fade), transparent 50%),
     rgba(13, 18, 26, 0.95);
   border: 1px solid rgba(242, 244, 247, 0.08);
   border-radius: 12px;
@@ -2946,7 +2965,7 @@ button {
 }
 
 .link-row:hover {
-  border-color: rgba(0, 255, 209, 0.4);
+  border-color: var(--accent-line);
   transform: translateX(2px);
 }
 
@@ -3076,7 +3095,7 @@ button {
 
 .sb-link:hover {
   color: var(--ink);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-soft);
 }
 
 .sb-link.active {
@@ -3091,7 +3110,7 @@ button {
 .sb-link-tag {
   font-size: 10px;
   font-weight: 600;
-  color: rgba(232, 233, 236, 0.32);
+  color: var(--ink-faint);
   font-variant-numeric: tabular-nums;
   min-width: 18px;
 }
@@ -3117,7 +3136,7 @@ button {
   align-items: center;
   gap: 8px;
   padding: 6px 10px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-soft);
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   font-family: var(--mono);
@@ -3215,7 +3234,7 @@ button {
 }
 
 .app-content .top-search {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-soft);
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   min-height: 36px;
@@ -3224,7 +3243,7 @@ button {
 
 .app-content .top-search:focus-within {
   border-color: var(--accent-line);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-3);
 }
 
 .app-content .top-search span {
@@ -3261,7 +3280,7 @@ button {
 }
 
 .foot-tag {
-  color: rgba(232, 233, 236, 0.32);
+  color: var(--ink-faint);
   margin-right: 6px;
   font-weight: 500;
 }
@@ -3386,7 +3405,7 @@ button {
 }
 
 .howto-step {
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--surface-1);
   border: 1px solid var(--line);
   border-radius: var(--r-md);
   padding: 24px;
@@ -3524,7 +3543,7 @@ button {
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: rgba(232, 233, 236, 0.32);
+  color: var(--ink-faint);
   padding: 4px 12px 8px;
 }
 
@@ -3565,7 +3584,7 @@ button {
 }
 
 .overview-hero code {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-3);
   border-radius: 3px;
   color: var(--ink);
   padding: 1px 5px;
@@ -3837,7 +3856,7 @@ button {
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: rgba(232, 233, 236, 0.32);
+  color: var(--ink-faint);
   margin-bottom: 4px;
 }
 
@@ -3856,7 +3875,7 @@ button {
 .foot-meta {
   font-family: var(--mono);
   font-size: 11px;
-  color: rgba(232, 233, 236, 0.32);
+  color: var(--ink-faint);
 }
 
 .foot-bar {
