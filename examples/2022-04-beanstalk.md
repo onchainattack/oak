@@ -1,7 +1,7 @@
 # Beanstalk Farms governance attack — Ethereum — 2022-04-17
 
 **Loss:** \~\$182M (\~\$76M attacker net profit after flash-loan repayment; remainder belonged to legitimate protocol holders).
-**OAK Techniques observed:** OAK-T9.002 (Flash-Loan-Enabled Exploit), OAK-T9.003 (Governance Attack), OAK-T7.001 (Mixer-Routed Hop) downstream.
+**OAK Techniques observed:** OAK-T9.002 (Flash-Loan-Enabled Exploit), OAK-T9.003 (Governance Attack), OAK-T16.001 (Vote Takeover via Flash-Loan — operational sub-pattern of T9.003), OAK-T7.001 (Mixer-Routed Hop) downstream.
 **Attribution:** **pseudonymous** attacker; no public named-individual attribution.
 
 ## Summary
