@@ -1,0 +1,102 @@
+oak_techniques: [OAK-T4.001]
+spec_id: oak-detection-T4.001
+version: 0.1.0
+maturity: stable
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect victim-signed Permit2 / EIP-2612 authorisations whose
+  on-chain exercise drains funds to drainer-clustered spenders.
+  Authority artefact lives off-chain — pre-event detection happens at
+  the wallet-UX layer; on-chain detection is post-event (signature is
+  off-chain; the exercise is the first observable event). Excludes:
+  T4.004 (allowance-pattern drainer — on-chain Approval event
+  artefact); T4.002 (compromised-frontend entry vector — composes via
+  permit solicitation); legitimate Permit2 flows by canonical routers
+  (Uniswap / 0x / CowSwap) — distinguished by spender allowlist.
+
+data_sources: [permit2_event_log, erc2612_permit_log, dex_router_inventory,
+               funder_graph, drainer_cluster_watchlist,
+               mempool_log, off_chain_phishing_domain_feed]
+
+detection_logic:
+  description: |
+    Three orthogonal paths plus a wallet-UX layer signal. PATH A
+    (per-grantee cluster match): Permit2 `permitTransferFrom` /
+    `permitWitnessTransferFrom` or ERC-2612 `permit` exercise where
+    the spender clusters with drainer infrastructure watchlist. PATH B
+    (per-EOA approval-velocity outlier): a high-balance EOA generates
+    multiple distinct permit-grantees within a short window. PATH C
+    (mempool intervention): pre-block telemetry on `transferFrom` /
+    `permitTransferFrom` calls targeting known drainer-router addresses
+    — narrow window for monitored treasury wallets.
+  pseudocode: |
+    PERMIT2 = "0x000000000022D473030F116dDEE9F6B43aC78BA3"
+
+    # PATH A — drainer-clustered spender
+    on event PermitExercise E ∈ {Permit2.permitTransferFrom,
+                                  Permit2.permitWitnessTransferFrom,
+                                  ERC2612.permit_consumed}:
+      spender ← E.spender
+      cluster ← funder_graph_cluster(spender, hops = trace_hops)
+      if cluster ∩ drainer_cluster_watchlist ≠ ∅
+         or recently_deployed(spender, days = fresh_spender_window)
+            and outsized_aggregate_authority(spender):
+        emit(PATH_A, event=E, spender, cluster_match=cluster ∩ drainer_cluster_watchlist,
+             severity=critical)
+
+    # PATH B — per-EOA approval-velocity outlier
+    for each EOA owner over rolling window W:
+      grantees ← {e.spender for e in permits_signed_by(owner, W)}
+      non_canonical ← grantees − canonical_router_allowlist
+      if |non_canonical| ≥ velocity_grantee_floor
+         and balance_usd(owner, W.start) > high_balance_floor:
+        emit(PATH_B, owner, distinct_non_canonical_grantees=|non_canonical|,
+             severity=high)
+
+    # PATH C — mempool intervention for monitored treasury wallets
+    on mempool tx T:
+      if T.target ∈ drainer_router_watchlist
+         or selector(T) ∈ {permitTransferFrom_sel, transferFrom_sel}
+            and T.from ∈ monitored_treasury_set:
+        emit(PATH_C, mempool_tx=T, severity=critical)
+
+parameters:
+  trace_hops:                   { type: integer, default: 3 }
+  fresh_spender_window:         { type: duration, default: 7d }
+  velocity_grantee_floor:       { type: integer, default: 3 }
+  high_balance_floor:           { type: number,  default: 100000 }   # $100k
+  canonical_router_allowlist:   { type: list,    default: [] }       # Uniswap / 0x / CowSwap routers
+  drainer_cluster_watchlist:    { type: list,    default: [] }       # Inferno / Angel / Pink / Vanilla
+  drainer_router_watchlist:     { type: list,    default: [] }
+  monitored_treasury_set:       { type: list,    default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               event, spender, owner, distinct_grantees, mempool_tx,
+               cluster_match, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-10-inferno-drainer-handover           # Inferno → Angel service infrastructure
+    - 2023-2026-fake-dex-clone-frontend-cohort    # T4.008 distribution chains into T4.001
+    - 2025-05-inferno-drainer-reloaded-encrypted-onchain-config
+  negative:
+    - "Permit2 signature consumed by Uniswap Universal Router from a documented user-DEX-trade flow"
+    - "ERC-2612 permit consumed by canonical 0x ExchangeProxy with allowlist match"
+
+false_positive_modes:
+  - legitimate Permit2 flow with canonical-router spender (allowlist-suppressed)
+  - legitimate batch-trading bots producing high grantee velocity (calibrate via originating-domain provenance and balance threshold)
+  - permit consumed during user-initiated DEX swap with on-chain history of legitimate use of the spender — cluster-membership filter reduces noise
+  - PATH B false positives for active multi-protocol users — combine with cluster_match before escalating
+
+mitigations: [OAK-M08, OAK-M19, OAK-M30, OAK-M31]
+
+reference_implementations:
+  - { target: rabby,             chain: evm,         url: "" }
+  - { target: pocket-universe,   chain: evm,         url: "" }
+  - { target: metamask-simulation, chain: evm,       url: "" }
+  - { target: scamsniffer,       chain: evm,         url: "" }
+  - { target: revoke-cash,       chain: evm,         url: "" }
+  - { target: mg-detectors-rs,   chain: evm,         url: "" }

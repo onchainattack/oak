@@ -1,0 +1,102 @@
+oak_techniques: [OAK-T4.006]
+spec_id: oak-detection-T4.006
+version: 0.1.0
+maturity: observed
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect WalletConnect session-establishment phishing — malicious
+  mobile apps, QR-code phishing, or deep-link invocations that pair
+  with attacker infrastructure and subsequently solicit malicious
+  signing payloads. Entry vector is consent-to-session, not consent-
+  to-payload — the per-payload extraction chains into T4.001 / T4.004 /
+  T4.005. Excludes: T4.001 (signing-flow inside trusted dApp); T4.002
+  (compromised legitimate dApp distribution); legitimate WalletConnect
+  sessions with allowlisted dApps + smart-contract-integration flows.
+
+data_sources: [walletconnect_session_log, app_store_listing_log,
+               peer_dapp_allowlist, qr_code_origin_log,
+               funder_graph, drainer_cluster_watchlist]
+
+detection_logic:
+  description: |
+    Three orthogonal paths anchored at session establishment.
+    PATH A (app-store impersonation): an app-store-distributed app
+    branded with a WalletConnect-using dApp's name is not in the
+    canonical authorised-app registry and exhibits brand-impersonation
+    fingerprints. PATH B (peer-dApp non-allowlist at session-establish):
+    a session-establishment event with a peer dApp whose URL / deep-
+    link does not match the canonical allowlist for the user's intended
+    dApp. PATH C (chained-extraction within session): per-session
+    signing payload exhibits T4.001 / T4.004 / T4.005 signatures
+    against a non-allowlisted spender / operator within the session
+    window.
+  pseudocode: |
+    # PATH A — app-store impersonation
+    for each app A in app_store_listings:
+      claimed ← claimed_dapp_brand(A)
+      if claimed == None: continue
+      registry ← authorised_app_registry_for(claimed)
+      if registry ≠ None and A.package_id ∉ registry:
+        fingerprints ← {fake_review_pattern(A),
+                        recent_developer_account_age(A),
+                        embedded_phishing_domain(A)}
+        if any(fingerprints):
+          emit(PATH_A, app=A, claimed_dapp=claimed,
+               fingerprints, severity=critical)
+
+    # PATH B — peer-dApp non-allowlist
+    on event WalletConnect.SessionEstablished E:
+      peer ← E.peer_dapp
+      user_intent_dapp ← inferred_user_intent_dapp(E)
+      if user_intent_dapp ≠ None:
+        allowlist ← per_dapp_domain_allowlist[user_intent_dapp]
+        if peer.url ∉ allowlist
+           and peer.deep_link_origin ∉ allowlist:
+          emit(PATH_B, session=E.session_id, peer=peer,
+               intended_dapp=user_intent_dapp, severity=critical)
+
+    # PATH C — chained extraction within session
+    for each session S over its lifetime:
+      payloads ← session_signing_payloads(S)
+      hits ← []
+      for p in payloads:
+        if matches_t4001(p) and t4001_spender(p) ∉ canonical_router_allowlist:
+          hits += [(t4001, p)]
+        if matches_t4004(p) and t4004_spender(p) ∉ canonical_router_allowlist:
+          hits += [(t4004, p)]
+        if matches_t4005(p) and t4005_operator(p) ∉ marketplace_operator_allowlist:
+          hits += [(t4005, p)]
+      if hits ≠ ∅:
+        emit(PATH_C, session=S.session_id, hits, severity=critical)
+
+parameters:
+  authorised_app_registry:        { type: object, default: {} }    # claimed_dapp → [{package_id, signing_cert}]
+  per_dapp_domain_allowlist:      { type: object, default: {} }    # canonical_dapp → [domains, deep_link_schemes]
+  canonical_router_allowlist:     { type: list,   default: [] }
+  marketplace_operator_allowlist: { type: list,   default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               app, session_id, peer, intended_dapp, hits, evidence]
+
+test_fixtures:
+  positive: []                            # cohort-only at v0.1; no canonical incident anchor at OAK-fixture-file level
+  negative:
+    - "WalletConnect session with allowlisted dApp (Uniswap, Aave, OpenSea) via canonical deep-link"
+    - "App-store app in the canonical authorised-app registry with valid signing cert"
+
+false_positive_modes:
+  - new dApp launches not yet in allowlists (calibrate via deployment_grace_window for known-team dApps)
+  - cross-platform dApp launches whose deep-link schemes vary by platform — annotate per-platform allowlist
+  - PATH A false positives where the app is a legitimate community client built on an open SDK (require brand-impersonation fingerprints, not just non-registry)
+  - PATH C inherits T4.001 / T4.004 / T4.005 false-positive surfaces — see those specs
+
+mitigations: [OAK-M30, OAK-M31, OAK-M40]
+
+reference_implementations:
+  - { target: trust-wallet,      chain: cross-chain, url: "" }
+  - { target: rabby,             chain: evm,    url: "" }
+  - { target: coinbase-wallet,   chain: cross-chain, url: "" }
+  - { target: walletconnect-protocol, chain: cross-chain, url: "" }
+  - { target: app-store-moderation, chain: cross-chain, url: "" }

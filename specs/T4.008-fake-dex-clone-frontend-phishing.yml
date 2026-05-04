@@ -1,0 +1,139 @@
+oak_techniques: [OAK-T4.008]
+spec_id: oak-detection-T4.008
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect phishing distributed via paid inventory on a legitimate ad
+  platform (Google Search, X promoted, Telegram bots, App Store /
+  Play Store) hosting counterfeit DEX UIs at typosquat / homoglyph
+  domains. Distribution surface is *paid-for-visibility on ad platform*
+  + *counterfeit UI substrate on attacker-controlled domain*. Four
+  sub-surfaces: Google Search ads (T4.008.001), X promoted posts
+  (.002), Telegram bots (.003), App Store fake-DEX wrappers (.004).
+  On-chain extraction primitive chains into T4.001 / T4.004 / T4.005.
+  Excludes: T4.002 (compromised real-platform UI — T4.008 has no
+  legitimate counterpart to compromise); T11.005 (operator-controlled
+  fake platform with no legitimate counterpart — T4.008 impersonates
+  legitimate platform brand).
+
+data_sources: [ad_platform_listing_log, app_store_listing_log,
+               typosquat_domain_feed, drainer_cluster_watchlist,
+               wallet_pretrade_simulation_log,
+               canonical_dex_domain_registry]
+
+detection_logic:
+  description: |
+    Four orthogonal paths matching the four distribution sub-surfaces
+    plus an on-chain backend correlation. PATH A (Google Search /
+    paid-ad listing): ad on paid inventory targeting a DEX brand
+    keyword resolves to a typosquat / near-miss / homoglyph domain.
+    PATH B (X / social paid promoted post): promoted post by a brand-
+    impersonation account links to a typosquat DEX UI. PATH C (Telegram
+    bot / channel): community-amplified bot routing users to a
+    counterfeit UI; sustained user-funnel volume. PATH D (App Store /
+    Play Store wrapper): native app distributed with brand-impersonation
+    naming, embedding a WebView that loads a phishing UI; mnemonic-
+    phrase input prompts during "wallet import." CORRELATION (on-chain
+    backend): drainer-spender-contract pattern observed in approvals
+    from users who came through one of the above paths.
+  pseudocode: |
+    BRAND_KEYWORDS = ["uniswap", "pancakeswap", "curve", "raydium",
+                      "lido", "stargate", "orbiter", "radiant"]
+
+    # PATH A — Google / paid-ad listing on typosquat domain
+    for each ad A in ad_platform_listing_log:
+      if A.target_keywords ∩ BRAND_KEYWORDS == ∅: continue
+      resolves_to ← resolve_click_url(A.tracking_template, A.click_url)
+      canonical ← canonical_dex_domain_registry[matched_keyword(A)]
+      if resolves_to.domain ∉ canonical.domains
+         and (is_typosquat(resolves_to, canonical) or is_homoglyph(resolves_to, canonical)):
+        emit(PATH_A, ad_platform=A.platform, ad_id=A.id,
+             tracking_template=A.tracking_template,
+             resolves_to, canonical_brand=matched_keyword(A),
+             severity=critical)
+
+    # PATH B — X / social paid promoted post
+    for each post P in social_paid_post_log:
+      if P.account.brand_impersonation_score < impersonation_floor: continue
+      urls ← extract_urls(P.text)
+      typosquats ← [u for u in urls
+                    if any(is_typosquat(u, c) or is_homoglyph(u, c)
+                            for c in canonical_dex_domain_registry.values())]
+      if typosquats ≠ ∅:
+        emit(PATH_B, social_platform=P.platform, post=P.id,
+             impersonation_account=P.account.handle,
+             typosquat_urls=typosquats, severity=critical)
+
+    # PATH C — Telegram bot / channel
+    for each bot or channel B with crypto-related branding:
+      messages ← B.messages_in(window = bot_lookback)
+      url_set ← {u for m in messages for u in extract_urls(m.text)}
+      typosquats ← {u for u in url_set
+                    if any(is_typosquat(u, c) or is_homoglyph(u, c)
+                            for c in canonical_dex_domain_registry.values())}
+      user_volume ← B.unique_users_clicked(typosquats)
+      if typosquats ≠ ∅ and user_volume ≥ telegram_user_floor:
+        emit(PATH_C, telegram_entity=B.handle, typosquat_urls=typosquats,
+             user_click_volume=user_volume, severity=critical)
+
+    # PATH D — App Store / Play Store wrapper
+    for each app A in app_store_listing_log:
+      claimed ← claimed_dex_brand(A)
+      if claimed == None: continue
+      canonical ← canonical_dex_domain_registry[claimed]
+      if A.package_id ∉ canonical.authorised_apps:
+        webview ← static_webview_target(A.binary)
+        mnemonic_prompt ← contains_mnemonic_prompt(A.ui_strings)
+        embedded_typosquat ← any(is_typosquat(u, canonical)
+                                   for u in embedded_urls(A.binary))
+        if (webview and mnemonic_prompt) or embedded_typosquat:
+          emit(PATH_D, app=A, claimed_brand=claimed,
+               webview_target=webview, mnemonic_prompt,
+               severity=critical)
+
+    # CORRELATION — on-chain drainer-backend
+    for each victim approval E coming through any PATH A/B/C/D referrer:
+      cluster ← funder_graph_cluster(E.spender, hops = trace_hops)
+      if cluster ∩ drainer_cluster_watchlist ≠ ∅:
+        emit(CORRELATION, victim=E.owner, spender=E.spender,
+             distribution_path=referrer_path(E), severity=critical)
+
+parameters:
+  impersonation_floor:           { type: number,  default: 0.7 }
+  bot_lookback:                  { type: duration, default: 30d }
+  telegram_user_floor:           { type: integer, default: 100 }
+  trace_hops:                    { type: integer, default: 3 }
+  canonical_dex_domain_registry: { type: object,  default: {} }   # brand → {domains, authorised_apps}
+  drainer_cluster_watchlist:     { type: list,    default: [] }
+
+output_alert: [oak_technique, detection_path, severity,
+               ad_platform, ad_id, social_platform, post,
+               telegram_entity, app, resolves_to, canonical_brand,
+               typosquat_urls, evidence]
+
+test_fixtures:
+  positive:
+    - 2023-2026-fake-dex-clone-frontend-cohort     # canonical multi-year cohort (MS Drainer + Inferno + 22+ Play Store apps)
+    - 2024-12-pudgy-penguins-google-ads-nft-drainer
+  negative:
+    - "Google Ad for canonical Uniswap with tracking template resolving to uniswap.org"
+    - "App Store DEX app from a developer in canonical-DEX authorised-apps registry"
+
+false_positive_modes:
+  - legitimate cross-promotional ads from canonical DEXes (PATH A's typosquat / homoglyph filter)
+  - new launches with fresh domains that look near-miss but are canonical (allowlist via canonical_dex_domain_registry update)
+  - PATH B false positives from accounts that include DEX names without impersonation (require impersonation score above floor)
+  - PATH D false positives for legitimate community wallets that happen to integrate a DEX (require non-authorised package_id + mnemonic prompt)
+
+mitigations: [OAK-M02, OAK-M30, OAK-M31, OAK-M40]
+
+reference_implementations:
+  - { target: scamsniffer,            chain: cross-chain, url: "" }
+  - { target: web3-antivirus,         chain: cross-chain, url: "" }
+  - { target: seal-isac-blocklist,    chain: cross-chain, url: "" }
+  - { target: phishfort,              chain: cross-chain, url: "" }
+  - { target: rabby,                  chain: evm,         url: "" }
+  - { target: phantom-wallet,         chain: solana,      url: "" }

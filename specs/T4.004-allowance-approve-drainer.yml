@@ -1,0 +1,124 @@
+oak_techniques: [OAK-T4.004]
+spec_id: oak-detection-T4.004
+version: 0.1.0
+maturity: stable
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect victim-signed `approve(spender, value)` grants — typically
+  uint256.max — to attacker-clustered spenders, exercised via
+  `transferFrom` to drain ERC-20 balances. Authority artefact lives
+  on-chain as an Allowance record — pre-event detection feasible at
+  wallet UX, runtime, and per-spender-velocity layers. Excludes:
+  T4.001 (off-chain Permit2 / EIP-2612 signature — different artefact);
+  T4.005 (NFT collection-level setApprovalForAll); legitimate
+  approve(uint256.max) to canonical routers (Uniswap V2 / 0x / 1inch /
+  CowSwap) — distinguished via spender allowlist + originating-domain
+  provenance.
+
+data_sources: [erc20_approval_events, erc20_transferfrom_events,
+               funder_graph, drainer_cluster_watchlist,
+               canonical_router_allowlist, mempool_log]
+
+detection_logic:
+  description: |
+    Four orthogonal paths. PATH A (large allowance to drainer-clustered
+    spender): Approval event with value ≥ uint256_max_floor naming a
+    spender that clusters with drainer infrastructure or is freshly-
+    deployed with no legitimate inbound flow. PATH B (per-EOA approval-
+    velocity): high-balance EOA generates multiple distinct non-
+    canonical approve grants in a short window. PATH C (per-spender
+    allowance heat-map): single spender concentrates outsized aggregate
+    allowance across many victim wallets and tokens. PATH D (mempool
+    intervention): pre-block telemetry on `transferFrom` to drainer-
+    router target addresses for monitored treasury wallets.
+  pseudocode: |
+    APPROVE_SEL = "0x095ea7b3"
+    XFER_FROM_SEL = "0x23b872dd"
+    UINT256_MAX = (1 << 256) - 1
+
+    # PATH A — large allowance to drainer-clustered spender
+    on event Approval E:
+      if E.value < uint256_max_floor: continue
+      spender ← E.spender
+      if spender ∈ canonical_router_allowlist: continue
+      cluster ← funder_graph_cluster(spender, hops = trace_hops)
+      if cluster ∩ drainer_cluster_watchlist ≠ ∅
+         or (recently_deployed(spender, days = fresh_spender_window)
+             and no_legitimate_inbound(spender)):
+        emit(PATH_A, owner=E.owner, spender, value=E.value,
+             severity=critical)
+
+    # PATH B — per-EOA approval-velocity outlier
+    for each EOA owner over rolling window W:
+      grants ← approve_events_by(owner, W)
+      non_canonical ← [g for g in grants
+                       if g.spender ∉ canonical_router_allowlist]
+      distinct_spenders ← {g.spender for g in non_canonical}
+      if |distinct_spenders| ≥ velocity_floor
+         and balance_usd(owner, W.start) > high_balance_floor:
+        emit(PATH_B, owner, distinct_spenders=|distinct_spenders|,
+             severity=high)
+
+    # PATH C — per-spender allowance heat-map
+    for each spender S over rolling window W:
+      grants ← Approval events with spender == S in W
+      total_value_usd ← Σ tracked_value(g.token, g.value, g.owner) for g in grants
+      distinct_owners ← {g.owner for g in grants}
+      distinct_tokens ← {g.token for g in grants}
+      if S ∉ canonical_router_allowlist
+         and total_value_usd > heatmap_threshold_usd
+         and |distinct_owners| ≥ heatmap_owner_floor:
+        emit(PATH_C, spender=S, total_value_usd, distinct_owners=|distinct_owners|,
+             distinct_tokens=|distinct_tokens|, severity=critical)
+
+    # PATH D — mempool transferFrom intervention
+    on mempool tx T:
+      if selector(T) == XFER_FROM_SEL
+         and (T.target ∈ drainer_router_watchlist
+              or T.from ∈ monitored_treasury_set):
+        emit(PATH_D, mempool_tx=T, severity=critical)
+
+parameters:
+  uint256_max_floor:            { type: number,  default: 7.9e28 }   # ≈ 2^96
+  trace_hops:                   { type: integer, default: 3 }
+  fresh_spender_window:         { type: duration, default: 7d }
+  velocity_floor:               { type: integer, default: 3 }
+  high_balance_floor:           { type: number,  default: 100000 }
+  heatmap_threshold_usd:        { type: number,  default: 100000 }
+  heatmap_owner_floor:          { type: integer, default: 10 }
+  canonical_router_allowlist:   { type: list,    default: [] }
+  drainer_cluster_watchlist:    { type: list,    default: [] }
+  drainer_router_watchlist:     { type: list,    default: [] }
+  monitored_treasury_set:       { type: list,    default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               owner, spender, value, distinct_owners,
+               total_value_usd, mempool_tx, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-10-inferno-drainer-handover
+    - 2024-06-coinstats-snap
+    - 2024-07-li-finance
+    - 2023-2026-fake-dex-clone-frontend-cohort
+  negative:
+    - "approve(uint256.max) to Uniswap V2 router from a documented user-DEX-trade flow"
+    - "approve to 1inch AggregationRouter consumed by user swap with allowlist hit"
+
+false_positive_modes:
+  - canonical-router uint256.max grants (allowlist filters)
+  - active aggregator users producing high non-canonical grantee velocity (combine PATH B with cluster_match before escalating)
+  - benign re-approval after revoke for legitimate router (PATH C's owner-count threshold filters single-owner cycles)
+  - audited but freshly-deployed router with verified bytecode + canonical-team origin (annotate via short fresh_spender_window or extended canonical_router_allowlist)
+
+mitigations: [OAK-M06, OAK-M08, OAK-M19, OAK-M30, OAK-M31]
+
+reference_implementations:
+  - { target: rabby,             chain: evm,    url: "" }
+  - { target: pocket-universe,   chain: evm,    url: "" }
+  - { target: metamask-simulation, chain: evm,  url: "" }
+  - { target: revoke-cash,       chain: evm,    url: "" }
+  - { target: scamsniffer,       chain: evm,    url: "" }
+  - { target: forta-bot,         chain: evm,    url: "" }

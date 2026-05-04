@@ -1,0 +1,108 @@
+oak_techniques: [OAK-T4.002]
+spec_id: oak-detection-T4.002
+version: 0.1.0
+maturity: observed
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect compromise windows on legitimate protocols' user-facing surface
+  (DNS takeover, BGP hijack, JS-dependency supply chain, hosting
+  compromise, insider action) that solicit malicious permit / approval
+  / setApprovalForAll grants. Detection mixes off-chain telemetry
+  (DNS / BGP / content-hash drift) with on-chain per-protocol grantee-
+  baseline anomalies. Excludes: T4.008 (fake-DEX clone-frontend on a
+  typosquat domain — never had a real platform to compromise);
+  T4.001 / T4.004 / T4.005 (the chained extraction primitives —
+  T4.002 is the entry vector); T11.x (signing-vendor compromise at the
+  custody layer rather than dApp-front-end layer); T15.x (off-chain
+  pre-positioning beyond dApp distribution).
+
+data_sources: [dns_canary_log, bgp_route_feed, ipfs_content_hash_log,
+               ens_resolver_log, registrar_change_feed,
+               per_protocol_grantee_baseline, drainer_cluster_watchlist,
+               supply_chain_package_integrity]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (per-protocol grantee-baseline
+    drift): a known protocol's user base produces a spike of permit /
+    approval grants to a non-canonical spender within a narrow window.
+    PATH B (frontend-substrate drift): DNS / BGP / IPFS-content-hash /
+    ENS-resolver state for the protocol's canonical domains diverges
+    during the spike window. PATH C (supply-chain package integrity):
+    JS-dependency or app-distribution-package hash differs from the
+    audited / signed reference (CoinStats / DEXX class).
+  pseudocode: |
+    # PATH A — per-protocol grantee-baseline drift
+    for each protocol P in monitored_protocol_set:
+      baseline ← per_protocol_grantee_distribution(P, lookback = baseline_window)
+      window ← rolling_window(spike_window)
+      grants ← permit_or_approval_grants_in(P.user_base, window)
+      anomalies ← {g for g in grants
+                   if g.spender ∉ P.canonical_spenders
+                   and g.spender ∉ baseline.expected_grantees}
+      if |anomalies| ≥ anomaly_grant_count
+         and unique_owners(anomalies) ≥ anomaly_user_count:
+        cluster_hit ← any(g.spender ∈ funder_graph_cluster(d, hops = trace_hops)
+                           for g in anomalies for d in drainer_cluster_watchlist)
+        emit(PATH_A, protocol=P, window, anomaly_count=|anomalies|,
+             cluster_hit, severity=critical)
+
+    # PATH B — frontend-substrate drift in spike window
+    for each protocol P with PATH_A or proactive monitoring:
+      drift ← {}
+      drift[dns]      ← dns_a_record_diff(P.domains, window)
+      drift[bgp]      ← bgp_origin_change(P.hosting_ip_space, window)
+      drift[ipfs]     ← ipfs_content_hash_diff(P.ens_resolver, window)
+      drift[registrar] ← registrar_state_change(P.domains, window)
+      if any(drift[k] ≠ None for k in drift):
+        emit(PATH_B, protocol=P, drift_kinds=list(drift.keys()),
+             severity = critical if drift[dns] or drift[bgp] else high)
+
+    # PATH C — supply-chain package integrity
+    for each protocol P with monitored package distribution:
+      observed_hash ← latest_distribution_package_hash(P)
+      reference_hash ← signed_reference_hash(P, attestation_chain)
+      if observed_hash ≠ reference_hash:
+        emit(PATH_C, protocol=P, observed_hash, reference_hash,
+             severity=critical)
+
+parameters:
+  monitored_protocol_set:    { type: list,    default: [] }
+  baseline_window:           { type: duration, default: 30d }
+  spike_window:              { type: duration, default: 1h }
+  anomaly_grant_count:       { type: integer, default: 10 }
+  anomaly_user_count:        { type: integer, default: 5 }
+  trace_hops:                { type: integer, default: 3 }
+  drainer_cluster_watchlist: { type: list,    default: [] }
+  attestation_chain:         { type: object,  default: {} }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               protocol, window, anomaly_count, drift_kinds,
+               observed_hash, reference_hash, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-08-curve-dns-hijack         # canonical DNS hijack
+    - 2021-12-badgerdao                # Cloudflare Workers compromise
+    - 2024-06-coinstats-snap           # supply-chain dApp distribution
+    - 2023-12-galxe-dns                # registrar / DNS social-engineering
+  negative:
+    - "Planned protocol upgrade with announced new router contract on canonical domain"
+    - "Routine DNS configuration change with out-of-band confirmation from protocol team"
+
+false_positive_modes:
+  - planned protocol redeploy / upgrade producing new spender + DNS change (require out-of-band confirmation absence as escalator)
+  - PATH A false positives during airdrop / launch surges (require non-canonical spender + cluster_hit before escalating)
+  - PATH B false positives during legitimate hosting migrations (combine with PATH A grantee-baseline drift)
+  - PATH C false positives where reference-hash chain is stale (require signed reference within reference_window)
+
+mitigations: [OAK-M18, OAK-M19, OAK-M30, OAK-M31, OAK-M40]
+
+reference_implementations:
+  - { target: cloudflare-radar,      chain: cross-chain, url: "" }
+  - { target: ripe-ncc,              chain: cross-chain, url: "" }
+  - { target: scamsniffer,           chain: evm,         url: "" }
+  - { target: dnssec-monitor,        chain: cross-chain, url: "" }
+  - { target: forta-bot,             chain: evm,         url: "" }

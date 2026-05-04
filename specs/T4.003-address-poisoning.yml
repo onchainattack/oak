@@ -1,0 +1,116 @@
+oak_techniques: [OAK-T4.003]
+spec_id: oak-detection-T4.003
+version: 0.1.0
+maturity: stable
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect address-poisoning campaigns: attacker injects tiny-value /
+  zero-value / counterfeit-token transfers from lookalike addresses
+  into a victim's wallet history to bait copy-paste-from-history send
+  errors. ~17.3M poisoning transfers indexed since April 2023
+  (Tsuchiya 2025 USENIX). No on-chain authority is acquired — the
+  failure mode is wallet-UX-layer + user copy-paste behaviour.
+  Excludes: T4.001 / T4.004 (signature/allowance authority — T4.003
+  has no authority artefact); T1.001-class counterfeit-token issuance
+  for trading rather than poisoning purposes; T6.x (defense-evasion —
+  T4.003 is structurally a T6 modifier on the entire T4 class).
+
+data_sources: [token_transfer_events, address_book_log,
+               canonical_token_registry, funder_graph,
+               wallet_send_history]
+
+detection_logic:
+  description: |
+    Three orthogonal paths matching the three documented sub-classes
+    plus a counterfeit-token cross-check. PATH A (lookalike-address
+    inbound): inbound transfer of value < dust_threshold from a
+    previously-unseen sender whose address shares prefix/suffix
+    structural similarity with addresses in the wallet's send history.
+    PATH B (zero-value Transfer event injection): ERC-20 Transfer event
+    with zero value emitted by a contract naming the victim as sender
+    or receiver — used to plant fake history when zero-value transfers
+    don't propagate to UI. PATH C (counterfeit-token Transfer): Transfer
+    event from a contract claiming a popular symbol (USDT/USDC) but
+    residing at a non-canonical address. CROSS-CHECK (campaign-cluster
+    attribution): cluster lookalike senders by funder graph (T8.001)
+    to identify other targeted wallets.
+  pseudocode: |
+    SIMILAR(a, b) := first_n_match(a, b, n = prefix_match_chars)
+                      and last_n_match(a, b, n = suffix_match_chars)
+
+    # PATH A — lookalike-address inbound
+    for each wallet W:
+      send_history ← prior_send_destinations(W)
+      for each inbound transfer T to W:
+        if T.value > dust_threshold: continue
+        if T.from ∈ known_addresses(W): continue
+        matches ← {a for a in send_history if SIMILAR(T.from, a)}
+        if matches ≠ ∅:
+          emit(PATH_A, wallet=W, lookalike_sender=T.from,
+               matched_history_addresses=matches, value=T.value,
+               severity=high)
+
+    # PATH B — zero-value Transfer event injection
+    for each ERC20 contract C:
+      for each event E ∈ C.Transfer:
+        if E.value > 0: continue
+        if E.from in monitored_wallets or E.to in monitored_wallets:
+          if C ∉ canonical_token_registry:
+            emit(PATH_B, contract=C, event=E,
+                 victim=E.from if E.from in monitored_wallets else E.to,
+                 severity=high)
+
+    # PATH C — counterfeit-token Transfer (popular-symbol mimic)
+    for each ERC20 contract C with claimed symbol S = eth_call(C, "symbol()"):
+      if S in popular_symbol_set
+         and C ∉ canonical_token_registry[S]:
+        emit(PATH_C, contract=C, claimed_symbol=S,
+             canonical_addresses=canonical_token_registry[S],
+             severity=critical)
+
+    # CROSS-CHECK — campaign-cluster attribution
+    for each PATH_A or PATH_B or PATH_C emit on sender X:
+      cluster ← funder_graph_cluster(X, hops = trace_hops)
+      other_targets ← targets_of_lookalike_inbound(cluster)
+      if |other_targets| ≥ campaign_target_floor:
+        emit(CROSS_CHECK, campaign_cluster=cluster,
+             target_count=|other_targets|, severity=high)
+
+parameters:
+  prefix_match_chars:        { type: integer, default: 6 }
+  suffix_match_chars:        { type: integer, default: 4 }
+  dust_threshold:            { type: number,  default: 0.01 }    # USD
+  popular_symbol_set:        { type: list,    default: [USDT, USDC, DAI, WBTC, WETH] }
+  canonical_token_registry:  { type: object,  default: {} }      # symbol → [canonical addresses]
+  trace_hops:                { type: integer, default: 3 }
+  campaign_target_floor:     { type: integer, default: 50 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               wallet, lookalike_sender, contract, claimed_symbol,
+               campaign_cluster, target_count, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-05-address-poisoning-68m              # canonical $68M WBTC case
+    - 2025-03-solflare-base-x-homograph-cve      # adjacent — homograph at validation layer
+  negative:
+    - "Inbound transfer from a known address-book counterparty (not lookalike)"
+    - "Legitimate dust airdrop from a registered token contract"
+    - "Inbound transfer from a CEX hot wallet that incidentally matches prefix"
+
+false_positive_modes:
+  - CEX hot wallet rotation producing inbound transfers from previously-unseen addresses (calibrate via popular_symbol_set + dust_threshold)
+  - legitimate airdrop campaigns seeding many low-value transfers (allowlist via canonical token registry)
+  - structural prefix collisions between unrelated wallets (require SIMILAR check on both prefix AND suffix)
+  - PATH C false positives for community-deployed forks of popular tokens (require non-canonical address AND brand-impersonation framing)
+
+mitigations: [OAK-M04, OAK-M07, OAK-M18, OAK-M19, OAK-M29]
+
+reference_implementations:
+  - { target: trezor-suite,        chain: cross-chain, url: "" }
+  - { target: rabby,               chain: evm,    url: "" }
+  - { target: metamask-address-book, chain: evm,  url: "" }
+  - { target: phantom-wallet,      chain: solana, url: "" }
+  - { target: scamsniffer,         chain: cross-chain, url: "" }

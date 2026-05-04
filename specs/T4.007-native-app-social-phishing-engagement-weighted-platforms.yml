@@ -1,0 +1,103 @@
+oak_techniques: [OAK-T4.007]
+spec_id: oak-detection-T4.007
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect phishing distributed via a target platform's own engagement-
+  weighted mechanic (comment-pinning, reply-ranking, feed ranking)
+  where the attacker buys visibility through a legitimate platform
+  mechanic. Canonical case: Polymarket comment-section phishing via
+  symmetric YES+NO position-taking. Chains into T11.008 (embedded-
+  wallet identity-provider compromise) when credential-capture
+  exploits Magic Labs / Privy / Web3Auth auth flow. Excludes: T4.002
+  (compromised legitimate dApp surface); T4.008 (paid-ad on external
+  ad platform — different distribution surface); generic in-platform
+  spam without paid-mechanic exploitation.
+
+data_sources: [platform_comment_log, platform_position_log,
+               funder_graph, off_chain_phishing_domain_feed,
+               independent_vendor_disclosure_log,
+               platform_published_invariant_corpus]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (symmetric position-anchor):
+    attacker buys both YES and NO (or equivalent symmetric exposure)
+    on a high-volume market specifically to anchor pinning visibility
+    rather than for directional exposure. PATH B (pinned-comment
+    content fingerprint): pinned comment contains obfuscated URL /
+    tracking-redirect / "private markets" / "exclusive trading group"
+    framings. PATH C (independent-vendor / community disclosure):
+    independent vendors or community handles surface campaign
+    existence before platform acknowledgement.
+  pseudocode: |
+    # PATH A — symmetric position-anchor for pinning
+    for each pinned comment C on market M:
+      commenter ← C.author
+      pos_yes ← position_size(commenter, M, side=YES)
+      pos_no  ← position_size(commenter, M, side=NO)
+      total_pos_usd ← pos_yes + pos_no
+      symmetric ← min(pos_yes, pos_no) / max(pos_yes, pos_no, 1)
+                   > symmetric_ratio
+      if symmetric and total_pos_usd > anchor_position_floor
+         and adjudicated_volume_usd(M) > high_volume_floor:
+        emit(PATH_A, market=M, commenter, pinned_comment=C.id,
+             total_position_usd=total_pos_usd, symmetric_ratio=symmetric,
+             severity=high)
+
+    # PATH B — pinned-comment content fingerprint
+    PHISH_PATTERNS = [
+      "private markets", "better odds", "exclusive trading group",
+      "claim airdrop", "verify your wallet", obfuscated_url_pattern,
+    ]
+    for each pinned comment C on market M:
+      urls ← extract_urls(C.text)
+      hits ← [u for u in urls
+              if u.domain ∈ phishing_domain_feed
+              or is_obfuscated(u) or is_typosquat(u, target_platform)]
+      pattern_hits ← [p for p in PHISH_PATTERNS if matches(C.text, p)]
+      if hits ≠ ∅ or pattern_hits ≠ ∅:
+        emit(PATH_B, market=M, comment=C.id, urls=hits,
+             patterns=pattern_hits, severity=critical)
+
+    # PATH C — independent-vendor / community disclosure
+    for each disclosure D in independent_vendor_disclosure_log:
+      if mentions_platform(D, target_platform)
+         and matches(D.text, ["phishing", "comment-section", "scam"]):
+        emit(PATH_C, disclosure=D, source=D.source,
+             timestamp=D.t, severity=high)
+
+parameters:
+  symmetric_ratio:           { type: number,  default: 0.7 }     # YES / NO position symmetry
+  anchor_position_floor:     { type: number,  default: 5000 }    # $5k anchor cost
+  high_volume_floor:         { type: number,  default: 100000 }  # market volume
+  phishing_domain_feed:      { type: list,    default: [] }
+  target_platform:           { type: string,  default: "polymarket" }
+
+output_alert: [oak_technique, detection_path, severity,
+               platform, market, commenter, pinned_comment,
+               total_position_usd, urls, disclosure_source, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-11-polymarket-comment-section-phishing   # canonical T4.007 anchor (~$500k+)
+  negative:
+    - "Pinned comment by genuine market analyst with directional position and no phishing URL"
+    - "High-volume market with diverse community comments and no symmetric-position commenter at top"
+
+false_positive_modes:
+  - market makers who legitimately hold symmetric positions (PATH A's pinned-comment requirement filters)
+  - genuine analyst comments mentioning external content without phishing patterns (PATH B's URL/pattern filter)
+  - PATH C false positives from generic platform criticism — require co-occurrence with PATH A or B
+  - cross-listed markets where the same commenter pins on both sides legitimately for hedging — require pinned-comment presence + content fingerprint
+
+mitigations: [OAK-M02, OAK-M11, OAK-M16, OAK-M30, OAK-M40]
+
+reference_implementations:
+  - { target: scamsniffer,                chain: cross-chain, url: "" }
+  - { target: seal-threat-intel,          chain: cross-chain, url: "" }
+  - { target: chainalysis-polymarket-surveillance, chain: polygon, url: "" }
+  - { target: platform-internal-moderation, chain: polygon, url: "" }

@@ -1,0 +1,125 @@
+oak_techniques: [OAK-T4.005]
+spec_id: oak-detection-T4.005
+version: 0.1.0
+maturity: stable
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect victim-signed `setApprovalForAll(operator, true)` grants to
+  attacker-clustered operators, exercised via transferFrom /
+  safeBatchTransferFrom to drain entire NFT collections. NFT-collection
+  analogue of T4.004's per-token approve flow. Discord-compromise is
+  the dominant entry vector. Excludes: T4.004 (per-token ERC-20
+  allowance — different granularity); T12.002 (counterfeit collection
+  identity confusion — composes when Discord-compromise distributes
+  both); legitimate marketplace setApprovalForAll to OpenSea Seaport /
+  Blur / LooksRare / Magic Eden / Foundation / Rarible (allowlist
+  filter).
+
+data_sources: [erc721_approvalforall_events, erc1155_approvalforall_events,
+               nft_transfer_events, funder_graph,
+               marketplace_operator_allowlist, discord_compromise_feed,
+               drainer_cluster_watchlist]
+
+detection_logic:
+  description: |
+    Three orthogonal paths plus mempool intervention. PATH A (operator
+    cluster match): ApprovalForAll(approved=true) event where the
+    operator clusters with drainer infrastructure or is non-allowlisted
+    and freshly-deployed. PATH B (per-operator NFT-velocity outlier):
+    operator produces many transferFrom calls across distinct victims
+    in a short window. PATH C (Discord-compromise correlation): NFT
+    project's official Discord experiences a documented compromise
+    window correlated with a spike of ApprovalForAll grants from the
+    project's holder cohort. PATH D (mempool intervention): pre-block
+    telemetry on transferFrom to drainer-operator addresses for
+    monitored NFT vaults.
+  pseudocode: |
+    APPROVAL_FOR_ALL_TOPIC = "0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31"
+    SET_APPROVAL_FOR_ALL_SEL = "0xa22cb465"
+
+    # PATH A — operator cluster match
+    on event ApprovalForAll(owner, operator, approved=true) E:
+      if operator ∈ marketplace_operator_allowlist: continue
+      cluster ← funder_graph_cluster(operator, hops = trace_hops)
+      if cluster ∩ drainer_cluster_watchlist ≠ ∅
+         or (recently_deployed(operator, days = fresh_operator_window)
+             and no_legitimate_inbound(operator)):
+        emit(PATH_A, collection=E.contract, owner=E.owner, operator,
+             severity=critical)
+
+    # PATH B — per-operator NFT-velocity outlier
+    for each operator O over rolling window W:
+      transfers ← nft_transferFrom_calls_by(O, W)
+      distinct_victims ← {t.original_owner for t in transfers}
+      distinct_collections ← {t.contract for t in transfers}
+      if O ∉ marketplace_operator_allowlist
+         and |distinct_victims| ≥ velocity_victim_floor
+         and |distinct_collections| ≥ 1:
+        emit(PATH_B, operator=O, distinct_victims=|distinct_victims|,
+             distinct_collections=|distinct_collections|, severity=critical)
+
+    # PATH C — Discord-compromise correlation
+    for each project P with Discord telemetry:
+      compromise_event ← discord_compromise_in(P, lookback = compromise_lookback)
+      if compromise_event == None: continue
+      window ← [compromise_event.t, compromise_event.t + post_compromise_window]
+      grants_from_holders ← approvalforall_grants(holders_of(P.collections), window)
+      non_allowlisted ← [g for g in grants_from_holders
+                          if g.operator ∉ marketplace_operator_allowlist]
+      if |non_allowlisted| ≥ discord_grant_floor:
+        emit(PATH_C, project=P, compromise=compromise_event,
+             non_allowlisted_grants=|non_allowlisted|, severity=critical)
+
+    # PATH D — mempool transferFrom intervention
+    on mempool tx T:
+      if selector(T) ∈ {transferFrom_sel, safeTransferFrom_sel,
+                         safeBatchTransferFrom_sel}
+         and (T.target ∈ drainer_router_watchlist
+              or T.from ∈ monitored_nft_vault_set):
+        emit(PATH_D, mempool_tx=T, severity=critical)
+
+parameters:
+  trace_hops:                       { type: integer, default: 3 }
+  fresh_operator_window:            { type: duration, default: 7d }
+  velocity_victim_floor:            { type: integer, default: 3 }
+  compromise_lookback:              { type: duration, default: 24h }
+  post_compromise_window:           { type: duration, default: 6h }
+  discord_grant_floor:              { type: integer, default: 5 }
+  marketplace_operator_allowlist:   { type: list,    default: [] }
+  drainer_cluster_watchlist:        { type: list,    default: [] }
+  drainer_router_watchlist:         { type: list,    default: [] }
+  monitored_nft_vault_set:          { type: list,    default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               collection, owner, operator, distinct_victims,
+               compromise, mempool_tx, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-04-bored-ape-discord-wave             # canonical Discord compromise wave
+    - 2022-04-ronin-discord
+    - 2022-08-yuga-otherside
+    - 2022-07-premint-phishing
+    - 2024-12-pudgy-penguins-google-ads-nft-drainer
+    - 2025-05-inferno-drainer-reloaded-encrypted-onchain-config
+  negative:
+    - "setApprovalForAll to OpenSea Seaport for a legitimate listing flow (allowlisted)"
+    - "Marketplace operator deploying audited new operator version with announced upgrade"
+
+false_positive_modes:
+  - legitimate marketplace listing flow (allowlist-suppressed)
+  - marketplace operator-version upgrade (transient surge — annotate via marketplace operator-allowlist update SLA)
+  - cross-collection user activity touching multiple operators legitimately (PATH B's victim count must be > 1 with cluster match)
+  - audited gaming / utility NFT operator with public deployment record (allowlist before flagging)
+
+mitigations: [OAK-M06, OAK-M08, OAK-M19, OAK-M30, OAK-M31]
+
+reference_implementations:
+  - { target: rabby,             chain: evm,    url: "" }
+  - { target: pocket-universe,   chain: evm,    url: "" }
+  - { target: metamask-simulation, chain: evm,  url: "" }
+  - { target: revoke-cash,       chain: evm,    url: "" }
+  - { target: scamsniffer,       chain: evm,    url: "" }
+  - { target: opensea-operator-filter, chain: evm, url: "" }
