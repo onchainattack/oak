@@ -1,0 +1,1218 @@
+# OAK Coverage Manifest
+#
+# Maps third-party tools, services, and audit firms to the OAK Techniques
+# they cover. The Technique edges are seeded from the `## Reference
+# implementations` sections of techniques/*.md (via tools/extract_coverage.py)
+# and refined by hand. Vendor metadata (name, URL, product, type) is curated.
+#
+# Coverage tiers:
+#   full       — vendor explicitly claims and demonstrates coverage of this
+#                Technique (detector ID, API field, audit-checklist item).
+#   partial    — vendor surfaces a related signal but doesn't fully cover
+#                the Technique surface (e.g. detects the on-chain artefact
+#                but not the variant under proxy patterns).
+#   documented — vendor is named in the Technique's Reference implementations
+#                section but no explicit coverage word was given. Honest
+#                placeholder pending hand-curation. Do not market as "full".
+#   gap        — vendor explicitly notes the Technique is out of scope.
+#   na         — Technique is structurally not applicable to this vendor's
+#                product class (e.g. an EVM-only static analyzer vs a
+#                Solana-only Technique).
+#
+# CI guard: tools/check_coverage.py re-runs the extractor and fails if any
+# vendor mentioned in a Reference implementations section is missing from
+# this manifest, or vice versa.
+
+vendors:
+- key: mg-detectors-rs
+  name: Meat Grinder Detectors
+  product: mg-detectors-rs
+  url: https://github.com/iZonex/mg-onchain-analysis
+  type: runtime-risk-engine
+  chains:
+  - solana
+  - evm
+  description: Real-time on-chain risk engine; OAK's reference implementation.
+  techniques:
+  - id: OAK-T1.001
+    coverage: full
+    detector_id: D01
+  - id: OAK-T1.002
+    coverage: full
+    detector_id: D01
+  - id: OAK-T1.003
+    coverage: partial
+  - id: OAK-T1.004
+    coverage: full
+    detector_id: D04
+  - id: OAK-T1.005
+    coverage: full
+    detector_id: D05
+  - id: OAK-T1.006
+    coverage: partial
+  - id: OAK-T1.007
+    coverage: gap
+  - id: OAK-T2.001
+    coverage: full
+    detector_id: D02
+  - id: OAK-T2.002
+    coverage: partial
+    detector_id: D02
+  - id: OAK-T2.003
+    coverage: gap
+  - id: OAK-T2.004
+    coverage: gap
+  - id: OAK-T3.001
+    coverage: full
+    detector_id: D03
+  - id: OAK-T3.002
+    coverage: full
+    detector_id: D05
+  - id: OAK-T3.003
+    coverage: partial
+  - id: OAK-T3.004
+    coverage: gap
+  - id: OAK-T4.001
+    coverage: gap
+  - id: OAK-T4.002
+    coverage: gap
+  - id: OAK-T4.003
+    coverage: gap
+  - id: OAK-T4.004
+    coverage: gap
+  - id: OAK-T4.005
+    coverage: gap
+  - id: OAK-T4.006
+    coverage: gap
+  - id: OAK-T4.007
+    coverage: gap
+  - id: OAK-T4.008
+    coverage: gap
+  - id: OAK-T5.001
+    coverage: full
+    detector_id: D06
+  - id: OAK-T5.002
+    coverage: partial
+  - id: OAK-T5.003
+    coverage: full
+    detector_id: D07
+  - id: OAK-T5.004
+    coverage: gap
+  - id: OAK-T5.005
+    coverage: gap
+  - id: OAK-T5.006
+    coverage: gap
+  - id: OAK-T5.007
+    coverage: gap
+  - id: OAK-T6.001
+    coverage: full
+    detector_id: D08
+  - id: OAK-T6.002
+    coverage: gap
+  - id: OAK-T6.003
+    coverage: gap
+  - id: OAK-T6.004
+    coverage: gap
+  - id: OAK-T6.005
+    coverage: partial
+  - id: OAK-T6.006
+    coverage: partial
+  - id: OAK-T6.007
+    coverage: gap
+  - id: OAK-T7.001
+    coverage: partial
+  - id: OAK-T7.002
+    coverage: gap
+  - id: OAK-T7.003
+    coverage: gap
+  - id: OAK-T7.004
+    coverage: gap
+  - id: OAK-T7.005
+    coverage: gap
+  - id: OAK-T7.006
+    coverage: gap
+  - id: OAK-T8.001
+    coverage: full
+    detector_id: D08
+  - id: OAK-T8.002
+    coverage: gap
+  - id: OAK-T9.001
+    coverage: gap
+  - id: OAK-T9.002
+    coverage: gap
+  - id: OAK-T9.003
+    coverage: gap
+  - id: OAK-T9.004
+    coverage: gap
+  - id: OAK-T9.005
+    coverage: gap
+  - id: OAK-T9.006
+    coverage: gap
+  - id: OAK-T10.001
+    coverage: gap
+  - id: OAK-T10.002
+    coverage: gap
+  - id: OAK-T10.003
+    coverage: gap
+  - id: OAK-T10.004
+    coverage: gap
+  - id: OAK-T10.005
+    coverage: gap
+  - id: OAK-T11.001
+    coverage: gap
+  - id: OAK-T11.002
+    coverage: gap
+  - id: OAK-T11.003
+    coverage: gap
+  - id: OAK-T11.004
+    coverage: gap
+  - id: OAK-T11.005
+    coverage: gap
+  - id: OAK-T11.006
+    coverage: gap
+  - id: OAK-T11.007
+    coverage: gap
+  - id: OAK-T11.008
+    coverage: gap
+  - id: OAK-T11.009
+    coverage: gap
+  - id: OAK-T12.001
+    coverage: gap
+  - id: OAK-T12.002
+    coverage: gap
+  - id: OAK-T13.001
+    coverage: gap
+  - id: OAK-T13.001.001
+    coverage: gap
+  - id: OAK-T13.001.002
+    coverage: gap
+  - id: OAK-T13.001.003
+    coverage: gap
+  - id: OAK-T13.001.004
+    coverage: gap
+  - id: OAK-T13.002
+    coverage: documented
+  - id: OAK-T13.003
+    coverage: gap
+  - id: OAK-T13.004
+    coverage: gap
+  - id: OAK-T14.001
+    coverage: gap
+  - id: OAK-T14.002
+    coverage: documented
+  - id: OAK-T14.003
+    coverage: gap
+  - id: OAK-T14.003.001
+    coverage: gap
+  - id: OAK-T15.001
+    coverage: gap
+  - id: OAK-T15.002
+    coverage: gap
+  - id: OAK-T15.003
+    coverage: gap
+  - id: OAK-T15.004
+    coverage: gap
+  - id: OAK-T15.005
+    coverage: gap
+  - id: OAK-T16.001
+    coverage: gap
+  - id: OAK-T16.002
+    coverage: gap
+  - id: OAK-T16.003
+    coverage: gap
+  - id: OAK-T16.004
+    coverage: gap
+  - id: OAK-T16.005
+    coverage: gap
+  - id: OAK-T17.001
+    coverage: gap
+  - id: OAK-T17.002
+    coverage: partial
+  - id: OAK-T17.003
+    coverage: gap
+  - id: OAK-T17.004
+    coverage: gap
+- key: goplus
+  name: GoPlus Security
+  product: Token Security API
+  url: https://gopluslabs.io/security-api
+  type: token-security-api
+  chains:
+  - evm
+  - solana
+  - sui
+  - tron
+  description: REST API surfacing per-token security flags; covers contract-level genesis controls (T1.x), liquidity spoofing (T2.x).
+  techniques:
+  - id: OAK-T1.001
+    coverage: partial
+    field: slippage_modifiable
+  - id: OAK-T1.002
+    coverage: partial
+  - id: OAK-T1.003
+    coverage: partial
+    field: hidden_owner + can_take_back_ownership
+  - id: OAK-T1.004
+    coverage: full
+    field: is_blacklisted + transfer_pausable
+  - id: OAK-T1.005
+    coverage: full
+    field: transfer_tax + buy_tax + sell_tax
+  - id: OAK-T1.006
+    coverage: full
+    field: is_honeypot + cannot_sell_all
+  - id: OAK-T2.001
+    coverage: partial
+    field: lp_holders
+  - id: OAK-T2.002
+    coverage: partial
+    field: lp_holders[].is_locked
+  - id: OAK-T2.003
+    coverage: partial
+  - id: OAK-T2.004
+    coverage: partial
+  - id: OAK-T3.001
+    coverage: na
+  - id: OAK-T3.002
+    coverage: na
+  - id: OAK-T3.003
+    coverage: na
+  - id: OAK-T4.001
+    coverage: na
+  - id: OAK-T4.002
+    coverage: na
+  - id: OAK-T4.003
+    coverage: na
+  - id: OAK-T4.004
+    coverage: na
+  - id: OAK-T4.005
+    coverage: na
+  - id: OAK-T4.006
+    coverage: na
+  - id: OAK-T5.003
+    coverage: partial
+  - id: OAK-T6.001
+    coverage: partial
+    field: is_open_source
+  - id: OAK-T13.004
+    coverage: documented
+- key: rugcheck
+  name: RugCheck
+  product: RugCheck
+  url: https://rugcheck.xyz
+  type: token-security-api
+  chains:
+  - solana
+  description: Solana-side token risk scoring; freeze / mint authority checks; locker allowlist.
+  techniques:
+  - id: OAK-T1.001
+    coverage: partial
+  - id: OAK-T1.002
+    coverage: documented
+  - id: OAK-T1.003
+    coverage: partial
+  - id: OAK-T1.004
+    coverage: partial
+  - id: OAK-T1.005
+    coverage: partial
+  - id: OAK-T1.006
+    coverage: partial
+  - id: OAK-T1.007
+    coverage: partial
+  - id: OAK-T2.001
+    coverage: partial
+  - id: OAK-T2.002
+    coverage: partial
+  - id: OAK-T2.003
+    coverage: partial
+  - id: OAK-T2.004
+    coverage: partial
+  - id: OAK-T3.001
+    coverage: partial
+  - id: OAK-T5.001
+    coverage: documented
+  - id: OAK-T5.003
+    coverage: gap
+  - id: OAK-T6.001
+    coverage: documented
+- key: tokensniffer
+  name: Token Sniffer
+  product: Token Sniffer
+  url: https://tokensniffer.com
+  type: token-security-api
+  chains:
+  - evm
+  description: Per-token risk scoring; modifiable-fee, blacklist, locker checks.
+  techniques:
+  - id: OAK-T1.001
+    coverage: partial
+  - id: OAK-T1.003
+    coverage: documented
+  - id: OAK-T1.004
+    coverage: documented
+  - id: OAK-T1.005
+    coverage: partial
+  - id: OAK-T1.006
+    coverage: documented
+  - id: OAK-T2.002
+    coverage: partial
+  - id: OAK-T2.004
+    coverage: partial
+  - id: OAK-T6.001
+    coverage: documented
+- key: honeypot-is
+  name: Honeypot.is
+  product: Simulation-based honeypot detector
+  url: https://honeypot.is
+  type: simulation-tool
+  chains:
+  - evm
+  description: Simulates buys/sells in a fork to detect honeypot behavior at runtime.
+  techniques:
+  - id: OAK-T1.001
+    coverage: full
+  - id: OAK-T1.004
+    coverage: documented
+  - id: OAK-T1.005
+    coverage: full
+  - id: OAK-T1.006
+    coverage: full
+  - id: OAK-T2.002
+    coverage: documented
+  - id: OAK-T2.004
+    coverage: partial
+- key: slither
+  name: Slither
+  product: Slither
+  url: https://github.com/crytic/slither
+  type: static-analyzer
+  chains:
+  - evm
+  description: Trail of Bits' static analyzer for Solidity; >80 built-in detectors.
+  techniques:
+  - id: OAK-T1.001
+    coverage: partial
+    detector_id: state-mutability
+  - id: OAK-T1.003
+    coverage: partial
+  - id: OAK-T6.005
+    coverage: partial
+  - id: OAK-T9.001
+    coverage: partial
+    detector_id: arbitrary-send-eth
+  - id: OAK-T9.004
+    coverage: partial
+    detector_id: incorrect-modifier
+  - id: OAK-T9.005
+    coverage: full
+    detector_id: reentrancy-eth
+  - id: OAK-T13.001.003
+    coverage: documented
+- key: mythx
+  name: MythX
+  product: MythX
+  url: https://mythx.io
+  type: static-analyzer
+  chains:
+  - evm
+  description: Symbolic execution + static analysis SaaS for Solidity.
+  techniques:
+  - id: OAK-T9.001
+    coverage: documented
+  - id: OAK-T9.005
+    coverage: documented
+  - id: OAK-T13.001.003
+    coverage: documented
+- key: mythril
+  name: Mythril
+  product: Mythril
+  url: https://github.com/Consensys/mythril
+  type: static-analyzer
+  chains:
+  - evm
+  description: ConsenSys' open-source symbolic analyzer for EVM bytecode.
+  techniques:
+  - id: OAK-T6.005
+    coverage: documented
+  - id: OAK-T9.001
+    coverage: documented
+  - id: OAK-T9.005
+    coverage: full
+    detector_id: SWC-107
+- key: securify
+  name: Securify
+  product: Securify
+  url: https://github.com/eth-sri/securify2
+  type: static-analyzer
+  chains:
+  - evm
+  description: ETH Zurich's pattern-based Solidity analyzer.
+  techniques:
+  - id: OAK-T9.001
+    coverage: documented
+  - id: OAK-T9.005
+    coverage: full
+  - id: OAK-T13.001.003
+    coverage: documented
+- key: certora
+  name: Certora
+  product: Certora Prover
+  url: https://www.certora.com
+  type: formal-verification
+  chains:
+  - evm
+  description: Formal-verification platform with CVL spec language.
+  techniques:
+  - id: OAK-T6.005
+    coverage: documented
+  - id: OAK-T9.001
+    coverage: documented
+  - id: OAK-T9.004
+    coverage: documented
+  - id: OAK-T9.005
+    coverage: documented
+  - id: OAK-T10.002
+    coverage: documented
+  - id: OAK-T13.001.003
+    coverage: documented
+- key: rv
+  name: Runtime Verification
+  product: K Framework / Solidity Verifier
+  url: https://runtimeverification.com
+  type: formal-verification
+  chains:
+  - evm
+  description: Formal-semantics-based verification for EVM and KEVM.
+  techniques:
+  - id: OAK-T9.001
+    coverage: documented
+  - id: OAK-T9.005
+    coverage: documented
+  - id: OAK-T13.001.003
+    coverage: documented
+- key: halmos
+  name: Halmos
+  product: Halmos
+  url: https://github.com/a16z/halmos
+  type: formal-verification
+  chains:
+  - evm
+  description: Symbolic-execution-based bounded verifier for Foundry tests.
+  techniques: []
+- key: kontrol
+  name: Kontrol
+  product: Kontrol
+  url: https://github.com/runtimeverification/kontrol
+  type: formal-verification
+  chains:
+  - evm
+  description: Foundry-integrated verification on top of K Framework.
+  techniques: []
+- key: echidna
+  name: Echidna
+  product: Echidna
+  url: https://github.com/crytic/echidna
+  type: fuzzer
+  chains:
+  - evm
+  description: Property-based fuzzer for Solidity.
+  techniques: []
+- key: foundry-invariant
+  name: Foundry Invariant Testing
+  product: Foundry
+  url: https://book.getfoundry.sh/forge/invariant-testing
+  type: fuzzer
+  chains:
+  - evm
+  description: Foundry's property/invariant fuzzer.
+  techniques: []
+- key: forta
+  name: Forta Network
+  product: Forta detection bots
+  url: https://forta.org
+  type: runtime-monitoring
+  chains:
+  - evm
+  description: Decentralised network of detection bots monitoring on-chain events.
+  techniques:
+  - id: OAK-T6.001
+    coverage: documented
+  - id: OAK-T6.005
+    coverage: documented
+  - id: OAK-T9.001
+    coverage: documented
+  - id: OAK-T9.002
+    coverage: documented
+  - id: OAK-T9.003
+    coverage: documented
+  - id: OAK-T9.004
+    coverage: documented
+  - id: OAK-T9.005
+    coverage: documented
+  - id: OAK-T10.002
+    coverage: documented
+  - id: OAK-T11.003
+    coverage: documented
+  - id: OAK-T13.001
+    coverage: partial
+  - id: OAK-T13.001.001
+    coverage: documented
+  - id: OAK-T13.001.003
+    coverage: documented
+  - id: OAK-T13.001.004
+    coverage: partial
+  - id: OAK-T16.001
+    coverage: documented
+- key: oz-defender
+  name: OpenZeppelin Defender
+  product: Defender (Sentinels + Autotasks)
+  url: https://defender.openzeppelin.com
+  type: runtime-monitoring
+  chains:
+  - evm
+  description: Operational platform for monitoring, automation, and incident response.
+  techniques:
+  - id: OAK-T6.001
+    coverage: documented
+  - id: OAK-T6.005
+    coverage: documented
+  - id: OAK-T9.001
+    coverage: documented
+  - id: OAK-T9.002
+    coverage: documented
+  - id: OAK-T9.004
+    coverage: documented
+  - id: OAK-T9.005
+    coverage: documented
+  - id: OAK-T10.002
+    coverage: documented
+  - id: OAK-T11.003
+    coverage: documented
+  - id: OAK-T13.001
+    coverage: partial
+  - id: OAK-T13.001.001
+    coverage: partial
+  - id: OAK-T13.001.003
+    coverage: documented
+  - id: OAK-T13.001.004
+    coverage: partial
+- key: blocksec
+  name: BlockSec
+  product: PhalconHQ
+  url: https://blocksec.com/phalcon
+  type: runtime-monitoring
+  chains:
+  - evm
+  description: Real-time attack-detection platform with mempool + post-block analysis.
+  techniques:
+  - id: OAK-T6.005
+    coverage: documented
+  - id: OAK-T9.001
+    coverage: documented
+  - id: OAK-T9.002
+    coverage: documented
+  - id: OAK-T9.004
+    coverage: documented
+  - id: OAK-T9.005
+    coverage: documented
+  - id: OAK-T10.002
+    coverage: documented
+  - id: OAK-T11.003
+    coverage: documented
+  - id: OAK-T13.001
+    coverage: partial
+  - id: OAK-T13.001.001
+    coverage: documented
+  - id: OAK-T13.001.003
+    coverage: documented
+  - id: OAK-T13.001.004
+    coverage: partial
+  - id: OAK-T16.002
+    coverage: documented
+  - id: OAK-T16.003
+    coverage: documented
+  - id: OAK-T16.005
+    coverage: documented
+- key: tenderly
+  name: Tenderly
+  product: Tenderly Web3 Development Platform
+  url: https://tenderly.co
+  type: runtime-monitoring
+  chains:
+  - evm
+  description: Transaction simulation + alerting + Virtual TestNets.
+  techniques: []
+- key: openzeppelin
+  name: OpenZeppelin
+  product: Audits + Contracts library
+  url: https://openzeppelin.com
+  type: audit-firm
+  chains:
+  - evm
+  description: Security audits and the OpenZeppelin Contracts library (de-facto Solidity standard).
+  techniques:
+  - id: OAK-T1.003
+    coverage: documented
+  - id: OAK-T6.001
+    coverage: documented
+  - id: OAK-T6.005
+    coverage: documented
+  - id: OAK-T9.001
+    coverage: documented
+  - id: OAK-T9.002
+    coverage: documented
+  - id: OAK-T9.003
+    coverage: documented
+  - id: OAK-T9.004
+    coverage: documented
+  - id: OAK-T9.005
+    coverage: documented
+  - id: OAK-T10.002
+    coverage: documented
+  - id: OAK-T10.004
+    coverage: documented
+  - id: OAK-T10.005
+    coverage: documented
+  - id: OAK-T11.003
+    coverage: documented
+  - id: OAK-T13.001
+    coverage: documented
+  - id: OAK-T13.001.001
+    coverage: documented
+  - id: OAK-T13.001.002
+    coverage: documented
+  - id: OAK-T13.003
+    coverage: documented
+  - id: OAK-T16.001
+    coverage: documented
+  - id: OAK-T16.002
+    coverage: documented
+  - id: OAK-T16.005
+    coverage: documented
+  - id: OAK-T17.004
+    coverage: documented
+- key: trail-of-bits
+  name: Trail of Bits
+  product: Audits
+  url: https://www.trailofbits.com
+  type: audit-firm
+  chains:
+  - evm
+  description: Security audits + maintainer of Slither / Echidna / Crytic toolchain.
+  techniques:
+  - id: OAK-T1.003
+    coverage: documented
+  - id: OAK-T6.001
+    coverage: documented
+  - id: OAK-T6.005
+    coverage: documented
+  - id: OAK-T9.001
+    coverage: documented
+  - id: OAK-T9.002
+    coverage: documented
+  - id: OAK-T9.003
+    coverage: documented
+  - id: OAK-T9.004
+    coverage: documented
+  - id: OAK-T9.005
+    coverage: documented
+  - id: OAK-T10.002
+    coverage: documented
+  - id: OAK-T10.003
+    coverage: documented
+  - id: OAK-T10.004
+    coverage: documented
+  - id: OAK-T10.005
+    coverage: documented
+  - id: OAK-T13.001
+    coverage: documented
+  - id: OAK-T13.001.001
+    coverage: documented
+  - id: OAK-T13.001.002
+    coverage: documented
+  - id: OAK-T16.001
+    coverage: documented
+  - id: OAK-T16.002
+    coverage: documented
+  - id: OAK-T16.003
+    coverage: documented
+  - id: OAK-T16.005
+    coverage: documented
+  - id: OAK-T17.004
+    coverage: documented
+- key: halborn
+  name: Halborn
+  product: Audits + Operational Security
+  url: https://halborn.com
+  type: audit-firm
+  chains:
+  - evm
+  - solana
+  description: Audits + operational-security advisory; multi-chain coverage including Solana.
+  techniques:
+  - id: OAK-T1.003
+    coverage: documented
+  - id: OAK-T1.007
+    coverage: documented
+  - id: OAK-T6.001
+    coverage: documented
+  - id: OAK-T6.002
+    coverage: documented
+  - id: OAK-T6.005
+    coverage: documented
+  - id: OAK-T9.001
+    coverage: documented
+  - id: OAK-T9.002
+    coverage: documented
+  - id: OAK-T9.003
+    coverage: documented
+  - id: OAK-T9.004
+    coverage: documented
+  - id: OAK-T9.005
+    coverage: documented
+  - id: OAK-T10.002
+    coverage: documented
+  - id: OAK-T10.003
+    coverage: documented
+  - id: OAK-T10.004
+    coverage: documented
+  - id: OAK-T11.003
+    coverage: documented
+  - id: OAK-T13.001
+    coverage: documented
+  - id: OAK-T13.001.001
+    coverage: documented
+  - id: OAK-T16.001
+    coverage: documented
+  - id: OAK-T16.002
+    coverage: documented
+  - id: OAK-T16.003
+    coverage: documented
+  - id: OAK-T16.005
+    coverage: documented
+- key: consensys-diligence
+  name: ConsenSys Diligence
+  product: Audits
+  url: https://consensys.io/diligence
+  type: audit-firm
+  chains:
+  - evm
+  description: Pre-deployment audits + Scribble specification language.
+  techniques:
+  - id: OAK-T1.003
+    coverage: documented
+  - id: OAK-T6.005
+    coverage: documented
+  - id: OAK-T9.001
+    coverage: documented
+  - id: OAK-T9.002
+    coverage: documented
+  - id: OAK-T9.003
+    coverage: documented
+  - id: OAK-T9.004
+    coverage: documented
+  - id: OAK-T9.005
+    coverage: documented
+  - id: OAK-T13.001
+    coverage: documented
+  - id: OAK-T13.001.001
+    coverage: documented
+  - id: OAK-T16.001
+    coverage: documented
+  - id: OAK-T16.002
+    coverage: documented
+  - id: OAK-T16.005
+    coverage: documented
+  - id: OAK-T17.004
+    coverage: documented
+- key: quantstamp
+  name: Quantstamp
+  product: Audits
+  url: https://quantstamp.com
+  type: audit-firm
+  chains:
+  - evm
+  description: Pre-deployment audits with formal-verification practice.
+  techniques:
+  - id: OAK-T13.001
+    coverage: documented
+  - id: OAK-T13.001.001
+    coverage: documented
+  - id: OAK-T13.001.002
+    coverage: documented
+- key: ottersec
+  name: OtterSec
+  product: Audits
+  url: https://osec.io
+  type: audit-firm
+  chains:
+  - solana
+  - evm
+  description: Audits with Solana-specialist practice.
+  techniques:
+  - id: OAK-T1.007
+    coverage: documented
+  - id: OAK-T13.001
+    coverage: documented
+  - id: OAK-T13.001.001
+    coverage: documented
+  - id: OAK-T13.001.002
+    coverage: documented
+- key: certik
+  name: CertiK
+  product: Skynet + Audits
+  url: https://www.certik.com
+  type: audit-firm
+  chains:
+  - evm
+  - solana
+  description: Audits + Skynet runtime monitoring.
+  techniques:
+  - id: OAK-T1.006
+    coverage: documented
+  - id: OAK-T6.002
+    coverage: documented
+- key: hexens
+  name: Hexens
+  product: Audits
+  url: https://hexens.io
+  type: audit-firm
+  chains:
+  - evm
+  description: Pre-deployment audits.
+  techniques: []
+- key: code4rena
+  name: Code4rena
+  product: Audit contests
+  url: https://code4rena.com
+  type: audit-platform
+  chains:
+  - evm
+  description: Crowdsourced audit contests.
+  techniques: []
+- key: sherlock
+  name: Sherlock
+  product: Audit contests + coverage
+  url: https://www.sherlock.xyz
+  type: audit-platform
+  chains:
+  - evm
+  description: Audit contests with coverage / payout backing.
+  techniques: []
+- key: cantina
+  name: Cantina
+  product: Audit competitions + Spearbit
+  url: https://cantina.xyz
+  type: audit-platform
+  chains:
+  - evm
+  description: Audit competitions and Spearbit private audits.
+  techniques: []
+- key: chainalysis
+  name: Chainalysis
+  product: KYT / Reactor / Crypto Crime Report
+  url: https://www.chainalysis.com
+  type: forensics
+  chains:
+  - evm
+  - solana
+  - btc
+  - cross-chain
+  description: Compliance-grade forensics + cohort analytics.
+  techniques:
+  - id: OAK-T3.002
+    coverage: documented
+  - id: OAK-T4.007
+    coverage: documented
+  - id: OAK-T5.001
+    coverage: documented
+  - id: OAK-T5.005
+    coverage: documented
+  - id: OAK-T6.006
+    coverage: documented
+  - id: OAK-T7.001
+    coverage: documented
+  - id: OAK-T7.002
+    coverage: documented
+  - id: OAK-T7.003
+    coverage: documented
+  - id: OAK-T7.004
+    coverage: documented
+  - id: OAK-T7.005
+    coverage: documented
+  - id: OAK-T7.006
+    coverage: documented
+  - id: OAK-T8.001
+    coverage: documented
+  - id: OAK-T8.002
+    coverage: documented
+  - id: OAK-T9.001
+    coverage: documented
+  - id: OAK-T9.006
+    coverage: documented
+  - id: OAK-T9.006.004
+    coverage: documented
+  - id: OAK-T10.001
+    coverage: documented
+  - id: OAK-T11.001
+    coverage: documented
+  - id: OAK-T11.004
+    coverage: documented
+  - id: OAK-T11.005
+    coverage: documented
+  - id: OAK-T12.001
+    coverage: documented
+- key: trm-labs
+  name: TRM Labs
+  product: TRM Forensics + Tactical
+  url: https://www.trmlabs.com
+  type: forensics
+  chains:
+  - evm
+  - solana
+  - btc
+  - cross-chain
+  description: Compliance forensics with cross-chain tracing.
+  techniques:
+  - id: OAK-T5.005
+    coverage: documented
+  - id: OAK-T6.006
+    coverage: documented
+  - id: OAK-T7.001
+    coverage: documented
+  - id: OAK-T7.002
+    coverage: documented
+  - id: OAK-T7.003
+    coverage: documented
+  - id: OAK-T7.004
+    coverage: documented
+  - id: OAK-T7.005
+    coverage: documented
+  - id: OAK-T7.006
+    coverage: documented
+  - id: OAK-T8.001
+    coverage: documented
+  - id: OAK-T8.002
+    coverage: documented
+  - id: OAK-T9.001
+    coverage: documented
+  - id: OAK-T10.001
+    coverage: documented
+  - id: OAK-T11.001
+    coverage: documented
+  - id: OAK-T11.004
+    coverage: documented
+  - id: OAK-T11.005
+    coverage: documented
+  - id: OAK-T11.006
+    coverage: documented
+- key: elliptic
+  name: Elliptic
+  product: Elliptic Lens + Investigator
+  url: https://www.elliptic.co
+  type: forensics
+  chains:
+  - evm
+  - solana
+  - btc
+  - cross-chain
+  description: Compliance forensics + sanctions screening.
+  techniques:
+  - id: OAK-T5.005
+    coverage: documented
+  - id: OAK-T6.006
+    coverage: documented
+  - id: OAK-T7.001
+    coverage: documented
+  - id: OAK-T7.002
+    coverage: documented
+  - id: OAK-T7.003
+    coverage: documented
+  - id: OAK-T7.004
+    coverage: documented
+  - id: OAK-T7.005
+    coverage: documented
+  - id: OAK-T7.006
+    coverage: documented
+  - id: OAK-T8.001
+    coverage: documented
+  - id: OAK-T8.002
+    coverage: documented
+  - id: OAK-T10.001
+    coverage: documented
+  - id: OAK-T11.001
+    coverage: documented
+  - id: OAK-T11.004
+    coverage: documented
+  - id: OAK-T11.005
+    coverage: documented
+- key: nansen
+  name: Nansen
+  product: Nansen Query / Wallet Profiler
+  url: https://www.nansen.ai
+  type: analytics
+  chains:
+  - evm
+  - solana
+  description: Wallet-cluster-aware analytics on EVM + Solana.
+  techniques:
+  - id: OAK-T3.002
+    coverage: documented
+  - id: OAK-T12.001
+    coverage: documented
+- key: dexscreener
+  name: DexScreener
+  product: DexScreener API + UI
+  url: https://dexscreener.com
+  type: market-data
+  chains:
+  - evm
+  - solana
+  description: Real-time DEX pair data, token resolution, market metrics.
+  techniques: []
+- key: dappradar
+  name: DappRadar
+  product: NFT analytics
+  url: https://dappradar.com
+  type: analytics
+  chains:
+  - evm
+  description: dApp + NFT analytics with wash-adjusted metrics.
+  techniques:
+  - id: OAK-T12.001
+    coverage: documented
+- key: bitscrunch
+  name: bitsCrunch
+  product: NFT analytics
+  url: https://bitscrunch.com
+  type: analytics
+  chains:
+  - evm
+  description: NFT analytics with wash-trade flagging.
+  techniques:
+  - id: OAK-T12.001
+    coverage: documented
+- key: etherscan
+  name: Etherscan
+  product: Etherscan + multi-chain explorers
+  url: https://etherscan.io
+  type: explorer
+  chains:
+  - evm
+  description: Block explorer; source verification, holder lists, label tags.
+  techniques:
+  - id: OAK-T6.001
+    coverage: full
+  - id: OAK-T6.003
+    coverage: partial
+  - id: OAK-T6.006
+    coverage: documented
+  - id: OAK-T14.002
+    coverage: documented
+- key: bscscan
+  name: BscScan
+  product: BSC block explorer
+  url: https://bscscan.com
+  type: explorer
+  chains:
+  - evm
+  description: BSC block explorer; source verification, label tags.
+  techniques:
+  - id: OAK-T6.001
+    coverage: full
+  - id: OAK-T6.006
+    coverage: documented
+- key: mandiant
+  name: Mandiant
+  product: Incident Response
+  url: https://www.mandiant.com
+  type: dfir
+  chains: []
+  description: Endpoint forensics; Radiant Capital + Bitstamp incident references.
+  techniques:
+  - id: OAK-T15.001
+    coverage: documented
+  - id: OAK-T15.003
+    coverage: documented
+- key: stroz-friedberg
+  name: Stroz Friedberg
+  product: Incident Response
+  url: https://www.aon.com/cyber-solutions
+  type: dfir
+  chains: []
+  description: Endpoint forensics; Bitstamp 2015 incident reference.
+  techniques:
+  - id: OAK-T15.003
+    coverage: documented
+- key: microsoft-mstic
+  name: Microsoft Threat Intelligence
+  product: Microsoft Threat Intelligence (MSTIC)
+  url: https://www.microsoft.com/en-us/security/blog/threat-intelligence
+  type: threat-intel
+  chains: []
+  description: APT tracking (Sapphire Sleet / Storm-1811 — DPRK clusters).
+  techniques:
+  - id: OAK-T15.001
+    coverage: documented
+  - id: OAK-T15.003
+    coverage: documented
+- key: unit42
+  name: Unit 42 (Palo Alto Networks)
+  product: Unit 42
+  url: https://unit42.paloaltonetworks.com
+  type: threat-intel
+  chains: []
+  description: APT + crypto-malware tracking (BeaverTail / Contagious Interview).
+  techniques:
+  - id: OAK-T15.001
+    coverage: documented
+  - id: OAK-T15.003
+    coverage: documented
+- key: sentinelone
+  name: SentinelOne
+  product: SentinelLabs
+  url: https://www.sentinelone.com/labs
+  type: threat-intel
+  chains: []
+  description: macOS + crypto-malware research (ObjCShellz / Hidden Risk / SwiftLoader).
+  techniques:
+  - id: OAK-T15.001
+    coverage: documented
+  - id: OAK-T15.003
+    coverage: documented
+- key: jamf
+  name: Jamf Threat Labs
+  product: Jamf Threat Labs
+  url: https://www.jamf.com/blog/jamf-threat-labs/
+  type: threat-intel
+  chains: []
+  description: macOS-focused malware tracking (RustBucket).
+  techniques:
+  - id: OAK-T15.001
+    coverage: documented
+  - id: OAK-T15.003
+    coverage: documented
+- key: elastic
+  name: Elastic Security Labs
+  product: Elastic Security Labs
+  url: https://www.elastic.co/security-labs
+  type: threat-intel
+  chains: []
+  description: Detection-engineering research (KandyKorn).
+  techniques:
+  - id: OAK-T15.001
+    coverage: documented
+  - id: OAK-T15.003
+    coverage: documented
+- key: zeroshadow
+  name: ZeroShadow / SEAL 911
+  product: Whitehat Incident Response
+  url: https://www.zeroshadow.io
+  type: dfir
+  chains:
+  - evm
+  - solana
+  description: Whitehat-coordinated incident response (SEAL 911 hotline).
+  techniques:
+  - id: OAK-T15.003
+    coverage: documented

@@ -1389,6 +1389,63 @@ function CorpusStats({ openDoc }: { openDoc: (path: string) => void }) {
   );
 }
 
+type CoverageTier = "full" | "partial" | "documented" | "gap" | "na";
+
+type CoverageVendor = {
+  key: string;
+  name: string;
+  product: string;
+  url: string;
+  type: string;
+  chains: ReadonlyArray<string>;
+  description: string;
+  technique_ids: ReadonlyArray<string>;
+};
+
+type CoverageTechniqueLite = {
+  id: string;
+  name: string;
+  parent_tactics: ReadonlyArray<string>;
+  maturity: string;
+  chains: ReadonlyArray<string>;
+};
+
+type CoverageTacticLite = {
+  id: string;
+  name: string;
+  techniques: ReadonlyArray<string>;
+};
+
+type CoverageCell = {
+  coverage: CoverageTier;
+  detector_id?: string;
+  field?: string;
+  note?: string;
+};
+
+type CoverageMatrixData = {
+  vendors: ReadonlyArray<CoverageVendor>;
+  techniques: ReadonlyArray<CoverageTechniqueLite>;
+  tactics: ReadonlyArray<CoverageTacticLite>;
+  matrix: Record<string, Record<string, CoverageCell>>;
+  stats: {
+    vendor_count: number;
+    technique_count: number;
+    edge_count: number;
+    vendors_by_type: Record<string, number>;
+    coverage_by_tier: Record<string, number>;
+  };
+};
+
+const TIER_ORDER: readonly CoverageTier[] = ["full", "partial", "documented", "gap", "na"];
+const TIER_LABEL: Record<CoverageTier, string> = {
+  full: "Full",
+  partial: "Partial",
+  documented: "Documented",
+  gap: "Gap",
+  na: "N/A",
+};
+
 function CoverageMatrix({
   onOpenTechnique,
   onOpenDoc,
@@ -1396,128 +1453,277 @@ function CoverageMatrix({
   onOpenTechnique: (id: string) => void;
   onOpenDoc: (path: string) => void;
 }) {
-  const [statusFilter, setStatusFilter] = useState<"all" | "full" | "partial" | "gap">("all");
+  const matrix = siteData.coverageMatrix as CoverageMatrixData | null;
 
-  const rows = useMemo(() => {
-    return siteData.coverageRows
-      .map((row) => {
-        const idMatch = row.technique.match(/^(OAK-T\d+(?:\.\d+)?)/);
-        const id = idMatch ? idMatch[1] : "";
-        const name = row.technique.replace(/^OAK-T\d+(?:\.\d+)?\s*[—-]?\s*/, "").trim();
-        const isTechnique = /\./.test(id);
-        return { id, name, status: row.status, impl: row.implementation, notes: row.notes, isTechnique };
-      })
-      .filter((row) => row.isTechnique);
-  }, []);
+  // Fall back to the legacy single-vendor table if the matrix data hasn't
+  // been built yet (e.g. dev server before `npm run site:data`).
+  if (!matrix) {
+    return (
+      <div className="section-heading">
+        <p className="eyebrow">Coverage</p>
+        <h2>Coverage matrix not built.</h2>
+        <p>
+          Run <code>python3 tools/build_coverage.py</code> (or{" "}
+          <code>npm run site:data</code>) to populate{" "}
+          <code>tools/coverage.json</code>.
+        </p>
+      </div>
+    );
+  }
 
-  const filtered = useMemo(() => {
-    if (statusFilter === "all") return rows;
-    return rows.filter((r) => r.status === statusFilter);
-  }, [rows, statusFilter]);
+  const [tierFilter, setTierFilter] = useState<CoverageTier | "all">("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [tacticFilter, setTacticFilter] = useState<string>("all");
 
-  const counts = useMemo(() => {
-    const c = { full: 0, partial: 0, gap: 0 };
-    for (const r of rows) {
-      if (r.status === "full") c.full++;
-      else if (r.status === "partial") c.partial++;
-      else if (r.status === "gap") c.gap++;
+  const vendors = matrix.vendors;
+  const techniques = matrix.techniques;
+  const tactics = matrix.tactics;
+  const cells = matrix.matrix;
+  const stats = matrix.stats;
+
+  const vendorTypes = useMemo(() => {
+    const set = new Set<string>();
+    for (const v of vendors) if (v.type) set.add(v.type);
+    return Array.from(set).sort();
+  }, [vendors]);
+
+  const filteredVendors = useMemo(() => {
+    if (typeFilter === "all") return vendors;
+    return vendors.filter((v) => v.type === typeFilter);
+  }, [vendors, typeFilter]);
+
+  const filteredTechniques = useMemo(() => {
+    if (tacticFilter === "all") return techniques;
+    return techniques.filter((t) => (t.parent_tactics ?? []).includes(tacticFilter));
+  }, [techniques, tacticFilter]);
+
+  // Group Techniques by their primary parent Tactic for visual separation.
+  const techniqueGroups = useMemo(() => {
+    const groups: Array<{ tactic: { id: string; name: string }; items: typeof techniques }> = [];
+    for (const t of tactics) {
+      const items = filteredTechniques.filter(
+        (tech) => (tech.parent_tactics ?? [])[0] === t.id,
+      );
+      if (items.length > 0) groups.push({ tactic: { id: t.id, name: t.name }, items });
     }
-    return c;
-  }, [rows]);
+    return groups;
+  }, [tactics, filteredTechniques]);
 
-  const total = counts.full + counts.partial + counts.gap;
-  const fullPct = total > 0 ? Math.round((counts.full / total) * 100) : 0;
-  const partialPct = total > 0 ? Math.round((counts.partial / total) * 100) : 0;
-  const gapPct = total > 0 ? 100 - fullPct - partialPct : 0;
+  const cellTier = (vendorKey: string, techId: string): CoverageTier | null => {
+    const cell = cells[vendorKey]?.[techId];
+    return cell ? (cell.coverage as CoverageTier) : null;
+  };
+
+  const cellMatchesTierFilter = (tier: CoverageTier | null): boolean => {
+    if (tierFilter === "all") return tier !== null;
+    return tier === tierFilter;
+  };
 
   return (
     <>
       <div className="section-heading">
         <p className="eyebrow">Coverage</p>
-        <h2>Per-Technique reference-implementation status.</h2>
+        <h2>Vendor × Technique coverage matrix.</h2>
         <p>
-          OAK deliberately publishes detection gaps alongside covered techniques.
-          {" "}
-          {rows.length} sub-Techniques scored against the v0.1 reference implementation
-          (<code>mg-detectors-rs</code>); v0.5 expands to a multi-vendor matrix per the roadmap.
+          {stats.vendor_count} vendors mapped against {stats.technique_count} OAK
+          Techniques — {stats.edge_count} declared coverage edges. OAK publishes
+          honest gaps alongside covered surfaces. Click any cell to open the
+          Technique; click a vendor name for product details.
         </p>
       </div>
-      <div className="coverage-summary">
-        <div className="coverage-bar" aria-hidden>
-          <div className="cov-seg cov-full" style={{ width: `${fullPct}%` }} />
-          <div className="cov-seg cov-partial" style={{ width: `${partialPct}%` }} />
-          <div className="cov-seg cov-gap" style={{ width: `${gapPct}%` }} />
-        </div>
-        <div className="coverage-legend">
-          <button
-            type="button"
-            className={"cov-pill cov-full" + (statusFilter === "full" ? " active" : "")}
-            onClick={() => setStatusFilter(statusFilter === "full" ? "all" : "full")}
-          >
-            <strong>{counts.full}</strong> full
-          </button>
-          <button
-            type="button"
-            className={"cov-pill cov-partial" + (statusFilter === "partial" ? " active" : "")}
-            onClick={() => setStatusFilter(statusFilter === "partial" ? "all" : "partial")}
-          >
-            <strong>{counts.partial}</strong> partial
-          </button>
-          <button
-            type="button"
-            className={"cov-pill cov-gap" + (statusFilter === "gap" ? " active" : "")}
-            onClick={() => setStatusFilter(statusFilter === "gap" ? "all" : "gap")}
-          >
-            <strong>{counts.gap}</strong> gap
-          </button>
-          {statusFilter !== "all" && (
-            <button type="button" className="cov-pill cov-reset" onClick={() => setStatusFilter("all")}>
-              Show all
+
+      <div className="cov-stat-row">
+        {TIER_ORDER.map((tier) => {
+          const n = stats.coverage_by_tier[tier] ?? 0;
+          if (n === 0) return null;
+          return (
+            <button
+              type="button"
+              key={tier}
+              className={"cov-stat-pill cov-tier-" + tier + (tierFilter === tier ? " active" : "")}
+              onClick={() => setTierFilter(tierFilter === tier ? "all" : tier)}
+              title={`Filter cells with tier "${TIER_LABEL[tier]}"`}
+            >
+              <strong>{n}</strong> {TIER_LABEL[tier].toLowerCase()}
             </button>
-          )}
-          <button
-            type="button"
-            className="cov-pill cov-doc"
-            onClick={() => onOpenDoc("COVERAGE.md")}
-          >
-            View raw COVERAGE.md
+          );
+        })}
+        {tierFilter !== "all" && (
+          <button type="button" className="cov-stat-pill cov-reset"
+                  onClick={() => setTierFilter("all")}>
+            Clear tier
           </button>
-        </div>
+        )}
       </div>
-      <div className="coverage-table-wrap">
-        <table className="coverage-table">
+
+      <div className="cov-filter-bar">
+        <label className="cov-filter">
+          <span>Vendor type</span>
+          <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+            <option value="all">All ({vendors.length})</option>
+            {vendorTypes.map((t) => {
+              const n = vendors.filter((v) => v.type === t).length;
+              return <option key={t} value={t}>{t} ({n})</option>;
+            })}
+          </select>
+        </label>
+
+        <label className="cov-filter">
+          <span>Tactic</span>
+          <select value={tacticFilter} onChange={(e) => setTacticFilter(e.target.value)}>
+            <option value="all">All ({techniques.length})</option>
+            {tactics.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.id.replace("OAK-", "")} {t.name} ({(t.techniques ?? []).length})
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <button
+          type="button"
+          className="cov-stat-pill cov-doc"
+          onClick={() => onOpenDoc("COVERAGE.md")}
+        >
+          Methodology
+        </button>
+      </div>
+
+      <div className="cov-matrix-wrap">
+        <table className="cov-matrix">
           <thead>
             <tr>
-              <th>Technique</th>
-              <th>Status</th>
-              <th>Implementation</th>
-              <th>Notes</th>
+              <th className="cov-corner">Vendor</th>
+              {techniqueGroups.map((group) => (
+                <th
+                  key={group.tactic.id}
+                  className="cov-tactic-header"
+                  colSpan={group.items.length}
+                  title={group.tactic.name}
+                >
+                  {group.tactic.id.replace("OAK-", "")} {group.tactic.name}
+                </th>
+              ))}
+            </tr>
+            <tr>
+              <th className="cov-corner cov-corner-sub" />
+              {techniqueGroups.flatMap((group) =>
+                group.items.map((t) => (
+                  <th
+                    key={t.id}
+                    className="cov-tech-header"
+                    title={`${t.id} — ${t.name}`}
+                    onClick={() => onOpenTechnique(t.id)}
+                  >
+                    <span className="cov-tech-id">{t.id.replace("OAK-T", "")}</span>
+                  </th>
+                )),
+              )}
             </tr>
           </thead>
           <tbody>
-            {filtered.map((row) => (
-              <tr
-                key={row.id}
-                className={`cov-row cov-row-${row.status}`}
-                onClick={() => onOpenTechnique(row.id)}
-                title="Open technique"
-              >
-                <td>
-                  <span className="cov-id">{row.id}</span>
-                  <span className="cov-name">{row.name}</span>
+            {filteredVendors.map((vendor) => (
+              <tr key={vendor.key}>
+                <td className="cov-vendor-cell">
+                  <a
+                    href={vendor.url || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="cov-vendor-link"
+                    title={vendor.description}
+                  >
+                    {vendor.name}
+                  </a>
+                  <span className="cov-vendor-type">{vendor.type}</span>
                 </td>
-                <td>
-                  <span className={`cov-pill cov-${row.status} small`}>{row.status}</span>
-                </td>
-                <td><code>{row.impl}</code></td>
-                <td>{row.notes}</td>
+                {techniqueGroups.flatMap((group) =>
+                  group.items.map((t) => {
+                    const tier = cellTier(vendor.key, t.id);
+                    const cell = cells[vendor.key]?.[t.id];
+                    const matches = cellMatchesTierFilter(tier);
+                    const cls = tier
+                      ? `cov-cell cov-tier-${tier}` + (matches ? "" : " cov-dim")
+                      : "cov-cell cov-empty";
+                    const title = tier
+                      ? `${vendor.name} × ${t.id} — ${TIER_LABEL[tier]}` +
+                        (cell?.detector_id ? ` (${cell.detector_id})` : "") +
+                        (cell?.field ? ` (${cell.field})` : "")
+                      : `${vendor.name} × ${t.id} — not declared`;
+                    return (
+                      <td
+                        key={t.id}
+                        className={cls}
+                        title={title}
+                        onClick={() => tier && onOpenTechnique(t.id)}
+                      >
+                        {tier ? <span className="cov-cell-dot" /> : null}
+                      </td>
+                    );
+                  }),
+                )}
               </tr>
             ))}
-            {filtered.length === 0 && (
-              <tr><td colSpan={4} style={{ textAlign: "center", padding: "32px", color: "var(--muted)" }}>No techniques match.</td></tr>
-            )}
           </tbody>
         </table>
+      </div>
+
+      <div className="section-heading" style={{ marginTop: "48px" }}>
+        <p className="eyebrow">Per-vendor detail</p>
+        <h2>Vendor coverage breakdown.</h2>
+        <p>
+          For vendor outreach: each card lists the Techniques the vendor covers,
+          grouped by coverage tier. Hand-curate{" "}
+          <code>coverage/manifest.yml</code> to update.
+        </p>
+      </div>
+      <div className="cov-vendor-cards">
+        {filteredVendors.map((vendor) => {
+          const byTier: Record<CoverageTier, string[]> = {
+            full: [], partial: [], documented: [], gap: [], na: [],
+          };
+          for (const tid of vendor.technique_ids) {
+            const t = cells[vendor.key]?.[tid]?.coverage as CoverageTier | undefined;
+            if (t) byTier[t].push(tid);
+          }
+          const total = vendor.technique_ids.length;
+          return (
+            <div key={vendor.key} className="cov-vendor-card">
+              <div className="cov-vendor-card-head">
+                <a href={vendor.url || "#"} target="_blank" rel="noopener noreferrer">
+                  {vendor.name}
+                </a>
+                <span className="cov-vendor-type">{vendor.type}</span>
+              </div>
+              <p className="cov-vendor-desc">{vendor.description}</p>
+              <div className="cov-vendor-stats">
+                {TIER_ORDER.map((tier) => {
+                  const ids = byTier[tier];
+                  if (ids.length === 0) return null;
+                  return (
+                    <details key={tier} className={`cov-tier-${tier}`}>
+                      <summary>
+                        <span className="cov-cell-dot" /> {ids.length} {TIER_LABEL[tier].toLowerCase()}
+                      </summary>
+                      <div className="cov-vendor-tids">
+                        {ids.map((tid) => (
+                          <button
+                            key={tid}
+                            type="button"
+                            className="cov-vendor-tid"
+                            onClick={() => onOpenTechnique(tid)}
+                          >
+                            {tid}
+                          </button>
+                        ))}
+                      </div>
+                    </details>
+                  );
+                })}
+              </div>
+              <p className="cov-vendor-total">{total} declared edges total</p>
+            </div>
+          );
+        })}
       </div>
     </>
   );

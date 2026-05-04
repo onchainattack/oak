@@ -54,6 +54,8 @@ tools/oak-stix.json
 tools/oak.json
 tools/stats.json
 tools/embedded.json
+tools/coverage.json
+coverage/manifest.draft.yml
 src/data/generated.ts
 src/data/documents.ts
 public/sitemap.xml

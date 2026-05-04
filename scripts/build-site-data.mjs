@@ -304,6 +304,21 @@ try {
   );
 }
 
+// Multi-vendor coverage matrix — produced by tools/build_coverage.py from
+// coverage/manifest.yml. Single source of truth for the /coverage page's
+// vendor × Technique matrix.
+let coverageMatrix = null;
+try {
+  const raw = await readFile(rel("tools/coverage.json"), "utf8");
+  coverageMatrix = JSON.parse(raw);
+} catch (err) {
+  console.warn(
+    "build-site-data: tools/coverage.json not found — run "
+    + "`python3 tools/build_coverage.py` first. "
+    + "Continuing without coverage matrix.",
+  );
+}
+
 // Lightweight metadata index — keeps initial JS bundle small.
 const siteData = {
   generatedAt: new Date().toISOString(),
@@ -341,6 +356,7 @@ const siteData = {
   examples: examples.sort((a, b) => b.file.localeCompare(a.file)),
   actors: actors.sort((a, b) => a.id.localeCompare(b.id)),
   coverageRows,
+  coverageMatrix,
   // Lightweight document index: per-document title + path + meta + toc; HTML body is loaded lazily.
   documentIndex: Object.fromEntries(
     Object.entries(documents).map(([key, doc]) => [
