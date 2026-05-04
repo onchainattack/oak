@@ -180,14 +180,17 @@ def main() -> int:
         out.append("- _all candidates are either anchored or already promoted_")
     out.append("")
 
-    out.append("## How to claim an item\n")
-    out.append("1. Pick a P0 / P1 / P2 line item that matches your research interest.\n")
-    out.append("2. Run `python3 tools/check_known.py \"<incident description>\"` against your candidate to confirm it isn't already documented.\n")
-    out.append("3. Open a GitHub issue with the line item title (e.g. `[backlog] T13 × 2024 — paymaster compromise candidate`) so others can see what's claimed.\n")
-    out.append("4. Submit a PR per CONTRIBUTING.md. The PR template has a Checklist that runs the validators locally.\n")
+    out.append("## How to claim an item")
     out.append("")
+    out.append("1. Pick a P0 / P1 / P2 line item that matches your research interest.")
+    out.append("2. Run `python3 tools/check_known.py \"<incident description>\"` against your candidate to confirm it isn't already documented.")
+    out.append("3. Open a GitHub issue with the line item title (e.g. `[backlog] T13 × 2024 — paymaster compromise candidate`) so others can see what's claimed.")
+    out.append("4. Submit a PR per CONTRIBUTING.md. The PR template has a Checklist that runs the validators locally.")
 
-    print("\n".join(out))
+    # Single trailing newline; collapse any accidental double-blanks first.
+    body = "\n".join(out)
+    body = re.sub(r"\n{3,}", "\n\n", body).rstrip() + "\n"
+    sys.stdout.write(body)
     return 0
 
 

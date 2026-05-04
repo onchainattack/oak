@@ -117,11 +117,6 @@ Sub-Technique IDs proposed in `TAXONOMY-GAPS.md` but not yet referenced by any w
 ## How to claim an item
 
 1. Pick a P0 / P1 / P2 line item that matches your research interest.
-
 2. Run `python3 tools/check_known.py "<incident description>"` against your candidate to confirm it isn't already documented.
-
 3. Open a GitHub issue with the line item title (e.g. `[backlog] T13 × 2024 — paymaster compromise candidate`) so others can see what's claimed.
-
 4. Submit a PR per CONTRIBUTING.md. The PR template has a Checklist that runs the validators locally.
-
-
