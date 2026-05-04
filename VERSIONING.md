@@ -82,6 +82,7 @@ When an item must be renamed or removed, OAK provides a deprecation window of on
 | 0.1 | 2026-04 | Initial public draft. 14 Tactics, 62 Techniques, 18 Threat Actors, 40 Mitigations, 40 Software, 12 Data Sources. |
 | 0.2 | 2026-05 | Additive: T15 Off-chain Entry-Vector / Pre-Positioning Tactic + 5 sub-Techniques (T15.001–T15.005). 15 Tactics, 63+ Techniques. Existing T1–T14 IDs unchanged; existing T11.x / T4.x worked-example mappings preserved. Schema-minor bump per the additive-Tactic rule. |
 | 0.3 | 2026-05 | Additive: T16 Governance / Voting Manipulation Tactic + 5 sub-Techniques (T16.001–T16.005). 16 Tactics, 93+ Techniques. Existing T9.003 / T9.001 / T8.001 / T5.005 / T9.002 mappings preserved on anchor examples; T16.x added as additional Technique mappings. |
+| 0.4 | 2026-05 | Additive: T17 Market Manipulation Tactic + 4 sub-Techniques (T17.001–T17.004). 17 Tactics. T3.002 / T3.003 / T3.004 / T5.004 / T9.001 / T9.006* now cross-reference T17 as additional parent. No existing IDs renamed; existing T3 / T5 / T9 parent-Tactic mappings preserved on every cross-referenced sub-Technique. |
 
 ## Content snapshot history
 
