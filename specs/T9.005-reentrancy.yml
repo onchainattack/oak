@@ -1,450 +1,102 @@
-# OAK Detection Spec — OAK-T9.005 Reentrancy
-#
-# Canonical, vendor-neutral. Primary deliverable for this Technique.
-
 oak_techniques: [OAK-T9.005]
 spec_id: oak-detection-T9.005
 version: 0.1.0
-maturity: draft               # draft | review | stable
+maturity: draft
 maintainer: "@iZonex"
 license: Apache-2.0
 
-scope:
-  description: |
-    Detect smart-contract execution paths in which an external call
-    transfers control to an attacker-influenced address BEFORE the
-    target's storage has been brought into a consistent post-action
-    state. Covers five sub-patterns documented under OAK-T9.005:
+scope: |
+  Detect contract execution paths in which an external call transfers
+  control before storage is finalised, enabling re-entry. Covers five
+  sub-patterns documented under T9.005: single-function (canonical),
+  cross-function (per-fn lock insufficient), cross-protocol (re-enters
+  peer protocol reading stale state), hook-based (ERC-777 / ERC-721 /
+  ERC-1155 implicit calls), and read-only (third protocol consumes a
+  view-function read against mid-update state). Excludes: T9.002
+  (flash-loan capital acquisition — frequently chained, separate
+  primitive); accounting bugs that aren't reentrancy.
 
-      (1) Single-function (canonical) — the function makes an
-          external call before updating its own storage; attacker
-          re-enters the same function. Largely closed by checks-
-          effects-interactions + OZ ReentrancyGuard, included for
-          regression coverage.
-      (2) Cross-function — function A makes the external call;
-          attacker re-enters function B which reads / mutates state
-          A had not yet finalised. Per-function `nonReentrant` is
-          insufficient when B is not gated by the same lock.
-      (3) Cross-protocol (cross-contract) — attacker re-enters a
-          DIFFERENT protocol that reads stale state from the target.
-          Frequently chained with OAK-T9.002 (flash loans) to make
-          the inconsistent intermediate state economically large
-          enough to extract value.
-      (4) Hook-based — the external call is implicit in a token-
-          standard hook (ERC-777 `tokensReceived`, ERC-721
-          `onERC721Received`, ERC-1155 `onERC1155Received`).
-          Protocols often don't treat the hook as an external call.
-      (5) Read-only — attacker re-enters a `view` / `staticcall`
-          on the target during a state-mid-update window; a third
-          protocol that reads that view-function output makes a
-          decision against stale data. No state on the target is
-          mutated by the re-entry; loss is realised on the third
-          protocol.
-
-  excludes:
-    - "Logic / accounting bugs that are not reentrancy (e.g. integer
-      under/overflow, rounding errors). Adjacent to T9.005 in some
-      empty-market exploits but the upstream primitive is different."
-    - "Flash-loan-enabled exploits as a primitive (OAK-T9.002).
-      Reentrancy frequently combines with flash loans; tag both, but
-      detection logic for the capital-acquisition step lives in
-      T9.002's spec."
-
-# ────────────────────────────────────────────────────────────
-# Inputs the detector consumes.
-# ────────────────────────────────────────────────────────────
-
-data_sources:
-  - id: contract_source
-    description: |
-      Solidity / Vyper source code (verified or local compilation
-      unit). Required for static AST-based paths. Without source,
-      fall back to bytecode-level call-graph analysis with reduced
-      precision on hook-based and cross-function variants.
-    fields_required:
-      - contract_address       # if applicable
-      - source_files
-      - compiler_version
-      - ast                    # parsed AST (Slither / solc-ast)
-    chains: [evm]
-
-  - id: tx_call_trace
-    description: |
-      Per-transaction full call trace including internal CALL,
-      STATICCALL, DELEGATECALL frames with frame open/close events.
-      Required for runtime PATH (re-entry observation) and read-only
-      reentrancy detection.
-    fields_required:
-      - tx_hash
-      - call_frames            # ordered list of (from, to, type, gas, success)
-      - frame_open_close_events
-      - block_number
-    chains: [evm]
-
-  - id: contract_inventory
-    description: |
-      Set of contracts known to the operator AND set of token
-      contracts implementing reentrancy-relevant hooks (ERC-777,
-      ERC-721, ERC-1155). Plus per-protocol inventory of which view
-      functions are consumed by which third protocols (read-only
-      reentrancy surface).
-    fields_required:
-      - hook_token_contracts   # ERC-777 etc.
-      - protocol_dependencies  # third-protocol → view-function consumers
-    chains: [evm]
-
-# ────────────────────────────────────────────────────────────
-# Detection logic — four orthogonal paths, one per sub-pattern.
-# ────────────────────────────────────────────────────────────
+data_sources: [contract_source, tx_call_trace, contract_inventory]
 
 detection_logic:
   description: |
-    PATH A — STATIC AST. For every function F in the compilation
-    unit, walk the AST. Collect the ordered list of (state-write,
-    external-call) operations in F. Flag F if any external call
-    precedes any state write that is read by a function reachable
-    from F's entry under the same lock domain.
-
-    PATH B — STATIC SHARED-STATE GRAPH. Build the per-contract
-    function × storage-slot read/write graph. For each pair of
-    functions (A, B) that share at least one storage slot via
-    write-then-read or read-then-write, verify they share a lock
-    domain. Flag any pair where they do not.
-
-    PATH C — RUNTIME CALL-TRACE. For each confirmed transaction,
-    inspect the call frames. Flag transactions where the same `to`
-    address appears in multiple frames within a single outer call
-    AND a state-changing operation occurs in the inner frame on
-    that address before the outer frame completes.
-
-    PATH D — READ-ONLY RUNTIME. Subscribe to STATICCALL frames.
-    Flag a STATICCALL into address X whose outermost frame on X in
-    the same transaction has not yet returned, AND the STATICCALL
-    is invoked from a third-protocol contract that consumes X's
-    view-function output for an economic decision (per
-    contract_inventory.protocol_dependencies).
-
+    Four orthogonal paths. PATH A (AST): external call before state
+    write in same function lacking guard. PATH B (shared-state graph):
+    function pair sharing storage slot with mismatched lock domains.
+    PATH C (runtime): outer-frame-still-open re-entry with inner state
+    write. PATH D (read-only): STATICCALL into a target whose outermost
+    frame in the same tx hasn't returned, from a known consumer.
   pseudocode: |
-    # Inputs:
-    #   compilation_unit       — Solidity AST + compiled artifacts (PATH A, B)
-    #   tx_call_trace_stream   — confirmed-tx call-trace events  (PATH C, D)
-    #   hook_tokens            — registry of ERC-777/721/1155 token addresses
-    #   protocol_dependencies  — { contract: [third_protocol_consumers] }
-    #
-    # Output: alerts emitted per detected reentrancy path.
+    EXTERNAL_CALL_OPS = {call, callcode, delegatecall, staticcall, send,
+                         transfer, erc777_send, safe_transfer_from, ...}
 
-    # ────────────────────────────────────────
-    # PATH A — STATIC AST
-    # ────────────────────────────────────────
+    # PATH A — static AST (per function)
+    for each fn F:
+      ops ← walk_ast(F)            # ordered: state-writes + external-calls
+      for each external_call C with index(C) < max_state_write_index(F):
+        kind ← hook_implicit if C ∈ hook_calls(hook_token_registry) else explicit
+        if not has_lock(F, modifiers = static_analysis_lock_modifiers):
+          emit(PATH_A, fn=F, kind=kind, severity=high)
 
-    EXTERNAL_CALL_OPS  ← {call, callcode, delegatecall, staticcall,
-                          send, transfer,
-                          erc777_send, safe_transfer_from,
-                          safe_batch_transfer_from}
-
-    for each function F in compilation_unit.functions:
-        ops ← walk_ast(F)        # ordered list of state-mutating ops
-                                 # AND external-call ops
-        for each external_call C in ops where index(C) < max_index(state_writes(F)):
-            # External call BEFORE one or more state writes in same function.
-            # Recognise hook-implicit calls explicitly.
-            if recognises_token_hook(C, hook_tokens):
-                kind ← "hook-implicit"
-            else:
-                kind ← "explicit-external"
-            if not function_has_lock(F):
-                emit_alert(PATH_A, fn=F.qualified_name, kind=kind,
-                           call_op=C, severity=high)
-
-    # ────────────────────────────────────────
-    # PATH B — STATIC SHARED-STATE
-    # ────────────────────────────────────────
-
-    G ← empty_undirected_graph()
-    for each function F in compilation_unit.functions:
-        G.add_node(F)
-        for slot in storage_slots_read(F) ∪ storage_slots_written(F):
-            G.add_edge(F, slot)
-
+    # PATH B — static shared-state graph (per contract)
     for each pair (A, B) of functions sharing ≥1 storage slot:
-        if shared_slot_pattern(A, B) implies stale-read risk
-           AND lock_domain(A) ≠ lock_domain(B):
-            emit_alert(PATH_B, fn_a=A, fn_b=B,
-                       shared_slots=A.slots ∩ B.slots,
-                       severity=high)
+      if shared_slot_pattern(A, B) implies stale-read risk
+         and lock_domain(A) ≠ lock_domain(B):
+        emit(PATH_B, fn_pair=(A, B), shared_slots=A.slots ∩ B.slots,
+             severity=high)
 
-    # ────────────────────────────────────────
-    # PATH C — RUNTIME CALL-TRACE
-    # ────────────────────────────────────────
+    # PATH C — runtime call-trace (per transaction)
+    for each tx T:
+      for each address X appearing in ≥2 frames in T:
+        if any inner frame F has state_write
+           and outer frame F_outer not yet returned at F:
+          emit(PATH_C, contract=X, tx=T.hash, frame_count, inner_writes,
+               severity=critical) if inner_writes ≥ inner_write_threshold
 
-    for each tx T in tx_call_trace_stream:
-        # Group call frames by `to` address; detect re-entry shape.
-        frames_by_addr ← group_frames(T.call_frames, by="to")
-        for each addr X in frames_by_addr:
-            frames ← frames_by_addr[X]
-            if len(frames) > 1
-               AND any frame F.has_state_write
-               AND any outer frame F_outer with F_outer.opens_before(F)
-                                              AND not F_outer.returned_before(F):
-                emit_alert(PATH_C, contract=X, tx=T.tx_hash,
-                           frame_count=len(frames),
-                           inner_writes=count_state_writes(frames),
-                           severity=critical)
-
-    # ────────────────────────────────────────
-    # PATH D — READ-ONLY RUNTIME
-    # ────────────────────────────────────────
-
-    for each tx T in tx_call_trace_stream:
-        for each STATICCALL frame S in T.call_frames:
-            target ← S.to
-            outermost ← outermost_frame_for_address(T, target)
-            if outermost.is_not_yet_returned_at(S)
-               AND from_addr(S) ∈ protocol_dependencies.consumers_of(target):
-                emit_alert(PATH_D, target=target, consumer=S.from,
-                           tx=T.tx_hash, severity=critical)
-
-  notes:
-    - "PATH A's `function_has_lock` checks for OZ `nonReentrant`,
-      custom mutex modifiers, or explicit `_status` boolean guards.
-      Bytecode-level fallback: detect SSTORE-then-SLOAD-then-SSTORE
-      pattern in a guard slot at function entry/exit."
-    - "Hook recognition (PATH A) requires the implementer to maintain
-      a registry of token contracts implementing ERC-777 `_callTokensReceived`,
-      ERC-721 `_checkOnERC721Received`, ERC-1155 `_doSafeTransferAcceptanceCheck`.
-      Slither's framework provides this via the SafeTransfer detector."
-    - "PATH B's `shared_slot_pattern` should distinguish (a) slots both
-      functions only read (no risk), (b) slots written by both and
-      read by both (high risk if any state is observable mid-tx), and
-      (c) view-function reads of slots that other functions mutate
-      mid-tx (read-only reentrancy candidate)."
-    - "PATH C is the canonical post-deployment monitoring approach;
-      Forta / OpenZeppelin Defender / BlockSec PhalconHQ implement
-      variants. The `inner_writes` count distinguishes The DAO-shape
-      (high inner-write count) from benign multi-call patterns
-      (token approvals, multicall aggregator)."
-    - "PATH D requires the operator to maintain
-      `protocol_dependencies.consumers_of(X)` — what third protocols
-      read X's view functions for economic decisions. This is hand-
-      curated. Curve July 2023 / Sentinel April 2023 / Market.xyz
-      consumer surface are the canonical fixtures."
-    - "Cross-protocol (sub-pattern 3) is detected by combining PATH C
-      with cross-contract bridging in the call trace — the same
-      transaction re-enters protocol Y from protocol X while X is
-      mid-execution. Functionally PATH C with X.contract != caller."
-
-# ────────────────────────────────────────────────────────────
-# Tunable parameters.
-# ────────────────────────────────────────────────────────────
+    # PATH D — read-only reentrancy (per transaction)
+    for each tx T:
+      for each STATICCALL S into target X:
+        outermost ← outermost_frame_for_address(T, X)
+        if outermost.not_returned_at(S)
+           and S.from ∈ protocol_dependencies.consumers_of(X):
+          emit(PATH_D, target=X, consumer=S.from, tx=T.hash,
+               severity=critical)
 
 parameters:
-  hook_token_registry:
-    type: list
-    default: []
-    description: |
-      Set of (chain, address) tuples for token contracts implementing
-      reentrancy-relevant hooks. Operators ship a default registry
-      covering known ERC-777 deployments (imBTC, AMP) and extend
-      locally. Empty default means PATH A misses hook-implicit calls
-      until the registry is populated.
-  protocol_dependencies:
-    type: object
-    default: {}
-    description: |
-      Map of `contract_address -> [consumer_contract_addresses]`. A
-      consumer is a contract that reads a view function on the key
-      contract and takes an economic decision against the result.
-      Required for PATH D; without it PATH D is silent.
-  inner_write_threshold:
-    type: integer
-    default: 2
-    description: |
-      Minimum number of state writes inside the inner re-entry frame
-      to fire PATH C. Default 2 cuts noise from simple multicall
-      aggregators while catching The DAO-style drains.
+  hook_token_registry: { type: list, default: [] }
+  protocol_dependencies: { type: object, default: {} }
+  inner_write_threshold: { type: integer, default: 2 }
   static_analysis_lock_modifiers:
     type: list
-    default: ["nonReentrant", "noReentry", "lock"]
-    description: |
-      Modifier names treated as reentrancy guards in PATH A. Custom
-      guards added per-protocol via this parameter.
+    default: [nonReentrant, noReentry, lock]
 
-# ────────────────────────────────────────────────────────────
-# Alert payload shape (vendor-agnostic).
-# ────────────────────────────────────────────────────────────
-
-output_alert:
-  required_fields:
-    - { name: oak_technique,    type: string, value: OAK-T9.005 }
-    - { name: detection_path,   type: enum, values: [PATH_A, PATH_B, PATH_C, PATH_D] }
-    - { name: severity,         type: enum, values: [low, medium, high, critical] }
-    - { name: chain,            type: string }
-  conditional_fields:
-    - { when: "detection_path == PATH_A", name: function,        type: string }
-    - { when: "detection_path == PATH_A", name: kind,            type: enum, values: [hook-implicit, explicit-external] }
-    - { when: "detection_path == PATH_B", name: function_pair,   type: list }
-    - { when: "detection_path == PATH_B", name: shared_slots,    type: list }
-    - { when: "detection_path == PATH_C", name: contract,        type: address }
-    - { when: "detection_path == PATH_C", name: tx_hash,         type: string }
-    - { when: "detection_path == PATH_C", name: frame_count,     type: integer }
-    - { when: "detection_path == PATH_C", name: inner_writes,    type: integer }
-    - { when: "detection_path == PATH_D", name: target_contract, type: address }
-    - { when: "detection_path == PATH_D", name: consumer_contract, type: address }
-    - { when: "detection_path == PATH_D", name: tx_hash,         type: string }
-
-# ────────────────────────────────────────────────────────────
-# Test fixtures.
-# ────────────────────────────────────────────────────────────
+output_alert: [oak_technique, detection_path, severity, chain, evidence]
 
 test_fixtures:
   positive:
-    - id: the-dao-2016
-      reference: examples/2016-06-the-dao.md
-      description: |
-        The DAO, June 2016. Canonical single-function reentrancy.
-        ~$60M / 3.6M ETH drained. PATH A flags `splitDAO` (external
-        call before state zero); PATH C flags the runtime trace.
-        Anchor for sub-pattern (1).
-    - id: lendf-me-2020
-      reference: examples/2020-04-lendf-me.md
-      description: |
-        Lendf.Me, April 2020. ~$25M lost. ERC-777 `tokensReceived`
-        hook on imBTC handed execution to depositor before Lendf.Me
-        finalised accounting. Anchor for sub-pattern (4) hook-based.
-        PATH A must flag the imBTC integration after hook_token_registry
-        includes the imBTC address.
-    - id: cream-finance-2021
-      reference: examples/2020-11-akropolis.md  # Akropolis precursor; Cream IB lacks dedicated example file at v0.1
-      description: |
-        Akropolis Delphi, November 2020 — flash-loan-enabled cross-
-        protocol reentrancy. Anchor for sub-pattern (3) cross-protocol;
-        cohort-precursor to Cream Finance Iron Bank October 2021.
-    - id: paraspace-2023
-      reference: examples/2023-03-paraspace.md
-      description: |
-        ParaSpace whitehat reentrancy rescue by BlockSec, March 2023.
-        Real-time PATH C detection prevented loss; serves as the
-        canonical "PATH C caught it in production" fixture.
-    - id: sentiment-2023
-      reference: examples/2023-04-sentiment.md
-      description: |
-        Sentiment Protocol, April 2023. Read-only reentrancy via
-        Balancer LP integration — third protocol consumed Balancer
-        view-function output during state-mid-update window. Anchor
-        for sub-pattern (5) read-only.
-    - id: curve-vyper-2023
-      reference: examples/2023-07-curve-vyper.md
-      description: |
-        Curve Finance, July 2023. Vyper compiler-level reentrancy
-        affecting `@nonreentrant` lock semantics. Anchor for
-        compiler-level reentrancy variant; PATH C catches the call
-        trace; PATH A may miss without compiler-version awareness.
-    - id: penpie-2024
-      reference: examples/2024-09-penpie.md
-      description: |
-        Penpie Finance, September 2024 — reward-claim exploit. Recent
-        cross-function reentrancy anchor.
-    - id: kyberswap-2023
-      reference: examples/2023-11-kyberswap.md
-      description: |
-        KyberSwap Elastic, November 2023. Tick-state-manipulation
-        reentrancy variant. Anchor for tick-arithmetic-class adjacent
-        to T9.005.
-
+    - 2016-06-the-dao
+    - 2020-04-lendf-me
+    - 2020-11-akropolis
+    - 2020-11-origin-dollar
+    - 2023-03-paraspace
+    - 2023-04-sentiment
+    - 2023-07-curve-vyper
+    - 2023-11-kyberswap
+    - 2024-09-penpie
   negative:
-    - id: oz-reentrancyguard-correctly-applied
-      description: |
-        OpenZeppelin reference contracts (Vault, ERC4626) where
-        `nonReentrant` is applied across the function set sharing
-        state. PATH A and PATH B must NOT flag.
-    - id: multicall-aggregator
-      description: |
-        Multicall / batch-call aggregator. Single transaction re-enters
-        many target contracts in sequence but each frame returns
-        cleanly before the next opens. PATH C must NOT flag because
-        no inner-frame state-write-during-outer-frame-open shape.
-
-# ────────────────────────────────────────────────────────────
-# False-positive surfaces.
-# ────────────────────────────────────────────────────────────
+    - "OZ ReentrancyGuard correctly applied across function set sharing state"
+    - "Multicall aggregator — outer frame returns between inner calls"
 
 false_positive_modes:
-  - id: multicall-pattern
-    description: |
-      MakerDAO / ENS-style multicall aggregator looks superficially
-      like reentrancy because the same target appears in multiple
-      call frames. The distinguishing feature: in multicall the
-      outer frame returns control between each inner call, so no
-      stale-state read occurs. PATH C's outer-frame-still-open check
-      handles this; implementations should validate they don't fire
-      on multicall traces.
-  - id: legitimate-token-hook
-    description: |
-      Token contracts that implement ERC-777 hooks for legitimate
-      reasons (notification, automatic re-staking) trip PATH A in
-      every consumer protocol that integrates them. Mitigation: only
-      flag the consumer protocol if it lacks a reentrancy guard at
-      the integration site, not the token itself.
-  - id: assembly-yul-edge-cases
-    description: |
-      Inline assembly / Yul code may bypass AST-level analysis.
-      PATH A misses external calls executed via raw `call(...)` in
-      assembly without function-call wrappers. Mitigation: implementer
-      should fall back to bytecode-level analysis OR explicitly flag
-      contracts containing inline-assembly call ops for manual review.
-  - id: cross-version-vyper-curve-class
-    description: |
-      Compiler-level reentrancy (Curve July 2023) is invisible to
-      AST-level analysis because the `@nonreentrant` decorator IS
-      present in source — the bug is in the compiler-emitted lock.
-      PATH C is required for this class; PATH A on its own is
-      insufficient when target compilers are pre-Vyper-0.3.x or
-      pre-Solidity-0.8.0.
+  - multicall pattern (outer frame returns cleanly between inner calls)
+  - legitimate ERC-777-hooked tokens (flag the consumer, not the token)
+  - inline assembly / Yul raw call ops invisible to AST analysis
+  - compiler-level reentrancy (Curve July 2023 Vyper) bypasses AST — PATH C required
 
-# ────────────────────────────────────────────────────────────
-# Mitigations.
-# ────────────────────────────────────────────────────────────
-
-mitigations:
-  - { id: OAK-M02, role: pre-deployment-static-analysis, description: "Slither / Mythril / Securify reentrancy detectors as pre-listing gate." }
-  - { id: OAK-M16, role: formal-verification, description: "Specify and verify the invariant 'no external call observes pre-finalised state' under all reachable paths." }
-  - { id: OAK-M03, role: continuous-bytecode-diff, description: "Monitor proxy upgrades for newly-introduced external-call-before-write paths." }
-  - { id: OAK-M05, role: authority-graph-enumeration, description: "Enumerate reentrancy-relevant hook tokens (ERC-777/721/1155) integrated into accounting paths." }
-  - { id: OAK-M02, role: runtime-monitoring, description: "Forta / OZ Defender / BlockSec PhalconHQ subscribe to call-trace re-entry shapes." }
-
-# ────────────────────────────────────────────────────────────
-# Reference implementations.
-# ────────────────────────────────────────────────────────────
+mitigations: [OAK-M02, OAK-M03, OAK-M05, OAK-M16]
 
 reference_implementations:
-  - target: slither-plugin
-    chain: evm
-    url: ""
-    notes: |
-      Custom Slither detector wrapping `reentrancy-eth` /
-      `reentrancy-no-eth` / `reentrancy-benign` and extending with
-      hook-aware recognition (ERC-777, ERC-721, ERC-1155). Emits
-      Slither findings tagged OAK-T9.005. Best-fit for PATH A.
-  - target: forta-bot
-    chain: evm
-    url: ""
-    notes: |
-      Real-time PATH C: subscribe to confirmed-block call traces;
-      detect outer-frame-still-open re-entry shapes; emit alerts
-      with frame_count + inner_writes + tx_hash.
-  - target: certora-spec
-    chain: evm
-    url: ""
-    notes: |
-      Formal-verification spec (.spec) asserting "no external call
-      observes pre-finalised state" as a CVL invariant over the
-      target contract's reachable call paths. Strongest guarantee
-      when applicable; not all protocols are tractable for Certora.
-  - target: opensec-fortify-rule
-    chain: evm
-    url: ""
-    notes: |
-      Custom rule for runtime monitoring platforms (OpenZeppelin
-      Defender Sentinels, BlockSec PhalconHQ) implementing PATH C
-      and PATH D. Particularly important for detecting read-only
-      reentrancy variants that static analysis cannot catch.
+  - { target: slither-plugin, chain: evm, url: "" }
+  - { target: forta-bot, chain: evm, url: "" }
+  - { target: certora-spec, chain: evm, url: "" }
+  - { target: oz-defender-sentinel, chain: evm, url: "" }

@@ -1,312 +1,73 @@
-# OAK Detection Spec — OAK-T3.002 Wash-Trade Volume Inflation
-#
-# Canonical, vendor-neutral. Primary deliverable for this Technique.
-# Reference implementations (Dune query, Forta bot, etc.) are secondary
-# demonstrations and live under reference-impl/.
-
 oak_techniques: [OAK-T3.002]
 spec_id: oak-detection-T3.002
 version: 0.1.0
-maturity: draft               # draft | review | stable
+maturity: draft
 maintainer: "@iZonex"
 license: Apache-2.0
 
-scope:
-  description: |
-    Detect per-pair counterparty cycles on DEX swap activity that indicate
-    self-financed wash-trade volume inflation. The operator goal being
-    detected is price-discovery distortion: a small connected cluster of
-    wallets repeatedly trades the same pair against itself to inflate the
-    pair's published volume / leaderboard rank, then exits into real
-    third-party demand at the manufactured price.
+scope: |
+  Detect per-pair counterparty cycles on DEX swap activity that indicate
+  self-financed wash-trade volume inflation. Operator goal: distort
+  price-discovery to attract real third-party demand at manufactured
+  prices. Excludes: T7.x (laundering through self-financed swaps —
+  same shape, different goal); T12.001 (NFT-marketplace wash — different
+  on-chain artefact); incentive-farming wash where reward extraction is
+  the goal (overlapping pattern, different mitigation set).
 
-  excludes:
-    - "Pure incentive-farming wash where the goal is reward extraction
-      (DEX token / airdrop), not third-party-buyer inflow. The on-chain
-      pattern overlaps but the goal differs and the mitigation differs;
-      see OAK-T3.002 discussion for why this lives under T3.002 at v0.x."
-    - "NFT-marketplace wash. Same operator goal, different on-chain
-      artefact (per-token-id sale history, not per-pair counterparty
-      cycles). See OAK-T12.001."
-    - "Laundering through self-financed swaps. Same on-chain pattern,
-      different operator goal (proceeds-cleansing). See OAK-T7.x."
-
-# ────────────────────────────────────────────────────────────
-# Inputs the detector consumes from the underlying telemetry layer.
-# Vendor-neutral: each data source maps to whatever the implementer's
-# platform exposes (Dune dex.trades, a Forta swap-event subscription,
-# a Goldsky subgraph, an internal swap-stream parser, etc.).
-# ────────────────────────────────────────────────────────────
-
-data_sources:
-  - id: dex_trades
-    description: |
-      Stream of confirmed DEX swap events for the pair under inspection.
-      Each event carries: pair address, taker (msg.sender or actual
-      swap initiator), maker (counterparty / LP), token-in / token-out,
-      amounts, USD volume at swap time, block, tx hash.
-    fields_required:
-      - pair_address
-      - taker_address
-      - maker_address
-      - volume_usd
-      - timestamp
-      - block_number
-      - tx_hash
-    chains: [evm, solana]
-
-  - id: address_funding_trace
-    description: |
-      Ability to walk an address's funding history N hops back —
-      i.e. for a given address A, the set of addresses that funded A
-      over the last K txs / window. On EVM: native-ETH transfers + ERC-20
-      transfers + WETH unwraps. On Solana: SOL + SPL transfers.
-    fields_required:
-      - source_address
-      - destination_address
-      - amount_usd
-      - hop_index
-    chains: [evm, solana]
-
-# ────────────────────────────────────────────────────────────
-# Detection logic — language-agnostic pseudocode + prose.
-# A Dune engineer, a Forta engineer, and a Slither engineer reading
-# this should each arrive at correct implementations on their platform.
-# ────────────────────────────────────────────────────────────
+data_sources: [dex_trades, address_funding_trace]
 
 detection_logic:
   description: |
-    For every DEX pair active in the rolling window, build the trade-
-    counterparty graph. Identify clusters where buyer-side and seller-
-    side wallets share a common funding ancestor within a small hop
-    radius — these are "self-financed clusters". Compute the share of
-    pair volume attributable to self-financed cluster activity. Flag
-    the pair when that share crosses a threshold relative to the pair's
-    total volume.
-
+    Build the per-pair counterparty graph over a rolling window. Two
+    addresses belong to the same self-financed cluster if their funding
+    ancestors within `trace_hops` overlap. Cycle-share = fraction of
+    pair volume on edges inside one cluster.
   pseudocode: |
-    # Inputs:
-    #   trades_stream         — confirmed DEX swap events (dex_trades source)
-    #   funding(addr, hops)   — set of funding ancestors of addr within hops
-    #   window                — duration (default 30 days)
-    #   trace_hops            — funding-trace depth (default 3)
-    #   funding_threshold_usd — minimum hop value to count as a funding link
-    #   flagging_threshold    — cycle_share value above which the pair is flagged
-    #
-    # Output:
-    #   one alert per flagged pair (see output_alert section).
+    for each pair P observed in dex_trades over `window`:
+      G ← graph()
+      for each trade T with T.pair == P:
+        G.add_edge(T.taker → T.maker, weight = T.volume_usd)
 
-    for each pair P observed in trades_stream over window:
+      clusters ← partition_by_shared_funding_ancestor(
+        graph = G, hops = trace_hops, min_value = funding_threshold_usd)
 
-        # 1. Build per-pair counterparty graph.
-        G ← empty_directed_multigraph()
-        for each trade T with T.pair == P, T.timestamp in window:
-            G.add_edge(from = T.taker, to = T.maker,
-                       weight = T.volume_usd, tx = T.tx_hash)
+      cycle_volume ← Σ edge.weight for edge in G.edges
+                       where cluster(edge.from) == cluster(edge.to)
+                         and cluster(edge.from) ≠ singleton
 
-        # 2. Identify self-financed clusters.
-        # Two addresses are in the same cluster if their funding ancestors
-        # within trace_hops overlap on at least one address whose hop-value
-        # exceeds funding_threshold_usd.
-        clusters ← partition_into_self_financed_clusters(
-            graph     = G,
-            hops      = trace_hops,
-            min_value = funding_threshold_usd)
+      total_volume ← Σ edge.weight for edge in G.edges
+      if total_volume == 0: continue
+      cycle_share ← cycle_volume / total_volume
 
-        # 3. Compute cycle-share metric.
-        # The cycle is the volume of edges that lie *inside* one self-
-        # financed cluster — i.e. taker and maker belong to the same
-        # cluster, so the trade is paying volume from the cluster to
-        # itself.
-        cycle_volume ← Σ edge.weight for edge in G.edges
-                              where cluster(edge.from) == cluster(edge.to)
-                                and cluster(edge.from) != "singleton"
-
-        total_volume ← Σ edge.weight for edge in G.edges
-
-        if total_volume == 0:
-            continue
-        cycle_share ← cycle_volume / total_volume
-
-        # 4. Flag.
-        if cycle_share > flagging_threshold:
-            emit_alert(
-                pair                 = P,
-                window               = window,
-                cycle_share          = cycle_share,
-                self_financed_volume = cycle_volume,
-                total_volume         = total_volume,
-                clusters             = top_k_clusters_by_volume(clusters, k=3))
-
-  notes:
-    - "`partition_into_self_financed_clusters` is a graph-theoretic
-      operation: union-find over the relation 'address A and address B
-      share a funding ancestor within `hops` whose hop-value exceeds
-      `min_value`'. Singleton clusters (one-address) are not considered
-      self-financed."
-    - "The detector is symmetric in taker/maker. AMM-style maker is
-      typically the LP contract; the relevant counterparty is the
-      address that owns the LP position and receives swap-fee accrual.
-      Implementations on AMMs should resolve maker = LP-position-owner,
-      not the LP contract address itself, otherwise the LP becomes a
-      false hub in the graph."
-    - "On AMMs with shared LPs (Uniswap V2/V3), high-volume legitimate
-      pairs will have many takers and one or a few makers. The cycle-
-      share metric handles this correctly — legitimate takers do not
-      share funding ancestors, so they form singletons. Wash episodes
-      collapse to a small number of clusters with shared funding, and
-      cycle_share rises sharply."
-
-# ────────────────────────────────────────────────────────────
-# Tunable parameters. Defaults are conservative; implementations are
-# expected to calibrate per-chain and per-pair-class.
-# ────────────────────────────────────────────────────────────
+      if cycle_share > flagging_threshold:
+        emit(pair = P, cycle_share, cycle_volume, total_volume,
+             top_clusters = top_k_by_volume(clusters, k=3))
 
 parameters:
-  window:
-    type: duration
-    default: 30d
-    description: Rolling window over which the graph is built.
-  trace_hops:
-    type: integer
-    default: 3
-    description: Funding-ancestor depth used to partition clusters.
-  funding_threshold_usd:
-    type: number
-    default: 1000
-    description: |
-      Minimum USD value of a funding hop for the link to count toward
-      cluster membership. Filters out dust funding noise.
-  flagging_threshold:
-    type: number
-    default: 0.4
-    description: |
-      Pair is flagged when cycle_share exceeds this value. 0.4 is a
-      conservative starting threshold — wash episodes typically have
-      cycle_share > 0.7; values 0.4–0.7 capture mixed-signal pairs.
+  window: { type: duration, default: 30d }
+  trace_hops: { type: integer, default: 3 }
+  funding_threshold_usd: { type: number, default: 1000 }
+  flagging_threshold: { type: number, default: 0.4 }
 
-# ────────────────────────────────────────────────────────────
-# Alert payload shape (vendor-agnostic). Each implementation should
-# emit at least these fields in its native alert format.
-# ────────────────────────────────────────────────────────────
-
-output_alert:
-  required_fields:
-    - { name: pair_address,         type: address }
-    - { name: chain,                type: string }
-    - { name: window_start,         type: timestamp }
-    - { name: window_end,           type: timestamp }
-    - { name: cycle_share,          type: number }
-    - { name: total_volume_usd,     type: number }
-    - { name: self_financed_volume_usd, type: number }
-    - { name: top_clusters,         type: list }
-  optional_fields:
-    - { name: pair_token_symbols,   type: string }
-    - { name: pair_dex,             type: string }
-    - { name: example_tx_hashes,    type: list }
-
-# ────────────────────────────────────────────────────────────
-# Test fixtures — incidents from the OAK corpus where this detector
-# MUST fire (positive) or MUST NOT fire (negative). Implementations
-# replay these fixtures during their CI to validate spec conformance.
-# ────────────────────────────────────────────────────────────
+output_alert: [oak_technique, pair_address, chain, cycle_share,
+               total_volume_usd, self_financed_volume_usd, top_clusters]
 
 test_fixtures:
   positive:
-    - id: blur-airdrop-wash-2023
-      reference: examples/2023-02-blur-airdrop-wash-cohort.md
-      description: |
-        Blur airdrop incentive-driven wash cohort, February 2023.
-        On-chain analysis identified substantial volume inflation
-        incentivised by Blur's points-and-airdrop programme — canonical
-        T3.002 anchor in the OAK corpus, exhibits cycle_share ≫ 0.4
-        across the airdrop window.
-    - id: x2y2-looksrare-royalty-optional-2022
-      reference: examples/2022-11-x2y2-looksrare-royalty-optional.md
-      description: |
-        X2Y2 / LooksRare royalty-optional period (November 2022 onwards).
-        Adjacent T3.002 via the same incentive-driven wash pattern; per
-        Chainalysis 2022–2023 platform-level analysis, wash-trade rate
-        reached ~94.5% on LooksRare and ~84.2% on X2Y2 during this
-        window. Platform-scale fixture (not per-pair).
-
+    - 2023-02-blur-airdrop-wash-cohort
+    - 2022-11-x2y2-looksrare-royalty-optional
   negative:
-    - id: weth-usdc-uniswap-v3-005
-      description: |
-        Uniswap V3 WETH/USDC 0.05% pool over any 30-day window —
-        canonical legitimate high-volume pair. cycle_share should be
-        < 0.05 because takers are unrelated retail / aggregators with
-        independent funding.
-    - id: market-maker-multi-wallet-rebalance
-      description: |
-        Known market-maker (Wintermute, GSR, Jump) inventory-rebalance
-        pattern across N owned wallets. Similar on-chain shape to wash
-        but legitimate. False-positive mode — see false_positive_modes
-        below for handling guidance.
-
-# ────────────────────────────────────────────────────────────
-# Honest documentation of known false-positive surfaces. Implementations
-# should at minimum surface these caveats in alert disposition tooling.
-# ────────────────────────────────────────────────────────────
+    - "Uniswap V3 WETH/USDC 0.05% pool — high volume, low cycle"
+    - "Market-maker (Wintermute / GSR / Jump) inventory rebalance across owned wallets"
 
 false_positive_modes:
-  - id: market-maker-inventory-rebalance
-    description: |
-      Professional market makers run multiple wallets for inventory
-      management; same-cluster cycle volume can be substantial without
-      adversarial intent. Distinguish via attribution (known-MM cluster
-      labels), counterparty fan-out (MMs trade against many real
-      counterparties; wash clusters do not), and downstream behaviour
-      (MMs do not exit into manufactured peaks).
-  - id: low-liquidity-organic-cluster
-    description: |
-      Long-tail pairs with genuine but low organic flow may have small
-      counterparty graphs that incidentally collapse to one or two
-      clusters under the funding-trace heuristic. Mitigate by raising
-      flagging_threshold for pairs below a minimum total-volume floor.
-  - id: arbitrage-loops-via-aggregators
-    description: |
-      Aggregator-routed arbitrage cycles look like cluster activity
-      because the same arber address appears on both sides through a
-      multi-hop route. Distinguish by checking whether the route exits
-      the pair within one block (arb) vs persists across many blocks
-      (wash).
+  - market-maker multi-wallet inventory rebalance (high cluster volume, legitimate)
+  - low-liquidity organic pair where small clusters dominate by chance
+  - aggregator-routed arbitrage cycles (same address on both sides via multi-hop route)
 
-# ────────────────────────────────────────────────────────────
-# Mitigations from the OAK Mitigations axis that, when adopted by the
-# venue / marketplace, materially reduce the surface this detector
-# covers. Citing these in alerts gives operators a defender's-eye
-# response path.
-# ────────────────────────────────────────────────────────────
-
-mitigations:
-  - { id: OAK-M11, role: removes-leaderboard-incentive, description: "Marketplace excludes self-financed-cluster trades from leaderboard volume + reward-eligible volume." }
-  - { id: OAK-M12, role: surfaces-distortion,         description: "Marketplace publishes wash-adjusted volume + floor-price-resilience alongside raw figures." }
-
-# ────────────────────────────────────────────────────────────
-# Reference implementations — secondary, optional. Each one is a
-# demonstration that this spec is implementable on a real platform,
-# NOT the primary deliverable. URLs are populated as deployments land.
-# ────────────────────────────────────────────────────────────
+mitigations: [OAK-M11, OAK-M12]
 
 reference_implementations:
-  - target: dune
-    chain: evm
-    url: ""
-    notes: |
-      SQL pass over `dex.trades` (or `dex_solana.trades` for Solana)
-      with the funding-trace step expressed as a recursive CTE on
-      `transactions` / `token_transfers` tables. Threshold-tunable.
-  - target: forta-bot
-    chain: evm
-    url: ""
-    notes: |
-      Real-time variant. Maintains a rolling window of swap events per
-      pair via Forta's stateful agent abstraction, recomputes cycle_share
-      incrementally on each new block.
-  - target: goldsky-subgraph
-    chain: evm
-    url: ""
-    notes: |
-      Subgraph emits a `WashAlert` entity when cycle_share crosses
-      threshold. Indexable, queryable downstream.
+  - { target: dune, chain: evm, url: "" }
+  - { target: forta-bot, chain: evm, url: "" }
+  - { target: goldsky-subgraph, chain: evm, url: "" }
