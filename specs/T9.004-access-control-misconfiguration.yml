@@ -1,0 +1,115 @@
+oak_techniques: [OAK-T9.004]
+spec_id: oak-detection-T9.004
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect protocol actions executed via a privileged surface that lacks
+  the authorisation predicate it should carry. Covers four sub-classes
+  documented under T9.004: missing-modifier (KiloEx 2025 `_setPrices`
+  external-callable); misvalidated authorisation (Wormhole 2022 missing
+  guardian-account validation; cross-refs T10.002); inter-contract
+  privilege-boundary violation (Poly Network 2021 `EthCrossChainManager`
+  re-target); missing solvency / invariant check (Euler 2023
+  `donateToReserves`). Excludes: legitimate privileged operations from
+  declared authority addresses (suppress via per-protocol authority set);
+  T11.x off-chain key compromise (the on-chain consumption surface may
+  be T9.004-adjacent — see Multichain Jul-2023 boundary case).
+
+data_sources: [contract_bytecode, contract_source, tx_call_trace,
+               authority_graph, simulation_environment]
+
+detection_logic:
+  description: |
+    Four orthogonal paths. PATH A (static): privileged-selector dispatch
+    in deployed bytecode lacks `caller == role-mapping[key]` style gate.
+    PATH B (input validation): external-callable function passes a
+    user-supplied address into a privileged sub-call without validation
+    (re-target / impersonation surface). PATH C (runtime monitor):
+    privileged-selector call from an EOA / contract not in the protocol's
+    declared authority set, or call to a deprecated / rarely-used
+    function. PATH D (post-upgrade smoke): unprivileged-caller simulation
+    of every privileged selector after every upgrade — expect revert,
+    alert on success.
+  pseudocode: |
+    PRIVILEGED_NAME_PATTERNS = {/^_?set/, /^mint/, /^withdraw/, /^upgrade/,
+                                /role/i, /admin/i, /init/i, /price/i,
+                                /donateToReserves/, /complete_wrapped/}
+    AUTH_GATE_OPS = {SLOAD-of-role-mapping, eq-CALLER-to-stored-address,
+                     hasRole, onlyOwner-modifier, AccessControl-check}
+
+    # PATH A — missing-modifier static check
+    for each external selector S in deployed_bytecode(C):
+      if not name_matches(S, PRIVILEGED_NAME_PATTERNS):
+        continue
+      entry ← dispatch_path(C, S)
+      if not any(op ∈ AUTH_GATE_OPS for op in entry.ops_before_state_write):
+        emit(PATH_A, contract=C, selector=S, severity=critical)
+
+    # PATH B — misvalidated input → privileged sub-call
+    for each fn F in source_or_decompiled(C):
+      params_addr ← [p for p in F.parameters if p.type == address]
+      if params_addr == ∅: continue
+      for sub in priv_subcalls(F):
+        target ← resolve_target_to_param(sub, params_addr)
+        if target ≠ None and not validates(target, allowlist | role_check):
+          emit(PATH_B, contract=C, fn=F, parameter=target, sub=sub,
+               severity=critical)
+
+    # PATH C — runtime privileged-call monitor
+    on tx T calling C.S where name_matches(S, PRIVILEGED_NAME_PATTERNS):
+      caller ← T.from
+      direct ← T.to == C
+      via    ← caller_chain(T, target=C)
+      if not (caller ∈ declared_authority(C)
+              or any(x ∈ declared_authority(C) for x in via)):
+        rare ← selector_usage_30d(C, S) < rare_call_threshold
+        deprecated ← deprecated_selectors(C).contains(S)
+        emit(PATH_C, contract=C, selector=S, caller, tx=T.hash,
+             rare, deprecated,
+             severity = critical if (rare or deprecated) else high)
+
+    # PATH D — post-upgrade smoke test (CI / fork)
+    if simulation_available and is_upgrade_event(C):
+      for S in privileged_selectors(C):
+        with chain_fork():
+          as(unprivileged_eoa): ok ← try_call(C, S, sample_args)
+          if ok:
+            emit(PATH_D, contract=C, selector=S,
+                 mode="post-upgrade-smoke", severity=critical)
+
+parameters:
+  declared_authority:          { type: object,  default: {} }    # per-protocol authority set
+  rare_call_threshold:         { type: integer, default: 3 }     # calls in last 30d
+  deprecated_selectors:        { type: object,  default: {} }    # per-contract list
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               contract_address, selector, caller, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-02-wormhole                          # missing guardian-account validation (also T10.002)
+    - 2021-08-poly-network                      # inter-contract privilege boundary
+    - 2023-03-euler-finance                     # missing solvency check (chained T9.002)
+    - 2025-04-kiloex                            # missing-modifier on _setPrices
+  negative:
+    - "OZ AccessControl-gated mint() called by a documented authority (allowlist hit)"
+    - "Audited proxy upgrade by a canonical timelock-gated multisig"
+
+false_positive_modes:
+  - keeper / oracle-updater EOAs calling rarely-but-legitimately-used selectors — declared_authority must include keeper set
+  - audited deprecated functions kept for backward-compat with internal sentinel — annotate with deprecated_selectors and require monitoring not alerting
+  - admin-key migration windows where authority set is changing (legitimate transition) — short suppression window after AdminChanged
+  - wallet-vendor or aggregator-routed delegate calls that pass the user's own address as a parameter — PATH B's allowlist | role_check filter handles when the param is the caller themselves
+
+mitigations: [OAK-M02, OAK-M11, OAK-M16, OAK-M01]
+
+reference_implementations:
+  - { target: slither-plugin,        chain: evm, url: "" }
+  - { target: certora-spec,          chain: evm, url: "" }
+  - { target: forta-bot,             chain: evm, url: "" }
+  - { target: oz-defender-sentinel,  chain: evm, url: "" }
+  - { target: blocksec-phalcon,      chain: evm, url: "" }
+  - { target: tenderly-virtualnet,   chain: evm, url: "" }

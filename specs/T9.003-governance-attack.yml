@@ -1,0 +1,117 @@
+oak_techniques: [OAK-T9.003]
+spec_id: oak-detection-T9.003
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect exploitation of governance-contract code-level flaws — the
+  contract itself converts a vote into protocol state incorrectly.
+  Covers three sub-classes: same-block flash-borrow vote against a
+  no-snapshot/no-timelock governance (Beanstalk); malicious-proposal
+  payload with hidden delegatecall / state-replacement (Tornado Cash
+  May-2023); spot vote-accumulation by a delegate consortium without
+  governance-process resistance (Compound Proposal-289). Excludes:
+  T16.001-005 (voting-power abuse against a contract that operates as
+  designed); T9.002 (flash-loan capital — frequently chained, separate
+  primitive); legitimate snapshot-and-timelock governance flow
+  (suppressed via canonical pattern checks).
+
+data_sources: [tx_call_trace, governance_events, contract_bytecode,
+               proposal_calldata, token_transfer_events, funder_graph]
+
+detection_logic:
+  description: |
+    Four orthogonal paths. PATH A (flash-loan vote): same-tx flash-loan
+    funding + governance-token acquisition + vote/execute on a
+    non-snapshot governor. PATH B (proposal-payload static): proposal
+    calldata performs `delegatecall` to non-canonical target, sets
+    privileged roles, or selfdestruct/upgrade-to-attacker-impl. PATH C
+    (governance design): governor contract reads spot voting-power and
+    has emergency-execution path bypassing the lifecycle. PATH D
+    (spot-accumulation): single voter's weight on a treasury-affecting
+    proposal exceeds historical-participation envelope by ≥ k×.
+  pseudocode: |
+    PRIVILEGED_PROPOSAL_TARGETS = {treasury, mint_role, upgrade,
+                                    role_admin, owner_set, fee_router}
+
+    # PATH A — flash-loan vote acquisition (Beanstalk-class)
+    for each tx T touching a governance contract G:
+      flashloan ← exists frame f in T : selector(f) ∈ FLASHLOAN_PROVIDERS
+      acquire   ← Σ T.token_in[gov_token(G)]
+                    > flashloan_acq_ratio × circulating(gov_token(G))
+      vote_or_exec ← any(f.selector ∈ {castVote, queue, execute, emergencyCommit}
+                          and f.contract == G for f in T.frames)
+      if flashloan and acquire and vote_or_exec
+         and not snapshot_used(G, T):
+        emit(PATH_A, tx=T.hash, governance=G,
+             borrowed_usd=flashloan_borrow_usd(T), severity=critical)
+
+    # PATH B — malicious proposal payload (Tornado-2023-class)
+    for each proposal P submitted to G:
+      decoded ← decode_calldata(P.payload, abi=G)
+      for op in decoded.ops:
+        target_unknown ← op.target ∉ canonical_targets(G)
+        risky ← op.kind in {delegatecall, selfdestruct, upgradeTo}
+              or touches(op, PRIVILEGED_PROPOSAL_TARGETS)
+        if target_unknown and risky:
+          emit(PATH_B, governance=G, proposal=P.id, op=op,
+               severity=critical)
+
+    # PATH C — governance-design surface (pre-deployment / one-shot)
+    if reads_spot_voting_power(G) and not has_snapshot_checkpoint(G):
+      emit(PATH_C, governance=G, surface="no-snapshot", severity=high)
+    if has_emergency_execution_path(G)
+       and not gated_by(emergency_path(G), timelock_allowlist):
+      emit(PATH_C, governance=G, surface="emergency-bypass", severity=high)
+
+    # PATH D — spot-accumulation envelope (Compound-289-class)
+    for each proposal P touching PRIVILEGED_PROPOSAL_TARGETS:
+      voted_weight ← Σ vote.weight for vote in P.votes
+      top1         ← max(vote.weight for vote in P.votes)
+      median_hist  ← median(top_voter_weight(p) for p in recent_proposals(G))
+      if top1 / voted_weight > top_voter_share
+         and top1 > spot_accum_multiplier × median_hist:
+        cluster ← funder_graph_cluster({v.voter for v in top_k(P.votes, k=10)},
+                                       hops = trace_hops)
+        if shared_funding(cluster):
+          emit(PATH_D, governance=G, proposal=P.id, top1_share=top1/voted_weight,
+               cluster, severity=high)
+
+parameters:
+  flashloan_acq_ratio:        { type: number,  default: 0.10 }   # ≥10% supply via flash loan
+  canonical_targets:          { type: object,  default: {} }     # per-governor allowlist
+  timelock_allowlist:         { type: list,    default: [] }
+  top_voter_share:            { type: number,  default: 0.30 }   # single voter > 30% of voted weight
+  spot_accum_multiplier:      { type: number,  default: 5 }      # vs historical median top voter
+  trace_hops:                 { type: integer, default: 3 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               governance_address, proposal_id, tx, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-04-beanstalk                          # PATH A — flash-loan + emergencyCommit
+    - 2023-05-tornado-cash-governance            # PATH B — hidden selfdestruct/state-replacement
+    - 2024-07-compound-vote-takeover             # PATH D — Proposal 289 spot-accumulation
+    - 2022-07-audius                             # PATH B-adjacent — storage-collision via init
+    - 2024-03-curio                              # PATH A/C — small-protocol flash-vote
+  negative:
+    - "Compound Governor Bravo proposal — checkpoint snapshot + 2-day timelock + canonical execution targets, must not flag"
+    - "Snapshot-based off-chain vote that signs but does not execute on-chain"
+
+false_positive_modes:
+  - legitimate proposals queued/executed by canonical multisig + timelock — allowlist via timelock_allowlist + canonical_targets
+  - proposals that delegatecall a known canonical helper (executor library) — allowlist by codehash in canonical_targets
+  - governance-token large transfers reflecting treasury operations or vesting unlocks (not vote acquisition) — PATH A's vote_or_exec gate filters
+  - high-participation proposals where top voter is a known long-term delegate above the threshold — historical-envelope check should reflect this; calibrate spot_accum_multiplier per governor
+
+mitigations: [OAK-M02, OAK-M11, OAK-M16, OAK-M17]
+
+reference_implementations:
+  - { target: forta-bot,             chain: evm, url: "" }
+  - { target: oz-defender-sentinel,  chain: evm, url: "" }
+  - { target: tally-analytics,       chain: evm, url: "" }
+  - { target: dune,                  chain: evm, url: "" }
+  - { target: tenderly-virtualnet,   chain: evm, url: "" }
