@@ -309,7 +309,7 @@ export default function TechniqueDetailPage({
 
           <section className="technique-detail-section">
             <h2>Full description</h2>
-            <InlineMarkdown path={technique.sourcePath} />
+            <InlineMarkdown path={technique.sourcePath} onOpenDoc={onOpenDoc} />
           </section>
         </article>
       </div>

@@ -67,6 +67,11 @@ export const docPathToUrl = (mdPath: string) => {
   return `document/${stripped}`;
 };
 
+// File extensions whose hrefs should be canonicalised against the
+// current document's path. Anything not in this set (.png, .svg, etc.)
+// passes through untouched so browsers can fetch the asset directly.
+const RESOLVABLE_EXTENSIONS = [".md", ".yml", ".yaml", ".json", ".bib"];
+
 export const resolveMarkdownHref = (currentPath: string, href = "") => {
   if (
     !href ||
@@ -78,13 +83,14 @@ export const resolveMarkdownHref = (currentPath: string, href = "") => {
     return href;
   }
 
-  if (!href.endsWith(".md")) {
+  if (!RESOLVABLE_EXTENSIONS.some((ext) => href.endsWith(ext))) {
     return href;
   }
 
-  // Resolve relative .md href against the document's filesystem path.
-  // Returns the canonical filesystem path (e.g. `examples/2025-02-bybit.md`)
-  // — the click handler maps this to the in-app `/document/...` route.
+  // Resolve relative href against the document's filesystem path.
+  // Returns the canonical filesystem path (e.g. `examples/2025-02-bybit.md`
+  // or `specs/T1.001-modifiable-tax-function.yml`) — the click handler
+  // maps this to the in-app `/document/...` route.
   const base = currentPath.includes("/") ? currentPath.split("/").slice(0, -1).join("/") : "";
   const normalized = new URL(href, `https://oak.local/${base ? `${base}/` : ""}`).pathname.replace(
     /^\//,
@@ -92,6 +98,57 @@ export const resolveMarkdownHref = (currentPath: string, href = "") => {
   );
   return normalized;
 };
+
+// Whether a resolved href points at an in-corpus document the SPA can render
+// inside <MarkdownDocument>. Used by click handlers to decide between
+// preventDefault + onOpenDoc(target) and letting the browser handle the link.
+export const isInAppDocument = (href: string) =>
+  RESOLVABLE_EXTENSIONS.some((ext) => href.endsWith(ext));
+
+// Shared click dispatcher for any markdown body rendered via
+// dangerouslySetInnerHTML. Bind once per <div> and pass the document's
+// own path (for relative-href resolution) plus the in-app navigation
+// callback. Handles four cases:
+//   1. external (http/https/mailto) → open in a new tab.
+//   2. anchor (#section)            → preventDefault + smooth scroll.
+//   3. in-corpus document           → preventDefault + onOpenDoc(target).
+//   4. anything else (asset path)   → fall through to the browser.
+export function handleMarkdownLinkClick(
+  event: { target: EventTarget | null; preventDefault: () => void },
+  currentPath: string,
+  onOpenDoc: (path: string) => void,
+) {
+  const anchor = (event.target as HTMLElement | null)?.closest?.("a");
+  if (!anchor) return;
+  const href = anchor.getAttribute("href") ?? "";
+  if (!href) return;
+
+  if (
+    href.startsWith("http://") ||
+    href.startsWith("https://") ||
+    href.startsWith("mailto:")
+  ) {
+    event.preventDefault();
+    window.open(href, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  if (href.startsWith("#")) {
+    event.preventDefault();
+    const slug = href.slice(1);
+    const heading = window.document.querySelector(`#${CSS.escape(slug)}`);
+    if (heading) {
+      heading.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    return;
+  }
+
+  const resolved = resolveMarkdownHref(currentPath, href);
+  if (isInAppDocument(resolved)) {
+    event.preventDefault();
+    onOpenDoc(resolved);
+  }
+}
 
 export const REPO_URL = "https://github.com/onchainattack/oak";
 export const reportIssueUrl = (kind: string, path: string, title: string) => {

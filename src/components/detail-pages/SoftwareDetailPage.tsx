@@ -146,7 +146,7 @@ export default function SoftwareDetailPage({
 
           <section className="technique-detail-section">
             <h2>Full description</h2>
-            <InlineMarkdown path={software.sourcePath} />
+            <InlineMarkdown path={software.sourcePath} onOpenDoc={onOpenDoc} />
           </section>
         </article>
       </div>

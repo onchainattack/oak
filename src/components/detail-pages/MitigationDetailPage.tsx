@@ -111,7 +111,7 @@ export default function MitigationDetailPage({
 
           <section className="technique-detail-section">
             <h2>Full description</h2>
-            <InlineMarkdown path={mitigation.sourcePath} />
+            <InlineMarkdown path={mitigation.sourcePath} onOpenDoc={onOpenDoc} />
           </section>
         </article>
       </div>

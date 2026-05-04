@@ -1,6 +1,6 @@
 import { siteData } from "../../data/generated";
 import { useDocumentHtml } from "../../lib";
-import { resolveMarkdownHref, REPO_URL, reportIssueUrl, navigateTo, docPathToUrl } from "../../routing";
+import { handleMarkdownLinkClick, REPO_URL, reportIssueUrl } from "../../routing";
 import { highlightYaml } from "../../highlight";
 import Breadcrumb from "../layout/Breadcrumb";
 import DocumentHero from "./DocumentHero";
@@ -123,24 +123,7 @@ export default function MarkdownDocument({
               />
               <div
                 className="markdown-body"
-                onClick={(event) => {
-                  const target = event.target;
-                  if (!(target instanceof HTMLAnchorElement)) return;
-                  const href = target.getAttribute("href") ?? "";
-                  const resolvedHref = resolveMarkdownHref(path, href);
-                  // Intra-corpus markdown link → open in-app via the React
-                  // router instead of letting the browser navigate to the
-                  // raw .md file.
-                  const isExternal =
-                    resolvedHref.startsWith("http://") ||
-                    resolvedHref.startsWith("https://") ||
-                    resolvedHref.startsWith("mailto:") ||
-                    resolvedHref.startsWith("#");
-                  const docTarget = !isExternal && resolvedHref.endsWith(".md") ? resolvedHref : "";
-                  if (!docTarget) return;
-                  event.preventDefault();
-                  onOpenDoc(docTarget);
-                }}
+                onClick={(event) => handleMarkdownLinkClick(event, path, onOpenDoc)}
                 dangerouslySetInnerHTML={{ __html: documentHtml.html }}
               />
             </>

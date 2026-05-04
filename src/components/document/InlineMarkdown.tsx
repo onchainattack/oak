@@ -1,7 +1,14 @@
 import { siteData } from "../../data/generated";
 import { useDocumentHtml } from "../../lib";
+import { handleMarkdownLinkClick } from "../../routing";
 
-export default function InlineMarkdown({ path }: { path: string }) {
+export default function InlineMarkdown({
+  path,
+  onOpenDoc,
+}: {
+  path: string;
+  onOpenDoc?: (path: string) => void;
+}) {
   const indexEntry = siteData.documentIndex[path as keyof typeof siteData.documentIndex];
   const documentHtml = useDocumentHtml(path);
   if (!indexEntry) {
@@ -16,6 +23,11 @@ export default function InlineMarkdown({ path }: { path: string }) {
   return (
     <div
       className="markdown-body markdown-shell"
+      onClick={
+        onOpenDoc
+          ? (event) => handleMarkdownLinkClick(event, path, onOpenDoc)
+          : undefined
+      }
       dangerouslySetInnerHTML={{ __html: documentHtml.html }}
     />
   );
