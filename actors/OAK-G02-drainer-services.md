@@ -33,6 +33,8 @@ Per `[slowmist2024report]`, wallet-drainer activity attributed collectively to t
 - [`examples/2022-04-bored-ape-discord-wave.md`](../examples/2022-04-bored-ape-discord-wave.md) — Bored Ape Yacht Club / Yuga Labs operator-side credential-compromise wave
 - [`examples/2022-08-yuga-otherside.md`](../examples/2022-08-yuga-otherside.md) — Yuga Labs Otherside Discord-phishing wave
 - [`examples/2024-10-inferno-drainer-handover.md`](../examples/2024-10-inferno-drainer-handover.md) — Inferno Drainer service ecosystem
+- [`examples/2024-12-pudgy-penguins-google-ads-nft-drainer.md`](../examples/2024-12-pudgy-penguins-google-ads-nft-drainer.md) — NFT-targeted Google-Ads-distributed drainer-kit campaign
+- [`examples/2025-05-inferno-drainer-reloaded-encrypted-onchain-config.md`](../examples/2025-05-inferno-drainer-reloaded-encrypted-onchain-config.md) — Inferno-Drainer reloaded with encrypted on-chain config
 
 ## Citations
 
