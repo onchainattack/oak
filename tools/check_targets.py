@@ -49,6 +49,7 @@ COVERAGE_TARGETS = [
     ("T13", "Account Abstraction", 2024, 3),
     ("T14", "Validator / Staking", 2023, 3),
     ("T15", "Off-chain Entry-Vector / Pre-Positioning", 2017, 3),
+    ("T16", "Governance / Voting Manipulation", 2021, 2),
 ]
 
 
