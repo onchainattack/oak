@@ -1,0 +1,118 @@
+oak_techniques: [OAK-T1.006]
+spec_id: oak-detection-T1.006
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect tokens whose immutable bytecode at deployment encodes hostile
+  transfer logic that permits purchases but blocks sales. Four
+  sub-patterns: sell-side-gated revert predicate, malicious
+  `_beforeTokenTransfer` hook, asymmetric extreme fee (sell-tax ≈ 99%),
+  malicious approve handler that rewrites allowance state. The
+  legitimate-use overlap is structurally null — an immutably-deployed
+  contract that lets you buy but not sell has no legitimate purpose;
+  flagged contracts are always malicious or grossly misconfigured.
+  Excludes: T1.001 (mutable fee — failure mode is post-launch);
+  T1.004 (mutable blacklist / pause — failure mode requires authority
+  mutation); T1.005 (conditional fee — co-occurs as contributing
+  primitive in the asymmetric-fee sub-pattern but is not by itself
+  sufficient).
+
+data_sources: [contract_bytecode, contract_source,
+               simulation_environment, dex_trades, funder_graph]
+
+detection_logic:
+  description: |
+    Four orthogonal paths covering the four sub-patterns. PATH A
+    (sell-revert predicate): `_transfer` / `_beforeTokenTransfer`
+    branches on `to == pair` or counterparty-membership and reverts
+    when the predicate is met. PATH B (matrix sim — buy-ok / sell-revert
+    asymmetry): the canonical Honeypot.is methodology — successful buys
+    and reverted sells against the same pool. PATH C (asymmetric extreme
+    fee): immutable constants where sell-tax exceeds revert_equivalent_fee.
+    PATH D (allowance hijack): `approve` handler writes allowance to an
+    address other than `spender`.
+  pseudocode: |
+    SIZES = {small, medium, large}
+    DIRS  = {EOA→pool (sell), pool→EOA (buy), EOA→EOA}
+    BLOCKS = {early, late}                            # post-launch grace window
+
+    # PATH A — sell-revert predicate (static)
+    for each fn F ∈ transfer_paths(C):
+      preds ← branch_predicates(F, leading_to = revert_op)
+      for p ∈ preds:
+        if depends_on(p, parameter=to)
+           and (equality_check(p, to == amm_pair_address(C))
+                or membership_check(p, to ∈ pair_set(C))):
+          excl ← exemption_set_referenced_in(p)
+          deployer_only ← excl ⊆ funder_graph_cluster(deployer(C), hops=trace_hops)
+          if deployer_only:
+            emit(PATH_A, contract=C, fn=F, predicate=p, severity=critical)
+
+    # PATH B — matrix simulation buy/sell asymmetry (Honeypot.is-style)
+    if simulation_available:
+      results ← {}
+      for (sz, dir, blk) ∈ SIZES × DIRS × BLOCKS:
+        with chain_fork(block_phase = blk):
+          results[(sz, dir, blk)] ← simulate_transfer(C, sz, dir).status
+      buy_ok  ← any(results[(sz, EOA→EOA via pool→EOA, blk)] == ok)
+      sell_ok ← any(results[(sz, EOA→pool, blk)] == ok)
+      if buy_ok and not sell_ok:
+        emit(PATH_B, contract=C, mode="buy-ok-sell-revert",
+             cells=results, severity=critical)
+
+    # PATH C — asymmetric extreme fee (sell ≈ 100%)
+    fees ← extract_immutable_fee_constants(C)         # buy_fee, sell_fee
+    if fees.sell_fee ≥ revert_equivalent_fee:
+      emit(PATH_C, contract=C, sell_fee=fees.sell_fee,
+           buy_fee=fees.buy_fee, severity=critical)
+
+    # PATH D — allowance hijack (approve handler malicious)
+    approve ← approve_handler(C)
+    written ← storage_writes_in(approve)
+    expected ← allowance_slot(owner=msg.sender, spender=spender)
+    actual_targets ← {w.target_slot for w in written}
+    if expected ∉ actual_targets and written ≠ ∅:
+      emit(PATH_D, contract=C, written_targets=actual_targets,
+           expected_slot=expected, severity=critical)
+
+    # Cross-pattern fingerprint — funder-graph cluster
+    cluster ← funder_graph_cluster(deployer(C), hops = trace_hops)
+    cohort_hits ← {p ∈ contracts_deployed_by(cluster) − {C}
+                   : matched_any(PATH_A, PATH_B, PATH_C, PATH_D, p)}
+    if |cohort_hits| ≥ cluster_hit_threshold:
+      emit(cluster_signal=true, cluster_size=|cluster|,
+           cohort_hits=cohort_hits, severity=critical)
+
+parameters:
+  revert_equivalent_fee:    { type: number,  default: 0.99 }    # sell-tax ≥ 99% ≈ revert
+  trace_hops:               { type: integer, default: 3 }
+  cluster_hit_threshold:    { type: integer, default: 2 }
+
+output_alert: [oak_technique, detection_path, severity, contract_address,
+               chain, sub_pattern, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-Q4-honeypot-token-cohort-cross-chain   # 67k mints + Snibbb + CertiK 9-honeypot + 979-EOA fan-out
+  negative:
+    - "Standard ERC-20 with symmetric fee paths and no sell-side revert"
+    - "Uniswap-router-routable token where buy and sell both succeed across the matrix"
+
+false_positive_modes:
+  - tokens with legitimate transfer-restriction lists (vesting, lock-up) — these are blanket restrictions, not asymmetric buy-ok / sell-revert; PATH B's matrix surfaces this when the buy leg also reverts
+  - tokens where the AMM pair address resolves dynamically and PATH A's static check misses — PATH B's matrix simulation provides the behavioural confirmation
+  - tokens with a bridge-only sell path that requires a particular caller — annotate authorized-bridge addresses to suppress
+  - aggressively-priced tokens where the sell leg fails due to slippage rather than a revert predicate — distinguish via revert reason / out-of-gas vs explicit require
+
+mitigations: [OAK-M02, OAK-M16, OAK-M25]
+
+reference_implementations:
+  - { target: honeypot-is,       chain: evm,    url: "" }
+  - { target: goplus,            chain: evm,    url: "" }
+  - { target: tokensniffer,      chain: evm,    url: "" }
+  - { target: certik-skynet,     chain: evm,    url: "" }
+  - { target: rugcheck,          chain: solana, url: "" }
+  - { target: tenderly-virtualnet, chain: evm,  url: "" }

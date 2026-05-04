@@ -1,0 +1,107 @@
+oak_techniques: [OAK-T1.005]
+spec_id: oak-detection-T1.005
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect tokens whose immutable transfer-logic embeds a conditionally-
+  triggered fee — fee value is fixed in code (so naive "is the tax
+  modifiable?" checks pass) but is non-uniformly applied based on
+  caller, counterparty, transfer size, or block / timestamp predicates.
+  Single-condition simulation (the default in commodity vendor scanners)
+  is structurally insufficient; a cross-condition matrix is required.
+  Excludes: T1.001 (mutable fee value, post-launch authority abuse);
+  T1.004 (binary revert, not gradient extraction); T1.006 (asymmetric-
+  fee 99% sub-pattern is a T1.006 honeypot, not T1.005 — though T1.005
+  frequently co-occurs as the contributing primitive); legitimate
+  uniform fee-on-transfer (single fee branch, no conditional gating).
+
+data_sources: [contract_bytecode, contract_source,
+               simulation_environment, funder_graph]
+
+detection_logic:
+  description: |
+    Three orthogonal paths. PATH A (predicate enumeration): static
+    analysis of the transfer-logic path emits any branch predicate keyed
+    on counterparty / size / time / membership. PATH B (matrix
+    simulation): run transfers across the (size × direction × time ×
+    caller) matrix and flag any cell where executed fee diverges from
+    the advertised nominal fee. PATH C (constructor-exemption mapping):
+    enumerate any mapping populated at construction whose membership
+    grants fee exemption.
+  pseudocode: |
+    DIRECTIONS = {EOA→EOA, EOA→pool, pool→EOA, pool→pool}
+    SIZES      = {small, medium, large}
+    TIMES      = {pre_grace, post_grace}
+
+    # PATH A — fee-branch predicate enumeration
+    for each fn F ∈ transfer_paths(C):
+      branches ← branch_predicates_on_path(F, leading_to = fee_apply_op)
+      for p ∈ branches:
+        kind ← classify_predicate(p,
+                  axes = {counterparty, amount, block_time, mapping_member})
+        if kind ∈ {counterparty, amount, block_time, mapping_member}:
+          emit(PATH_A, contract=C, fn=F, predicate=p, axis=kind,
+               severity=high)
+
+    # PATH B — matrix simulation
+    if simulation_available:
+      nominal ← advertised_fee(C)
+      results ← {}
+      for (sz, dir, t, caller) ∈ SIZES × DIRECTIONS × TIMES × sample_callers:
+        with chain_fork(time = t):
+          fee ← simulate_transfer(C, from=src(dir, caller), to=dst(dir),
+                                  amount=size_value(sz)).observed_fee
+          results[(sz, dir, t, caller)] ← fee
+      cells_diverge ← [k for k, v in results.items()
+                       if |v − nominal| > divergence_tolerance × nominal]
+      if cells_diverge ≠ ∅:
+        emit(PATH_B, contract=C, divergent_cells=cells_diverge,
+             nominal_fee=nominal, severity=critical)
+
+    # PATH C — constructor-populated exemption mapping
+    excl ← exemption_mappings_in_constructor(C)        # _isExcludedFromFee, etc.
+    for m ∈ excl:
+      members ← initial_members(m)
+      cluster ← funder_graph_cluster(deployer(C), hops = trace_hops)
+      deployer_only ← members ⊆ cluster
+      privileged_only ← members ⊆ cluster ∪ market_maker_allowlist
+      if (deployer_only or privileged_only)
+         and not has_public_setter(m, gated_by = timelock_allowlist):
+        emit(PATH_C, contract=C, mapping=m, members,
+             severity = critical if deployer_only else high)
+
+parameters:
+  divergence_tolerance:     { type: number,  default: 0.10 }    # 10% deviation from nominal
+  sample_callers:           { type: integer, default: 4 }       # buyers, sellers, mm-allowlist, random
+  trace_hops:               { type: integer, default: 3 }
+  market_maker_allowlist:   { type: list,    default: [] }
+  timelock_allowlist:       { type: list,    default: [] }
+
+output_alert: [oak_technique, detection_path, severity, contract_address,
+               chain, predicate_axis, divergent_cells, exemption_members, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-Q4-honeypot-token-cohort-cross-chain   # T1.005 contributing primitive across the cohort
+  negative:
+    - "Uniform 0.3% fee-on-transfer token (single branch, no conditional gating)"
+    - "Anti-bot token with hard-coded short grace window (< N blocks, fee permanently zero thereafter — calibrate via post_grace simulation cell)"
+
+false_positive_modes:
+  - legitimate anti-bot launch tokens with hard-coded short grace window — calibrate post_grace simulation cell to verify fee returns to nominal
+  - aggregator-routed fee paths where the divergent cell reflects the aggregator's own fee, not the token's — exclude when divergence aligns with known router fee
+  - protocol fee tokens where fee differential reflects intentional pool / treasury routing — annotate market_maker_allowlist with known protocol routers
+  - rebase / yield-bearing tokens whose effective fee surface emerges from supply-scalar mutation rather than per-transfer fee — out of scope (handle as separate Technique)
+
+mitigations: [OAK-M01, OAK-M02, OAK-M03, OAK-M16, OAK-M25]
+
+reference_implementations:
+  - { target: honeypot-is,       chain: evm,    url: "" }
+  - { target: tokensniffer,      chain: evm,    url: "" }
+  - { target: goplus,            chain: evm,    url: "" }
+  - { target: rugcheck,          chain: solana, url: "" }
+  - { target: tenderly-virtualnet, chain: evm,  url: "" }
+  - { target: mg-detectors-rs,   chain: evm,    url: "" }

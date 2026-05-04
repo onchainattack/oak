@@ -1,0 +1,101 @@
+oak_techniques: [OAK-T1.002]
+spec_id: oak-detection-T1.002
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect Solana SPL Token-2022 mints whose extension TLV contains the
+  `PermanentDelegate` extension with a deployer-clustered (non-vetted)
+  delegate authority. PD presence alone is the primary signal — the
+  extension's semantics are well-defined and revocable only via the
+  delegate's own keys, so detection is deterministic at the mint-config
+  layer rather than heuristic. Excludes: legitimate PD usage by
+  vetted issuers (compliance-gated stablecoins, regulated securities)
+  via `vetted_delegate_allowlist`; T1.007 (TransferHook abuse) and
+  T1.005-Solana-side TransferFee — sibling Token-2022 extension classes
+  with separate detection surfaces.
+
+data_sources: [solana_mint_config, solana_tx_history,
+               solana_program_account, funder_graph]
+
+detection_logic:
+  description: |
+    Three orthogonal paths over Token-2022 mints. PATH A (mint-config
+    binary): PD extension present with non-zero delegate authority not
+    on the vetted allowlist. PATH B (burn-on-buy signature): the PD
+    delegate signs `BurnChecked` against any non-deployer holder
+    account — non-malicious PD usage burns deployer / operator-held
+    tokens, never arbitrary holder tokens. PATH C (deployer cluster
+    reuse): the deployer cluster has previously issued PD mints whose
+    history shows the burn-on-buy signature.
+  pseudocode: |
+    TOKEN_2022 = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+    EXT_PERM_DELEGATE = 12     # ExtensionType enum
+    SUSPICIOUS_EXTS = {EXT_PERM_DELEGATE, MintCloseAuthority,
+                        TransferHook, FreezeAuthority_unrenounced}
+
+    # PATH A — mint-config binary check
+    for each mint M created on TOKEN_2022:
+      ext ← parse_extension_tlv(getAccountInfo(M))
+      pd ← ext[EXT_PERM_DELEGATE]
+      if pd == None or pd.authority == 0: continue
+      if pd.authority ∈ vetted_delegate_allowlist: continue
+      stack ← ext.keys ∩ SUSPICIOUS_EXTS
+      severity ← critical if |stack| ≥ stack_threshold else high
+      emit(PATH_A, mint=M, delegate=pd.authority,
+           ext_stack=stack, severity)
+
+    # PATH B — burn-on-buy signature (post-mint)
+    for each mint M with PD configured (delegate D = pd.authority):
+      for each ix ∈ tx_history(M, after = M.creation_slot):
+        if ix.kind ≠ BurnChecked: continue
+        if ix.authority ≠ D: continue
+        target ← ix.account.owner
+        if target ∈ deployer_cluster(M, hops = trace_hops): continue
+        elapsed ← ix.slot − last_pool_swap_or_mint_to(target, M).slot
+        if elapsed ≤ burn_window_slots:
+          emit(PATH_B, mint=M, delegate=D, victim=target,
+               elapsed_slots=elapsed, severity=critical)
+
+    # PATH C — deployer-cluster reuse
+    cluster ← funder_graph_cluster(deployer(M), hops = trace_hops)
+    prior_pd_mints ← {p ∈ mints_by(cluster) − {M} : has_PD(p)}
+    hits ← {p ∈ prior_pd_mints : matched_PATH_B(p)}
+    if |hits| ≥ cluster_hit_threshold:
+      emit(PATH_C, cluster_size=|cluster|, prior_burn_on_buy_mints=hits,
+           severity=critical)
+
+parameters:
+  vetted_delegate_allowlist: { type: list,    default: [] }
+  stack_threshold:           { type: integer, default: 2 }   # PD + ≥1 sibling = critical
+  trace_hops:                { type: integer, default: 3 }
+  burn_window_slots:         { type: integer, default: 1200 }   # ~8 min on Solana
+  cluster_hit_threshold:     { type: integer, default: 1 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               mint_address, delegate_authority, ext_stack,
+               victim_account, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-09-solana-permanent-delegate-burn-on-buy-cohort
+  negative:
+    - "USDC on Solana — Token-2022 with PD authority, vetted-issuer-allowlisted"
+    - "Token-2022 mint without PD extension, no PD-class risk"
+
+false_positive_modes:
+  - vetted compliance-gated stablecoins (USDC-2022, regulated-asset issuers) — must be on vetted_delegate_allowlist
+  - legitimate operator-held burn for treasury accounting (delegate burns own tokens, not arbitrary holder accounts)
+  - PD authority transferred to a multisig-timelock treasury (allowlist the multisig as canonical authority)
+  - cohort-level false positives where the deployer cluster has only one PD mint and no prior burn signature — flag as elevated-risk, not confirmed-malicious
+
+mitigations: [OAK-M02, OAK-M03, OAK-M05, OAK-M25]
+
+reference_implementations:
+  - { target: rugcheck,           chain: solana, url: "" }
+  - { target: goplus,             chain: solana, url: "" }
+  - { target: jupiter-pretrade-warning, chain: solana, url: "" }
+  - { target: helius-indexer,     chain: solana, url: "" }
+  - { target: mg-detectors-rs,    chain: solana, url: "" }

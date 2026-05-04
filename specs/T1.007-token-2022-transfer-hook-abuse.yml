@@ -1,0 +1,112 @@
+oak_techniques: [OAK-T1.007]
+spec_id: oak-detection-T1.007
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect Solana SPL Token-2022 mints whose `TransferHook` extension
+  invokes an attacker-controlled program on every `transfer_checked` —
+  reintroducing callback-based attack surfaces (reentrancy, mid-transfer
+  state mutation, attacker-controlled CPI) into the Solana runtime.
+  Three structural concerns: (1) hook program is mint-creator-specified,
+  (2) hook can perform arbitrary CPI fan-out and observe transfer
+  details, (3) hook program is itself upgradable via
+  `BPFLoaderUpgradeable`. Excludes: T1.002 (PermanentDelegate — standing
+  authority, no callback); T1.005 (TransferFee — fee-arithmetic-bounded);
+  T9.005 (EVM hook reentrancy — cross-standard analogue, separate
+  Technique). v0.1 anchor is class-level (no per-incident exploit at
+  freeze).
+
+data_sources: [solana_mint_config, solana_program_account,
+               solana_program_bytecode, solana_tx_call_trace,
+               funder_graph]
+
+detection_logic:
+  description: |
+    Four orthogonal paths. PATH A (mint-config binary): TransferHook
+    extension configured with non-zero hook program ID. PATH B (hook
+    upgrade authority): hook program deployed via BPFLoaderUpgradeable
+    with non-burned upgrade authority — residual T6.005 mutable-impl
+    surface. PATH C (hook static analysis): hook program performs
+    arbitrary CPI fan-out, reads transfer details, branches on caller /
+    counterparty identity. PATH D (runtime CPI depth): `transfer_checked`
+    invocations against hook-configured mints exhibit elevated CPI depth
+    or unexpected mid-transfer state mutations.
+  pseudocode: |
+    TOKEN_2022 = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+    EXT_TRANSFER_HOOK = 14
+    BPF_LOADER_UPGRADEABLE = "BPFLoaderUpgradeab1e11111111111111111111111"
+
+    # PATH A — mint-config binary check
+    for each mint M created on TOKEN_2022:
+      ext ← parse_extension_tlv(getAccountInfo(M))
+      hook ← ext[EXT_TRANSFER_HOOK]
+      if hook == None or hook.program_id == 0: continue
+      if hook.program_id ∈ vetted_hook_program_allowlist: continue
+      emit(PATH_A, mint=M, hook_program=hook.program_id, severity=high)
+
+    # PATH B — hook upgrade authority enumeration
+    for each mint M with hook H = hook.program_id:
+      prog ← getProgramAccount(H)
+      if prog.loader == BPF_LOADER_UPGRADEABLE
+         and prog.upgrade_authority ≠ 0
+         and prog.upgrade_authority ∉ burn_authority_allowlist:
+        emit(PATH_B, mint=M, hook_program=H,
+             upgrade_authority=prog.upgrade_authority, severity=high)
+
+    # PATH C — hook program static behaviour
+    for each hook program H from PATH_A:
+      bytecode ← getProgramData(H)
+      cpi_targets ← cpi_invoke_targets_in(bytecode)
+      reads_transfer_details ← reads_account(bytecode, account = transfer_ctx)
+      conditional_branches ← branches_on(bytecode,
+                                          axes = {caller, counterparty, amount})
+      if |cpi_targets| > hook_cpi_fan_out_max
+         or (reads_transfer_details and conditional_branches ≠ ∅):
+        emit(PATH_C, hook_program=H, cpi_targets, branches=conditional_branches,
+             severity=critical)
+
+    # PATH D — runtime CPI-depth / state-mutation anomaly
+    for each tx T calling transfer_checked on a hook-configured mint M:
+      depth ← max_cpi_depth_in(T)
+      mid_writes ← state_writes_during_hook_frame(T)
+      if depth > expected_cpi_depth + cpi_depth_margin
+         or mid_writes ∩ accounts_observed_post_hook(T) ≠ ∅:
+        emit(PATH_D, mint=M, tx=T.signature, cpi_depth=depth,
+             mid_transfer_writes=mid_writes, severity=critical)
+
+parameters:
+  vetted_hook_program_allowlist: { type: list, default: [] }   # known-benign royalty / restriction programs
+  burn_authority_allowlist:      { type: list, default: [] }   # 0x0 / canonical burn pattern
+  hook_cpi_fan_out_max:          { type: integer, default: 2 }
+  expected_cpi_depth:            { type: integer, default: 4 }
+  cpi_depth_margin:              { type: integer, default: 2 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               mint_address, hook_program, upgrade_authority,
+               cpi_targets, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-2025-token-2022-transfer-hook-class-vulnerability     # class-level anchor (no per-incident exploit at v0.1)
+  negative:
+    - "Token-2022 mint with no TransferHook extension"
+    - "Token-2022 mint with TransferHook pointing to a vetted royalty-enforcement program (allowlisted)"
+    - "Hook program with upgrade_authority burned to 0x0 (immutable)"
+
+false_positive_modes:
+  - vetted royalty-enforcement / transfer-restriction policy programs (legitimate use of TransferHook) — must be on vetted_hook_program_allowlist
+  - Anchor IDL-published hooks with bounded, well-defined logic — IDL inspection should suppress PATH C when hook behaviour is provably bounded
+  - high-CPI-depth transactions caused by aggregator routing rather than the hook itself — restrict PATH D to depth contributed during the hook frame
+  - hook programs whose upgrade authority is a multisig+timelock matching governance allowlist — annotate as canonical authority
+
+mitigations: [OAK-M02, OAK-M03, OAK-M05, OAK-M16, OAK-M17]
+
+reference_implementations:
+  - { target: anchor-static-checks,  chain: solana, url: "" }
+  - { target: sec3,                  chain: solana, url: "" }
+  - { target: ottersec,              chain: solana, url: "" }
+  - { target: halborn,               chain: solana, url: "" }
+  - { target: helius-indexer,        chain: solana, url: "" }
