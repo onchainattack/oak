@@ -1,6 +1,6 @@
 <svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OAK mark">
   <rect width="256" height="256" rx="48" fill="#0a0a0c"/>
-  <polygon points="168,32 224,72 224,184 168,224 96,184 96,72" fill="rgba(0,255,209,0.06)" stroke="#e8e9ec" stroke-width="9"/>
+  <polygon points="168,32 224,72 224,184 168,224 96,184 96,72" fill="rgba(0,255,209,0.06)" stroke="rgba(0,255,209,0.22)" stroke-width="6"/>
   <rect x="116" y="80" width="88" height="12" fill="#00ffd1"/>
   <rect x="164" y="122" width="40" height="12" fill="#00ffd1"/>
   <rect x="116" y="164" width="88" height="12" fill="#00ffd1"/>

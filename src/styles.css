@@ -236,10 +236,10 @@ button {
 }
 
 .oak-logo-mark .mark-hex {
-  fill: var(--accent-fade);
-  stroke: var(--ink);
+  fill: var(--accent-faint);
+  stroke: var(--accent-line);
   stroke-linejoin: miter;
-  stroke-width: 2.4;
+  stroke-width: 1.6;
 }
 
 .oak-logo-mark .mark-row {
