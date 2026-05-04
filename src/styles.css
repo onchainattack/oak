@@ -115,6 +115,34 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Global focus indicator — :focus-visible only (keyboard / programmatic
+   focus), so mouse clicks don't draw a ring. Anything that sets its
+   own outline (e.g. inputs styled with border-color shifts) overrides
+   below. */
+:focus {
+  outline: none;
+}
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* Respect the OS-level reduced-motion preference — collapse all
+   transitions / animations to essentially zero. Without this every
+   hover, route change, and progress-bar animation runs regardless of
+   user accessibility settings. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 body {
   margin: 0;
   min-width: 320px;
