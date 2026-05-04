@@ -161,6 +161,14 @@ function TacticGlyph({ id }: { id: string }) {
             <circle cx="27" cy="23" r="2.5" className="fill-accent" />
           </>
         )}
+        {n === 16 /* Governance / Voting — ballot box with ballot slot + checkmark ballot dropping in */ && (
+          <>
+            <rect x="8" y="22" width="32" height="20" rx="1" />
+            <rect x="18" y="20" width="12" height="3" />
+            <rect x="16" y="6" width="16" height="14" rx="1" />
+            <path d="M20 13l3 3 5-6" className="fill-accent" />
+          </>
+        )}
       </svg>
     </span>
   );
@@ -1016,9 +1024,10 @@ const TACTIC_NAMES_SHORT: Record<string, string> = {
   T13: "Account Abstraction",
   T14: "Validator / Staking",
   T15: "Off-chain Entry-Vector",
+  T16: "Governance / Voting",
 };
 
-const TACTIC_ORDER = ["T1","T2","T3","T4","T5","T6","T7","T8","T9","T10","T11","T12","T13","T14","T15"];
+const TACTIC_ORDER = ["T1","T2","T3","T4","T5","T6","T7","T8","T9","T10","T11","T12","T13","T14","T15","T16"];
 const ATTRIBUTION_ORDER = ["confirmed","inferred-strong","inferred-weak","pseudonymous","unattributed","(missing)"];
 // Attribution colors derive from OAK's single accent (electric teal) with
 // decreasing opacity for decreasing rigor; lower-rigor categories fall onto
