@@ -1,0 +1,422 @@
+# OAK Detection Spec — OAK-T1.001 Modifiable Tax Function
+#
+# Canonical, vendor-neutral. Primary deliverable for this Technique.
+# Reference implementations live under reference_implementations.
+
+oak_techniques: [OAK-T1.001]
+spec_id: oak-detection-T1.001
+version: 0.1.0
+maturity: draft               # draft | review | stable
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope:
+  description: |
+    Detect ERC-20-style tokens whose transfer logic includes a fee or
+    transfer-cap parameter that an authorised role can modify after
+    holders have entered. The detector targets the *post-launch
+    authority surface* — a static, immutable fee is observable and
+    pricable; a fee that can be raised arbitrarily after holders enter
+    is a concealed authority that defeats normal pre-trade risk
+    assessment.
+
+  excludes:
+    - "Hidden Fee-on-Transfer (T1.005). T1.005 fixes the fee in
+      immutable bytecode but conditions it on caller / counterparty /
+      size predicates. T1.001 leaves the fee parameter itself
+      authority-mutable. Patterns frequently co-occur but the
+      mitigation set differs."
+    - "Blacklist / Pausable Weaponisation (T1.004). Same operator
+      goal (sell-prevention), different mechanism (binary gate vs
+      quantitative gate). Detect both; tag accordingly."
+    - "Fee setters callable from a *governance-controlled multisig
+      with non-trivial timelock*. v0.1 detection rules WILL produce
+      false positives here; the pragmatic resolution is the
+      authority-graph allowlist (see false_positive_modes), not a
+      different static rule."
+
+# ────────────────────────────────────────────────────────────
+# Inputs the detector consumes from the underlying telemetry layer.
+# Three orthogonal data surfaces are required for full coverage; each
+# implementation may consume one or more.
+# ────────────────────────────────────────────────────────────
+
+data_sources:
+  - id: contract_bytecode
+    description: |
+      Deployed runtime bytecode for the contract under inspection,
+      plus the resolved storage layout (slot → variable name) when
+      verified source is available.
+    fields_required:
+      - contract_address
+      - runtime_bytecode
+      - storage_layout         # optional, derived from verified source
+      - verified_source        # optional
+      - verified_abi           # optional
+    chains: [evm]
+
+  - id: contract_events
+    description: |
+      Stream (or window-bounded query) of events emitted by the
+      contract, including OwnershipTransferred, AccessControl role
+      grants, and any custom FeeChanged / TaxUpdated / FeesUpdated
+      events.
+    fields_required:
+      - contract_address
+      - event_signature
+      - event_topics
+      - event_data
+      - block_number
+      - tx_hash
+    chains: [evm]
+
+  - id: authority_graph
+    description: |
+      For a given authority address (Ownable owner, AccessControl
+      admin, proxy admin), the funder-graph and the cross-token
+      deployment cluster. Used to gate against known-timelock /
+      known-governance allowlists and to surface deployer-cluster
+      reuse across prior scams.
+    fields_required:
+      - authority_address
+      - funding_ancestors
+      - deployed_contracts
+      - cluster_label          # e.g. "timelock", "multisig", "EOA-deployer"
+    chains: [evm, solana]
+
+  - id: simulation_environment
+    description: |
+      Ability to fork chain state at a target block and execute
+      synthetic calls (e.g. apply a hypothetical setFee(MAX) from the
+      historical owner address, then re-run a transfer simulation).
+      Optional — required only by the simulation-matrix path.
+    fields_required:
+      - fork_block
+      - state_overrides
+      - call_params
+    chains: [evm]
+
+# ────────────────────────────────────────────────────────────
+# Detection logic — language-agnostic pseudocode + prose. The detector
+# combines a STATIC PATH (bytecode/source analysis at rest) with an
+# OPTIONAL SIMULATION PATH (proves authority can lift fee in practice)
+# and a CONTINUOUS PATH (alert on actual fee mutation events).
+# ────────────────────────────────────────────────────────────
+
+detection_logic:
+  description: |
+    Three orthogonal paths, each producing an independent finding.
+    Combining all three reduces false-positive rate to near zero on
+    cohort-scale evaluation; any single path is sufficient for an
+    elevated-risk flag.
+
+    PATH A — STATIC. Disassemble the runtime bytecode, identify every
+    function selector that writes (SSTORE) to a slot that is read
+    (SLOAD) inside the transfer arithmetic. Resolve the writer's
+    access-control gate. Flag if the gate is anything other than a
+    timelock / known-governance allowlist member.
+
+    PATH B — SIMULATION. Fork chain state. Simulate transfer pre- and
+    post- a synthetic `setFee(MAX)` call from the historical owner.
+    If the simulated post-call fee jumps to the cap, T1.001 is
+    confirmed irrespective of static-analysis ambiguity.
+
+    PATH C — CONTINUOUS. Subscribe to FeeChanged / TaxUpdated /
+    OwnershipTransferred events. Alert when a fee-mutation event
+    fires from an authority not in the timelock allowlist.
+
+  pseudocode: |
+    # Inputs:
+    #   contract_addr             — target ERC-20 contract
+    #   bytecode                  — runtime bytecode at contract_addr
+    #   abi                       — ABI (verified source) or selector-recovery
+    #   storage_layout            — slot → variable name mapping (verified)
+    #   timelock_allowlist        — set of (chain, address) known to be
+    #                                 governance-controlled timelocks
+    #   simulation_available      — bool
+    #
+    # Output:
+    #   one alert per detected mutability path (PATH_A, PATH_B, PATH_C).
+
+    # ────────────────────────────────────────
+    # PATH A — STATIC bytecode analysis
+    # ────────────────────────────────────────
+
+    # 1. Locate the fee storage slot.
+    fee_slots ← set()
+    for each selector S in abi.public_functions:
+        if S.name in TRANSFER_SELECTORS:           # transfer, transferFrom
+            for each SLOAD-emitting offset O in disassemble(bytecode, S):
+                slot ← resolve_slot(O, bytecode, storage_layout)
+                if slot referenced inside arithmetic that produces output
+                   amount in the same control-flow path:
+                    fee_slots.add(slot)
+
+    # 2. Find every writer to the fee slot.
+    writers ← set()
+    for each selector S in abi.public_functions:
+        for each SSTORE-emitting offset O in disassemble(bytecode, S):
+            slot ← resolve_slot(O, bytecode, storage_layout)
+            if slot ∈ fee_slots:
+                writers.add(S)
+
+    # 3. Resolve the gate on each writer and flag.
+    for each W in writers:
+        gate ← resolve_modifier_chain(W, bytecode)
+        if gate is None:
+            emit_alert(PATH_A, contract=contract_addr, writer=W,
+                       gate="ungated", severity=critical)
+        elif gate.kind == "Ownable":
+            owner ← read_storage(contract_addr, OWNABLE_OWNER_SLOT)
+            if (chain, owner) ∉ timelock_allowlist:
+                emit_alert(PATH_A, contract=contract_addr, writer=W,
+                           gate="Ownable", authority=owner,
+                           severity=high)
+        elif gate.kind == "AccessControl":
+            admins ← enumerate_role_holders(contract_addr, gate.role)
+            if any(a ∉ timelock_allowlist for a in admins):
+                emit_alert(PATH_A, contract=contract_addr, writer=W,
+                           gate="AccessControl", authorities=admins,
+                           severity=high)
+
+    # ────────────────────────────────────────
+    # PATH B — SIMULATION matrix (optional, if simulation_available)
+    # ────────────────────────────────────────
+
+    if simulation_available and len(fee_slots) > 0:
+        baseline_fee ← simulate_transfer(contract_addr, amount=SAMPLE_AMOUNT,
+                                          from=POOL, to=EOA).executed_fee
+        # Apply a synthetic fee bump from the historical owner.
+        owner ← read_storage(contract_addr, OWNABLE_OWNER_SLOT)
+        with chain_fork():
+            execute(owner, contract_addr, "setFee(MAX)")
+            post_fee ← simulate_transfer(contract_addr, amount=SAMPLE_AMOUNT,
+                                          from=POOL, to=EOA).executed_fee
+            if post_fee > baseline_fee × FEE_BUMP_RATIO:
+                emit_alert(PATH_B, contract=contract_addr,
+                           baseline_fee=baseline_fee, post_fee=post_fee,
+                           severity=critical)
+
+    # ────────────────────────────────────────
+    # PATH C — CONTINUOUS event monitoring
+    # ────────────────────────────────────────
+
+    for each event E observed for contract_addr in event_stream:
+        if E.signature in {FeeChanged, TaxUpdated, FeesUpdated,
+                            "FeeChanged(uint256)", "FeeChanged(uint256,uint256)",
+                            ...}:
+            caller ← E.tx.from
+            if (chain, caller) ∉ timelock_allowlist:
+                emit_alert(PATH_C, contract=contract_addr,
+                           caller=caller, new_fee=E.data.new_fee,
+                           prev_fee=E.data.prev_fee, tx=E.tx_hash,
+                           severity=high)
+
+  notes:
+    - "TRANSFER_SELECTORS includes the standard ERC-20 selectors but
+      also non-standard transfer paths used by predicate-gated tokens
+      (transferFrom variants, _transfer internal call paths exposed
+      via custom external functions)."
+    - "OWNABLE_OWNER_SLOT is keccak256(\"OZ.Ownable.owner\") for
+      OpenZeppelin v4+, or slot 0/1 for legacy Ownable. EIP-1967
+      proxy admin slot is 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103."
+    - "PATH A relies on storage_layout for fee-slot identification.
+      Without verified source, fall back to heuristic slot recovery
+      (look for arithmetic patterns matching `amount - amount * fee /
+      DENOM` in the transfer dispatch)."
+    - "PATH B is destructive in simulation only — never execute the
+      synthetic setFee against live state. Implementations MUST use a
+      forked or shadow environment."
+    - "Solana-specific note: SPL token mint authority IS the analogous
+      surface; the detector for Solana reads `Mint.mint_authority` and
+      `Mint.freeze_authority` rather than EVM storage slots. Solana
+      implementations use `account_layout` instead of `storage_layout`."
+
+# ────────────────────────────────────────────────────────────
+# Tunable parameters.
+# ────────────────────────────────────────────────────────────
+
+parameters:
+  timelock_allowlist:
+    type: list
+    default: []
+    description: |
+      Set of (chain, address) tuples known to be governance-controlled
+      timelocks (Compound Timelock, OZ TimelockController, custom
+      governor timelocks). Implementations should ship a canonical
+      allowlist and let operators extend it locally.
+  fee_bump_ratio:
+    type: number
+    default: 5
+    description: |
+      In PATH B, post-call fee must exceed baseline_fee × this ratio
+      to confirm. Default 5 catches owner-set caps from <1% to >5%;
+      tune lower for tokens with already-high baseline fees.
+  sample_amount:
+    type: number
+    default: 1e18
+    description: |
+      Transfer amount used in PATH B simulation. Should be representative
+      of typical buy size; some honeypots fee differently per amount.
+  transfer_selectors:
+    type: list
+    default: ["transfer(address,uint256)", "transferFrom(address,address,uint256)"]
+    description: Selectors treated as transfer entry points.
+  fee_event_signatures:
+    type: list
+    default: [
+      "FeeChanged(uint256)",
+      "FeeChanged(uint256,uint256)",
+      "TaxUpdated(uint256)",
+      "FeesUpdated(uint256,uint256)",
+      "BuyTaxChanged(uint256)",
+      "SellTaxChanged(uint256)",
+      "MaxTxAmountChanged(uint256)",
+    ]
+    description: Custom events that imply fee mutation.
+
+# ────────────────────────────────────────────────────────────
+# Alert payload shape (vendor-agnostic).
+# ────────────────────────────────────────────────────────────
+
+output_alert:
+  required_fields:
+    - { name: contract_address,    type: address }
+    - { name: chain,               type: string }
+    - { name: detection_path,      type: enum, values: [PATH_A, PATH_B, PATH_C] }
+    - { name: severity,            type: enum, values: [low, medium, high, critical] }
+    - { name: oak_technique,       type: string, value: OAK-T1.001 }
+  conditional_fields:
+    - { when: "detection_path == PATH_A", name: writer_selector, type: string }
+    - { when: "detection_path == PATH_A", name: gate_kind,        type: string }
+    - { when: "detection_path == PATH_A", name: authority_address, type: address }
+    - { when: "detection_path == PATH_B", name: baseline_fee,     type: number }
+    - { when: "detection_path == PATH_B", name: post_fee,         type: number }
+    - { when: "detection_path == PATH_C", name: caller,           type: address }
+    - { when: "detection_path == PATH_C", name: prev_fee,         type: number }
+    - { when: "detection_path == PATH_C", name: new_fee,          type: number }
+    - { when: "detection_path == PATH_C", name: tx_hash,          type: string }
+
+# ────────────────────────────────────────────────────────────
+# Test fixtures.
+# ────────────────────────────────────────────────────────────
+
+test_fixtures:
+  positive:
+    - id: squid-2021
+      reference: examples/2021-11-squid.md
+      description: |
+        SQUID (Squid Game token), BSC, November 2021. Transfer logic
+        gated on a settable allowlist (transfer-restriction variant of
+        modifiable-tax). PATH A flags the contract pre-launch via the
+        ungated allowlist setter; PATH C alerts on the setter call
+        that triggered the rug.
+    - id: safemoon-charges-2023
+      reference: examples/2023-11-safemoon-charges.md
+      description: |
+        SafeMoon (SFM), BSC. SEC charges November 2023 — the
+        underlying contract surface includes modifiable-fee +
+        anti-whale parameters held by deployer cluster. Cohort
+        anchor for the modifiable-tax pattern at scale.
+    - id: influencer-amplified-cohort
+      reference: examples/2021-2026-influencer-amplified-non-memecoin-rug-cohort.md
+      description: |
+        Cohort fixture covering influencer-amplified non-memecoin
+        promotion-and-dump events with insider allocation and
+        operator-controlled supply concentration; T1.001 / T1.003
+        cross-references on the upstream primitives.
+
+  negative:
+    - id: usdc-immutable-fee
+      description: |
+        USDC contract on Ethereum mainnet — fee parameters do not
+        exist; transfer logic is straightforward balance-decrement.
+        PATH A must NOT flag (no fee_slots resolved). PATH C
+        irrelevant (no fee events).
+    - id: governance-timelocked-fee-protocol
+      description: |
+        Hypothetical canonical case: a protocol token whose fee setter
+        is callable only via a 7-day TimelockController governed by a
+        DAO. PATH A finds the writer but resolves the gate to the
+        timelock — when the timelock address is in
+        `timelock_allowlist`, the alert is suppressed. This fixture
+        validates the false-positive mitigation logic.
+
+# ────────────────────────────────────────────────────────────
+# Honest documentation of false-positive surfaces.
+# ────────────────────────────────────────────────────────────
+
+false_positive_modes:
+  - id: governance-controlled-timelock
+    description: |
+      Protocols with legitimate governance-gated fee parameters (Curve,
+      Aave, Compound — adjusts through DAO timelock) will trip PATH A
+      unless the timelock address is in the `timelock_allowlist`.
+      Required mitigation: ship a canonical allowlist of well-known
+      timelock contracts (OZ TimelockController, Compound Timelock,
+      Aave Executor) AND let operators extend it locally.
+  - id: emergency-pause-switch
+    description: |
+      Audited DeFi protocols often expose an emergency-pause guardian
+      role. The role can pause transfers but does NOT modify fees;
+      static analysis should distinguish — PATH A shouldn't flag a
+      pause-only guardian. Confusion arises when the guardian is also
+      authorised on a fee-setter that's *separately* governance-gated;
+      manual review path.
+  - id: legitimate-rebase-token
+    description: |
+      Rebase tokens (AMPL, OHM v1) modify per-account balances on a
+      schedule, which can look like fee mutation. The signal is
+      different: rebase modifies the global supply scalar, not a
+      per-transfer multiplier. PATH A's fee-slot identification step
+      should NOT flag rebase scalars; the implementation must
+      distinguish the two patterns.
+
+# ────────────────────────────────────────────────────────────
+# Mitigations.
+# ────────────────────────────────────────────────────────────
+
+mitigations:
+  - { id: OAK-M01, role: required-bytecode-vs-source-check, description: "Setter present in bytecode but missing from verified source is an immediate combined T6.001 / T1.001 indicator." }
+  - { id: OAK-M02, role: required-pre-deployment-static-analysis, description: "Enumerate fee-mutating selectors and flag pre-listing." }
+  - { id: OAK-M03, role: continuous-bytecode-diff, description: "For proxy-pattern tokens, monitor implementation upgrades for newly-introduced fee setters." }
+  - { id: OAK-M05, role: authority-graph-enumeration, description: "Enumerate every authority-bearing role before treating any single-role renouncement as conclusive." }
+  - { id: OAK-M16, role: pre-deployment-formal-verification, description: "For tokens claiming non-mutable fees, require formal verification of the immutability claim." }
+  - { id: OAK-M17, role: time-locked-governance, description: "Accept governance-gated mutation only when timelock is non-trivial and quorum is multi-block." }
+  - { id: OAK-M25, role: venue-listing-gate, description: "Listing-time source-verification + audit-status gate." }
+
+# ────────────────────────────────────────────────────────────
+# Reference implementations — secondary, demonstrations only.
+# ────────────────────────────────────────────────────────────
+
+reference_implementations:
+  - target: slither-plugin
+    chain: evm
+    url: ""
+    notes: |
+      Custom Slither detector implementing PATH A: walks the
+      compilation unit, identifies fee-storage SSTOREs, resolves
+      modifier chains, emits Slither findings tagged with OAK-T1.001.
+      Best-fit for the static path; runs at audit time.
+  - target: forta-bot
+    chain: evm
+    url: ""
+    notes: |
+      Real-time PATH C: subscribes to all confirmed-block events
+      matching the fee-event-signature list; emits Forta alerts when
+      a setter fires from a non-timelock caller.
+  - target: tenderly-virtualnet
+    chain: evm
+    url: ""
+    notes: |
+      PATH B simulation: Tenderly Virtual TestNet fork-and-simulate
+      used to confirm fee-mutation reachability. Most useful as an
+      audit-time tool, not real-time.
+  - target: dune
+    chain: evm
+    url: ""
+    notes: |
+      PATH C as a Dune query: scans recent blocks for fee-event
+      signatures originating from non-timelock callers. Lower-fidelity
+      than Forta but useful for cohort enumeration ("how many tokens
+      had their fee modified last month").
