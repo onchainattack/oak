@@ -92,14 +92,16 @@ export default function GroupDetailPage({
           </header>
 
           <section className="technique-detail-section technique-detail-section-description">
-            <InlineMarkdown path={`actors/${actor.file}`} onOpenDoc={onOpenDoc} />
+            <InlineMarkdown
+              path={`actors/${actor.file}`}
+              onOpenDoc={onOpenDoc}
+              hideSectionSlugs={["observed-techniques", "observed-examples"]}
+            />
           </section>
 
-          <section id="section-software" className="technique-detail-section">
-            <h2>Software used ({usesSoftware.length})</h2>
-            {usesSoftware.length === 0 ? (
-              <p className="empty-row">No directly-mapped Software entries.</p>
-            ) : (
+          {usesSoftware.length > 0 && (
+            <section id="section-software" className="technique-detail-section">
+              <h2>Software used ({usesSoftware.length})</h2>
               <div className="software-grid">
                 {usesSoftware.map((s) => (
                   <button
@@ -114,10 +116,51 @@ export default function GroupDetailPage({
                   </button>
                 ))}
               </div>
-            )}
-          </section>
-          {/* Observed Techniques cards section dropped — markdown body's '## Observed Techniques' covers the same list. */}
-          {/* Worked Examples cards section dropped — markdown body's '## Observed Examples' covers it. */}
+            </section>
+          )}
+          {observedTechniques.length > 0 && (
+            <section id="section-techniques" className="technique-detail-section">
+              <h2>Observed Techniques ({observedTechniques.length})</h2>
+              <div className="technique-grid">
+                {observedTechniques.map((t) => (
+                  <button
+                    type="button"
+                    className="technique-card"
+                    key={t.id}
+                    onClick={() => onOpenTechnique(t.id)}
+                  >
+                    <span>{t.id}</span>
+                    <strong>{t.name}</strong>
+                    <small>
+                      {t.maturity || "documented"} · {t.chains.slice(0, 2).join(" / ")}
+                    </small>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+          {groupExamples.length > 0 && (
+            <section id="section-worked-examples" className="technique-detail-section">
+              <h2>Worked Examples ({groupExamples.length})</h2>
+              <ul className="technique-detail-examples">
+                {groupExamples.map((example) => (
+                  <li key={example.file}>
+                    <button
+                      type="button"
+                      className="link-row"
+                      onClick={() => onOpenDoc(`examples/${example.file}`)}
+                    >
+                      <strong>{example.title}</strong>
+                      <small>
+                        {example.year && `${example.year} · `}
+                        {example.loss}
+                      </small>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           {/* description moved up; no duplicate section here */}
         </article>

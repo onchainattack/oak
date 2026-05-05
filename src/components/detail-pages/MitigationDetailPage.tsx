@@ -56,9 +56,11 @@ export default function MitigationDetailPage({
           </div>
           <DocumentToc
             path={mitigation.sourcePath}
-            extraItems={[
-              { label: `Techniques mitigated (${mappedTechniques.length})`, slug: "section-techniques" },
-            ]}
+            extraItems={
+              mappedTechniques.length > 0
+                ? [{ label: `Techniques mitigated (${mappedTechniques.length})`, slug: "section-techniques" }]
+                : []
+            }
           />
           <div className="detail-actions">
             <a
@@ -82,11 +84,9 @@ export default function MitigationDetailPage({
             <InlineMarkdown path={mitigation.sourcePath} onOpenDoc={onOpenDoc} />
           </section>
 
-          <section id="section-techniques" className="technique-detail-section">
-            <h2>Techniques mitigated ({mappedTechniques.length})</h2>
-            {mappedTechniques.length === 0 ? (
-              <p className="empty-row">No mapped Techniques.</p>
-            ) : (
+          {mappedTechniques.length > 0 && (
+            <section id="section-techniques" className="technique-detail-section">
+              <h2>Techniques mitigated ({mappedTechniques.length})</h2>
               <div className="technique-grid">
                 {mappedTechniques.map((t) => (
                   <button
@@ -102,9 +102,9 @@ export default function MitigationDetailPage({
                     </small>
                   </button>
                 ))}
-              </div>
-            )}
+            </div>
           </section>
+          )}
         </article>
       </div>
       </section>

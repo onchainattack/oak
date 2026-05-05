@@ -143,6 +143,18 @@ export function handleMarkdownLinkClick(
     return;
   }
 
+  // In-app entity routes inserted by linkifyOakIds during build —
+  // /technique/OAK-Tn.NNN/ /mitigation/OAK-Mxx/ /software/OAK-Sxx/ /group/OAK-Gxx/.
+  // navigateTo + dispatch popstate so useAppRouting picks up the new route
+  // and re-renders the appropriate detail page without a full reload.
+  const entityMatch = href.match(/^\/(technique|mitigation|software|group)\/(OAK-[A-Z0-9.]+)\/?$/);
+  if (entityMatch) {
+    event.preventDefault();
+    navigateTo(`${entityMatch[1]}/${entityMatch[2]}`);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    return;
+  }
+
   const resolved = resolveMarkdownHref(currentPath, href);
   if (isInAppDocument(resolved)) {
     event.preventDefault();

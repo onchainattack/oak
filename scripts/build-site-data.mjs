@@ -56,6 +56,45 @@ const addHeadingIds = (html) =>
     return `<h${depth} id="${id}">${content}</h${depth}>`;
   });
 
+// Convert OAK-{T|M|S|G} identifier mentions inside the rendered HTML into
+// clickable in-app links. Skips mentions already inside a tag (href attr,
+// inside <a>, inside <code class="..."> with an attribute, etc) by only
+// touching text nodes outside HTML element boundaries.
+const ID_PATTERNS = [
+  // Order matters — longer (Technique sub-IDs OAK-Tnn.NNN) before short OAK-Tnn.
+  { re: /\bOAK-T(\d{1,2}\.\d{3}(?:\.\d{3})?)\b/g, route: "technique" },
+  { re: /\bOAK-M(\d{2,})\b/g, route: "mitigation" },
+  { re: /\bOAK-S(\d{2,})\b/g, route: "software" },
+  { re: /\bOAK-G(\d{2,})\b/g, route: "group" },
+];
+const linkifyOakIds = (html) => {
+  // Split HTML into tag and text segments; transform only text segments.
+  const parts = html.split(/(<[^>]+>)/g);
+  // Track whether we're inside an <a> or <code> — don't linkify text inside those.
+  let depthAnchor = 0;
+  let depthCode = 0;
+  for (let i = 0; i < parts.length; i += 1) {
+    const seg = parts[i];
+    if (seg.startsWith("<")) {
+      const isClose = seg.startsWith("</");
+      const tag = seg.match(/^<\/?(\w+)/)?.[1]?.toLowerCase();
+      if (tag === "a") depthAnchor += isClose ? -1 : 1;
+      if (tag === "code") depthCode += isClose ? -1 : 1;
+      continue;
+    }
+    if (depthAnchor > 0 || depthCode > 0) continue; // inside <a>/<code> — leave alone
+    let text = seg;
+    for (const { re, route } of ID_PATTERNS) {
+      text = text.replace(re, (match) => {
+        const slug = match; // OAK-Txx.yyy or OAK-Mxx etc — kept verbatim
+        return `<a href="/${route}/${slug}/" class="oak-id-link" data-oak-id="${slug}">${match}</a>`;
+      });
+    }
+    parts[i] = text;
+  }
+  return parts.join("");
+};
+
 const splitMetaValue = (label, rawValue) => {
   const value = stripInlineMarkdown(rawValue);
 
@@ -292,7 +331,7 @@ const documents = Object.fromEntries(
           title: titleFromMarkdown(markdown, docPath),
           toc: tocFromMarkdown(documentMeta.markdown),
           meta: documentMeta.meta,
-          html: addHeadingIds(marked.parse(documentMeta.markdown)),
+          html: linkifyOakIds(addHeadingIds(marked.parse(documentMeta.markdown))),
         },
       ];
     }),

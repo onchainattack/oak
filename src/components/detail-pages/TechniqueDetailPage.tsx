@@ -102,8 +102,10 @@ export default function TechniqueDetailPage({
             path={technique.sourcePath}
             extraItems={[
               ...(techniqueSpecs.length > 0 ? [{ label: "Detection spec", slug: "detection-spec" }] : []),
-              { label: `Software (${relatedSoftware.length})`, slug: "section-software" },
-              { label: `Threat Actors (${relatedActors.length})`, slug: "section-threat-actors" },
+              ...(relatedMitigations.length > 0 ? [{ label: `Mitigations (${relatedMitigations.length})`, slug: "section-mitigations" }] : []),
+              ...(relatedSoftware.length > 0 ? [{ label: `Software (${relatedSoftware.length})`, slug: "section-software" }] : []),
+              ...(relatedActors.length > 0 ? [{ label: `Threat Actors (${relatedActors.length})`, slug: "section-threat-actors" }] : []),
+              ...(relatedExamples.length > 0 ? [{ label: `Worked Examples (${relatedExamples.length})`, slug: "section-worked-examples" }] : []),
               ...((relatedMitigations.length + relatedSoftware.length + relatedActors.length) > 0
                 ? [{ label: "Relationship neighborhood", slug: "section-relationship" }]
                 : []),
@@ -140,7 +142,11 @@ export default function TechniqueDetailPage({
 
           {/* Full description first — primary content of the page. */}
           <section className="technique-detail-section technique-detail-section-description">
-            <InlineMarkdown path={technique.sourcePath} onOpenDoc={onOpenDoc} />
+            <InlineMarkdown
+              path={technique.sourcePath}
+              onOpenDoc={onOpenDoc}
+              hideSectionSlugs={["mitigations", "real-world-examples"]}
+            />
           </section>
 
           {/* Detection specs sit right after the description — they ARE the
@@ -154,15 +160,32 @@ export default function TechniqueDetailPage({
             />
           ))}
 
-          {/* Mitigations cards section dropped — markdown body's own
-              '## Mitigations' section already lists them with per-Technique
-              prose context. The cards-form was a strict duplicate. */}
+          {relatedMitigations.length > 0 && (
+            <section id="section-mitigations" className="technique-detail-section">
+              <h2>Mitigations ({relatedMitigations.length})</h2>
+              <div className="mitigation-grid">
+                {relatedMitigations.map((m) => (
+                  <button
+                    type="button"
+                    className="mitigation-card"
+                    key={m.id}
+                    onClick={() => onOpenDoc(m.sourcePath)}
+                  >
+                    <span>{m.id}</span>
+                    <strong>{m.name}</strong>
+                    <small>
+                      {m.class}
+                      {m.audience && m.audience.length > 0 && ` · ${m.audience.slice(0, 2).join(" / ")}`}
+                    </small>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+          {relatedSoftware.length > 0 && (
           <section id="section-software" className="technique-detail-section">
             <h2>Software ({relatedSoftware.length})</h2>
-            {relatedSoftware.length === 0 ? (
-              <p className="empty-row">No mapped Software yet.</p>
-            ) : (
-              <div className="software-grid">
+            <div className="software-grid">
                 {relatedSoftware.map((s) => (
                   <button
                     type="button"
@@ -179,31 +202,50 @@ export default function TechniqueDetailPage({
                   </button>
                 ))}
               </div>
-            )}
           </section>
+          )}
 
+          {relatedActors.length > 0 && (
           <section id="section-threat-actors" className="technique-detail-section">
             <h2>Threat Actors ({relatedActors.length})</h2>
-            {relatedActors.length === 0 ? (
-              <p className="empty-row">No mapped Threat Actors yet.</p>
-            ) : (
-              <div className="actor-strip">
-                {relatedActors.map((actor) => (
-                  <button
-                    type="button"
-                    className="actor-card"
-                    key={actor.id}
-                    onClick={() => onOpenDoc(`actors/${actor.file}`)}
-                  >
-                    <span>{actor.id}</span>
-                    <strong>{actor.title.replace(/^OAK-G\d{2}\s+—\s+/, "")}</strong>
-                    <small>{actor.status || "attribution profile"}</small>
-                  </button>
-                ))}
-              </div>
-            )}
+            <div className="actor-strip">
+              {relatedActors.map((actor) => (
+                <button
+                  type="button"
+                  className="actor-card"
+                  key={actor.id}
+                  onClick={() => onOpenDoc(`actors/${actor.file}`)}
+                >
+                  <span>{actor.id}</span>
+                  <strong>{actor.title.replace(/^OAK-G\d{2}\s+—\s+/, "")}</strong>
+                  <small>{actor.status || "attribution profile"}</small>
+                </button>
+              ))}
+            </div>
           </section>
-          {/* Worked Examples cards section dropped — markdown body's '## Real-world examples' narrative covers it. */}
+          )}
+          {relatedExamples.length > 0 && (
+            <section id="section-worked-examples" className="technique-detail-section">
+              <h2>Worked Examples ({relatedExamples.length})</h2>
+              <ul className="technique-detail-examples">
+                {relatedExamples.map((example) => (
+                  <li key={example.file}>
+                    <button
+                      type="button"
+                      className="link-row"
+                      onClick={() => onOpenDoc(`examples/${example.file}`)}
+                    >
+                      <strong>{example.title}</strong>
+                      <small>
+                        {example.year && `${example.year} · `}
+                        {example.loss}
+                      </small>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           {/* Relationship graph last — visual aggregation of everything above. */}
           {(relatedMitigations.length + relatedSoftware.length + relatedActors.length) > 0 && (

@@ -69,8 +69,8 @@ export default function SoftwareDetailPage({
           <DocumentToc
             path={software.sourcePath}
             extraItems={[
-              { label: `Used by Groups (${usedByGroups.length})`, slug: "section-groups" },
-              { label: `Observed Techniques (${observedTechniques.length})`, slug: "section-techniques" },
+              ...(usedByGroups.length > 0 ? [{ label: `Used by Groups (${usedByGroups.length})`, slug: "section-groups" }] : []),
+              ...(observedTechniques.length > 0 ? [{ label: `Observed Techniques (${observedTechniques.length})`, slug: "section-techniques" }] : []),
             ]}
           />
           <div className="detail-actions">
@@ -100,11 +100,9 @@ export default function SoftwareDetailPage({
             <InlineMarkdown path={software.sourcePath} onOpenDoc={onOpenDoc} />
           </section>
 
-          <section id="section-groups" className="technique-detail-section">
-            <h2>Used by Groups ({usedByGroups.length})</h2>
-            {usedByGroups.length === 0 ? (
-              <p className="empty-row">Not yet linked to a Group entry.</p>
-            ) : (
+          {usedByGroups.length > 0 && (
+            <section id="section-groups" className="technique-detail-section">
+              <h2>Used by Groups ({usedByGroups.length})</h2>
               <div className="actor-strip">
                 {usedByGroups.map((actor) => (
                   <button
@@ -118,16 +116,14 @@ export default function SoftwareDetailPage({
                     <small>{actor.status || "attribution profile"}</small>
                   </button>
                 ))}
-              </div>
-            )}
+            </div>
           </section>
+          )}
 
+          {observedTechniques.length > 0 && (
           <section id="section-techniques" className="technique-detail-section">
             <h2>Observed Techniques ({observedTechniques.length})</h2>
-            {observedTechniques.length === 0 ? (
-              <p className="empty-row">No mapped Techniques.</p>
-            ) : (
-              <div className="technique-grid">
+            <div className="technique-grid">
                 {observedTechniques.map((t) => (
                   <button
                     type="button"
@@ -142,9 +138,9 @@ export default function SoftwareDetailPage({
                     </small>
                   </button>
                 ))}
-              </div>
-            )}
+            </div>
           </section>
+          )}
         </article>
       </div>
       </section>
