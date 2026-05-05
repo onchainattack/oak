@@ -1,10 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
 import { siteData } from "../../data/generated";
-import { cleanInlineText, includes, techniqueById } from "../../lib";
+import { techniqueById } from "../../lib";
 import { reportIssueUrl } from "../../routing";
-import type { Technique } from "../../types";
-import TacticGlyph from "../glyphs/TacticGlyph";
-import Icon from "../layout/Icon";
 import Breadcrumb from "../layout/Breadcrumb";
 import DetectionSpecSection, { type SpecRecord } from "../document/DetectionSpecSection";
 import InlineMarkdown from "../document/InlineMarkdown";
@@ -14,12 +10,11 @@ export default function TechniqueDetailPage({
   techniqueId,
   onClose,
   onOpenDoc,
-  onOpenTechnique,
 }: {
   techniqueId: string;
   onClose: () => void;
   onOpenDoc: (path: string) => void;
-  onOpenTechnique: (id: string) => void;
+  onOpenTechnique: (id: string) => void;       // accepted for symmetry with other detail-page signatures; unused inside this view
 }) {
   const technique = techniqueById.get(techniqueId);
   const breadcrumb = [
@@ -129,17 +124,6 @@ export default function TechniqueDetailPage({
           <header className="technique-detail-header">
             <p className="eyebrow">{technique.id}</p>
             <h1>{technique.name}</h1>
-            {technique.aliases.length > 0 && (
-              <p className="aka-banner">
-                <span className="aka-label">also known as</span>
-                {technique.aliases.map((alias, idx) => (
-                  <span className="aka-tag" key={alias}>
-                    {alias}
-                    {idx < technique.aliases.length - 1 ? "" : ""}
-                  </span>
-                ))}
-              </p>
-            )}
             {parentTactics.length > 0 && (
               <p className="technique-detail-tactic">
                 Parent {parentTactics.length === 1 ? "tactic" : "tactics"}:{" "}
@@ -153,31 +137,24 @@ export default function TechniqueDetailPage({
             )}
           </header>
 
-          {(relatedMitigations.length + relatedSoftware.length + relatedActors.length) > 0 && (
-            <section className="technique-detail-section">
-              <h2>Relationship neighborhood</h2>
-              <RelationshipGraph
-                centerId={technique.id}
-                centerLabel={technique.name}
-                mitigations={relatedMitigations.map((m) => ({ id: m.id, name: m.name }))}
-                software={relatedSoftware.map((s) => ({ id: s.id, name: s.name }))}
-                actors={relatedActors.map((a) => ({ id: a.id, name: a.title.replace(/^OAK-G\d{2}\s+[—-]\s+/, "") }))}
-                onOpenMitigation={(id) => {
-                  const m = siteData.mitigations.find((x) => x.id === id);
-                  if (m) onOpenDoc(m.sourcePath);
-                }}
-                onOpenSoftware={(id) => {
-                  const s = siteData.software.find((x) => x.id === id);
-                  if (s) onOpenDoc(s.sourcePath);
-                }}
-                onOpenActor={(id) => {
-                  const a = siteData.actors.find((x) => x.id === id);
-                  if (a) onOpenDoc(`actors/${a.file}`);
-                }}
-              />
-            </section>
-          )}
+          {/* Full description first — primary content of the page. */}
+          <section className="technique-detail-section">
+            <h2>Description</h2>
+            <InlineMarkdown path={technique.sourcePath} onOpenDoc={onOpenDoc} />
+          </section>
 
+          {/* Detection specs sit right after the description — they ARE the
+              technical guidance for this Technique. */}
+          {techniqueSpecs.map((spec) => (
+            <DetectionSpecSection
+              key={spec.spec_id}
+              spec={spec}
+              onOpenDoc={onOpenDoc}
+              onOpenExample={(slug) => onOpenDoc(`examples/${slug}.md`)}
+            />
+          ))}
+
+          {/* Cards: Mitigations / Software / Actors. Empty states inline. */}
           <section className="technique-detail-section">
             <h2>Mitigations ({relatedMitigations.length})</h2>
             {relatedMitigations.length === 0 ? (
@@ -193,21 +170,15 @@ export default function TechniqueDetailPage({
                   >
                     <span>{m.id}</span>
                     <strong>{m.name}</strong>
-                    <small>{m.class} · {m.audience.slice(0, 2).join(" / ")}</small>
+                    <small>
+                      {m.class}
+                      {m.audience && m.audience.length > 0 && ` · ${m.audience.slice(0, 2).join(" / ")}`}
+                    </small>
                   </button>
                 ))}
               </div>
             )}
           </section>
-
-          {techniqueSpecs.map((spec) => (
-            <DetectionSpecSection
-              key={spec.spec_id}
-              spec={spec}
-              onOpenDoc={onOpenDoc}
-              onOpenExample={(slug) => onOpenDoc(`examples/${slug}.md`)}
-            />
-          ))}
 
           <section className="technique-detail-section">
             <h2>Software ({relatedSoftware.length})</h2>
@@ -281,36 +252,34 @@ export default function TechniqueDetailPage({
             )}
           </section>
 
-          {(technique.aliases.length > 0 || technique.firstDocumented) && (
+          {/* Relationship graph last — visual aggregation of everything above. */}
+          {(relatedMitigations.length + relatedSoftware.length + relatedActors.length) > 0 && (
             <section className="technique-detail-section">
-              <h2>Provenance</h2>
-              <dl className="technique-detail-dl">
-                {technique.firstDocumented && (
-                  <>
-                    <dt>First documented</dt>
-                    <dd>{technique.firstDocumented}</dd>
-                  </>
-                )}
-                {technique.aliases.length > 0 && (
-                  <>
-                    <dt>Aliases</dt>
-                    <dd>{technique.aliases.join(", ")}</dd>
-                  </>
-                )}
-                {technique.chains.length > 0 && (
-                  <>
-                    <dt>Chains</dt>
-                    <dd>{technique.chains.join(", ")}</dd>
-                  </>
-                )}
-              </dl>
+              <h2>Relationship neighborhood</h2>
+              <RelationshipGraph
+                centerId={technique.id}
+                centerLabel={technique.name}
+                mitigations={relatedMitigations.map((m) => ({ id: m.id, name: m.name }))}
+                software={relatedSoftware.map((s) => ({ id: s.id, name: s.name }))}
+                actors={relatedActors.map((a) => ({ id: a.id, name: a.title.replace(/^OAK-G\d{2}\s+[—-]\s+/, "") }))}
+                onOpenMitigation={(id) => {
+                  const m = siteData.mitigations.find((x) => x.id === id);
+                  if (m) onOpenDoc(m.sourcePath);
+                }}
+                onOpenSoftware={(id) => {
+                  const s = siteData.software.find((x) => x.id === id);
+                  if (s) onOpenDoc(s.sourcePath);
+                }}
+                onOpenActor={(id) => {
+                  const a = siteData.actors.find((x) => x.id === id);
+                  if (a) onOpenDoc(`actors/${a.file}`);
+                }}
+              />
             </section>
           )}
 
-          <section className="technique-detail-section">
-            <h2>Full description</h2>
-            <InlineMarkdown path={technique.sourcePath} onOpenDoc={onOpenDoc} />
-          </section>
+          {/* Provenance section dropped — its three fields (firstDocumented,
+              aliases, chains) all live in the sidebar already. */}
         </article>
       </div>
       </section>

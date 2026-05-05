@@ -1,12 +1,9 @@
-import { useMemo } from "react";
 import { siteData } from "../../data/generated";
 import { techniqueById } from "../../lib";
 import { reportIssueUrl } from "../../routing";
 import type { Technique } from "../../types";
-import Icon from "../layout/Icon";
 import Breadcrumb from "../layout/Breadcrumb";
 import InlineMarkdown from "../document/InlineMarkdown";
-import RelationshipGraph from "../views/RelationshipGraph";
 
 export default function MitigationDetailPage({
   mitigationId,
@@ -80,10 +77,13 @@ export default function MitigationDetailPage({
           <header className="technique-detail-header">
             <p className="eyebrow">{mitigation.id}</p>
             <h1>{mitigation.name}</h1>
-            <p className="technique-detail-tactic">
-              <strong>{mitigation.class}</strong> · audience: {mitigation.audience.join(", ")}
-            </p>
+            {/* class + audience already shown in sidebar — header stays clean */}
           </header>
+
+          <section className="technique-detail-section">
+            <h2>Description</h2>
+            <InlineMarkdown path={mitigation.sourcePath} onOpenDoc={onOpenDoc} />
+          </section>
 
           <section className="technique-detail-section">
             <h2>Techniques mitigated ({mappedTechniques.length})</h2>
@@ -107,11 +107,6 @@ export default function MitigationDetailPage({
                 ))}
               </div>
             )}
-          </section>
-
-          <section className="technique-detail-section">
-            <h2>Full description</h2>
-            <InlineMarkdown path={mitigation.sourcePath} onOpenDoc={onOpenDoc} />
           </section>
         </article>
       </div>

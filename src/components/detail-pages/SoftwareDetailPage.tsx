@@ -1,12 +1,9 @@
-import { useMemo } from "react";
 import { siteData } from "../../data/generated";
 import { techniqueById } from "../../lib";
 import { reportIssueUrl } from "../../routing";
 import type { Technique } from "../../types";
-import Icon from "../layout/Icon";
 import Breadcrumb from "../layout/Breadcrumb";
 import InlineMarkdown from "../document/InlineMarkdown";
-import RelationshipGraph from "../views/RelationshipGraph";
 
 export default function SoftwareDetailPage({
   softwareId,
@@ -92,11 +89,18 @@ export default function SoftwareDetailPage({
           <header className="technique-detail-header">
             <p className="eyebrow">{software.id}</p>
             <h1>{software.name}</h1>
-            <p className="technique-detail-tactic">
-              <strong>{software.type}</strong>
-              {software.aliases.length > 0 && ` · aliases: ${software.aliases.slice(0, 3).join(", ")}`}
-            </p>
+            {software.aliases.length > 0 && (
+              <p className="technique-detail-tactic">
+                <span className="aka-label">aliases</span> {software.aliases.slice(0, 3).join(", ")}
+              </p>
+            )}
+            {/* type already shown in sidebar */}
           </header>
+
+          <section className="technique-detail-section">
+            <h2>Description</h2>
+            <InlineMarkdown path={software.sourcePath} onOpenDoc={onOpenDoc} />
+          </section>
 
           <section className="technique-detail-section">
             <h2>Used by Groups ({usedByGroups.length})</h2>
@@ -142,11 +146,6 @@ export default function SoftwareDetailPage({
                 ))}
               </div>
             )}
-          </section>
-
-          <section className="technique-detail-section">
-            <h2>Full description</h2>
-            <InlineMarkdown path={software.sourcePath} onOpenDoc={onOpenDoc} />
           </section>
         </article>
       </div>

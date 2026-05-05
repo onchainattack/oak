@@ -1,12 +1,9 @@
-import { useMemo } from "react";
 import { siteData } from "../../data/generated";
 import { techniqueById } from "../../lib";
 import { reportIssueUrl } from "../../routing";
 import type { Technique } from "../../types";
-import Icon from "../layout/Icon";
 import Breadcrumb from "../layout/Breadcrumb";
 import InlineMarkdown from "../document/InlineMarkdown";
-import RelationshipGraph from "../views/RelationshipGraph";
 
 export default function GroupDetailPage({
   groupId,
@@ -64,9 +61,7 @@ export default function GroupDetailPage({
           <strong>{actor.title}</strong>
           <code>actors/{actor.file}</code>
           <div className="technique-detail-meta">
-            {actor.status && (
-              <small><strong>Attribution:</strong> {actor.status.slice(0, 80)}{actor.status.length > 80 ? "…" : ""}</small>
-            )}
+            {/* Attribution status shown in full in the header below — no need to truncate it here. */}
             <small><strong>Observed Techniques:</strong> {observedTechniques.length}</small>
             <small><strong>Uses Software:</strong> {usesSoftware.length}</small>
             <small><strong>Worked Examples:</strong> {groupExamples.length}</small>
@@ -97,6 +92,11 @@ export default function GroupDetailPage({
               <p className="technique-detail-tactic">{actor.status}</p>
             )}
           </header>
+
+          <section className="technique-detail-section">
+            <h2>Description</h2>
+            <InlineMarkdown path={`actors/${actor.file}`} onOpenDoc={onOpenDoc} />
+          </section>
 
           <section className="technique-detail-section">
             <h2>Software used ({usesSoftware.length})</h2>
@@ -169,10 +169,7 @@ export default function GroupDetailPage({
             )}
           </section>
 
-          <section className="technique-detail-section">
-            <h2>Full description</h2>
-            <InlineMarkdown path={`actors/${actor.file}`} />
-          </section>
+          {/* description moved up; no duplicate section here */}
         </article>
       </div>
       </section>
