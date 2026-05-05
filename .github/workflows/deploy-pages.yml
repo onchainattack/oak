@@ -25,8 +25,16 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Install dependencies
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Node dependencies
         run: npm install --no-package-lock
+
+      - name: Install Python dependencies
+        run: pip install -r tools/requirements.txt
 
       - name: Build static site
         run: npm run build
