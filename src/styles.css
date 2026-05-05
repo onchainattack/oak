@@ -154,8 +154,8 @@ h1, h2, h3, h4, h5, h6 {
   margin: 0;
   letter-spacing: var(--ls-tight);
 }
-h1 { font-weight: 700; line-height: 1.05; }
-h2 { font-weight: 700; line-height: 1.15; }
+h1 { font-weight: 700; line-height: 1.1; }
+h2 { font-weight: 700; line-height: 1.2; }
 h3 { font-weight: 600; line-height: 1.3; }
 h4 { font-weight: 600; line-height: 1.4; letter-spacing: 0; }
 h5, h6 { font-weight: 600; line-height: 1.4; letter-spacing: 0; }
@@ -183,7 +183,7 @@ code, kbd, samp {
   font-family: var(--sans);
   font-size: var(--fs-h1);
   font-weight: 700;
-  line-height: 1.05;
+  line-height: 1.1;
   letter-spacing: var(--ls-tight);
   color: var(--ink-strong);
 }
@@ -285,8 +285,8 @@ code, kbd, samp {
 .document-kind {
   font-size: var(--fs-mono-sm);
   font-family: var(--mono);
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  font-weight: 600;
+  letter-spacing: var(--ls-mono-tight);
   text-transform: lowercase;
 }
 
@@ -323,15 +323,15 @@ code, kbd, samp {
 .kc-arrow,
 .document-facts strong {
   font-size: var(--fs-small);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .button,
 .sb-link {
   font-size: var(--fs-small);
   font-family: var(--mono);
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  font-weight: 600;
+  letter-spacing: var(--ls-mono-tight);
   text-transform: lowercase;
 }
 
@@ -339,14 +339,14 @@ code, kbd, samp {
 .howto-step button {
   font-size: var(--fs-small);
   font-family: var(--mono);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .tactic-column header small,
 .document-chip-row span {
   font-size: var(--fs-mono-sm);
   font-family: var(--mono);
-  font-weight: 500;
+  font-weight: 600;
   text-transform: lowercase;
 }
 
@@ -354,7 +354,7 @@ code, kbd, samp {
 .contributor-grid strong {
   font-size: var(--fs-md);
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: var(--ls-tight);
 }
 
 .cov-pill,
@@ -393,8 +393,8 @@ code, kbd, samp {
 .foot-section-label {
   font-size: var(--fs-mono-sm);
   font-family: var(--mono);
-  font-weight: 500;
-  letter-spacing: 0.06em;
+  font-weight: 600;
+  letter-spacing: var(--ls-mono-wide);
   text-transform: uppercase;
 }
 
@@ -652,7 +652,7 @@ button {
   font-family: var(--mono);
   font-size: var(--fs-mono);
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--ls-mono-wide);
   text-transform: uppercase;
 }
 
@@ -748,7 +748,7 @@ line-height: 1.3;
   font-family: var(--mono);
   font-size: var(--fs-mono);
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--ls-mono-wide);
   padding: 9px 13px;
   text-transform: uppercase;
   transition: color 180ms ease, background 180ms ease;
@@ -775,7 +775,7 @@ line-height: 1.3;
   font-family: var(--mono);
   font-size: var(--fs-small);
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: var(--ls-mono-tight);
   padding: 9px 14px;
   transition:
     border-color 180ms ease,
@@ -802,8 +802,8 @@ line-height: 1.3;
 .hero-copy h1 {
   font-size: var(--fs-display);
   font-weight: 600;
-  letter-spacing: -0.04em;
-  line-height: 1.02;
+  letter-spacing: var(--ls-tight);
+  line-height: 1;
   margin: 0;
   max-width: 920px;
   color: var(--ink-strong);
@@ -816,7 +816,7 @@ line-height: 1.3;
 .coverage-panel p {
   color: var(--muted-strong);
   font-size: var(--fs-h3);
-  line-height: 1.65;
+  line-height: 1.55;
   font-weight: 400;
 }
 
@@ -824,8 +824,8 @@ line-height: 1.3;
   color: var(--accent);
   font-family: var(--mono);
   font-size: var(--fs-mono);
-  font-weight: 500;
-  letter-spacing: 0.12em;
+  font-weight: 600;
+  letter-spacing: var(--ls-mono-wide);
   margin: 0 0 16px;
   text-transform: lowercase;
   display: inline-flex;
@@ -999,7 +999,7 @@ transition:
 .stat-card strong {
   align-self: end;
   font-size: var(--fs-h1);
-  letter-spacing: -0.04em;
+  letter-spacing: var(--ls-tight);
   line-height: 1;
   margin-top: 18px;
   font-weight: 600;
@@ -1051,8 +1051,8 @@ color: var(--muted);
   cursor: pointer;
   font-family: var(--mono);
   font-size: var(--fs-mono);
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  font-weight: 600;
+  letter-spacing: var(--ls-mono-tight);
   padding: 6px 10px;
   text-transform: lowercase;
   transition: var(--t-state);
@@ -1115,12 +1115,12 @@ color: var(--muted);
   font-size: var(--fs-mono-sm);
   font-weight: 600;
   color: var(--accent);
-  letter-spacing: 0.02em;
+  letter-spacing: var(--ls-mono-tight);
 }
 
 .kc-name {
   font-size: var(--fs-mono);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--ink);
   font-family: var(--sans);
   white-space: nowrap;
@@ -1227,8 +1227,8 @@ opacity: 0.5;
   color: var(--muted);
   font-family: var(--mono);
   font-size: var(--fs-mono-sm);
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  font-weight: 600;
+  letter-spacing: var(--ls-mono-tight);
   text-transform: lowercase;
 }
 
@@ -1263,7 +1263,7 @@ min-height: 36px;
   cursor: pointer;
   font-family: var(--mono);
   font-size: var(--fs-mono);
-  font-weight: 500;
+  font-weight: 600;
   min-height: 32px;
   padding: 0 10px;
   text-transform: lowercase;
@@ -1467,14 +1467,14 @@ font-variant-numeric: tabular-nums;
   display: block;
   font-family: var(--mono);
   font-size: var(--fs-mono);
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  font-weight: 600;
+  letter-spacing: var(--ls-mono-tight);
   margin-bottom: 0;
   text-transform: lowercase;
 }
 
 .tactic-column h3 {
-line-height: 1.25;
+line-height: 1.3;
   margin: 0;
   color: var(--ink-strong);
 }
@@ -1518,10 +1518,10 @@ line-height: 1.25;
   display: block;
   font-size: var(--fs-small);
   font-weight: 600;
-  line-height: 1.35;
+  line-height: 1.4;
   margin-top: 6px;
   color: var(--ink-strong);
-  letter-spacing: -0.01em;
+  letter-spacing: var(--ls-tight);
 }
 
 .technique-card small {
@@ -1590,8 +1590,8 @@ line-height: 1;
   color: var(--ink-strong);
   font-size: var(--fs-md);
   font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.25;
+  letter-spacing: var(--ls-tight);
+  line-height: 1.3;
   margin: 0;
 }
 
@@ -1626,7 +1626,7 @@ line-height: 1;
   font-size: var(--fs-mono-sm);
   font-style: normal;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--ls-mono-wide);
   padding: 4px 7px;
   text-transform: uppercase;
 }
@@ -1678,8 +1678,8 @@ line-height: 1;
   display: inline-block;
   font-family: var(--mono);
   font-size: var(--fs-mono-sm);
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  font-weight: 600;
+  letter-spacing: var(--ls-mono-tight);
   line-height: 1;
   text-transform: lowercase;
 }
@@ -1691,7 +1691,7 @@ line-height: 1;
   display: block;
   font-size: var(--fs-body);
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: var(--ls-tight);
   line-height: 1.3;
 }
 
@@ -1705,7 +1705,7 @@ line-height: 1;
   font-family: var(--mono);
   font-size: var(--fs-mono-sm);
   font-style: normal;
-  letter-spacing: 0.02em;
+  letter-spacing: var(--ls-mono-tight);
   line-height: 1.4;
   padding-top: 8px;
   padding-top: 12px;
@@ -1750,7 +1750,7 @@ line-height: 1;
 
 .contributor-grid strong {
   display: block;
-line-height: 1.25;
+line-height: 1.3;
   color: var(--ink-strong);
 }
 
@@ -1893,7 +1893,7 @@ padding: 6px 14px;
   font-size: var(--fs-mono-sm);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--ls-mono-tight);
   color: var(--muted);
   border-bottom: 1px solid var(--line);
 }
@@ -2050,7 +2050,7 @@ padding: 6px 14px;
   font-size: var(--fs-mono);
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--ls-mono-tight);
 }
 
 .cov-filter select {
@@ -2120,7 +2120,7 @@ min-width: 220px;
   border-right: 1px solid var(--line);
   font-size: var(--fs-mono);
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--ls-mono-tight);
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -2133,7 +2133,7 @@ min-width: 220px;
   padding: 6px 4px;
   font-size: var(--fs-mono-sm);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--ls-mono-tight);
   text-transform: uppercase;
   color: var(--muted);
   border-left: 1px solid var(--line);
@@ -2198,7 +2198,7 @@ color: var(--ink);
   font-size: var(--fs-mono-sm);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--ls-mono-tight);
   margin-top: 2px;
 }
 
@@ -2387,7 +2387,7 @@ padding: 2px 6px;
   margin: 0;
   text-align: right;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--ls-mono-tight);
 }
 
 .relationship-graph {
@@ -2450,7 +2450,7 @@ color: var(--muted);
   margin-left: auto;
   color: var(--ink-faint);
   font-size: var(--fs-mono-sm);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--ls-mono-tight);
 }
 
 @media (max-width: 640px) {
@@ -2517,8 +2517,8 @@ margin-bottom: 10px;
   display: block;
   font-size: var(--fs-h3);
   font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.25;
+  letter-spacing: var(--ls-tight);
+  line-height: 1.3;
   color: var(--ink-strong);
 }
 
@@ -2584,7 +2584,7 @@ margin-bottom: 10px;
   color: var(--ink-strong);
   font-size: var(--fs-display-sm);
   font-weight: 600;
-  letter-spacing: -0.025em;
+  letter-spacing: var(--ls-tight);
   line-height: 1.1;
   margin: 0 0 14px;
   max-width: 760px;
@@ -2617,8 +2617,8 @@ margin-bottom: 10px;
   display: block;
   font-family: var(--mono);
   font-size: var(--fs-mono-sm);
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  font-weight: 600;
+  letter-spacing: var(--ls-mono-tight);
   margin-bottom: 6px;
   text-transform: lowercase;
 }
@@ -2678,7 +2678,7 @@ line-height: 1.55;
 
 .document-path {
   border-bottom: 1px solid var(--line);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--ls-mono-tight);
   margin-bottom: 24px;
   padding-bottom: 12px;
   text-transform: lowercase;
@@ -2689,14 +2689,14 @@ line-height: 1.55;
 .markdown-shell h3 {
   color: var(--ink-strong);
   font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
+  letter-spacing: var(--ls-tight);
+  line-height: 1.2;
 }
 
 .markdown-shell h1 {
   font-size: var(--fs-display-sm);
   font-weight: 600;
-  letter-spacing: -0.025em;
+  letter-spacing: var(--ls-tight);
   margin: 0 0 20px;
 }
 
@@ -2717,7 +2717,7 @@ line-height: 1.55;
 .markdown-shell li {
   color: var(--muted-strong);
   font-size: var(--fs-md);
-  line-height: 1.65;
+  line-height: 1.55;
   max-width: 760px;
 }
 
@@ -2820,7 +2820,7 @@ line-height: 1.55;
   font-family: var(--mono);
   font-size: var(--fs-mono);
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: var(--ls-mono-tight);
   text-transform: lowercase;
 }
 
@@ -2930,7 +2930,7 @@ line-height: 1.55;
   }
 
   .tagline {
-    letter-spacing: 0.18em;
+    letter-spacing: var(--ls-mono-wide);
   }
 }
 
@@ -2957,7 +2957,7 @@ line-height: 1.55;
 .technique-detail-meta small strong {
   color: var(--ink);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--ls-mono-tight);
   text-transform: uppercase;
 }
 
@@ -2972,14 +2972,14 @@ line-height: 1.55;
   font-family: var(--mono);
   font-size: var(--fs-small);
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: var(--ls-mono-wide);
   margin-bottom: 12px;
   text-transform: uppercase;
 }
 
 .technique-detail-header h1 {
-  letter-spacing: -0.02em;
-  line-height: 1.15;
+  letter-spacing: var(--ls-tight);
+  line-height: 1.2;
   margin: 0 0 16px;
 }
 
@@ -3003,7 +3003,7 @@ line-height: 1.55;
 .technique-detail-section > h2 {
   border-bottom: 1px solid rgba(242, 244, 247, 0.08);
   font-size: var(--fs-h3);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--ls-tight);
   margin: 0 0 16px;
   padding-bottom: 8px;
 }
@@ -3043,7 +3043,7 @@ line-height: 1.55;
 
 .detection-spec h3 {
   font-size: var(--fs-body);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--ls-mono-tight);
   margin: 20px 0 8px;
   text-transform: uppercase;
 }
@@ -3051,7 +3051,7 @@ line-height: 1.55;
 .detection-spec h4 {
   color: var(--muted);
   font-size: var(--fs-small);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--ls-mono-tight);
   margin: 12px 0 6px;
   text-transform: uppercase;
 }
@@ -3188,7 +3188,7 @@ font-style: italic;
 .link-row strong {
   color: var(--ink);
   font-size: var(--fs-md);
-  letter-spacing: -0.01em;
+  letter-spacing: var(--ls-tight);
   line-height: 1.3;
 }
 
@@ -3196,7 +3196,7 @@ font-style: italic;
   color: var(--muted);
   font-family: var(--mono);
   font-size: var(--fs-mono);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--ls-mono-tight);
 }
 
 .technique-detail-dl {
@@ -3211,7 +3211,7 @@ font-style: italic;
   font-family: var(--mono);
   font-size: var(--fs-mono);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--ls-mono-wide);
   text-transform: uppercase;
 }
 
@@ -3266,7 +3266,7 @@ font-style: italic;
 
 .sb-logo .brand-text strong {
   font-size: var(--fs-md);
-  letter-spacing: 0.18em;
+  letter-spacing: var(--ls-mono-wide);
   font-weight: 700;
 }
 
@@ -3278,7 +3278,7 @@ font-style: italic;
 
 .sb-logo .brand-text small {
   font-size: var(--fs-mono-sm);
-  letter-spacing: 0.18em;
+  letter-spacing: var(--ls-mono-wide);
   margin-top: 2px;
 }
 
@@ -3350,7 +3350,7 @@ color: var(--ink-faint);
   border-radius: var(--r-sm);
   font-family: var(--mono);
   font-size: var(--fs-mono-sm);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--ls-mono-tight);
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
@@ -3408,13 +3408,13 @@ flex: 0 0 auto;
 
 .route-tag {
   color: var(--muted);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .route-name {
   color: var(--ink-strong);
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: var(--ls-tight);
 }
 
 .topbar-version {
@@ -3454,7 +3454,7 @@ color: var(--muted);
 .app-content .top-search span {
   font-size: var(--fs-mono-sm);
   color: var(--muted);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--ls-mono-wide);
 }
 
 
@@ -3485,7 +3485,7 @@ color: var(--muted);
 .foot-tag {
   color: var(--ink-faint);
   margin-right: 6px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .foot-spacer {
@@ -3554,7 +3554,7 @@ color: var(--muted);
   font-size: var(--fs-h1);
   font-weight: 600;
   letter-spacing: -0.035em;
-  line-height: 1.05;
+  line-height: 1.1;
   margin: 12px 0 16px;
   color: var(--ink-strong);
   max-width: 880px;
@@ -3620,14 +3620,14 @@ color: var(--muted);
 .howto-step .step-num {
   font-family: var(--mono);
   font-size: var(--fs-mono);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--accent);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--ls-mono-tight);
 }
 
 .howto-step h3 {
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: var(--ls-tight);
   margin: 0;
   color: var(--ink-strong);
 }
@@ -3853,7 +3853,7 @@ transition: color var(--t-fast);
 
 .breadcrumb-trail span:not(.breadcrumb-sep) {
   color: var(--ink-strong);
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3938,7 +3938,7 @@ padding: 8px 10px;
   font-size: var(--fs-mono);
   font-weight: 600;
   color: var(--ink);
-  letter-spacing: 0.02em;
+  letter-spacing: var(--ls-mono-tight);
   text-transform: lowercase;
 }
 
@@ -3974,7 +3974,7 @@ color: var(--muted);
 .aka-label {
   color: var(--muted);
   text-transform: lowercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--ls-mono-tight);
   margin-right: 4px;
 }
 
@@ -3987,7 +3987,7 @@ color: var(--muted);
   border-radius: var(--r-sm);
   color: var(--accent);
   font-size: var(--fs-mono);
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.01em;
 }
 
@@ -3997,10 +3997,10 @@ color: var(--muted);
   font-style: normal;
   font-family: var(--mono);
   font-size: var(--fs-mono-sm);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--accent);
   margin-top: 2px;
-  letter-spacing: 0.02em;
+  letter-spacing: var(--ls-mono-tight);
   text-transform: lowercase;
   white-space: nowrap;
   overflow: hidden;
@@ -4352,7 +4352,7 @@ padding: 4px 8px;
   font-size: var(--fs-mono);
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--ls-mono-wide);
   font-family: var(--mono);
 }
 
@@ -4367,7 +4367,7 @@ padding: 4px 8px;
   margin: 0 0 8px;
   font-family: var(--mono);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--ls-mono-wide);
 }
 
 .stats-hint {
@@ -4440,7 +4440,7 @@ font-variant-numeric: tabular-nums;
 }
 
 .heatmap th {
-  font-weight: 500;
+  font-weight: 600;
   color: var(--muted);
   padding: 4px 8px;
   text-align: center;
@@ -4644,7 +4644,7 @@ transition: border-color 0.15s, background 0.15s;
   /* Topline section headings — clamp instead of fixed sizes */
   .section-heading h2 {
     font-size: var(--fs-h3);
-    line-height: 1.25;
+    line-height: 1.3;
   }
   .section-heading p {
   }
