@@ -71,6 +71,12 @@ export default function TechniqueDetailPage({
     .map((sid) => allSpecs.find((s) => s.spec_id === sid))
     .filter((s): s is SpecRecord => Boolean(s));
 
+  // Strip a markdown section ONLY when we're going to render its JSX
+  // equivalent — otherwise the user sees neither prose nor cards.
+  const hiddenSlugs: string[] = [];
+  if (relatedMitigations.length > 0) hiddenSlugs.push("mitigations");
+  if (relatedExamples.length > 0) hiddenSlugs.push("real-world-examples");
+
   return (
     <section className="document-page technique-detail-page">
       <Breadcrumb onBack={onClose} items={breadcrumb} />
@@ -100,6 +106,7 @@ export default function TechniqueDetailPage({
           </div>
           <DocumentToc
             path={technique.sourcePath}
+            hideSectionSlugs={hiddenSlugs}
             extraItems={[
               ...(techniqueSpecs.length > 0 ? [{ label: "Detection spec", slug: "detection-spec" }] : []),
               ...(relatedMitigations.length > 0 ? [{ label: `Mitigations (${relatedMitigations.length})`, slug: "section-mitigations" }] : []),
@@ -140,12 +147,14 @@ export default function TechniqueDetailPage({
             )}
           </header>
 
-          {/* Full description first — primary content of the page. */}
+          {/* Full description first — primary content of the page.
+              Markdown sections we re-render as JSX cards below are hidden
+              from this body. Sections without a JSX equivalent stay. */}
           <section className="technique-detail-section technique-detail-section-description">
             <InlineMarkdown
               path={technique.sourcePath}
               onOpenDoc={onOpenDoc}
-              hideSectionSlugs={["mitigations", "real-world-examples"]}
+              hideSectionSlugs={hiddenSlugs}
             />
           </section>
 

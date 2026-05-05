@@ -53,6 +53,11 @@ export default function GroupDetailPage({
     .slice()
     .sort((a, b) => b.file.localeCompare(a.file));
 
+  // Strip markdown sections only when we render the JSX equivalent.
+  const hiddenSlugs: string[] = [];
+  if (observedTechniques.length > 0) hiddenSlugs.push("observed-techniques");
+  if (groupExamples.length > 0) hiddenSlugs.push("observed-examples");
+
   return (
     <section className="document-page technique-detail-page">
       <Breadcrumb onBack={onClose} items={breadcrumb} />
@@ -67,8 +72,11 @@ export default function GroupDetailPage({
           </div>
           <DocumentToc
             path={`actors/${actor.file}`}
+            hideSectionSlugs={hiddenSlugs}
             extraItems={[
-              { label: `Software used (${usesSoftware.length})`, slug: "section-software" },
+              ...(usesSoftware.length > 0 ? [{ label: `Software used (${usesSoftware.length})`, slug: "section-software" }] : []),
+              ...(observedTechniques.length > 0 ? [{ label: `Observed Techniques (${observedTechniques.length})`, slug: "section-techniques" }] : []),
+              ...(groupExamples.length > 0 ? [{ label: `Worked Examples (${groupExamples.length})`, slug: "section-worked-examples" }] : []),
             ]}
           />
           <div className="detail-actions">
@@ -95,7 +103,7 @@ export default function GroupDetailPage({
             <InlineMarkdown
               path={`actors/${actor.file}`}
               onOpenDoc={onOpenDoc}
-              hideSectionSlugs={["observed-techniques", "observed-examples"]}
+              hideSectionSlugs={hiddenSlugs}
             />
           </section>
 

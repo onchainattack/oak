@@ -17,18 +17,26 @@ type TocItem = { label: string; slug: string };
 export default function DocumentToc({
   path,
   extraItems,
+  hideSectionSlugs,
 }: {
   path: string;
   extraItems?: ReadonlyArray<TocItem>;
+  // Mirror of the same prop on InlineMarkdown — slugs hidden from the
+  // rendered HTML body must also disappear from the TOC, otherwise the
+  // sidebar shows a heading whose anchor target was removed.
+  hideSectionSlugs?: ReadonlyArray<string>;
 }) {
   const indexEntry = siteData.documentIndex[path as keyof typeof siteData.documentIndex];
-  const markdownItems = (indexEntry?.toc ?? []).map((label) => ({
-    label,
-    slug: label
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, ""),
-  }));
+  const hidden = new Set(hideSectionSlugs ?? []);
+  const markdownItems = (indexEntry?.toc ?? [])
+    .map((label) => ({
+      label,
+      slug: label
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, ""),
+    }))
+    .filter((item) => !hidden.has(item.slug));
   const items: TocItem[] = [...markdownItems, ...(extraItems ?? [])];
   if (items.length === 0) return null;
 
