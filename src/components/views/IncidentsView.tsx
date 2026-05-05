@@ -95,7 +95,7 @@ export default function IncidentsView({ openDoc }: { openDoc: (path: string) => 
             onClick={() => openDoc(`examples/${example.file}`)}
           >
             <span>{example.year}</span>
-            <h3>{example.title}</h3>
+            <strong className="example-card-title">{example.title}</strong>
             <p>
               {example.loss
                 ? cleanInlineText(example.loss.replace(/^approximately\s+/i, "").replace(/\*\*/g, ""))

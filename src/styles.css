@@ -1586,7 +1586,8 @@ line-height: 1;
   margin: 0;
 }
 
-.example-card h3 {
+.example-card h3,
+.example-card-title {
   color: var(--ink-strong);
   font-size: var(--fs-md);
   font-weight: 600;

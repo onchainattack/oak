@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import { cleanInlineText } from "../../lib";
 
 type DocumentMetaItem = {
