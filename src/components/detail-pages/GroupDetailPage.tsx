@@ -69,8 +69,6 @@ export default function GroupDetailPage({
             path={`actors/${actor.file}`}
             extraItems={[
               { label: `Software used (${usesSoftware.length})`, slug: "section-software" },
-              { label: `Observed Techniques (${observedTechniques.length})`, slug: "section-techniques" },
-              { label: `Worked Examples (${groupExamples.length})`, slug: "section-worked-examples" },
             ]}
           />
           <div className="detail-actions">
@@ -118,55 +116,8 @@ export default function GroupDetailPage({
               </div>
             )}
           </section>
-
-          <section id="section-techniques" className="technique-detail-section">
-            <h2>Observed Techniques ({observedTechniques.length})</h2>
-            {observedTechniques.length === 0 ? (
-              <p className="empty-row">No mapped Techniques.</p>
-            ) : (
-              <div className="technique-grid">
-                {observedTechniques.map((t) => (
-                  <button
-                    type="button"
-                    className="technique-card"
-                    key={t.id}
-                    onClick={() => onOpenTechnique(t.id)}
-                  >
-                    <span>{t.id}</span>
-                    <strong>{t.name}</strong>
-                    <small>
-                      {t.maturity || "documented"} · {t.chains.slice(0, 2).join(" / ")}
-                    </small>
-                  </button>
-                ))}
-              </div>
-            )}
-          </section>
-
-          <section id="section-worked-examples" className="technique-detail-section">
-            <h2>Worked Examples ({groupExamples.length})</h2>
-            {groupExamples.length === 0 ? (
-              <p className="empty-row">No worked examples reference this Group.</p>
-            ) : (
-              <ul className="technique-detail-examples">
-                {groupExamples.map((example) => (
-                  <li key={example.file}>
-                    <button
-                      type="button"
-                      className="link-row"
-                      onClick={() => onOpenDoc(`examples/${example.file}`)}
-                    >
-                      <strong>{example.title}</strong>
-                      <small>
-                        {example.year && `${example.year} · `}
-                        {example.loss}
-                      </small>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+          {/* Observed Techniques cards section dropped — markdown body's '## Observed Techniques' covers the same list. */}
+          {/* Worked Examples cards section dropped — markdown body's '## Observed Examples' covers it. */}
 
           {/* description moved up; no duplicate section here */}
         </article>

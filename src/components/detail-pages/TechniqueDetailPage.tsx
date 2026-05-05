@@ -104,7 +104,6 @@ export default function TechniqueDetailPage({
               ...(techniqueSpecs.length > 0 ? [{ label: "Detection spec", slug: "detection-spec" }] : []),
               { label: `Software (${relatedSoftware.length})`, slug: "section-software" },
               { label: `Threat Actors (${relatedActors.length})`, slug: "section-threat-actors" },
-              { label: `Worked Examples (${relatedExamples.length})`, slug: "section-worked-examples" },
               ...((relatedMitigations.length + relatedSoftware.length + relatedActors.length) > 0
                 ? [{ label: "Relationship neighborhood", slug: "section-relationship" }]
                 : []),
@@ -204,31 +203,7 @@ export default function TechniqueDetailPage({
               </div>
             )}
           </section>
-
-          <section id="section-worked-examples" className="technique-detail-section">
-            <h2>Worked Examples ({relatedExamples.length})</h2>
-            {relatedExamples.length === 0 ? (
-              <p className="empty-row">No worked examples yet — contributions welcome via PR.</p>
-            ) : (
-              <ul className="technique-detail-examples">
-                {relatedExamples.map((example) => (
-                  <li key={example.file}>
-                    <button
-                      type="button"
-                      className="link-row"
-                      onClick={() => onOpenDoc(`examples/${example.file}`)}
-                    >
-                      <strong>{example.title}</strong>
-                      <small>
-                        {example.year && `${example.year} · `}
-                        {example.loss}
-                      </small>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+          {/* Worked Examples cards section dropped — markdown body's '## Real-world examples' narrative covers it. */}
 
           {/* Relationship graph last — visual aggregation of everything above. */}
           {(relatedMitigations.length + relatedSoftware.length + relatedActors.length) > 0 && (
