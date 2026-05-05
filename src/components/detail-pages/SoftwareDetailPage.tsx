@@ -4,6 +4,7 @@ import { reportIssueUrl } from "../../routing";
 import type { Technique } from "../../types";
 import Breadcrumb from "../layout/Breadcrumb";
 import InlineMarkdown from "../document/InlineMarkdown";
+import DocumentToc from "../document/DocumentToc";
 
 export default function SoftwareDetailPage({
   softwareId,
@@ -52,9 +53,7 @@ export default function SoftwareDetailPage({
       <Breadcrumb onBack={onClose} items={breadcrumb} />
       <div className="document-layout">
         <aside className="document-sidebar">
-          <span>Software</span>
-          <strong>{software.id} — {software.name}</strong>
-          <button type="button" className="document-path" title="Open raw markdown" onClick={() => onOpenDoc(software.sourcePath)}>{software.sourcePath}</button>
+<button type="button" className="document-path" title="Open raw markdown" onClick={() => onOpenDoc(software.sourcePath)}>{software.sourcePath}</button>
           <div className="technique-detail-meta">
             <small><strong>Type:</strong> {software.type}</small>
             {software.active && (
@@ -67,6 +66,7 @@ export default function SoftwareDetailPage({
               <small><strong>Platforms:</strong> {software.hostPlatforms.slice(0, 3).join(", ")}</small>
             )}
           </div>
+          <DocumentToc path={software.sourcePath} />
           <div className="detail-actions">
             <a
               className="button button-secondary"

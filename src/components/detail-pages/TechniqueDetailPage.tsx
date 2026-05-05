@@ -4,6 +4,7 @@ import { reportIssueUrl } from "../../routing";
 import Breadcrumb from "../layout/Breadcrumb";
 import DetectionSpecSection, { type SpecRecord } from "../document/DetectionSpecSection";
 import InlineMarkdown from "../document/InlineMarkdown";
+import DocumentToc from "../document/DocumentToc";
 import RelationshipGraph from "../views/RelationshipGraph";
 
 export default function TechniqueDetailPage({
@@ -76,11 +77,7 @@ export default function TechniqueDetailPage({
 
       <div className="document-layout">
         <aside className="document-sidebar">
-          <span>Technique</span>
-          <strong>
-            {technique.id} — {technique.name}
-          </strong>
-          <button type="button" className="document-path" title="Open raw markdown" onClick={() => onOpenDoc(technique.sourcePath)}>{technique.sourcePath}</button>
+<button type="button" className="document-path" title="Open raw markdown" onClick={() => onOpenDoc(technique.sourcePath)}>{technique.sourcePath}</button>
           <div className="technique-detail-meta">
             <small>
               <strong>Maturity:</strong> {technique.maturity || "documented"}
@@ -101,6 +98,7 @@ export default function TechniqueDetailPage({
               </small>
             )}
           </div>
+          <DocumentToc path={technique.sourcePath} />
           <div className="detail-actions">
             <a
               className="button button-secondary"

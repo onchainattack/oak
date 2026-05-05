@@ -4,6 +4,7 @@ import { reportIssueUrl } from "../../routing";
 import type { Technique } from "../../types";
 import Breadcrumb from "../layout/Breadcrumb";
 import InlineMarkdown from "../document/InlineMarkdown";
+import DocumentToc from "../document/DocumentToc";
 
 export default function MitigationDetailPage({
   mitigationId,
@@ -45,9 +46,7 @@ export default function MitigationDetailPage({
       <Breadcrumb onBack={onClose} items={breadcrumb} />
       <div className="document-layout">
         <aside className="document-sidebar">
-          <span>Mitigation</span>
-          <strong>{mitigation.id} — {mitigation.name}</strong>
-          <button type="button" className="document-path" title="Open raw markdown" onClick={() => onOpenDoc(mitigation.sourcePath)}>{mitigation.sourcePath}</button>
+<button type="button" className="document-path" title="Open raw markdown" onClick={() => onOpenDoc(mitigation.sourcePath)}>{mitigation.sourcePath}</button>
           <div className="technique-detail-meta">
             <small><strong>Class:</strong> {mitigation.class}</small>
             {mitigation.audience.length > 0 && (
@@ -55,6 +54,7 @@ export default function MitigationDetailPage({
             )}
             <small><strong>Maps to:</strong> {mappedTechniques.length} {mappedTechniques.length === 1 ? "Technique" : "Techniques"}</small>
           </div>
+          <DocumentToc path={mitigation.sourcePath} />
           <div className="detail-actions">
             <a
               className="button button-secondary"

@@ -824,7 +824,7 @@ line-height: 1.3;
 .signal-panel p,
 .coverage-panel p {
   color: var(--muted-strong);
-  font-size: var(--fs-h3);
+  font-size: var(--fs-body);
   line-height: 1.55;
   font-weight: 400;
 }
@@ -3001,8 +3001,19 @@ button.document-path:hover {
 
 .technique-detail-header {
   border-bottom: 1px solid var(--line);
-  margin-bottom: 28px;
-  padding-bottom: 24px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+}
+
+/* First-child heading inside the Description section sits directly under
+   the page header — collapse its top divider/margin/padding so we don't
+   double up with the header's bottom border + the h2's own top border. */
+.technique-detail-section-description > .markdown-body > :first-child,
+.technique-detail-section-description > .markdown-shell > :first-child,
+.technique-detail-section-description > .markdown-body.markdown-shell > :first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
 }
 
 .technique-detail-header .eyebrow {

@@ -4,6 +4,7 @@ import { handleMarkdownLinkClick, REPO_URL, reportIssueUrl } from "../../routing
 import { highlightYaml } from "../../highlight";
 import Breadcrumb from "../layout/Breadcrumb";
 import DocumentHero from "./DocumentHero";
+import DocumentToc from "./DocumentToc";
 
 export default function MarkdownDocument({
   path,
@@ -45,31 +46,7 @@ export default function MarkdownDocument({
           <span>{documentKind}</span>
           <strong>{indexEntry?.title ?? path}</strong>
           <code>{path}</code>
-          {indexEntry?.toc && indexEntry.toc.length > 0 && (
-            <nav>
-              {indexEntry.toc.map((item) => {
-                const slug = item
-                  .toLowerCase()
-                  .replace(/[^a-z0-9]+/g, "-")
-                  .replace(/^-|-$/g, "");
-                return (
-                  <a
-                    key={item}
-                    href={`#${slug}`}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      const heading = window.document.querySelector(`#${CSS.escape(slug)}`);
-                      if (heading) {
-                        heading.scrollIntoView({ behavior: "smooth", block: "start" });
-                      }
-                    }}
-                  >
-                    {item}
-                  </a>
-                );
-              })}
-            </nav>
-          )}
+          <DocumentToc path={path} />
           <div className="detail-actions detail-actions-stack">
             <a
               className="button button-secondary"

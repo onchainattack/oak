@@ -4,6 +4,7 @@ import { reportIssueUrl } from "../../routing";
 import type { Technique } from "../../types";
 import Breadcrumb from "../layout/Breadcrumb";
 import InlineMarkdown from "../document/InlineMarkdown";
+import DocumentToc from "../document/DocumentToc";
 
 export default function GroupDetailPage({
   groupId,
@@ -57,15 +58,14 @@ export default function GroupDetailPage({
       <Breadcrumb onBack={onClose} items={breadcrumb} />
       <div className="document-layout">
         <aside className="document-sidebar">
-          <span>Threat Actor</span>
-          <strong>{actor.title}</strong>
-          <button type="button" className="document-path" title="Open raw markdown" onClick={() => onOpenDoc(`actors/${actor.file}`)}>actors/{actor.file}</button>
+<button type="button" className="document-path" title="Open raw markdown" onClick={() => onOpenDoc(`actors/${actor.file}`)}>actors/{actor.file}</button>
           <div className="technique-detail-meta">
             {/* Attribution status shown in full in the header below — no need to truncate it here. */}
             <small><strong>Observed Techniques:</strong> {observedTechniques.length}</small>
             <small><strong>Uses Software:</strong> {usesSoftware.length}</small>
             <small><strong>Worked Examples:</strong> {groupExamples.length}</small>
           </div>
+          <DocumentToc path={`actors/${actor.file}`} />
           <div className="detail-actions">
             <a
               className="button button-secondary"
