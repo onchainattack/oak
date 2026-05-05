@@ -273,6 +273,23 @@ const actors = (await readMarkdownCollection("actors", (file) => file !== "READM
   }),
 );
 
+const dataSources = (await readMarkdownCollection("data-sources", (file) => file !== "README.md")).map(
+  ({ file, text }) => {
+    const title = titleFromMarkdown(text, file.replace(/\.md$/, ""));
+    const id = title.match(/OAK-DS-\d+/)?.[0] ?? file;
+    const layer = stripInlineMarkdown(text.match(/\*\*Layer:\*\*\s*([^\n]+)/)?.[1] ?? "");
+    const chains = stripInlineMarkdown(text.match(/\*\*Chains:\*\*\s*([^\n]+)/)?.[1] ?? "")
+      .split(",")
+      .map((c) => c.trim())
+      .filter(Boolean);
+    const description = stripInlineMarkdown(
+      text.match(/## Description\s*\n+([\s\S]+?)(?=\n##|\n#|$)/)?.[1]?.trim() ?? "",
+    ).slice(0, 320);
+    const techniques = [...new Set(text.match(/OAK-T\d+\.\d{3}(?:\.\d{3})?/g) ?? [])].sort();
+    return { id, title, file, layer, chains, description, techniques };
+  },
+);
+
 const coverageText = await readFile(rel("COVERAGE.md"), "utf8");
 const coverageRows = coverageText
   .split("\n")
@@ -438,6 +455,7 @@ const siteData = {
   relationships,
   examples: examples.sort((a, b) => b.file.localeCompare(a.file)),
   actors: actors.sort((a, b) => a.id.localeCompare(b.id)),
+  dataSources: dataSources.sort((a, b) => a.id.localeCompare(b.id)),
   coverageRows,
   coverageMatrix,
   specs: specsPayload.specs ?? [],

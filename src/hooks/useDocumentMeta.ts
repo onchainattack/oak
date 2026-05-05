@@ -66,6 +66,7 @@ export function useDocumentMeta({
         actors: "Threat Actors",
         mitigations: "Mitigations",
         software: "Software",
+        datasources: "Data Sources",
         coverage: "Coverage & Gaps",
         contribute: "Contribute",
       };

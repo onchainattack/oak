@@ -48,7 +48,7 @@ export const groupRouteFromPath = () => {
 
 export const workspaceRouteFromPath = (): WorkspaceView => {
   const raw = currentPath();
-  return ["about", "matrix", "incidents", "actors", "mitigations", "software", "coverage", "contribute"].includes(raw)
+  return ["about", "matrix", "incidents", "actors", "mitigations", "software", "datasources", "coverage", "contribute"].includes(raw)
     ? (raw as WorkspaceView)
     : "about";
 };

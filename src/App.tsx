@@ -1,9 +1,9 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { siteData } from "./data/generated";
 import { chainOptions, techniqueMatches } from "./lib";
-import {  } from "./routing";
 import type { WorkspaceView } from "./types";
 import ActorsView from "./components/views/ActorsView";
+import DataSourcesView from "./components/views/DataSourcesView";
 import IncidentsView from "./components/views/IncidentsView";
 import CorpusStats from "./components/views/CorpusStats";
 import CoverageMatrix from "./components/views/CoverageMatrix";
@@ -178,6 +178,7 @@ function App() {
         ["actors", "Threat actors"],
         ["mitigations", "Mitigations"],
         ["software", "Software"],
+        ["datasources", "Data Sources"],
       ],
     },
     {
@@ -503,6 +504,10 @@ function App() {
             </button>
           ))}
         </div>
+      </section>
+
+      <section className="section data-sources-section" hidden={!!detailNode || activeView !== "datasources"} id="datasources">
+        <DataSourcesView openDoc={openDoc} />
       </section>
 
       <section className="section contributor-section" hidden={!!detailNode || activeView !== "contribute"} id="contributors">

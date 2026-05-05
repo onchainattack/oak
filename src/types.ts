@@ -2,7 +2,7 @@ import type { siteData } from "./data/generated";
 
 export type Tactic = (typeof siteData.tactics)[number];
 export type Technique = (typeof siteData.techniques)[number];
-export type WorkspaceView = "about" | "matrix" | "incidents" | "actors" | "mitigations" | "software" | "coverage" | "contribute";
+export type WorkspaceView = "about" | "matrix" | "incidents" | "actors" | "mitigations" | "software" | "datasources" | "coverage" | "contribute";
 export type IconName =
   | "matrix"
   | "technique"
