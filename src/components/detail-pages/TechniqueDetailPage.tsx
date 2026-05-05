@@ -77,7 +77,7 @@ export default function TechniqueDetailPage({
 
       <div className="document-layout">
         <aside className="document-sidebar">
-<button type="button" className="document-path" title="Open raw markdown" onClick={() => onOpenDoc(technique.sourcePath)}>{technique.sourcePath}</button>
+
           <div className="technique-detail-meta">
             <small>
               <strong>Maturity:</strong> {technique.maturity || "documented"}
@@ -98,7 +98,19 @@ export default function TechniqueDetailPage({
               </small>
             )}
           </div>
-          <DocumentToc path={technique.sourcePath} />
+          <DocumentToc
+            path={technique.sourcePath}
+            extraItems={[
+              ...(techniqueSpecs.length > 0 ? [{ label: "Detection spec", slug: "detection-spec" }] : []),
+              { label: `Mitigations (${relatedMitigations.length})`, slug: "section-mitigations" },
+              { label: `Software (${relatedSoftware.length})`, slug: "section-software" },
+              { label: `Threat Actors (${relatedActors.length})`, slug: "section-threat-actors" },
+              { label: `Worked Examples (${relatedExamples.length})`, slug: "section-worked-examples" },
+              ...((relatedMitigations.length + relatedSoftware.length + relatedActors.length) > 0
+                ? [{ label: "Relationship neighborhood", slug: "section-relationship" }]
+                : []),
+            ]}
+          />
           <div className="detail-actions">
             <a
               className="button button-secondary"
@@ -145,7 +157,7 @@ export default function TechniqueDetailPage({
           ))}
 
           {/* Cards: Mitigations / Software / Actors. Empty states inline. */}
-          <section className="technique-detail-section">
+          <section id="section-mitigations" className="technique-detail-section">
             <h2>Mitigations ({relatedMitigations.length})</h2>
             {relatedMitigations.length === 0 ? (
               <p className="empty-row">No mapped Mitigations yet — see TAXONOMY-GAPS.md.</p>
@@ -170,7 +182,7 @@ export default function TechniqueDetailPage({
             )}
           </section>
 
-          <section className="technique-detail-section">
+          <section id="section-software" className="technique-detail-section">
             <h2>Software ({relatedSoftware.length})</h2>
             {relatedSoftware.length === 0 ? (
               <p className="empty-row">No mapped Software yet.</p>
@@ -195,7 +207,7 @@ export default function TechniqueDetailPage({
             )}
           </section>
 
-          <section className="technique-detail-section">
+          <section id="section-threat-actors" className="technique-detail-section">
             <h2>Threat Actors ({relatedActors.length})</h2>
             {relatedActors.length === 0 ? (
               <p className="empty-row">No mapped Threat Actors yet.</p>
@@ -217,7 +229,7 @@ export default function TechniqueDetailPage({
             )}
           </section>
 
-          <section className="technique-detail-section">
+          <section id="section-worked-examples" className="technique-detail-section">
             <h2>Worked Examples ({relatedExamples.length})</h2>
             {relatedExamples.length === 0 ? (
               <p className="empty-row">No worked examples yet — contributions welcome via PR.</p>
@@ -244,7 +256,7 @@ export default function TechniqueDetailPage({
 
           {/* Relationship graph last — visual aggregation of everything above. */}
           {(relatedMitigations.length + relatedSoftware.length + relatedActors.length) > 0 && (
-            <section className="technique-detail-section">
+            <section id="section-relationship" className="technique-detail-section">
               <h2>Relationship neighborhood</h2>
               <RelationshipGraph
                 centerId={technique.id}

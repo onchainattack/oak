@@ -46,7 +46,7 @@ export default function MitigationDetailPage({
       <Breadcrumb onBack={onClose} items={breadcrumb} />
       <div className="document-layout">
         <aside className="document-sidebar">
-<button type="button" className="document-path" title="Open raw markdown" onClick={() => onOpenDoc(mitigation.sourcePath)}>{mitigation.sourcePath}</button>
+
           <div className="technique-detail-meta">
             <small><strong>Class:</strong> {mitigation.class}</small>
             {mitigation.audience.length > 0 && (
@@ -54,7 +54,12 @@ export default function MitigationDetailPage({
             )}
             <small><strong>Maps to:</strong> {mappedTechniques.length} {mappedTechniques.length === 1 ? "Technique" : "Techniques"}</small>
           </div>
-          <DocumentToc path={mitigation.sourcePath} />
+          <DocumentToc
+            path={mitigation.sourcePath}
+            extraItems={[
+              { label: `Techniques mitigated (${mappedTechniques.length})`, slug: "section-techniques" },
+            ]}
+          />
           <div className="detail-actions">
             <a
               className="button button-secondary"
@@ -77,7 +82,7 @@ export default function MitigationDetailPage({
             <InlineMarkdown path={mitigation.sourcePath} onOpenDoc={onOpenDoc} />
           </section>
 
-          <section className="technique-detail-section">
+          <section id="section-techniques" className="technique-detail-section">
             <h2>Techniques mitigated ({mappedTechniques.length})</h2>
             {mappedTechniques.length === 0 ? (
               <p className="empty-row">No mapped Techniques.</p>

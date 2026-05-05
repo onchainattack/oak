@@ -58,14 +58,21 @@ export default function GroupDetailPage({
       <Breadcrumb onBack={onClose} items={breadcrumb} />
       <div className="document-layout">
         <aside className="document-sidebar">
-<button type="button" className="document-path" title="Open raw markdown" onClick={() => onOpenDoc(`actors/${actor.file}`)}>actors/{actor.file}</button>
+
           <div className="technique-detail-meta">
             {/* Attribution status shown in full in the header below — no need to truncate it here. */}
             <small><strong>Observed Techniques:</strong> {observedTechniques.length}</small>
             <small><strong>Uses Software:</strong> {usesSoftware.length}</small>
             <small><strong>Worked Examples:</strong> {groupExamples.length}</small>
           </div>
-          <DocumentToc path={`actors/${actor.file}`} />
+          <DocumentToc
+            path={`actors/${actor.file}`}
+            extraItems={[
+              { label: `Software used (${usesSoftware.length})`, slug: "section-software" },
+              { label: `Observed Techniques (${observedTechniques.length})`, slug: "section-techniques" },
+              { label: `Worked Examples (${groupExamples.length})`, slug: "section-worked-examples" },
+            ]}
+          />
           <div className="detail-actions">
             <a
               className="button button-secondary"
@@ -90,7 +97,7 @@ export default function GroupDetailPage({
             <InlineMarkdown path={`actors/${actor.file}`} onOpenDoc={onOpenDoc} />
           </section>
 
-          <section className="technique-detail-section">
+          <section id="section-software" className="technique-detail-section">
             <h2>Software used ({usesSoftware.length})</h2>
             {usesSoftware.length === 0 ? (
               <p className="empty-row">No directly-mapped Software entries.</p>
@@ -112,7 +119,7 @@ export default function GroupDetailPage({
             )}
           </section>
 
-          <section className="technique-detail-section">
+          <section id="section-techniques" className="technique-detail-section">
             <h2>Observed Techniques ({observedTechniques.length})</h2>
             {observedTechniques.length === 0 ? (
               <p className="empty-row">No mapped Techniques.</p>
@@ -136,7 +143,7 @@ export default function GroupDetailPage({
             )}
           </section>
 
-          <section className="technique-detail-section">
+          <section id="section-worked-examples" className="technique-detail-section">
             <h2>Worked Examples ({groupExamples.length})</h2>
             {groupExamples.length === 0 ? (
               <p className="empty-row">No worked examples reference this Group.</p>

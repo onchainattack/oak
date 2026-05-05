@@ -55,7 +55,7 @@ export default function DetectionSpecSection({
   const mits = body.mitigations ?? [];
   const refImpls = body.reference_implementations ?? [];
   return (
-    <section className="technique-detail-section detection-spec">
+    <section id="detection-spec" className="technique-detail-section detection-spec">
       <h2>Detection spec</h2>
       <p className="detection-spec-meta">
         <code>{spec.spec_id}</code> · v{spec.version || "0.0.0"} ·{" "}

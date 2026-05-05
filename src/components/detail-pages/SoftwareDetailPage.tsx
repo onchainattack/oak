@@ -53,7 +53,7 @@ export default function SoftwareDetailPage({
       <Breadcrumb onBack={onClose} items={breadcrumb} />
       <div className="document-layout">
         <aside className="document-sidebar">
-<button type="button" className="document-path" title="Open raw markdown" onClick={() => onOpenDoc(software.sourcePath)}>{software.sourcePath}</button>
+
           <div className="technique-detail-meta">
             <small><strong>Type:</strong> {software.type}</small>
             {software.active && (
@@ -66,7 +66,13 @@ export default function SoftwareDetailPage({
               <small><strong>Platforms:</strong> {software.hostPlatforms.slice(0, 3).join(", ")}</small>
             )}
           </div>
-          <DocumentToc path={software.sourcePath} />
+          <DocumentToc
+            path={software.sourcePath}
+            extraItems={[
+              { label: `Used by Groups (${usedByGroups.length})`, slug: "section-groups" },
+              { label: `Observed Techniques (${observedTechniques.length})`, slug: "section-techniques" },
+            ]}
+          />
           <div className="detail-actions">
             <a
               className="button button-secondary"
@@ -94,7 +100,7 @@ export default function SoftwareDetailPage({
             <InlineMarkdown path={software.sourcePath} onOpenDoc={onOpenDoc} />
           </section>
 
-          <section className="technique-detail-section">
+          <section id="section-groups" className="technique-detail-section">
             <h2>Used by Groups ({usedByGroups.length})</h2>
             {usedByGroups.length === 0 ? (
               <p className="empty-row">Not yet linked to a Group entry.</p>
@@ -116,7 +122,7 @@ export default function SoftwareDetailPage({
             )}
           </section>
 
-          <section className="technique-detail-section">
+          <section id="section-techniques" className="technique-detail-section">
             <h2>Observed Techniques ({observedTechniques.length})</h2>
             {observedTechniques.length === 0 ? (
               <p className="empty-row">No mapped Techniques.</p>
