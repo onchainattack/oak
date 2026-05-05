@@ -66,31 +66,18 @@ export default function CoverageMatrix({
 }) {
   const matrix = siteData.coverageMatrix as CoverageMatrixData | null;
 
-  // Fall back to the legacy single-vendor table if the matrix data hasn't
-  // been built yet (e.g. dev server before `npm run site:data`).
-  if (!matrix) {
-    return (
-      <div className="section-heading">
-        <p className="eyebrow">Coverage</p>
-        <h2>Coverage matrix not built.</h2>
-        <p>
-          Run <code>python3 tools/build_coverage.py</code> (or{" "}
-          <code>npm run site:data</code>) to populate{" "}
-          <code>tools/coverage.json</code>.
-        </p>
-      </div>
-    );
-  }
-
+  // Hooks must run unconditionally on every render — the early-return
+  // for the missing-matrix case sits BELOW. Reads from `matrix` inside
+  // memos go through optional-chained fallbacks for the null branch.
   const [tierFilter, setTierFilter] = useState<CoverageTier | "all">("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [tacticFilter, setTacticFilter] = useState<string>("all");
 
-  const vendors = matrix.vendors;
-  const techniques = matrix.techniques;
-  const tactics = matrix.tactics;
-  const cells = matrix.matrix;
-  const stats = matrix.stats;
+  const vendors = matrix?.vendors ?? [];
+  const techniques = matrix?.techniques ?? [];
+  const tactics = matrix?.tactics ?? [];
+  const cells = matrix?.matrix ?? {};
+  const stats = matrix?.stats;
 
   const vendorTypes = useMemo(() => {
     const set = new Set<string>();
@@ -119,6 +106,22 @@ export default function CoverageMatrix({
     }
     return groups;
   }, [tactics, filteredTechniques]);
+
+  // Fall back to the legacy single-vendor table if the matrix data hasn't
+  // been built yet (e.g. dev server before `npm run site:data`).
+  if (!matrix || !stats) {
+    return (
+      <div className="section-heading">
+        <p className="eyebrow">Coverage</p>
+        <h2>Coverage matrix not built.</h2>
+        <p>
+          Run <code>python3 tools/build_coverage.py</code> (or{" "}
+          <code>npm run site:data</code>) to populate{" "}
+          <code>tools/coverage.json</code>.
+        </p>
+      </div>
+    );
+  }
 
   const cellTier = (vendorKey: string, techId: string): CoverageTier | null => {
     const cell = cells[vendorKey]?.[techId];
