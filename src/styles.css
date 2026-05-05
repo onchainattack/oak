@@ -4997,3 +4997,79 @@ margin-top: 8px;
   background: var(--accent-faint);
   color: var(--accent);
 }
+
+/* Coverage Layer panel — sits above the Matrix grid */
+.cov-layer-panel {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+}
+.cov-layer-panel-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cov-layer-panel-head strong {
+  color: var(--ink-strong);
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+.cov-layer-panel-head small {
+  color: var(--muted);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+}
+.cov-layer-panel-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.cov-layer-active {
+  align-items: center;
+  background: var(--accent-faint);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--r-sm);
+  color: var(--accent);
+  display: inline-flex;
+  font-family: var(--mono);
+  font-size: var(--fs-small);
+  gap: var(--space-2);
+  padding: 4px var(--space-2);
+}
+.cov-layer-active em {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: var(--fs-mono-sm);
+  font-style: normal;
+  letter-spacing: var(--ls-mono-tight);
+}
+.cov-layer-dot {
+  background: var(--accent);
+  border-radius: 50%;
+  display: inline-block;
+  height: 8px;
+  width: 8px;
+}
+.cov-layer-error {
+  color: var(--red);
+  font-family: var(--mono);
+  font-size: var(--fs-small);
+  margin: 0;
+}
+
+/* Layered technique-card override — when a layer paints a card, give
+   it a clearer visual lift so it stands out from un-layered cards. */
+.technique-card.has-layer {
+  box-shadow: 0 0 0 1px var(--layer-color, transparent),
+              inset 0 0 0 1px color-mix(in srgb, var(--layer-color, transparent) 30%, transparent);
+}
+.technique-card.has-layer:hover {
+  box-shadow: 0 0 0 2px var(--layer-color, var(--accent)),
+              inset 0 0 0 1px color-mix(in srgb, var(--layer-color, var(--accent)) 40%, transparent);
+}

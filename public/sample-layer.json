@@ -1,0 +1,11 @@
+{
+  "name": "Example: stable-only baseline",
+  "description": "Sample layer — paints all stable Techniques teal.",
+  "domain": "oak-onchain-attack",
+  "techniques": [
+    {"techniqueID": "OAK-T1.001", "color": "#00ffd1", "comment": "fully covered"},
+    {"techniqueID": "OAK-T1.003", "color": "#00ffd1", "comment": "fully covered"},
+    {"techniqueID": "OAK-T1.004", "color": "#e6c14a", "comment": "partial"},
+    {"techniqueID": "OAK-T11.001", "color": "#ff4d45", "comment": "gap"}
+  ]
+}

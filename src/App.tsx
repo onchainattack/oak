@@ -23,6 +23,8 @@ import { useAppRouting } from "./hooks/useAppRouting";
 import { useDocumentMeta } from "./hooks/useDocumentMeta";
 import { useGlobalSearch } from "./hooks/useGlobalSearch";
 import { useMatrixFilters } from "./hooks/useMatrixFilters";
+import { useCoverageLayer } from "./hooks/useCoverageLayer";
+import CoverageLayerPanel from "./components/views/CoverageLayerPanel";
 
 function App() {
   const {
@@ -61,6 +63,7 @@ function App() {
     maturityFilter, setMaturityFilter,
     relationshipFilter, setRelationshipFilter,
   } = useMatrixFilters();
+  const coverageLayer = useCoverageLayer();
 
   const maturityOptions = useMemo(
     () => ["all", ...Array.from(new Set(siteData.techniques.map((technique) => technique.maturity).filter(Boolean)))],
@@ -336,6 +339,14 @@ function App() {
           </p>
         </div>
 
+        <CoverageLayerPanel
+          layer={coverageLayer.layer}
+          error={coverageLayer.error}
+          onLoadText={coverageLayer.loadFromText}
+          onClear={coverageLayer.clearLayer}
+          exportLayer={coverageLayer.exportLayer}
+        />
+
         <div className="matrix-console">
           <label className="matrix-search-field">
             <span>Search</span>
@@ -435,6 +446,7 @@ function App() {
               techniqueIds={techniqueIds}
               key={tactic.id}
               onOpenTechnique={openTechnique}
+              layerByTechnique={coverageLayer.layer?.byTechnique}
             />
           ))}
         </div>

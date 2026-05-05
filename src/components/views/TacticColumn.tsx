@@ -1,15 +1,20 @@
+import type { CSSProperties } from "react";
 import { techniqueById } from "../../lib";
-import type { Tactic, Technique } from "../../types";
+import type { Tactic } from "../../types";
 import TacticGlyph from "../glyphs/TacticGlyph";
 
 export default function TacticColumn({
   tactic,
   techniqueIds,
   onOpenTechnique,
+  layerByTechnique,
 }: {
   tactic: Tactic;
   techniqueIds: readonly string[];
   onOpenTechnique: (id: string) => void;
+  // Optional coverage-layer tint per technique ID — `color` paints the
+  // card border + background-tint; `comment` becomes the tooltip.
+  layerByTechnique?: Record<string, { color?: string; score?: number; comment?: string }>;
 }) {
   return (
     <article className="tactic-column">
@@ -28,12 +33,22 @@ export default function TacticColumn({
           const technique = techniqueById.get(id);
           if (!technique) return null;
 
+          const layerHit = layerByTechnique?.[id];
+          const layerStyle = layerHit?.color
+            ? {
+                "--layer-color": layerHit.color,
+                borderColor: layerHit.color,
+                background: `color-mix(in srgb, ${layerHit.color} 12%, transparent)`,
+              }
+            : undefined;
           return (
             <button
               type="button"
-              className="technique-card"
+              className={"technique-card" + (layerHit ? " has-layer" : "")}
               key={id}
               onClick={() => onOpenTechnique(technique.id)}
+              title={layerHit?.comment ?? undefined}
+              style={layerStyle as CSSProperties | undefined}
             >
               <span>{technique.id}</span>
               <strong>{technique.name}</strong>
