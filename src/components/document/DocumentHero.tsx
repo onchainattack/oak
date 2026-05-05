@@ -1,5 +1,4 @@
 import { useState, type ReactNode } from "react";
-import { siteData } from "../../data/generated";
 import { cleanInlineText } from "../../lib";
 
 type DocumentMetaItem = {

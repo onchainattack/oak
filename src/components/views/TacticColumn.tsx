@@ -1,5 +1,4 @@
-import { siteData } from "../../data/generated";
-import { techniqueById, techniqueMatches } from "../../lib";
+import { techniqueById } from "../../lib";
 import type { Tactic, Technique } from "../../types";
 import TacticGlyph from "../glyphs/TacticGlyph";
 

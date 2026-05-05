@@ -1,7 +1,5 @@
 import { useMemo, useState } from "react";
 import { siteData } from "../../data/generated";
-import { TACTIC_NAMES_SHORT, TACTIC_ORDER } from "../../lib";
-
 type CoverageTier = "full" | "partial" | "documented" | "gap" | "na";
 
 type CoverageVendor = {

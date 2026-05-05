@@ -1,4 +1,3 @@
-import { siteData } from "../../data/generated";
 import { highlightPseudo } from "../../highlight";
 
 export type SpecRefImpl = { target: string; url?: string; chain?: string };

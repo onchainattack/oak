@@ -1,13 +1,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { siteData } from "./data/generated";
-import {
-  TACTIC_ORDER,
-  cleanInlineText,
-  chainOptions,
-  includes,
-  techniqueMatches,
-} from "./lib";
-import { REPO_URL, navigateTo } from "./routing";
+import { chainOptions, techniqueMatches } from "./lib";
+import {  } from "./routing";
 import type { WorkspaceView } from "./types";
 import ActorsView from "./components/views/ActorsView";
 import IncidentsView from "./components/views/IncidentsView";
@@ -127,11 +121,7 @@ function App() {
         techniqueId={techniqueRoute}
         onOpenDoc={openDoc}
         onOpenTechnique={openTechnique}
-        onClose={() => {
-          window.location.hash = "/matrix";
-          clearAllRoutes();
-          setActiveView("matrix");
-        }}
+        onClose={() => navigateView("matrix")}
       />
     );
   } else if (mitigationRoute) {
@@ -140,11 +130,7 @@ function App() {
         mitigationId={mitigationRoute}
         onOpenDoc={openDoc}
         onOpenTechnique={openTechnique}
-        onClose={() => {
-          window.location.hash = "/mitigations";
-          clearAllRoutes();
-          setActiveView("mitigations");
-        }}
+        onClose={() => navigateView("mitigations")}
       />
     );
   } else if (softwareRoute) {
@@ -154,11 +140,7 @@ function App() {
         onOpenDoc={openDoc}
         onOpenTechnique={openTechnique}
         onOpenGroup={openGroup}
-        onClose={() => {
-          window.location.hash = "/software";
-          clearAllRoutes();
-          setActiveView("software");
-        }}
+        onClose={() => navigateView("software")}
       />
     );
   } else if (groupRoute) {
@@ -168,11 +150,7 @@ function App() {
         onOpenDoc={openDoc}
         onOpenTechnique={openTechnique}
         onOpenSoftware={openSoftware}
-        onClose={() => {
-          window.location.hash = "/actors";
-          clearAllRoutes();
-          setActiveView("actors");
-        }}
+        onClose={() => navigateView("actors")}
       />
     );
   } else if (docPath) {
@@ -180,11 +158,7 @@ function App() {
       <MarkdownDocument
         path={docPath}
         onOpenDoc={openDoc}
-        onClose={() => {
-          window.location.hash = "/matrix";
-          clearAllRoutes();
-          setActiveView("matrix");
-        }}
+        onClose={() => navigateView("matrix")}
       />
     );
   }

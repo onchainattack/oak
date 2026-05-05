@@ -103,10 +103,13 @@ export default function IncidentsView({ openDoc }: { openDoc: (path: string) => 
             </p>
             <div className="example-meta">
               {example.techniques.slice(0, 3).map((technique) => (
-                <em key={technique}>{technique}</em>
+                <code key={technique}>{technique}</code>
               ))}
+              {example.techniques.length > 3 && (
+                <span className="example-meta-more">+{example.techniques.length - 3} more</span>
+              )}
               {example.actors.slice(0, 1).map((actor) => (
-                <em key={actor}>{actor}</em>
+                <code key={actor}>{actor}</code>
               ))}
             </div>
           </button>

@@ -1,4 +1,3 @@
-import { siteData } from "../../data/generated";
 import type { Tactic } from "../../types";
 
 const KILL_CHAIN_PRIMARY: readonly string[] = ["OAK-T1","OAK-T2","OAK-T3","OAK-T4","OAK-T5","OAK-T6","OAK-T7","OAK-T8"];

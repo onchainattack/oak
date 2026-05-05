@@ -1617,7 +1617,8 @@ line-height: 1;
   padding-top: 12px;
 }
 
-.example-meta em {
+.example-meta em,
+.example-meta code {
   background: var(--accent-faint);
   border: 1px solid rgba(0, 255, 209, 0.22);
   border-radius: 6px;
@@ -1629,6 +1630,14 @@ line-height: 1;
   letter-spacing: var(--ls-mono-wide);
   padding: 4px 7px;
   text-transform: uppercase;
+}
+
+.example-meta-more {
+  align-self: center;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: var(--fs-mono-sm);
+  letter-spacing: var(--ls-mono-tight);
 }
 
 .actor-strip,
