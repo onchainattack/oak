@@ -298,10 +298,18 @@ def main(argv: list[str]) -> int:
             print(f"ERROR parsing {p}: {exc}", file=sys.stderr)
             return 1
 
+    # Each Technique has one canonical home Tactic — derived from its
+    # filename prefix (T1.001 → OAK-T1). The full parent_tactics list
+    # stays available on the Technique itself for cross-reference UI;
+    # the matrix view consumes tactic.techniques and now only shows the
+    # Technique under its single home Tactic, not in every cross-listed
+    # column. Cross-listings produced 27 visible duplicates in v0.6.
     by_tactic: dict[str, list[str]] = {}
     for t in techniques:
-        for parent in t.parent_tactics:
-            by_tactic.setdefault(parent, []).append(t.id)
+        m = re.match(r"OAK-(T\d+)\.", t.id)
+        home_tactic = f"OAK-{m.group(1)}" if m else (t.parent_tactics[0] if t.parent_tactics else "")
+        if home_tactic:
+            by_tactic.setdefault(home_tactic, []).append(t.id)
     for tac in tactics:
         tac.techniques = sorted(by_tactic.get(tac.id, []))
 
