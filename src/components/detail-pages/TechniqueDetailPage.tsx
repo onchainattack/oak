@@ -102,7 +102,6 @@ export default function TechniqueDetailPage({
             path={technique.sourcePath}
             extraItems={[
               ...(techniqueSpecs.length > 0 ? [{ label: "Detection spec", slug: "detection-spec" }] : []),
-              { label: `Mitigations (${relatedMitigations.length})`, slug: "section-mitigations" },
               { label: `Software (${relatedSoftware.length})`, slug: "section-software" },
               { label: `Threat Actors (${relatedActors.length})`, slug: "section-threat-actors" },
               { label: `Worked Examples (${relatedExamples.length})`, slug: "section-worked-examples" },
@@ -156,32 +155,9 @@ export default function TechniqueDetailPage({
             />
           ))}
 
-          {/* Cards: Mitigations / Software / Actors. Empty states inline. */}
-          <section id="section-mitigations" className="technique-detail-section">
-            <h2>Mitigations ({relatedMitigations.length})</h2>
-            {relatedMitigations.length === 0 ? (
-              <p className="empty-row">No mapped Mitigations yet — see TAXONOMY-GAPS.md.</p>
-            ) : (
-              <div className="mitigation-grid">
-                {relatedMitigations.map((m) => (
-                  <button
-                    type="button"
-                    className="mitigation-card"
-                    key={m.id}
-                    onClick={() => onOpenDoc(m.sourcePath)}
-                  >
-                    <span>{m.id}</span>
-                    <strong>{m.name}</strong>
-                    <small>
-                      {m.class}
-                      {m.audience && m.audience.length > 0 && ` · ${m.audience.slice(0, 2).join(" / ")}`}
-                    </small>
-                  </button>
-                ))}
-              </div>
-            )}
-          </section>
-
+          {/* Mitigations cards section dropped — markdown body's own
+              '## Mitigations' section already lists them with per-Technique
+              prose context. The cards-form was a strict duplicate. */}
           <section id="section-software" className="technique-detail-section">
             <h2>Software ({relatedSoftware.length})</h2>
             {relatedSoftware.length === 0 ? (
