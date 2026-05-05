@@ -371,9 +371,19 @@ code, kbd, samp {
   font-weight: 700;
 }
 
-.coverage-table .cov-name,
-.cov-vendor-desc {
+.coverage-table .cov-name {
   font-size: var(--fs-small);
+  font-family: var(--sans);
+}
+
+/* Card description text — readable body, not micro. The card title sits
+   at --fs-md (16); description at --fs-body (14) keeps the inside-card
+   ratio gentle (16/14 = 1.14) instead of the previous 16/12 jump that
+   made the card feel like two unrelated text blocks. */
+.cov-vendor-desc,
+.example-card p,
+.markdown-shell p {
+  font-size: var(--fs-body);
   font-family: var(--sans);
 }
 
