@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { siteData } from "./data/generated";
 import { chainOptions, techniqueMatches } from "./lib";
 import type { WorkspaceView } from "./types";
@@ -22,6 +22,7 @@ import GroupDetailPage from "./components/detail-pages/GroupDetailPage";
 import { useAppRouting } from "./hooks/useAppRouting";
 import { useDocumentMeta } from "./hooks/useDocumentMeta";
 import { useGlobalSearch } from "./hooks/useGlobalSearch";
+import { useMatrixFilters } from "./hooks/useMatrixFilters";
 
 function App() {
   const {
@@ -54,10 +55,12 @@ function App() {
 
   const { query, setQuery, results: searchResults } = useGlobalSearch();
 
-  const [activeTactic, setActiveTactic] = useState("all");
-  const [chainFilter, setChainFilter] = useState("all");
-  const [maturityFilter, setMaturityFilter] = useState("all");
-  const [relationshipFilter, setRelationshipFilter] = useState<string>("all");
+  const {
+    activeTactic, setActiveTactic,
+    chainFilter, setChainFilter,
+    maturityFilter, setMaturityFilter,
+    relationshipFilter, setRelationshipFilter,
+  } = useMatrixFilters();
 
   const maturityOptions = useMemo(
     () => ["all", ...Array.from(new Set(siteData.techniques.map((technique) => technique.maturity).filter(Boolean)))],
