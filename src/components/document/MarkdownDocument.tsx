@@ -45,7 +45,6 @@ export default function MarkdownDocument({
         <aside className="document-sidebar">
           <span>{documentKind}</span>
           <strong>{indexEntry?.title ?? path}</strong>
-          <code>{path}</code>
           <DocumentToc path={path} />
           <div className="detail-actions detail-actions-stack">
             <a
