@@ -54,7 +54,7 @@ export default function SoftwareDetailPage({
         <aside className="document-sidebar">
           <span>Software</span>
           <strong>{software.id} — {software.name}</strong>
-          <code>{software.sourcePath}</code>
+          <button type="button" className="document-path" title="Open raw markdown" onClick={() => onOpenDoc(software.sourcePath)}>{software.sourcePath}</button>
           <div className="technique-detail-meta">
             <small><strong>Type:</strong> {software.type}</small>
             {software.active && (
@@ -68,13 +68,6 @@ export default function SoftwareDetailPage({
             )}
           </div>
           <div className="detail-actions">
-            <button
-              type="button"
-              className="button button-primary"
-              onClick={() => onOpenDoc(software.sourcePath)}
-            >
-              Open full markdown
-            </button>
             <a
               className="button button-secondary"
               href={reportIssueUrl("Software", software.sourcePath, `${software.id} — ${software.name}`)}
@@ -97,8 +90,7 @@ export default function SoftwareDetailPage({
             {/* type already shown in sidebar */}
           </header>
 
-          <section className="technique-detail-section">
-            <h2>Description</h2>
+          <section className="technique-detail-section technique-detail-section-description">
             <InlineMarkdown path={software.sourcePath} onOpenDoc={onOpenDoc} />
           </section>
 

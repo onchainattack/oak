@@ -47,7 +47,7 @@ export default function MitigationDetailPage({
         <aside className="document-sidebar">
           <span>Mitigation</span>
           <strong>{mitigation.id} — {mitigation.name}</strong>
-          <code>{mitigation.sourcePath}</code>
+          <button type="button" className="document-path" title="Open raw markdown" onClick={() => onOpenDoc(mitigation.sourcePath)}>{mitigation.sourcePath}</button>
           <div className="technique-detail-meta">
             <small><strong>Class:</strong> {mitigation.class}</small>
             {mitigation.audience.length > 0 && (
@@ -56,13 +56,6 @@ export default function MitigationDetailPage({
             <small><strong>Maps to:</strong> {mappedTechniques.length} {mappedTechniques.length === 1 ? "Technique" : "Techniques"}</small>
           </div>
           <div className="detail-actions">
-            <button
-              type="button"
-              className="button button-primary"
-              onClick={() => onOpenDoc(mitigation.sourcePath)}
-            >
-              Open full markdown
-            </button>
             <a
               className="button button-secondary"
               href={reportIssueUrl("Mitigation", mitigation.sourcePath, `${mitigation.id} — ${mitigation.name}`)}
@@ -80,8 +73,7 @@ export default function MitigationDetailPage({
             {/* class + audience already shown in sidebar — header stays clean */}
           </header>
 
-          <section className="technique-detail-section">
-            <h2>Description</h2>
+          <section className="technique-detail-section technique-detail-section-description">
             <InlineMarkdown path={mitigation.sourcePath} onOpenDoc={onOpenDoc} />
           </section>
 

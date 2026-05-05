@@ -59,7 +59,7 @@ export default function GroupDetailPage({
         <aside className="document-sidebar">
           <span>Threat Actor</span>
           <strong>{actor.title}</strong>
-          <code>actors/{actor.file}</code>
+          <button type="button" className="document-path" title="Open raw markdown" onClick={() => onOpenDoc(`actors/${actor.file}`)}>actors/{actor.file}</button>
           <div className="technique-detail-meta">
             {/* Attribution status shown in full in the header below — no need to truncate it here. */}
             <small><strong>Observed Techniques:</strong> {observedTechniques.length}</small>
@@ -67,13 +67,6 @@ export default function GroupDetailPage({
             <small><strong>Worked Examples:</strong> {groupExamples.length}</small>
           </div>
           <div className="detail-actions">
-            <button
-              type="button"
-              className="button button-primary"
-              onClick={() => onOpenDoc(`actors/${actor.file}`)}
-            >
-              Open full markdown
-            </button>
             <a
               className="button button-secondary"
               href={reportIssueUrl("Actor", `actors/${actor.file}`, `${actor.id} — ${actor.title}`)}
@@ -93,8 +86,7 @@ export default function GroupDetailPage({
             )}
           </header>
 
-          <section className="technique-detail-section">
-            <h2>Description</h2>
+          <section className="technique-detail-section technique-detail-section-description">
             <InlineMarkdown path={`actors/${actor.file}`} onOpenDoc={onOpenDoc} />
           </section>
 

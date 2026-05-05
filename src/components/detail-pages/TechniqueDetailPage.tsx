@@ -80,7 +80,7 @@ export default function TechniqueDetailPage({
           <strong>
             {technique.id} — {technique.name}
           </strong>
-          <code>{technique.sourcePath}</code>
+          <button type="button" className="document-path" title="Open raw markdown" onClick={() => onOpenDoc(technique.sourcePath)}>{technique.sourcePath}</button>
           <div className="technique-detail-meta">
             <small>
               <strong>Maturity:</strong> {technique.maturity || "documented"}
@@ -102,13 +102,6 @@ export default function TechniqueDetailPage({
             )}
           </div>
           <div className="detail-actions">
-            <button
-              type="button"
-              className="button button-primary"
-              onClick={() => onOpenDoc(technique.sourcePath)}
-            >
-              Open full markdown
-            </button>
             <a
               className="button button-secondary"
               href={reportIssueUrl("Technique", technique.sourcePath, `${technique.id} — ${technique.name}`)}
@@ -138,8 +131,7 @@ export default function TechniqueDetailPage({
           </header>
 
           {/* Full description first — primary content of the page. */}
-          <section className="technique-detail-section">
-            <h2>Description</h2>
+          <section className="technique-detail-section technique-detail-section-description">
             <InlineMarkdown path={technique.sourcePath} onOpenDoc={onOpenDoc} />
           </section>
 

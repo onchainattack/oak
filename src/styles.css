@@ -2694,6 +2694,26 @@ line-height: 1.55;
   text-transform: lowercase;
 }
 
+/* When .document-path is rendered as a <button> in detail-page sidebars
+   (escape hatch to the raw markdown viewer), strip the default button
+   chrome and add a subtle hover so it reads as a link, not a control. */
+button.document-path {
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  cursor: pointer;
+  display: block;
+  padding: 0 0 12px;
+  text-align: left;
+  width: 100%;
+  word-break: break-all;
+}
+button.document-path:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent-line);
+}
+
 .markdown-shell h1,
 .markdown-shell h2,
 .markdown-shell h3 {
