@@ -39,6 +39,8 @@ OAK v0.1's Tactic catalog is on-chain-extraction-focused; Akira's *intrusion* su
 
 ## Observed Examples
 
+*No public incidents at v0.1 — worked examples pending per-incident forensic publication.*
+
 OAK v0.1 does not yet contain a worked example whose primary axis is an Akira target; the on-chain angle of G16 is the *laundering of ransom payments* rather than direct crypto-firm intrusion, and the cluster's most defender-relevant payment-tracing case is on the watch-list for v0.x worked-example coverage. The high-salience public-record events anchoring the cluster:
 
 - **CISA / FBI / Europol EC3 / NCSC-NL AA24-109A joint advisory (April 18, 2024).** "StopRansomware: Akira Ransomware" — characterising the cluster's TTPs across manufacturing, education, financial-services, and other critical-infrastructure sectors, naming Akira as a high-volume RaaS strain with approximately 250 victim organisations and approximately \$42M in confirmed ransom-payment proceeds through January 2024, and identifying the Akira-affiliate cohort's exploitation-of-public-facing-vulnerabilities and Cisco-VPN-without-MFA initial-access vectors (`[cisa2024aa24109aakira]`). Attribution at *confirmed* at the cluster level.

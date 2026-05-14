@@ -1,10 +1,12 @@
 # Address Poisoning — Ethereum — 2024-05-03 (\$68M WBTC, returned)
 
-**Loss as initially extracted:** \~\$68M in WBTC.
+**Loss:** \~\$68M in WBTC.
 **Outcome:** the attacker returned the \~\$68M to the victim approximately six days later, following a public bounty negotiation.
 **Operator-campaign net (per Chainalysis):** \~\$1.49M across the broader 66-day campaign, representing a 1,147% ROI on campaign cost.
 **OAK Techniques observed:** OAK-T4.003 (Address Poisoning) — primary; **OAK-T6** (Defense Evasion) — modifier: the lookalike-address technique exploits the truncated-display attack surface in wallet UIs, defensively evading the standard "verify-the-address-before-signing" trust workflow that careful holders use as a load-bearing transfer-time control. T4.003 lists OAK-T6 as a secondary parent tactic for exactly this structural reason — the on-chain transfer is authorised by the user; the defense-evasion lives at the wallet-UX layer where the user verification surface is the load-bearing baseline.
 **Attribution:** **pseudonymous** — pseudonymous attacker (campaign cluster identifiable via OAK-T8.001 funder-graph methods); no public named-individual attribution.
+
+**Key teaching point:** This case is OAK's modern canonical T4.003 example because the forensic record is complete, the campaign-level metrics are published, and the wallet-UX-layer mitigation is unambiguously the responsible defensive control. Contributors writing other T4.003 examples should preserve the **headline-event vs campaign-context** distinction — \$68M is the single-event loss but \$1.49M is what the operator actually retained, and that gap is the analytical insight defenders need to operationalise wallet-vendor and risk-team T4.003 tooling.
 
 ## Summary
 

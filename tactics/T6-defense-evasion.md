@@ -28,6 +28,9 @@ T6 is a "force multiplier" Tactic. Each T6 Technique should explicitly list the 
 - OAK-T6.002 — Fake Audit-Claim (off-chain marketing claim of an audit that the named firm never performed).
 - OAK-T6.003 — Audit-of-Different-Bytecode-Version (a real audit was performed, but the deployed bytecode differs from the audited version).
 - OAK-T6.004 — Audit-Pending Marketing Claim (marketing represents an audit as imminent or in-progress to defer due-diligence pressure during the launch window).
+- OAK-T6.005 — Proxy-Upgrade Malicious Switching
+- OAK-T6.006 — Counterfeit Token Impersonation
+- OAK-T6.007 — Trust-Substrate Shift / Vendor-Side Promise Revocation
 
 In addition, the locked-liquidity-spoof pattern appears as OAK-T2.002 with T6 listed as a secondary parent — that case stays under T2 because the spoof is inseparable from the locked-liquidity surface.
 

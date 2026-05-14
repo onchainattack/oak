@@ -37,6 +37,8 @@ OAK v0.1's Tactic catalog is on-chain-extraction-focused; Black Basta's *intrusi
 
 ## Observed Examples
 
+*No public incidents at v0.1 — worked examples pending per-incident forensic publication.*
+
 OAK v0.1 does not yet contain a worked example whose primary axis is a Black Basta target; the on-chain angle of G11 is the *laundering of ransom payments* rather than direct crypto-firm intrusion, and the cluster's most defender-relevant payment-tracing case (Ascension) is on the watch-list for v0.x worked-example coverage. The high-salience public-record events anchoring the cluster:
 
 - **CISA / FBI / HHS / MS-ISAC AA24-131A joint advisory (May 10, 2024).** "StopRansomware: Black Basta" — characterising the cluster's TTPs across the healthcare and other critical-infrastructure sectors, naming Black Basta as a closed RaaS operating brand with hundreds of named victims across 12 of 16 critical-infrastructure sectors, and identifying the cluster's QakBot-to-DarkGate / Pikabot loader-chain pivot following the August 2023 Operation Duck Hunt QakBot disruption (`[cisa2024aa24131ablackbasta]`). Attribution at *confirmed* at the cluster level.

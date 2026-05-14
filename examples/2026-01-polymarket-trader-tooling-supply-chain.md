@@ -5,6 +5,20 @@
 **Attribution:** **inferred-strong** at operator-cohort level. The hijacked `dev-protocol` GitHub organisation (a real Japanese DeFi project whose org credentials were compromised) was used by a threat actor publishing under the handle "Trust412" to distribute malicious "polymarket-copytrading-bot" repositories. The npm campaign overlapped infrastructure with Vidar Stealer C2 endpoints (per Cyb3rhawk / ADHD reporting). The package distribution pattern is consistent with DPRK-attributed npm-supply-chain operations (BeaverTail / InvisibleFerret cohort — see `actors/OAK-G01-lazarus.md`) but specific attribution to OAK-G01 has not been publicly confirmed.
 **OAK-Gnn:** unattributed at v0.1; consistent with OAK-G01-cohort patterns but not confirmed.
 
+## Timeline (UTC unless noted)
+
+| When | Event | OAK ref |
+|---|---|---|
+| 2025-12 → 2026-01 | Malicious npm package `polymarket-clob` v1.3.1 published (~189 downloads before takedown); sibling packages `sha256-validation` (~7,600 downloads), `sha256-validator-pro` (~1,000 downloads), `solana-utils-sdk`, `synced-plus-agent` published | T11.002 (wallet-software distribution compromise — npm package supply chain) |
+| 2025-12 → 2026-01 | Packages contain code reading `wallet.txt`, `wallets.json`, and `keys/*.json` from developer filesystem; exfiltrate contents to attacker-controlled IP | T15.004 (credential compromise — plaintext key-file exfiltration via trojan dependency) |
+| 2025-12 → 2026-01 | One confirmed victim loses ~0.014 ETH on Polygon when attacker uses exfiltrated key to sign a transfer | T15.004 (key exfiltration → unauthorized signing chain) |
+| 2026-01-06 | Packages pulled from npm after public disclosure | (defender response — package takedown) |
+| 2026-02 → 2026-04 | Threat actor "Trust412" obtains credentials to `dev-protocol` GitHub organization; publishes 20+ repositories under names like `polymarket-copytrading-bot-*` with artificially inflated star counts | T11.002 (GitHub organization hijack — repository-impersonation distribution) |
+| 2026-02 → 2026-04 | Trojan packages in repository dependency files exfiltrate `.env` (exchange API keys, wallet private keys), open port 22 SSH backdoors on developer machines, fingerprint IP addresses | T15.004 + T11.009 (credential exfiltration + trader-tooling supply-chain compromise) |
+| 2026-04 | Campaign publicly documented by StepSecurity and industry follow-up reporting | (public disclosure — campaign documented) |
+
+**Key teaching point:** **The Polymarket trader-tooling supply-chain compromise (Dec 2025–Apr 2026) established a distinct sub-class from wallet-software distribution compromise (T11.002): the target is the trader/developer's plaintext key storage (.env, wallet.txt, keys/*.json), not the wallet binary.** The npm package vector exfiltrated developer key files directly, and the GitHub organization-hijack vector distributed trojan dependencies that additionally opened SSH backdoors. The attack class targets the same cohort DPRK-attributed operations (BeaverTail, InvisibleFerret) have pursued, but with explicit prediction-market-trader targeting — combining supply-chain compromise with platform-cohort-specific reconnaissance.
+
 ## Summary
 
 Through December 2025 - February 2026, attackers compromised the Polymarket trader-tooling ecosystem on two fronts:

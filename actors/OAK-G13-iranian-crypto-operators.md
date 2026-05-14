@@ -37,6 +37,8 @@ OAK v0.1's Tactic catalog is on-chain-extraction-focused; G13's *intrusion* surf
 
 ## Observed Examples
 
+*No public incidents at v0.1 — worked examples pending per-incident forensic publication.*
+
 OAK v0.1 does not yet contain a worked example whose primary axis is an Iranian-cluster-set target; the on-chain angle of G13 is distributed across ransomware-with-crypto-payments, cryptojacking, and sanctions-precedent SDN-listing events rather than concentrated on any single high-volume worked case. The high-salience public-record events anchoring the cluster set:
 
 - **November 2018 OFAC SamSam-laundering designation.** OFAC designation of Iranian nationals Ali Khorashadizadeh and Mohammad Ghorbaniyan for laundering SamSam ransomware proceeds, including cryptocurrency addresses on the SDN List as identifiers for the first time (`[ofac2018samsam]`). Foundational sanctions-precedent for cryptocurrency-address-on-SDN-List enforcement architecture; cited from OAK-G05 / G10 / G11 documentation as the precedent that subsequently produced the LockBit-affiliate-address SDN designations. Attribution at *confirmed*.

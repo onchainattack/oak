@@ -4,6 +4,20 @@
 **OAK Techniques observed:** **OAK-T9.006.004** — Operational-Insider Trading on Subjective-Resolution Prediction Markets. Cohort case alongside the Van Dyke / Venezuela canonical anchor at [`examples/2026-01-polymarket-venezuela-maduro-soldier-insider.md`](2026-01-polymarket-venezuela-maduro-soldier-insider.md). Parent Technique: OAK-T9.006 (Subjective-Oracle Resolution Manipulation).
 **Attribution:** **confirmed at the operator level** (Tel Aviv District Court indictment; Shin Bet, Defense Ministry investigative unit, and Israel Police arrested both defendants). Specific defendants are not publicly named at OAK v0.1 in deference to ongoing Israeli proceedings; case is documentable from indictment-stage public reporting.
 
+## Timeline (UTC unless noted)
+
+| When | Event | OAK ref |
+|---|---|---|
+| 2025-06 (pre-strike) | Israeli Air Force major (reservist) briefs civilian co-defendant when Israeli warplanes are already en route to Iranian targets for the opening strike of the 12-day Israel–Iran war | T9.006.004 (operational-insider briefing — cleared person passes operational knowledge laterally to civilian co-conspirator) |
+| 2025-06 | Civilian co-defendant places Polymarket bets on the timing of Israel's opening strike using the briefed operational knowledge; bets resolve YES | T9.006.004 (operational-insider trading via lateral briefing — decoupled wallet identity from cleared-personnel identity) |
+| 2025-06 | Pair extracts ~$162,663 in winnings; civilian opens digital wallet for reservist and transfers reservist's share in cryptocurrency per agreed even split | T7.001 (proceeds distribution — civilian-to-reservist wallet transfer) |
+| 2025-06 → 2025-12 | Pair continues to place Polymarket bets across additional Iran-conflict markets, including a winning bet on the end-date of the 12-day war | T9.006.004 (sustained operational-insider pattern — multiple bets across correlated markets) |
+| 2026-02 (early) | Shin Bet (Israel Security Agency), Defense Ministry investigative unit, and Israel Police execute joint arrest operation | (law-enforcement action — joint agency arrest) |
+| 2026-02 | Tel Aviv District Court indictment: both defendants charged with severe security offences, bribery, and obstruction of justice; IDF characterizes conduct as grave but says no operational harm resulted | T9.006.004 (Israeli indictment — second jurisdiction in four-month window to charge operational-insider trading on prediction markets) |
+| Continuing | Establishes T9.006.004 sub-pattern as multi-jurisdictional (US + IL) and structurally recurrent; demonstrates lateral-briefing decoupling of on-chain wallet from cleared-personnel identity as a detection-hardening variant | (canonical reference — multi-jurisdictional operational-insider sub-pattern confirmed) |
+
+**Key teaching point:** **The IDF reservist case (Tel Aviv District Court, February 2026) — the second jurisdiction in four months to file criminal charges against operationally-involved bettors — establishes T9.006.004 as a structural recurrence rather than a single-case anomaly.** The case introduces the lateral-briefing variant: the cleared person (IAF major reservist) passed operational knowledge to a civilian co-conspirator who placed the bets, decoupling the on-chain wallet identity from the cleared-personnel identity. This makes detection structurally harder — purely on-chain signals (account-age, deposit-time) do not identify the operational insider; the linkage runs through human intelligence on the briefing chain.
+
 ## Summary
 
 In June 2025, Israel launched its opening strike of the 12-day Israel–Iran war. The strike's timing was a closely-held operational secret circulated only inside Israeli military and intelligence channels.

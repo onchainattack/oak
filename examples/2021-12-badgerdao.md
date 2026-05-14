@@ -1,9 +1,11 @@
 # BadgerDAO frontend compromise via Cloudflare Workers — Ethereum — 2021-12
 
-**Loss reported:** \~\$120M drained from BadgerDAO vault users who interacted with the protocol UI during the active injection window (per public reporting and the post-mortem co-authored with Mandiant; \~2,076 BTC equivalent across multiple ERC-20 vault tokens). A portion (\~\$9M) was recoverable because the attacker had transferred but not yet withdrawn it from Badger's own vaults at the time of incident response.
-**OAK Techniques observed:** OAK-T4.002 (Compromised Front-End Permit Solicitation) — primary, via a Cloudflare-Workers injection sub-vector rather than a DNS / nameserver compromise.
+**Loss:** \~\$120M drained from BadgerDAO vault users who interacted with the protocol UI during the active injection window (per public reporting and the post-mortem co-authored with Mandiant; \~2,076 BTC equivalent across multiple ERC-20 vault tokens). A portion (\~\$9M) was recoverable because the attacker had transferred but not yet withdrawn it from Badger's own vaults at the time of incident response.
+**OAK Techniques observed:** OAK-T4.002 (Compromised Front-End Permit Solicitation) — primary, via a Cloudflare-Workers injection sub-vector rather than a DNS / nameserver compromise. **OAK-T15.003** (Operator Endpoint / Infrastructure Compromise) — the upstream entry vector: the attacker gained access to BadgerDAO's Cloudflare Workers infrastructure, enabling the front-end injection; the Cloudflare Workers credential or API-key compromise was the load-bearing off-chain precondition for the T4.002 front-end injection.
 **Attribution:** **pseudonymous**; not publicly attributed to a named operator cluster at time of writing.
 **Status:** post-incident; partial recovery via a multi-tranche governance compensation plan funded by the BadgerDAO treasury (the BIP-79 series of proposals), one of the larger DAO-treasury restitution programs of the era.
+
+**Key teaching point:** The BadgerDAO incident is significant for the OAK-T4.002 page for two reasons. First, it is **earlier than Curve in real-time** but was previously not the canonical T4.002 case in this corpus, because the Curve incident had a more compact post-mortem and a cleaner entry vector to write up. Including BadgerDAO alongside Curve makes T4.002 visibly a multi-sub-vector Technique rather than a single-pattern one, which is what the on-chain evidence has consistently suggested.
 
 ## Summary
 

@@ -1,0 +1,42 @@
+# BeraChain fake-airdrop token-metadata-spoofing wave — BeraChain EVM — 2024-06 to 2024-09
+
+**Loss:** aggregate low-seven-figures USD across the BeraChain fake-airdrop token-impersonation wave. The wave exploited BeraChain's pre-mainnet testnet phase and the anticipation of the BERA governance token airdrop, which created a large cohort of users connecting wallets to claim interfaces without verifying token contract addresses. Individual victim losses ranged from mid-three-figures (small testnet-bridged positions drained) to mid-five-figures (larger bridged-ETH positions where the fake-airdrop interface requested an ERC-20 `approve()` for the user's bridged assets to an attacker-controlled spender). The aggregate extraction across the impersonation wave is estimated in the low-seven-figures USD range. No recovery has been publicly confirmed.
+**OAK Techniques observed:** **OAK-T2.005** (Token Metadata Spoofing — primary; the fake-airdrop tokens were deployed with ERC-20 `name()` and `symbol()` return values impersonating BERA, BGT, iBGT, and HONEY — the anticipated BeraChain-native tokens — while the contract addresses differed from any canonical BeraChain deployment). **OAK-T6.006** (Counterfeit Token Impersonation — co-occurring; the fake-airdrop campaigns included off-chain brand-counterfeit elements: fake BeraChain-branded airdrop-claim websites, social-media accounts impersonating BeraChain, and fake token-list entries on DEX aggregators). **OAK-T4.009** (Pre-Token Brand-Anticipation Phishing — structurally adjacent; the BERA token had not launched on mainnet at the time of the impersonation wave, and users' anticipation of the airdrop created a pre-token phishing surface that the metadata-spoofed tokens exploited).
+**Attribution:** **pseudonymous-cohort (multiple parallel impersonation campaigns; no single operator cluster identified as responsible for a majority of deployments).** The wave was conducted by a diffuse set of deployers operating across BeraChain's testnet and early mainnet phases. Individual deployer-address clusters are observable on-chain; attribution to named individuals has not been publicly established. No regulatory enforcement action.
+**Key teaching point:** **Pre-mainnet chain-launch phases create a structurally expanded T2.005 surface because canonical token-registry infrastructure (Uniswap Token List, CoinGecko entries, block-explorer verification badges) has not yet been populated for the chain's native tokens.** Users on a new chain cannot rely on the "check the contract address against the canonical deployment" heuristic because the canonical deployments do not yet exist — BERA, BGT, and HONEY were not yet deployed on mainnet when the impersonation wave was active. The T2.005 surface on a pre-mainnet chain is therefore larger than on established chains, and the defender-side mitigations (canonical token registries, wallet-side address verification) are not yet available.
+
+## Summary
+
+BeraChain is an EVM-compatible Layer-1 blockchain that generated significant anticipation in 2024 due to its novel proof-of-liquidity consensus mechanism and the planned BERA governance token airdrop. During the testnet phase (early-to-mid 2024) and the transition to mainnet, BeraChain attracted a large user cohort who bridged assets (ETH, stablecoins) to BeraChain testnet and early mainnet to qualify for the anticipated BERA airdrop. The pre-mainnet phase meant that BeraChain's canonical token contracts — BERA (governance token), BGT (Bera Governance Token), iBGT (liquid-staked BGT), and HONEY (native stablecoin) — had not yet been deployed on mainnet.
+
+The pre-mainnet token-registry vacuum created a structurally expanded T2.005 surface. Attackers deployed token contracts on BeraChain with ERC-20 `name()` and `symbol()` return values matching the anticipated canonical tokens — "Bera Token" / "BERA", "Bera Governance Token" / "BGT", "HONEY" / "HONEY". Users who searched for these tokens on BeraChain's DEX aggregators (BEX, BeraSwap) or in wallet UIs (MetaMask with BeraChain RPC configured) saw the impersonator tokens displayed with the anticipated names. There was no canonical deployment address to cross-reference against — the real tokens did not yet exist on mainnet.
+
+The impersonation campaigns were amplified by fake airdrop-claim interfaces: users searching for "BeraChain airdrop claim" or "BERA token claim" encountered typosquat domains (berachain-claim.com, bera-airdrop.io, claim-bera.net) that served cloned claim interfaces requesting wallet connections and token approvals. The fake interfaces displayed the impersonator tokens as the claimable asset, and users who approved token spends to the attacker-controlled spender address had their bridged assets (ETH, stablecoins) drained via the `approve()` + `transferFrom()` pattern.
+
+The impersonation wave subsided as BeraChain mainnet launched, canonical token contracts were deployed, and official token-registry entries (BeraChain Foundation token-list repository, BEX default token list, CoinGecko BERA entry) populated the canonical-address verification surface. However, the pre-mainnet window — during which the canonical tokens did not exist and no registry-cross-reference was possible — had already produced the aggregate extraction.
+
+The case demonstrates that the T2.005 surface is structurally amplified on new-chain or pre-mainnet ecosystems where canonical token-registry infrastructure has not yet been deployed. The defender-side lesson is that pre-launch chains should pre-publish canonical token-contract addresses (or commit to deployment addresses via deterministic CREATE2) before users begin interacting with the ecosystem.
+
+## Timeline (UTC)
+
+| When | Event | OAK ref |
+|---|---|---|
+| 2024-Q1 to 2024-Q2 | BeraChain testnet active; user cohort bridges assets to testnet for anticipated BERA airdrop; canonical token contracts not yet deployed on mainnet | (pre-mainnet T2.005 surface created — no canonical token addresses) |
+| 2024-06 to 2024-08 | First wave: impersonator tokens deployed on BeraChain testnet/early-mainnet with `name()`/`symbol()` matching BERA, BGT, iBGT, HONEY; fake airdrop-claim interfaces serve cloned BeraChain UI requesting wallet connections | **T2.005 (metadata spoofing) + T4.009 (pre-token anticipation phishing)** |
+| 2024-08 to 2024-09 | Second wave: impersonation campaigns expand to DEX aggregators (BEX, BeraSwap); fake token-list entries populate aggregator token selectors; users swap bridged assets for impersonator tokens displayed as "BERA" / "HONEY" | **T2.005 + T6.006 (full counterfeit — token-list impersonation)** |
+| 2024-09 | BeraChain mainnet phase progresses; canonical token contracts deployed (BERA, BGT, HONEY); official token-registry entries published; impersonation wave subsides | (defender-side canonical-registry surface populated) |
+| 2024-09 onward | Community documentation of impersonation-token deployments and fake-airdrop domains published; residual impersonator tokens remain in address space as pollution | (cohort signal) |
+
+## Realised extraction
+
+Aggregate low-seven-figures USD across the impersonation wave. Individual victim losses range from mid-three-figures (small testnet-bridged positions where the user swapped into an impersonator token with no exit liquidity) to mid-five-figures (larger positions where the fake-airdrop interface requested an `approve()` enabling a drain of the user's full bridged-asset balance). Recovery has not been publicly confirmed. The pre-mainnet extraction was amplified by the absence of canonical token-registry infrastructure — users could not verify impersonator tokens against a canonical address because the canonical tokens did not yet exist.
+
+## Public references
+
+- BeraChain Foundation — canonical token-contract addresses (BERA, BGT, iBGT, HONEY) published post-mainnet
+- BEX / BeraSwap default token-list repository — official token-registry entries
+- CoinGecko — BERA token entry and canonical contract address
+- Community documentation of BeraChain fake-airdrop domains and impersonator-token deployments (2024)
+- Cross-reference: T2.005 at `techniques/T2.005-token-metadata-spoofing.md`
+- Cross-reference: `examples/2020-2021-uniswap-fake-token-impersonation-wave.md` — Fake USDT/USDC token impersonation wave on Uniswap V2 (2020-2021)
+- Cross-reference: `examples/2022-2025-erc20-transferfrom-return-value-spoofing-cohort.md` — ERC-20 transferFrom return-value spoofing cohort (2022-2025)

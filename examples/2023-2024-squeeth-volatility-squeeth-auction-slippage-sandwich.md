@@ -1,0 +1,38 @@
+# Squeeth volatility auction slippage sandwich — Ethereum — 2023–2024
+
+**Loss:** **Aggregate low-six-figure ETH extracted from osqth auction participants.** Individual sandwich extractions from Squeeth volatility auctions ranged from single-digit to low-double-digit ETH per auction settlement, depending on the auction's osqth volume and the slippage-band parameter. The aggregate extraction across the period of active exploitation is estimated in the low-six-figure ETH range. The extraction was not concentrated in a single incident — it was distributed across multiple periodic auction settlements where MEV searchers positioned around the known slippage-band parameter.
+**OAK Techniques observed:** **OAK-T9.013** (Slippage-Manipulation Sandwich Attack) — structured-auction variant. Distinct from the constant-product-AMM swap sandwich (first T9.013 example): the Squeeth case demonstrates that T9.013 generalises to any protocol mechanism with a known, predictable slippage-tolerance parameter. The Squeeth volatility auction's settlement price is determined by a TWAP oracle with a protocol-specified slippage band; the band is known ahead of settlement, allowing sandwich attackers to position around the auction settlement rather than around a single swap transaction. The attack surface is structurally identical — a known slippage band defines the attacker's profit ceiling — but the mechanism is an auction settlement rather than a mempool-observed swap.
+**Attribution:** **pseudonymous-attacker level.** MEV searchers operating on Ethereum mainnet identified the Squeeth auction settlement timing and slippage-band parameter and executed sandwich bundles targeting osqth auction participants. The searcher addresses are on-chain attributable at the block-builder layer; the human operators are not publicly identified.
+**Key teaching point:** **T9.013 is not confined to swap sandwiches.** Any protocol mechanism with a predictable slippage-tolerance parameter — periodic auctions, oracle settlement windows, funding-rate determination, limit-order execution, DCA interval settlement — is a T9.013 surface. The Squeeth volatility auction case demonstrates that the attacker does not need to observe the victim's transaction in a mempool; the attacker only needs to know (a) when the auction settles and (b) the size of the slippage band. If both are publicly specified, the attacker can position around the settlement with the same extraction dynamic as a mempool-observed swap sandwich.
+
+## Summary
+
+Opyn's Squeeth (squared ETH) product includes a periodic volatility auction — the osqth auction — that determines the funding rate for osqth positions. The auction mechanism uses a TWAP-based settlement price with a protocol-specified slippage band: the auction clears at the TWAP price, and the slippage band defines the maximum deviation from the TWAP that the auction will accept. This slippage band is specified in the protocol's auction parameters and is therefore known to all participants — and to all observers — ahead of each auction settlement.
+
+The structural T9.013 surface is straightforward: the auction's slippage band is the attacker's profit ceiling. An MEV searcher who knows (a) the auction settlement block, (b) the TWAP computation window, and (c) the slippage-band parameter can construct a sandwich around the auction settlement: front-run the auction by pushing the TWAP-eligible price to the boundary of the slippage band in the attacker's favour, let the auction settle at the manipulated price, and back-run to unwind the position at the post-settlement price. The auction participants receive the worst-acceptable clearing price — exactly at the slippage-band boundary — and the attacker captures the difference between the fair TWAP and the boundary price as extraction.
+
+The Squeeth volatility auction case is instructive because it demonstrates a T9.013 surface that is not a swap and does not require mempool observation. The attacker does not need to see a specific victim transaction — the auction itself is the victim transaction, and its settlement timing and slippage parameters are publicly specified in the protocol. This makes the attack surface *more predictable* for the attacker than a swap sandwich: the attacker knows exactly when the auction will settle and exactly how far the price can be pushed, and can prepare the sandwich position in advance rather than racing to construct it from mempool observation.
+
+Opyn adjusted the osqth auction parameters — narrowing the slippage band and adjusting the TWAP window — to reduce the extractable value per auction settlement. The adjustment reduced but did not eliminate the T9.013 surface: as long as the auction has a non-zero slippage band and the settlement timing is known, a sandwich attacker can extract the difference between the fair price and the boundary price.
+
+## Timeline (UTC)
+
+| When | Event | OAK ref |
+|---|---|---|
+| 2023 | Opyn Squeeth launches osqth with periodic volatility auctions; auction parameters (slippage band, TWAP window, settlement timing) are publicly specified in the protocol documentation | T9.013 (auction surface created) |
+| 2023–2024 | MEV searchers identify the osqth auction settlement as a T9.013 surface; sandwich bundles targeting auction settlement blocks appear in MEV-boost relay data and on-chain traces | T9.013 (structured-auction variant operational) |
+| 2024 | Opyn adjusts osqth auction parameters — narrowing the slippage band and adjusting the TWAP computation window — to reduce the per-settlement extractable value | (defender-side parameter adjustment) |
+| Continuing | The structured-auction T9.013 surface remains generalisable: any protocol's periodic settlement mechanism with a known slippage band is a T9.013 candidate regardless of whether the settlement is a swap, an auction, or a funding-rate determination | T9.013 (generalisable surface) |
+
+## Realised extraction
+
+**Aggregate low-six-figure ETH extracted from osqth auction participants.** Per-auction extraction: single-digit to low-double-digit ETH, scaling with the auction's osqth volume and the slippage-band width. The extraction was not concentrated in a single incident — it was distributed across multiple periodic auction settlements where MEV searchers positioned around the known slippage-band parameter. The aggregate extraction across the period of active exploitation is estimated in the low-six-figure ETH range. The extraction per auction is bounded by the slippage-band parameter (the attacker cannot extract more than the band authorises) and by the auction's osqth volume (the extraction scales linearly with the size of the settlement).
+
+## References
+
+- Opyn Squeeth documentation: osqth volatility auction mechanism, TWAP computation, and slippage-band parameter specification.
+- osqth auction mechanism specification: funding-rate determination via periodic TWAP-settled auction with protocol-specified slippage tolerance.
+- MEV-Boost relay data: sandwich bundles targeting osqth auction settlement blocks (on-chain observable at the block-builder layer).
+- `[daian2019flashboys]` — Daian et al., "Flash Boys 2.0" (2019): foundational MEV characterisation including sandwich patterns generalisable to auction-settlement surfaces.
+- `[zhou2023sok]` — academic taxonomy covering AMM-manipulation and MEV-extraction attack classes including the slippage-parameter surface.
+- First T9.013 example: `examples/2021-2025-slippage-manipulation-sandwich-cohort.md` — constant-product swap sandwich cohort for comparison with the structured-auction variant.

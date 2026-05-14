@@ -2,9 +2,11 @@
 
 **Attribution:** **pseudonymous** — no public actor attribution at OAK v0.1 cutoff.
 
-**Total loss:** \~13,556 ETH (\~\$60M at the time of the event)
-**OAK Techniques observed:** OAK-T5.001 (Hard LP Drain), OAK-T7.001 (Mixer-Routed Hop)
+**Loss:** \~13,556 ETH (\~\$60M at the time of the event)
+**OAK Techniques observed:** OAK-T5.001 (Hard LP Drain), OAK-T7.001 (Mixer-Routed Hop), **OAK-T6.001** (Source-Verification Mismatch — the protocol presented as a community fair-launch Olympus-fork offering where depositors would receive ANKH tokens and the treasury would seed protocol-owned liquidity; the deployer retained authority to drain all ~13,556 ETH of deposited funds, and the gap between the public community-launch framing and the on-chain deployer-retained extraction authority is the canonical T6.001 surface).
 **Status:** funds laundered through Tornado Cash within \~24 hours of the drain; long-tail tracing remains a public open item.
+
+**Key teaching point:** The AnubisDAO incident is a useful base case for OAK because it pre-dates most modern detector tooling and is therefore unambiguous in its chain of Techniques. Newer incidents tend to layer T6 (Defense Evasion) patterns on top — fragmented timing, multi-actor coordination, cross-chain hops — which OAK addresses in OAK-T5.002 (Slow LP Trickle Removal) and the v0.2 roadmap for standalone T6 Techniques. Contributors writing post-2024 examples should expect more layering and more probabilistic attribution; this 2021 case is included partly as a reference for what an "uncomplicated" T5+T7 chain looks like.
 
 ## Summary
 

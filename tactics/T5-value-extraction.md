@@ -23,6 +23,9 @@ T5 events are the public, observable record of the extraction. They feed forensi
 - OAK-T5.002 — Slow LP Trickle Removal
 - OAK-T5.003 — Hidden-Mint Dilution
 - OAK-T5.004 — Sandwich / MEV Extraction
+- OAK-T5.005 — Treasury-Management Exit
+- OAK-T5.006 — Vesting-Cliff Dump
+- OAK-T5.007 — Third-Party Brand Impersonation Custodial Soft-Rug
 
 ## Maintainer notes
 

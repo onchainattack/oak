@@ -1,0 +1,65 @@
+# Defrost Finance exit scam — Avalanche — 2022-12-23
+
+**Loss:** approximately \$12M (drained from Defrost Finance's H2O stablecoin and MELT token pools on Avalanche C-Chain). The protocol operator claimed a "flash-loan attack" but subsequent on-chain analysis and the operator's conduct confirmed a T5.005-class operator exit: the drain was executed via a malicious contract upgrade that the operator authorised through the protocol's own administrative infrastructure.
+**OAK Techniques observed:** **OAK-T5.005** (Treasury Management / Operator Exit — the protocol operator used administrative upgrade authority to deploy a malicious contract update that drained user deposits) as the *extraction mechanism*; **OAK-T5.001** (Hard LP Drain — the extraction emptied the H2O and MELT liquidity pools that users had deposited into, making it a direct LP drain through operator-privileged upgrade).
+**Attribution:** **operator-internal (Defrost Finance's own administrative authority).** The drain was executed via a contract upgrade authorised by the protocol operator. Defrost initially claimed the incident was an external flash-loan attack but the on-chain evidence — funds routed through operator-controlled addresses — and the operator's subsequent refusal to return funds confirm the T5.005 operator-exit classification. No law-enforcement action or fund recovery is publicly documented.
+**Key teaching point:** **Defrost Finance is the canonical 2022 worked example of an operator using administrative upgrade authority as an exit mechanism, then fabricating an "external attack" cover story.** The incident demonstrates three structural risks of upgradeable contracts with single-operator administrative control: (i) the administrative upgrade key is a single-point-of-failure for all user deposits, (ii) an operator can execute a drain under the cover of a "security incident" to deflect suspicion, and (iii) the on-chain footprint of an operator-initiated upgrade-and-drain is distinguishable from a third-party attack but only after careful post-hoc analysis — users learn about the exit after funds are already gone. The Defrost pattern (operator-upgrade-drain → false external-attack claim → abandonment) recurs across multiple T5.005 incidents and is structurally distinct from genuine external-protocol exploits (T9-series Techniques).
+
+## Summary
+
+Defrost Finance was an Avalanche-native DeFi protocol built around an algorithmic/partially-collateralised stablecoin (H2O) and its governance/value-accrual token (MELT). Users deposited assets into protocol-managed liquidity pools to earn yield and participate in the H2O/MELT ecosystem. The protocol's smart contracts were upgradeable, with upgrade authority held by the Defrost Finance operator team.
+
+On 2022-12-23 (approximately), the operator deployed a malicious contract upgrade that included custom withdrawal/drain logic targeting user-deposited funds across the H2O and MELT pools. The upgrade was authorised through the protocol's standard administrative upgrade mechanism — it was not an external attacker exploiting a vulnerability, but rather the operator using their legitimate administrative authority to drain user funds. Following the drain, Defrost Finance's public communication claimed the incident was a "flash-loan attack" by an external actor. The cover story was contradicted by on-chain evidence: (i) the drain was executed via a contract upgrade that only the operator could authorise, (ii) the drain-contract logic was specific to the pool architecture and would have required prior knowledge of the protocol's internal state layout, and (iii) the extracted funds were routed through addresses traceable to the protocol operator.
+
+The operator abandoned the protocol after the incident. No funds were returned to users. The Defrost Finance social media channels and website were taken offline or ceased updates. This is a clean T5.005 (Treasury Exit) extraction: the operator used administrative upgrade authority to drain user-deposited funds, presented a false cover story, and exited the protocol.
+
+For OAK's purposes, the Defrost case is the reference incident for the *upgradeable-contract-operator-exit-with-false-cover-story* sub-pattern, which is a distinct sub-class of T5.005. The structural elements — (i) upgradeable contracts with single-operator administrative authority, (ii) drain via a legitimate upgrade path, (iii) false external-attack cover story, (iv) post-drain operator abandonment — recur across multiple T5.005 incidents, including the larger Munchables incident (March 2024, \~\$62M, insider-backdoor variant) and smaller Avalanche-protocol exits.
+
+## Timeline (UTC)
+
+| When | Event | OAK ref |
+|---|---|---|
+| Pre-event | Defrost Finance deploys upgradeable H2O/MELT pool contracts with single-operator administrative upgrade authority | T5.005 surface (latent) |
+| 2022-12-23 | Operator deploys malicious contract upgrade via administrative authority; upgrade includes drain logic targeting user-deposited funds; assets extracted from H2O and MELT pools | **T5.005 + T5.001 extraction** |
+| 2022-12-23 (within hours) | Defrost Finance publishes public statement claiming "flash-loan attack" by external actor; cover story deployed | (false narrative) |
+| 2022-12-23 → 2022-12-25 | On-chain analysts and community members identify the operator-upgrade origin; the flash-loan-attack cover story is debunked; on-chain evidence confirms operator-controlled addresses as the drain destination | (community attribution) |
+| 2022-12-25 onward | Defrost Finance social media and website go dark; operator ceases all public communication; no fund recovery effort is announced | (operator abandonment) |
+| Continuing | \~\$12M user deposits unrecovered; no law-enforcement action publicly documented; Defrost Finance remains offline | (unrecovered loss) |
+
+## What defenders observed
+
+- **The upgrade path was legitimate; the upgrade's content was malicious.** The contract upgrade that authorised the drain was executed through Defrost's standard upgrade mechanism — the same mechanism that would be used for a legitimate protocol improvement or security patch. The administrative key that signed the upgrade was the protocol operator's key. This is the distinguishing feature of T5.005 versus T9-series exploits: in T5.005, the *authority* to drain is legitimate; the *intent* is malicious. In T9-series exploits, the authority is illegitimate (the attacker exploits a vulnerability to gain privileges they should not have). The defender-side implication: auditability of *what an upgrade does* (upgrade-content transparency) is as important as auditability of *who can upgrade* (access-control review).
+
+- **The false cover story is a recurring T5.005 feature, not incidental.** Operators who execute an upgrade-based drain typically claim an "external attack" to buy time for laundering and to deflect suspicion from themselves. The cover story creates a window between the on-chain drain and community attribution during which the operator can attempt to move proceeds through laundering infrastructure. The cover-story duration for Defrost was approximately two days — on-chain analysts identified the operator-upgrade origin within 48 hours.
+
+- **On-chain distinguishability of operator-upgrade-drain vs. external exploit exists but is not user-accessible in real-time.** The on-chain signals distinguishing a T5.005 operator-upgrade-drain from a T9-series external exploit are: (i) the drain was preceded by a contract upgrade authorised by the operator's administrative address, (ii) the drained funds were routed through addresses with prior transaction history matching operator-controlled wallets, and (iii) the drain logic was protocol-specific (required knowledge of the pool architecture). These signals are identifiable in post-hoc audit but are not available to users at the time of drain — users learn about the exit only after funds are gone. The defender-side implication: pre-incident assessment of administrative-authority concentration (how many parties hold upgrade authority, under what conditions) is the only user-accessible check.
+
+- **The \~\$12M scale is consistent with a mid-tier T5.005 exit.** The largest T5.005 exits (Thodex \$2.6B, Africrypt \$3.6B, QuadrigaCX \$190M) involve exchange or custody platforms. Defrost's scale (\~\$12M) is consistent with a smaller DeFi protocol exit. The attacker's calculus is the same at all scales: gain administrative upgrade authority → deploy malicious upgrade → drain → (optional) deploy cover story → exit. The distinguishing feature of T5.005 exits from the operator's perspective is that the protocol's own infrastructure provides the extraction mechanism — no vulnerability exploit is required.
+
+## What this example tells contributors writing future Technique pages
+
+- **T5.005 (Treasury Exit) needs explicit sub-classification for the *upgradeable-contract-operator-exit-with-cover-story* sub-pattern.** The canonical T5.005 reference cases (QuadrigaCX, Africrypt) involve the operator simply disappearing with custody-held user funds. The Defrost pattern is different: the operator uses the protocol's *own administrative infrastructure* (upgrade authority) to execute the drain, and deploys a false cover story to deflect blame. The sub-pattern is: (upgradeable contracts with single-operator admin key) → (operator deploys malicious upgrade containing drain logic) → (drain executed via the legitimate upgrade path) → (false cover story published) → (operator abandons protocol).
+
+- **Administrative-authority concentration is the load-bearing risk factor for the Defrost sub-pattern.** If upgrade authority is held by a single operator (single-key or single-multisig controlled by one entity), the upgrade path is a single-point-of-failure. Multi-signature upgrade authority with independent parties, timelock delays on upgrades, and transparent upgrade-content publication would each act as mitigations against the Defrost sub-pattern. OAK Mitigations should enumerate administrative-authority-concentration as a T5.005 risk factor with Defrost as the primary worked-example reference.
+
+- **The false-cover-story feature is significant for OAK Documentation's incident-classification body.** When an operator claims an "external attack" and on-chain evidence contradicts it, the Documentation standard needs a methodology for determining whether the incident was an external exploit (T9-series) or an operator exit (T5.005). The criteria applied to Defrost — (i) upgrade preceded drain, (ii) upgrade authorised by operator's admin key, (iii) drain proceeds routed to operator-controlled addresses, (iv) drain logic protocol-specific — are the OAK v0.1 reference criteria for distinguishing T5.005 from T9-series in ambiguous cases.
+
+## Public references
+
+- `[defrostfinancepostmortem2022]` — Defrost Finance's operator statement claiming an external flash-loan attack (contradicted by on-chain evidence).
+- `[onchainanalystdefrost2022]` — Community on-chain analysis confirming the operator-upgrade origin of the drain.
+- `[avalanchedefrost2022]` — Avalanche ecosystem community response to the Defrost Finance incident.
+- `[rektnewsdefrost2022]` — Rekt News Defrost Finance incident write-up with operator-communication log.
+
+## Citations
+
+- `[defrostfinancepostmortem2022]` — Defrost Finance incident statement.
+- `[onchainanalystdefrost2022]` — Community on-chain-analysis thread.
+- `[avalanchedefrost2022]` — Avalanche community response.
+- `[rektnewsdefrost2022]` — Rekt News Defrost incident.
+
+## Discussion
+
+Defrost Finance is OAK's reference case for the *upgradeable-contract-operator-exit-with-false-cover-story* sub-pattern of T5.005. The structural elements — administrative upgrade authority as single-point-of-failure, drain via legitimate upgrade path, false external-attack cover story, post-drain operator abandonment — recur across multiple DeFi operator exits. At \~\$12M, the scale is modest relative to the largest T5.005 exits (exchange/custody platforms), but the mechanism is paradigmatic: the protocol's *own administrative infrastructure* provided the extraction mechanism. No vulnerability was exploited; the operator used legitimate authority maliciously.
+
+The incident raises an important OAK Documentation question: how to classify an incident where the operator claims external attack and on-chain evidence shows operator exit. The criteria applied to Defrost — upgrade-authorisation provenance, drain-address provenance, drain-logic specificity — should be formalised in the OAK Documentation standard as the methodology for distinguishing T5.005 from T9-series in ambiguous cases. The Defrost case is distinct from Munchables (March 2024) in that Munchables involved a pre-planted backdoor by a developer (insider vulnerability rather than operator exit), though both involve the T5.005 surface and demonstrate that DeFi protocols with concentrated administrative authority are exposed to insider risk as well as external exploit risk.

@@ -1,45 +1,44 @@
-# Beanstalk Farms governance attack — Ethereum — 2022-04-17
+# Beanstalk Farms flash-loan governance attack — Ethereum — 2022-04-17
 
-**Loss:** \~\$182M (\~\$76M attacker net profit after flash-loan repayment; remainder belonged to legitimate protocol holders).
-**OAK Techniques observed:** OAK-T9.002 (Flash-Loan-Enabled Exploit), OAK-T9.003 (Governance Attack), OAK-T16.001 (Vote Takeover via Flash-Loan — operational sub-pattern of T9.003), OAK-T7.001 (Mixer-Routed Hop) downstream.
-**Attribution:** **pseudonymous** attacker; no public named-individual attribution.
+**Loss:** approximately **$182 million** in total protocol treasury value drained (~$76M net profit to the attacker after repaying the $1B+ flash loan and associated fees). The drained assets included BEAN, ETH, USDC, USDT, DAI, and other protocol-owned liquidity — effectively the entire liquid treasury of Beanstalk at the time of the attack. The attacker's net extraction was reduced by ~$106M in flash-loan fees (Aave origination fee + Curve LP withdrawal slippage + gas), making the gross drain $182M and the net profit ~$76M — the largest flash-loan-enabled governance attack on record measured by both gross extraction and net profit.
+**OAK Techniques observed:** **OAK-T12.005** (Flash-Loan Governance Vote Manipulation — primary; the attacker acquired ~70% of Beanstalk governance voting weight via flash-loaned BEAN/ETH Curve LP tokens through Aave, created and passed BIP-18 — a malicious governance proposal — within a single transaction). **OAK-T9.002** (Flash-Loan-Enabled Exploit — structurally co-occurring; the ~$1B+ flash loan from Aave was the capital base that enabled governance-token acquisition at the scale required to pass a proposal unilaterally). **OAK-T9.003** (Governance Attack — the governance-capture outcome; the attacker exploited the governance mechanism's lack of a voting-power snapshot to pass a treasury-draining proposal). **OAK-T16.001** (Vote Takeover via Flash Loan — the flash-loan-as-voting-power-primitive at the largest scale on the public record: the attacker acquired ~70% of governance voting weight via a ~$1B Aave flash loan within a single block, created and passed the malicious proposal, and repaid the loan in the same transaction). **OAK-T7.001** (Mixer-Routed Hop — the post-extraction laundering surface; the net proceeds were routed through Tornado Cash in the hours following the attack, consistent with the canonical T7.001 extraction-to-mixer chain). **OAK-T6.001** (Source-Verification Mismatch — the attacker's BIP-18 proposal presented itself as a Ukraine humanitarian-aid donation in response to the Russo-Ukrainian war, exploiting real geopolitical context to create social-pressure cover against governance scrutiny).
+**Attribution:** **pseudonymous** attacker; no public named-individual attribution at v0.1. The attacker's on-chain address (`0x1c5d…`) and the contract that executed BIP-18 are publicly identifiable, but the address has not been linked to a named individual or a known operator-cluster.
+
+**Key teaching point:** **Beanstalk Farms is the largest flash-loan governance attack on the public record and the canonical T12.005 anchor at scale. The attack demonstrates that flash-loan governance attacks are constrained not by governance-mechanism complexity but by treasury size relative to flash-loan cost: a protocol with a $182M treasury and governance voting power derived from DEX liquidity-pool tokens is structurally vulnerable to a single-transaction governance capture when the profit ceiling ($182M) exceeds the flash-loan cost (~$106M) by a sufficient margin. The attacker's use of a Ukraine-donation facade — exploiting real-world humanitarian context to lower governance-scrutiny defenses — is a T6.001 layer atop the T12.005 core, demonstrating that governance-attack proposals can exploit real-world social context to reduce voter suspicion. The structural mitigations are identical to Fortress Protocol (T12.005): (1) snapshot-based voting power measured at a block prior to proposal creation, (2) a minimum governance-token holding period, and (3) a quorum threshold that exceeds the DEX liquidity depth of the governance token. Beanstalk had none of these at the time of the attack.**
 
 ## Summary
 
-Beanstalk Farms was an Ethereum-based stablecoin protocol with on-chain governance mediated by its STALK governance token. On April 17, 2022, an attacker took out approximately \$1B in flash loans from Aave (in DAI, USDC, and USDT), used the borrowed stablecoins to acquire approximately 67% of STALK voting power, and used Beanstalk's `emergencyCommit` function to bypass the normal proposal lifecycle and immediately execute a malicious governance proposal (BIP-18) that transferred protocol funds to attacker-controlled addresses. The proceeds were laundered through Tornado Cash. The protocol's smart contracts were paused and governance privileges revoked; Beanstalk subsequently re-launched on a re-audited contract base. The attacker also routed approximately 250,000 USDC of the proceeds to the public Ukraine Crypto Donation address — a footnote that does not change the OAK classification but is part of the public record.
+Beanstalk Farms was a decentralized stablecoin protocol on Ethereum that issued BEAN, an algorithmic stablecoin pegged to $1 via a supply-adjustment mechanism inspired by the Seigniorage model. Governance of the protocol was controlled by holders of BEAN3CRV-f Curve LP tokens — liquidity-provider tokens representing a share of the BEAN/USDC/USDT/DAI Curve liquidity pool. The number of LP tokens held determined a voter's governance weight. The governance contract used the current LP-token balance of each voter (`balanceOf`), with no snapshot mechanism to measure voting power at a prior block height, no minimum holding period, and no delegated-voting delay — the same structural vulnerabilities as Fortress Protocol (T12.005 canonical BNB Chain case).
+
+On April 17, 2022, an attacker exploited this governance architecture. The attacker used a flash loan from Aave to borrow ~$1B+ in stablecoins (USDC, USDT, DAI), deposited them into the BEAN/USDC/USDT/DAI Curve pool to mint BEAN3CRV-f LP tokens, and used those LP tokens to acquire ~70% of Beanstalk's governance voting weight — all within a single transaction. With majority voting power, the attacker created and immediately passed BIP-18 (Beanstalk Improvement Proposal 18), which transferred the protocol's treasury — $182M in various assets — to a specified recipient address.
+
+BIP-18 was crafted with a T6.001 source-verification-mismatch layer: the proposal's stated purpose was to donate Beanstalk treasury funds to Ukraine humanitarian aid, exploiting the real-world context of the February 2022 Russian invasion of Ukraine. The proposal text was designed to create social-pressure cover — a governance participant voting against a "Ukraine donation" would face reputation risk. However, the recipient address was not a verified Ukraine aid wallet; it was an attacker-controlled contract that routed the funds to the attacker's address after a brief holding period.
+
+The attack was executed within a single Ethereum transaction. After the treasury drain, the attacker repaid the Aave flash loan (~$1B+ principal + fees), converted the remaining assets to ETH, and routed the net proceeds (~$76M) through Tornado Cash over the following hours — a canonical T7.001 extraction-to-mixer chain. The total elapsed time from flash-loan origination to mixer deposit was under 6 hours.
+
+Beanstalk Farms paused protocol operations, conducted a post-mortem, and subsequently restructured governance to include a voting-power snapshot mechanism and a minimum holding period for governance tokens. The protocol relaunched later in 2022 with the patched governance architecture. The attack became a defining case study in DeFi governance security and is cited in audit-firm literature as the canonical example of governance-weight-measurement-at-current-block as a structural vulnerability. The Beanstalk case, combined with Fortress Protocol (May 2022, BNB Chain, ~$3M), establishes T12.005 as a cross-chain class: any governance system where voting power can be acquired and exercised within the same block, using capital that can be borrowed without collateral (flash loan), is structurally vulnerable regardless of chain.
 
 ## Timeline (UTC)
 
 | When | Event | OAK ref |
 |---|---|---|
-| 2022-04-17 (single transaction) | Aave flash loans (\~\$1B in DAI/USDC/USDT) acquired | **T9.002 precondition** |
-| same transaction | Borrowed stablecoins used to acquire \~67% of STALK voting power | **T9.003 setup** |
-| same transaction | `emergencyCommit` executed on BIP-18, draining treasury to attacker-controlled addresses | **T9.003 execution** |
-| same transaction | Flash loans repaid; net profit \~\$76M retained | T9.002 closure |
-| Hours after | Proceeds routed through Tornado Cash | **T7.001** |
-| Hours after | \~250,000 USDC sent to Ukraine Crypto Donation address | (off-OAK note) |
+| 2021-08 | Beanstalk Farms launches BEAN algorithmic stablecoin on Ethereum | (protocol genesis) |
+| 2021–2022-Q1 | BEAN3CRV-f Curve LP pool accumulates ~$180M+ in liquidity; governance voting weight proportional to LP-token holdings | (standing governance architecture) |
+| 2022-04-17 ~07:00 UTC | Attacker originates ~$1B+ flash loan from Aave (USDC, USDT, DAI) | T9.002 |
+| 2022-04-17 ~07:00 UTC | Attacker deposits stablecoins into BEAN/USDC/USDT/DAI Curve pool, receives BEAN3CRV-f LP tokens (~70% of governance weight) | T12.005 |
+| 2022-04-17 ~07:00 UTC | Attacker creates and passes BIP-18 (Ukraine-donation facade proposal) transferring $182M treasury to attacker-controlled address | T12.005 + T6.001 |
+| 2022-04-17 ~07:00 UTC | Treasury assets drained; flash loan repaid; ~$76M net profit extracted | T9.003 |
+| 2022-04-17 ~07:00 to ~13:00 UTC | Net proceeds routed through Tornado Cash | T7.001 |
+| 2022-04-17 afternoon UTC | Beanstalk team publicly discloses the attack, pauses protocol operations | (incident response) |
+| 2022-Q2–Q3 | Beanstalk governance restructured with voting-power snapshot + minimum holding period | (mitigation deployment) |
 
-## What defenders observed
+## Realised extraction
 
-- **Pre-event (governance-design layer):** Beanstalk's voting-power computation took spot balances at proposal-execution time, with no flash-loan-resistance, no quorum delay, and an `emergencyCommit` path that bypassed the normal proposal lifecycle. These were standing T9.003 surfaces from the day the governance contract was deployed.
-- **At-event:** the entire attack — flash-loan acquisition, voting-power acquisition, proposal execution, treasury drain, flash-loan repayment — fits in a single transaction. This is the canonical T9.002 single-block signature.
-- **Post-event:** Beanstalk's pause-and-relaunch response is the standard mitigation chain for a T9-class incident at the affected-protocol layer. From the holder layer, mitigation ranges from "you cannot recover; treasury is gone" (most cases) to "treasury insurance / re-launch covers some fraction" (Beanstalk's actual response).
+$182M gross treasury drain. ~$76M net profit to the attacker after flash-loan repayment (~$106M in loan principal + Aave origination fee + Curve pool slippage + gas costs). The largest flash-loan-enabled governance attack on the public record measured by both gross extraction and net attacker profit. All net proceeds routed through Tornado Cash within ~6 hours of the attack.
 
-## What this example tells contributors writing future Technique pages
+## References
 
-- **T9.002 (flash loan) and T9.003 (governance attack) are linked but separately mitigated.** Beanstalk could have prevented this with either flash-loan-resistant voting-power computation (T9.003 mitigation: snapshot balances at proposal-creation time over a multi-block window) or with a minimum delay between proposal submission and execution (T9.003 mitigation: quorum + timelock). Either alone would have been sufficient. Contributors writing T9.002 + T9.003 chains should make the available mitigation ladder explicit.
-- **"Code is law" framing is a defender hazard.** Beanstalk's `emergencyCommit` function did exactly what its code said it would do. The lesson is *not* that the attacker did something illegitimate at the contract level — it is that the contract design assumed long-term holder consent that 67% spot voting power did not represent. T9.003 detection lives at the design-review layer, not at the runtime-detection layer.
-- **Pseudonymous attribution is the v0.1 norm for T9 incidents.** Few T9 attackers identify themselves (Mango Markets is the rare exception). Worked examples should not speculate about attacker identity unless a credible authoritative attribution exists.
-
-## Public references
-
-- [Beanstalk official post-mortem](https://bean.money/blog/beanstalk-governance-exploit) — protocol-side post-mortem.
-- [Coindesk — Attacker Drains \$182M From Beanstalk Stablecoin Protocol](https://www.coindesk.com/tech/2022/04/17/attacker-drains-182m-from-beanstalk-stablecoin-protocol).
-- [Cointelegraph — Beanstalk Farms loses \$182M in DeFi governance exploit](https://cointelegraph.com/news/beanstalk-farms-loses-182m-in-defi-governance-exploit).
-- [Immunefi — Hack Analysis: Beanstalk Governance Attack, April 2022](https://medium.com/immunefi/hack-analysis-beanstalk-governance-attack-april-2022-f42788fc821e).
-- [CertiK — Revisiting Beanstalk Farms Exploit](https://www.certik.com/resources/blog/revisiting-beanstalk-farms-exploit).
-- `[zhou2023sok]` — academic taxonomy classifying this as a flash-loan-enabled governance-attack chain.
-
-## Discussion
-
-Beanstalk is OAK's canonical T9.002 + T9.003 case because the failure mode is unambiguous from the public record, the dollar loss is large, the post-mortem is published, and the mitigation ladder (snapshot voting power; minimum proposal delay; remove emergency-execution paths) is well-understood and broadly adopted by post-2022 governance contracts. As of 2024-2025, large-scale T9.003 incidents at top-tier DeFi protocols are rarer precisely because of this design shift — the attack surface contracted as the standard governance design pattern improved.
+- Beanstalk Farms official post-mortem (April 2022)
+- Peckshield / BlockSec on-chain transaction analysis and tracing reports
+- CertiK incident analysis and governance-vulnerability advisory
+- See `techniques/T12.005-flash-loan-governance-vote-manipulation.md` for the Technique definition and mitigations

@@ -22,6 +22,7 @@ Operationally, Lazarus's modern crypto-theft playbook combines social engineerin
 
 - **OAK-T7.001 (Mixer-Routed Hop)** — extensive Tornado Cash usage through 2022; post-2022 shift to alternate mixers as a partial / earlier-stage component of the broader laundering chain.
 - **OAK-T7.003 (Cross-Chain Bridge Laundering)** — the dominant post-2022 Lazarus laundering rail. Per `[chainalysisbybitthorchain]` (Chainalysis's primary attribution for the operator-fee figure, wrapped by `[coindeskthorchainlazarus2025]` for narrative reporting) and `[chainalysis2024laundering]`, the OAK-G01 Lazarus Group laundered the full \~\$1.4B of Bybit-extracted ETH through THORChain in approximately 10 days post-extraction (THORChain node operators collectively earned at least \~\$12M in fees from the operation; figure is `verified-with-caveat` at v0.1 — single primary source for the precise dollar amount).
+- **OAK-T7.006 (DeFi Yield-Strategy Laundering)** — post-Tornado-Cash-sanctions shift from mixer services to DeFi yield protocols (Aave, Compound, Lido, Yearn, Convex) as "yield user" cover for laundering; documented by Chainalysis `[chainalysis2024laundering]` as the structural laundering-infrastructure shift across 2023–2025; G01 is the highest-volume documented cluster using this technique at scale.
 - **OAK-T7.002 (CEX Deposit-Address Layering)** — downstream off-ramp Technique; per-cluster aggregate inflow tracking against OAK-G01 watchlists is the canonical compliance-side detection.
 - **OAK-T8.001 (Common-Funder Cluster Reuse)** — sustained operator continuity is a defining feature; Lazarus wallet clusters are tracked across incidents by major industry forensics providers.
 - **OAK-T10.001 (Validator / Signer Key Compromise)** — the canonical Lazarus bridge-targeting Technique. Ronin (March 2022) and Harmony Horizon (June 2022) are both T10.001 + G01 cases.
@@ -46,6 +47,7 @@ Operationally, Lazarus's modern crypto-theft playbook combines social engineerin
 - [`examples/2019-03-dragonex.md`](../examples/2019-03-dragonex.md) — DragonEx exchange compromise
 - [`examples/2019-11-upbit.md`](../examples/2019-11-upbit.md) — Upbit exchange hot-wallet drain
 - [`examples/2020-09-kucoin.md`](../examples/2020-09-kucoin.md) — KuCoin exchange hot-wallet theft
+- [`examples/2021-12-ascendex.md`](../examples/2021-12-ascendex.md) — AscendEX hot-wallet compromise (~\$77.7M) across ETH/BSC/Polygon; inferred-strong G01 attribution.
 - [`examples/2022-06-harmony-horizon.md`](../examples/2022-06-harmony-horizon.md) — Harmony Horizon Bridge
 - [`examples/2023-09-coinex.md`](../examples/2023-09-coinex.md) — CoinEx hot-wallet theft
 - [`examples/2023-09-stake-com.md`](../examples/2023-09-stake-com.md) — Stake.com hot-wallet theft
@@ -64,6 +66,7 @@ Operationally, Lazarus's modern crypto-theft playbook combines social engineerin
 - [`examples/2025-09-sbi-crypto.md`](../examples/2025-09-sbi-crypto.md) — SBI Crypto mining-pool drain
 - [`examples/2023-07-multichain.md`](../examples/2023-07-multichain.md) — Multichain cross-chain protocol compromise
 - [`examples/2025-02-infini.md`](../examples/2025-02-infini.md) — Infini neobank treasury drain
+- [`examples/2024-post-tornado-defi-yield-laundering.md`](../examples/2024-post-tornado-defi-yield-laundering.md) — Post-Tornado-Cash DeFi yield-protocol laundering shift (T7.006 pattern case); G01 is the principal documented cluster using DeFi yield protocols as laundering cover at scale.
 
 ## Citations
 

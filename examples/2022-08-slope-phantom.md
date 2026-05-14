@@ -5,6 +5,8 @@
 **OAK Techniques observed:** OAK-T11.002 (Wallet-Software Distribution Compromise) — primary, distinct sub-vector from build-pipeline compromise; OAK-T11.001 (broadly construed, third-party-vendor exposure — Sentry as the vendor whose logging infrastructure held the secret material, though responsibility lies with Slope's design choice).
 **OAK-Gnn:** none. **Attribution:** pseudonymous; not publicly attributed to a known operator cluster as of OAK v0.1 cut. Slope offered a 90%-return bounty on 2022-08-05 with a 48-hour deadline; the call went unanswered.
 
+**Key teaching point:** Slope Wallet 2022 is OAK's canonical T11.002 sub-vector-B example: the wallet binary was not tampered with, but the application's design transmitted seed phrases in plaintext to a third-party SaaS error-tracking service under normal operation. The on-chain extraction pattern is indistinguishable from build-pipeline T11.002 (Atomic Wallet 2023 is the companion build-pipeline case in OAK), but the upstream cause class — and therefore the defender-side mitigation surface — is materially different.
+
 ## Summary
 
 Starting 2022-08-02 at \~22:37 UTC and continuing for approximately 4–7 hours, an attacker drained Solana-ecosystem wallets at scale. Initial reporting confused the affected vendor (Phantom was named in early coverage); by 2022-08-03 the developer / Solana Foundation / third-party-auditor investigation had localised the affected user population to addresses that had been **created, imported, or at any point used inside Slope Wallet's iOS or Android mobile applications**. Phantom's own infrastructure was not compromised; Phantom users who appeared in the affected set had imported seed phrases originally generated in Slope.

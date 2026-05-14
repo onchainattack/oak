@@ -1,13 +1,16 @@
 # Bybit aftermath — \$1.4B THORChain laundering — Ethereum → BTC / DAI — 2025-02 to 2025-03
 
+**Loss:** indirect — the Bybit theft (\~\\$1.5B) is the primary extraction event (see `examples/2025-02-bybit.md`). This example characterizes the downstream laundering flow: \~\\$1.4B of the Bybit-extracted ETH was laundered through THORChain's cross-chain swap infrastructure, converting ETH to BTC and DAI, over approximately 10 days.
 **Attribution:** **pseudonymous** — no public actor attribution at OAK v0.1 cutoff.
 
 **Volume laundered:** \~\$1.4B (the full Bybit-extracted ETH amount).
 **Time-to-launder:** approximately 10 days from extraction to full conversion.
 **THORChain operator economics:** node operators collectively earned at least \~\$12M in fees from the laundering operation. The figure originates with Chainalysis (`[chainalysisbybitthorchain]`), with CoinDesk's reporting (`[coindeskthorchainlazarus2025]`) wrapping the Chainalysis number; cite Chainalysis as the primary source and CoinDesk as secondary. As of v0.1 the \~\$12M figure rests primarily on the Chainalysis attribution; corroboration from Elliptic / TRM Labs has been published at the broader-volume level but not at the precise \$12M-fee-accrual level. **Status: verified-with-caveat** — single primary source for the precise dollar figure, multi-source for the surrounding facts (Bybit attribution, ETH → BTC / DAI chain-hop pattern, ~10-day window).
-**OAK Techniques observed:** OAK-T7.003 (Cross-Chain Bridge Laundering) — primary; OAK-T7.001 (Mixer-Routed Hop) — partial / earlier-stage hops where applicable.
+**OAK Techniques observed:** OAK-T7.003 (Cross-Chain Bridge Laundering) — primary; OAK-T7.001 (Mixer-Routed Hop) — partial / earlier-stage hops where applicable + **OAK-T7.007** (DEX-Aggregator Routing Laundering).
 **OAK-Gnn:** [OAK-G01 Lazarus Group / DPRK-attributed](../actors/OAK-G01-lazarus.md). **Confirmed** attribution: FBI IC3 PSA published 2025-02-26; corroborating industry forensic provider attributions.
 **Predicate:** [`examples/2025-02-bybit.md`](./2025-02-bybit.md) — the original \~\$1.46B Bybit extraction event.
+
+**Key teaching point:** This case operationalises several of OAK's structural design choices. The Threat Actors axis (`actors/OAK-G01-lazarus.md`) lets the laundering case study link cleanly back to the predicate-extraction case study (`examples/2025-02-bybit.md`); the OAK-T7.003 Technique page captures the cross-chain bridge laundering pattern at the methodology layer; this worked example documents the headline-magnitude operational deployment of the methodology. Contributors writing future T7.003 cases should expect to follow the same predicate-event → Group-attribution → laundering-chain template, particularly for OAK-G01 cases where the same operator profile recurs across many predicate events.
 
 ## Summary
 

@@ -38,6 +38,8 @@ OAK v0.1's Tactic catalog is on-chain-extraction-focused; BlackByte's *intrusion
 
 ## Observed Examples
 
+*No public incidents at v0.1 — worked examples pending per-incident forensic publication.*
+
 OAK v0.1 does not yet contain a worked example whose primary axis is a BlackByte target; the on-chain angle of G17 is the *laundering of ransom payments* rather than direct crypto-firm intrusion, and the cluster's most defender-relevant payment-tracing case is on the watch-list for v0.x worked-example coverage. The high-salience public-record events anchoring the cluster:
 
 - **FBI / U.S. Secret Service Joint Cybersecurity Advisory and FBI Flash CU-000167-MW (February 11, 2022).** Joint cyber-security advisory characterising BlackByte TTPs across U.S. critical-infrastructure entities and naming the February 2022 San Francisco 49ers attack (`[fbi2022blackbyteflash]`). Attribution at *confirmed* at the cluster level.

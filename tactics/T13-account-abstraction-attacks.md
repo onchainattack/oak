@@ -35,8 +35,13 @@ Solana's account model is structurally different from EVM account abstraction (n
 ## Techniques in this Tactic (v0.1)
 
 - OAK-T13.001 — Paymaster Compromise
+  - OAK-T13.001.001 — Paymaster Accounting Drain
+  - OAK-T13.001.002 — Paymaster Policy Bypass
+  - OAK-T13.001.003 — Paymaster Reentrancy
+  - OAK-T13.001.004 — Paymaster Griefing
 - OAK-T13.002 — Bundler MEV
 - OAK-T13.003 — Session-Key Hijacking
+- OAK-T13.004 — EIP-7702 Delegation Abuse
 
 ## Maintainer notes
 

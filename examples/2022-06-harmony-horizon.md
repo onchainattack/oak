@@ -5,6 +5,8 @@
 **OAK Techniques observed:** OAK-T10.001 (Validator / Signer Key Compromise) — primary; OAK-T7.001 (Mixer-Routed Hop) — downstream laundering (\~\$96M routed through Tornado Cash).
 **OAK-Gnn:** [OAK-G01 Lazarus Group / DPRK-attributed](../actors/OAK-G01-lazarus.md). **Confirmed** attribution: FBI public statement (January 23, 2023), naming Lazarus Group / APT38 and the broader "TraderTraitor" DPRK crypto-theft cluster. Elliptic published an inferred-strong attribution within days of the event (June 2022); the FBI statement upgraded that to a confirmed attribution roughly seven months later.
 
+**Key teaching point:** Harmony Horizon is OAK's secondary T10.001 + G01 example because it makes the *systemic* nature of the pattern visible in a way the Ronin case alone cannot. Ronin in isolation could be read as a single sophisticated incident. Harmony three months later, with the same Technique class, the same threat actor, and the same laundering methodology, established T10.001 + G01 as a recurring chain rather than a one-off — and is the reason the OAK-G01 attribution profile treats subsequent bridge-class incidents as *expected* rather than *exceptional*.
+
 ## Summary
 
 On June 23–24, 2022, attackers compromised two of the five signing addresses controlling the Harmony Horizon bridge between Ethereum and the Harmony chain (with a Binance Smart Chain leg). The bridge enforced a 2-of-5 multisig threshold on outbound asset movements; with two keys in attacker control, the threshold was met and the attackers signed 14 extraction transactions across Ethereum and BSC, draining a basket of ETH, BNB, USDT, USDC, and DAI worth approximately \$100M at the time of the event.

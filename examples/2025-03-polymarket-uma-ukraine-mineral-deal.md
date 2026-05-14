@@ -4,6 +4,19 @@
 **OAK Techniques observed:** **OAK-T9.006.001** — DVM Vote Capture by Economically-Interested Holder. The canonical worked-example anchor for the sub-Technique. Parent Technique: OAK-T9.006 (Subjective-Oracle Resolution Manipulation).
 **Attribution:** **confirmed at the structural level** (Polymarket itself publicly described this as an "unprecedented governance attack"); **inferred-strong at the operator level** — a single UMA whale cast ~5M UMA tokens via 3 wallets representing ~25% of the resolution vote.
 
+## Timeline (UTC unless noted)
+
+| When | Event | OAK ref |
+|---|---|---|
+| 2025-03 (market created) | Polymarket lists "Ukraine agrees to Trump mineral deal before April?" market; resolution rules require "official information from the US and Ukrainian governments" confirming a deal | T9.006.001 (standing DVM vote-capture surface) |
+| 2025-03-24 | YES probability surges from ~9% to 100% during the resolution window; investigation later reveals a single UMA whale cast ~5M UMA tokens across 3 wallets (~25% of total resolution vote) | T9.006.001 (DVM vote capture by economically-interested holder) |
+| 2025-03-24/25 | Market resolves YES despite no mineral deal being announced or signed — resolution directly contradicts the market's stated rules | T9.006.001 (oracle-resolution divergence from real-world outcome) |
+| 2025-03-25 onward | Polymarket publicly characterizes the resolution as "incorrect" and describes the event as an "unprecedented governance attack"; citing UMA's decentralized structure, refuses refunds | (platform admission — oracle layer corruption acknowledged) |
+| 2025-03 onward | Industry coverage (CoinDesk, The Block) documents the vote-capture mechanism and the structural disequilibrium (UMA market cap ~$95M < disputed market volume) | (public documentation — structural risk characterized) |
+| Continuing | First documented case of a Polymarket market resolved against its stated rules through coordinated UMA tokenholder voting; canonical anchor for T9.006.001 | (canonical reference — DVM vote capture) |
+
+**Key teaching point:** **The Ukraine mineral deal market (March 2025) is the canonical first case of UMA DVM vote capture — the earliest documented instance where a Polymarket market resolved against its stated rules through coordinated UMA tokenholder voting.** A single whale cast ~5M UMA tokens (~25% of the resolution vote) to drive a YES outcome on a market where no underlying real-world event had occurred. The structural disequilibrium — UMA's market cap (~$95M) smaller than a single market's adjudicated volume — means the economic cost of corrupting the oracle is a fraction of the prize. This is the foundational anchor for T9.006.001 and the first time Polymarket itself publicly acknowledged its oracle layer had been corrupted.
+
 ## Summary
 
 The Polymarket market "Ukraine agrees to Trump mineral deal before April?" had stated resolution rules requiring "official information from the US and Ukrainian governments" confirming a deal. As of March 25, 2025, no such deal had been announced or signed. Despite this, the market resolved YES on March 24-25 after the YES probability surged from ~9% to 100% in the resolution window.

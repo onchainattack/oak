@@ -1,8 +1,10 @@
 # Harvest Finance flash-loan-funded oracle manipulation — Ethereum — 2020-10-26
 
 **Loss:** \~\$24M extracted from Harvest Finance's `fUSDC` and `fUSDT` yield-vaults (most contemporaneous reporting cites the \~\$24M figure for the directly-extracted amount; some sources cite \~\$33–34M when the secondary "bank-run" outflow from Harvest's wider pool set is included). \~\$2.5M was returned by the attacker to the Harvest deployer address shortly after the event; the remainder was retained.
-**OAK Techniques observed:** OAK-T9.001 (Oracle Price Manipulation) — primary; OAK-T9.002 (Flash-Loan-Enabled Exploit) as the enabling precondition without which the cycle would not have been atomic or capital-free.
+**OAK Techniques observed:** OAK-T9.001 (Oracle Price Manipulation) — primary; OAK-T9.002 (Flash-Loan-Enabled Exploit) as the enabling precondition without which the cycle would not have been atomic or capital-free. **OAK-T17.001** (Cross-Venue Arbitrage-Driven Price-Discovery Distortion — the attacker distorted the Curve Y pool spot-state price (venue A) to manipulate Harvest vault-share pricing and mint/redeem rates (venue B), extracting value through cross-venue price distortion in 30 atomic cycles across the USDC and USDT vaults; the T17 tactic page's T17↔T9.001 cross-reference captures the oracle-manipulation-as-price-distortion surface).
 **Attribution:** **pseudonymous** attacker; no public named-individual attribution. Harvest publicly posted a \$100,000 bounty for information leading to the attacker's identification; no public resolution of the attribution question reached the record.
+
+**Key teaching point:** Harvest Finance October 2020 is the second link in the canonical chain of T9.001 + T9.002 cases that runs **bZx (Feb 2020) → Harvest (Oct 2020) → Cream (Oct 2021) → Mango Markets (Oct 2022)**. Each case demonstrates the same failure mode at progressively larger loss magnitudes (\~\$1M → \~\$24M → \~\$130M → \~\$110M, with Mango's notional extraction the largest and Cream's the largest by clean attribution to the consuming protocol's available liquidity), and each case reveals a different sub-pattern of the same Technique class:
 
 ## Summary
 

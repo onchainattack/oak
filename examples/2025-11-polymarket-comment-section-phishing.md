@@ -5,6 +5,19 @@
 **Attribution:** **inferred-strong** (Polymarket and independent vendors confirmed campaign existence and scale; specific operator-cluster attribution not published — operator opsec consistent with Drainer-as-a-Service affiliate behaviour, but no DaaS kit was publicly named).
 **OAK-Gnn:** unattributed at v0.1. Operator pattern is consistent with OAK-G02 (Drainer-as-a-Service) but no specific DaaS-kit fingerprint (Inferno / Angel / Pink / Monkey / Venom / Vanilla / Chick) has been confirmed in this campaign — itself a finding.
 
+## Timeline (UTC unless noted)
+
+| When | Event | OAK ref |
+|---|---|---|
+| 2025-10 → 2025-11 | Attackers select high-volume Polymarket markets; buy both YES and NO shares in size sufficient to anchor "top comment" via Polymarket's position-weighted comment-pinning mechanic | T4.007 (paid-engagement phishing distribution — position-purchase as visibility mechanism) |
+| 2025-10 → 2025-11 | Pinned comments offer "private markets with better odds" and link to obfuscated URLs resolving to cloned Polymarket login pages | T4.010 (credential-phishing via platform-native comment surface) |
+| 2025-10 → 2025-11 | Cloned login pages present fake Cloudflare turnstile challenge and Polymarket-branded login form; capture user email and email-magic-link verification code | T15.004 (credential capture — email + magic-link authentication bypass) |
+| 2025-10 → 2025-11 | Attacker authenticates to Magic Labs as user via captured credentials; gains access to Polymarket-derived non-custodial wallet; transfers USDC to attacker-controlled addresses | T4.001 (wallet access via credential-based authentication compromise) |
+| 2025-11-11 | Independent disclosure by user "25usdc" on X; cumulative losses reported above $500,000 by CoinSpot, Phemex, and BingX | (public disclosure — campaign documented) |
+| 2025-11 onward | Polymarket acknowledges campaign; characterizes dominant mitigation as user-side vigilance; implements comment-flagging for external-link comments from unverified accounts | (platform response — limited flagging implementation) |
+
+**Key teaching point:** **The Polymarket comment-section phishing campaign (Oct–Nov 2025) established that in-platform paid-engagement mechanics (position-weighted comment pinning) can be weaponized as phishing distribution surfaces.** The attacker purchased both YES and NO shares to occupy the comment-pinning slot, converting phishing-message visibility from a free-but-deletable resource into a purchased, platform-mechanic-protected resource. The credential-capture attack (fake login page, email + magic-link code) bypasses every wallet-side defense because the user sees a bank-style login form, not `eth_signTypedData`. This pattern generalizes to any platform where engagement-weighted ranking determines visibility and where authentication collapses to email/passkey custody.
+
 ## Summary
 
 Through October-November 2025, attackers ran a coordinated phishing campaign exploiting Polymarket's native comment-section mechanic. The campaign worked as follows:

@@ -5,6 +5,19 @@
 **Attribution:** **inferred-strong**. The Polycule operators were never associated with Polymarket; the platform clarified it had no relationship with the bot. Operator identity was not publicly resolved as of v0.1; the disappearance pattern (communication blackout following the "hack" announcement, no recovery effort, no public operator identification) is consistent with an exit-scam rather than a third-party intrusion.
 **OAK-Gnn:** unattributed at v0.1.
 
+## Timeline (UTC unless noted)
+
+| When | Event | OAK ref |
+|---|---|---|
+| 2025 | Polycule trading bot operates publicly as a Telegram-distributed Polymarket copy-trading service; no formal Polymarket partnership announced; users assume an affiliation that does not exist | T6.001 (brand-trust absorption — third-party leverages platform's brand without contractual basis) |
+| 2025 → 2026-01-13 | Users deposit USDC into Polycule-managed wallet; bot purports to mirror trades from "successful Polymarket traders" identified by the Polycule team | T11.005 (custodial deposit accumulation — third-party operator holds user funds) |
+| 2026-01-13 | Polycule operators announce via Telegram that the bot's wallet was "hacked"; ~$230,000 in user funds drained | T11.005.002 (soft-rug via claimed external compromise — "hack" cannot be independently verified) |
+| 2026-01-13 | On-chain outflow from Polycule wallet is a single coordinated transfer pattern — inconsistent with the dispersion pattern characteristic of an external attacker exfiltrating quickly | T11.005.002 (operator-side extraction — outflow pattern inconsistent with external compromise narrative) |
+| 2026-01-13 onward | Polycule operators go into communication blackout — no follow-up updates, no public operator identification, no observable recovery effort | T6.007 (operator communication blackout — trust-substrate collapse) |
+| 2026-01 onward | Polymarket publicly clarifies no relationship with Polycule; the case becomes the canonical "third-party brand-impersonation custodial soft-rug" reference for prediction-market platforms | (canonical reference — platform-brand-impersonation custodial rug) |
+
+**Key teaching point:** **Polycule is the canonical first example of the "third-party brand-impersonation custodial soft-rug" — a category where an off-platform service absorbs a platform's brand trust without contractual basis, accumulates user deposits into its own custodial wallet, and exits citing a "hack" that cannot be independently verified.** The category is distinct from token-level rugs (no token, no LP), phishing (users deposited willingly), and custodial-vendor compromise (the operator WAS the custodian). As crypto platforms scale without on-platform tooling, third-party bots and extensions branding themselves as platform-affiliated will face this same structural trust-gap exploitation.
+
 ## Summary
 
 Polycule was a Telegram-distributed trading bot that branded itself as a Polymarket copy-trading service. Users deposited USDC into a Polycule-managed wallet; the bot purported to mirror trades from "successful Polymarket traders" identified by the Polycule team. On January 13, 2026, the Polycule operators announced that the bot's wallet had been "hacked" and ~$230,000 in user funds had been drained. After the announcement, the operators went into communication blackout — no follow-up updates, no public operator identification, no observable recovery effort.

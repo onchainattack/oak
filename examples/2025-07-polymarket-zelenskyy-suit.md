@@ -4,6 +4,19 @@
 **OAK Techniques observed:** **OAK-T9.006.002** — Resolution-Spec Ambiguity Exploitation. The canonical worked-example anchor for the sub-Technique. Parent Technique: OAK-T9.006 (Subjective-Oracle Resolution Manipulation).
 **Attribution:** **inferred-strong**. The top 10 UMA voters held ~6.5M UMA (~30% of average vote). UMA's full market cap during the dispute window was ~$95M — less than half the disputed market's volume. Specific voter-bettor position-overlap analysis is in industry reporting; OAK does not name individual operators at v0.1.
 
+## Timeline (UTC unless noted)
+
+| When | Event | OAK ref |
+|---|---|---|
+| 2025-Q2 | Polymarket lists "Will Zelenskyy be photographed wearing a suit before June 30, 2025?" market; attracts ~$237M in volume during period of public attention to Ukrainian president's wardrobe | T9.006.002 (standing resolution-spec ambiguity surface — "wearing a suit" has no machine-checkable definition) |
+| 2025-06-24 | Zelenskyy attends NATO summit in clothing described as a suit by multiple major media outlets (Reuters, AP, AFP) | (real-world event — resolution input triggers YES interpretation per major media) |
+| 2025-06-24 → 2025-07-01 | YES probability stays elevated through dispute window; UMA voters prepare to adjudicate; top 10 voters hold ~6.5M UMA (~30% of average vote) | T9.006.002 (dispute window — voter-position correlation observable) |
+| 2025-07-01 | UMA voters resolve market NO, citing lack of "credible reporting consensus" — despite multiple major outlets reporting Zelenskyy in a suit | T9.006.002 (resolution-spec ambiguity exploitation — "credible reporting consensus" itself a subjective interpretation) |
+| 2025-07 onward | Industry coverage (CoinDesk "This Isn't Decentralized," Decrypt, The Defiant) documents the resolution as captured; market's volume ($237M) exceeded UMA market cap (~$95M) — oracle economically smaller than a single market it adjudicated | (public documentation — oracle-weight-vs-adjudicated-volume disequilibrium characterized) |
+| Continuing | Canonical T9.006.002 anchor demonstrating resolution-spec ambiguity exploitation at the largest-volume subjective-oracle market on record at the time | (canonical reference — resolution-spec ambiguity) |
+
+**Key teaching point:** **The Zelenskyy-suit market ($237M volume, July 2025) demonstrated that resolution-spec ambiguity is a structural attack surface, not an edge case — the oracle was economically smaller than a single market it adjudicated (UMA market cap ~$95M < $237M disputed volume).** "Wearing a suit" has no machine-checkable definition, and "credible reporting consensus" is itself a subjective claim that voters can adjudicate against the bettor majority's reading. The case established T9.006.002 as a first-class Technique sub-pattern: the spec is the vulnerability. Machine-checkable resolution criteria are the only structural mitigation — markets resolving on language are permanently exposed.
+
 ## Summary
 
 The Polymarket market "Will Zelenskyy be photographed wearing a suit before June 30, 2025?" attracted ~$237M in volume during a period of public attention to the Ukrainian president's wardrobe choices. On June 24, 2025, Zelenskyy attended a NATO summit in clothing that multiple major media outlets — including Reuters, AP, and AFP — described as a suit.

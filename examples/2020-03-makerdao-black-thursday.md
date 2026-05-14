@@ -1,0 +1,64 @@
+# MakerDAO Black Thursday liquidation-cascade zero-bid auctions — Ethereum — 2020-03-12
+
+**Loss:** approximately **$4.5M–$8M** in zero-bid liquidation-auction proceeds across approximately 1,200 MakerDAO vaults on 2020-03-12, denominated in the ETH value of collateral seized at 0 DAI bids. The loss was a *liquidation-mechanism-failure* loss, not an *attacker-extraction* loss: keepers who submitted 0 DAI bids during the network-congestion window acquired ETH collateral essentially for free because no competing bids could be confirmed at the gas prices required to outbid the congestion. MakerDAO governance subsequently voted to compensate affected vault holders via MKR minting and a debt-auction restructuring; the compensation made vault holders approximately whole but diluted MKR holders.
+**OAK Techniques observed:** **OAK-T17.002** (Liquidation-Cascade Engineering — primary; the cascading liquidation of ~1,200 vaults during the ETH price crash, combined with Ethereum network congestion that prevented keeper bids from confirming, converted a market-wide drawdown into a liquidation-mechanism failure where auctions settled at 0 DAI bids; the T17.002 technique page explicitly lists "2022-06 stETH cascade" as a worked example and the MakerDAO Black Thursday case is the canonical 2020 antecedent for the same liquidation-cascade architecture). The case is **not T9** — there is no smart-contract exploit; the MakerDAO auction contracts executed as designed, but the design assumed keepers would always outbid 0 DAI when auctions were solvent, an assumption that failed under combined price-crash + network-congestion conditions. The case is **not T14** (Validator/Staking) — the network congestion was a consequence of organic transaction demand during the crash, not a validator-level attack.
+**Attribution:** **unattributed** (systemic mechanism failure — no adversarial threat-actor cluster). The losses resulted from the interaction of market conditions (ETH price crash), network conditions (gas-price spike), and mechanism design (English-style collateral auctions without a minimum-bid floor), not from a deliberate attacker action. Keepers who submitted 0 DAI bids were operating within the auction rules as written; the mechanism's failure to prevent zero-bid settlement under congestion was the design flaw, not the keepers' exploit.
+**Key teaching point:** **a liquidation mechanism that lacks a minimum-bid floor or a congestion-resistant auction format will fail under combined price-crash + network-congestion conditions, and the failure mode is a cascade — one vault's zero-bid liquidation depresses the collateral price, which triggers further liquidations, which face the same congestion barrier.** MakerDAO's March 2020 experience is the canonical case for why liquidation-mechanism design must consider *tail conditions* (price crash, network congestion, keeper unavailability) as a coupled failure mode, not as independent risks.
+
+## Summary
+
+On 2020-03-12, known in crypto as "Black Thursday," ETH price crashed approximately 50% in a single day from ~$190 to ~$90. MakerDAO, the dominant DeFi protocol at the time with approximately $150M+ in ETH locked in CDP (Collateralized Debt Position) vaults, experienced a cascade of liquidations as vault collateralisation ratios fell below the 150% liquidation threshold.
+
+MakerDAO's liquidation mechanism at the time was an English-style collateral auction: when a vault was liquidated, the protocol put the ETH collateral up for auction, keepers bid DAI for the collateral, and the winning bidder received the collateral. The mechanism's core assumption was that keepers would competitively bid the collateral price to near-market value, returning the excess (above the vault's DAI debt) to the vault holder and keeping the DAI stablecoin fully collateralised.
+
+On Black Thursday, two conditions combined to break this assumption:
+
+1. **ETH price crashed**, triggering a wave of vault liquidations — approximately 1,200 vaults went into liquidation in a compressed window.
+2. **Ethereum network congestion** spiked gas prices to 50–100+ gwei as users rushed to interact with MakerDAO, DeFi protocols, and exchanges during the crash. Keeper bots, which were programmed with a gas-price ceiling to preserve their bid-profit margin, could not confirm transactions at the congested gas prices.
+
+The result: keepers who submitted 0 DAI bids with sufficient gas won auctions because no competing bids could be confirmed. Approximately $4.5M–$8M in ETH collateral was acquired at 0 DAI — a near-total loss for the affected vault holders and a windfall for the keepers who operated without a profit-margin gas constraint.
+
+MakerDAO governance subsequently voted to compensate affected vault holders via a debt-auction restructuring that minted new MKR tokens to cover the shortfall. The compensation mechanism made vault holders approximately whole but imposed the cost on MKR holders through dilution, establishing a template for DeFi-protocol compensation that was subsequently adapted by multiple protocols through 2020–2023.
+
+## Timeline (UTC)
+
+| When | Event | OAK ref |
+|---|---|---|
+| 2020-03-12 early | ETH price begins declining from ~$190; first vault liquidations triggered | (pre-cascade) |
+| 2020-03-12 midday | ETH price accelerates downward to ~$90; liquidation cascade intensifies; Ethereum network congestion spikes gas to 50–100+ gwei | (cascade acceleration) |
+| 2020-03-12 midday | Keeper bots fail to confirm bids at congested gas prices; zero-bid auctions begin settling as keepers with higher gas budgets submit 0 DAI winning bids | **T17.002 liquidation-cascade failure** |
+| 2020-03-12 to 2020-03-13 | Approximately 1,200 vaults liquidated; ~$4.5M–$8M in ETH collateral seized at 0 DAI bids | **T17.002 collateral-seizure settlement** |
+| 2020-03-12 onward | MakerDAO community and governance begin discussing compensation for affected vault holders | (governance response) |
+| 2020-03 to 2020-04 | MakerDAO governance votes to restructure debt auctions and mint MKR to compensate vault holders; compensation plan executed | (governance recovery) |
+| 2020 onward | MakerDAO auction mechanism redesigned (Dutch-auction format with minimum-bid floor in Liquidations 2.0) | (mechanism redesign) |
+
+## What defenders observed
+
+- **Pre-event (mechanism design):** MakerDAO's collateral auctions had no minimum-bid floor and were English-style (ascending-bid) auctions that assumed keeper competition would always push the winning bid to near-market value. The design did not account for the joint failure condition of price crash + network congestion. A defender auditing the mechanism against tail conditions would have identified the missing minimum-bid constraint.
+- **At-event (network-congestion signal):** the gas-price spike to 50–100+ gwei was the load-bearing environmental condition that disabled keeper-bot competition. A keeper-bot monitoring system that tracked gas-price-versus-bid-profit-margin in real-time would have alerted that normal keeper bots were priced out of the auction market. In practice, a small number of keepers with higher gas budgets (or no profit-margin constraint) dominated the zero-bid settlement window.
+- **At-event (zero-bid settlement signal):** auctions settling at 0 DAI bids were visible on-chain in real time. A monitor tracking the DAI-bid-to-ETH-collateral-value ratio on each auction settlement would have flagged the anomaly within the auction-completion block. MakerDAO governance and the community identified the zero-bid settlements within hours and began the compensation discussion.
+- **Post-event (compensation mechanism):** MakerDAO's governance-voted compensation — minting MKR to cover the shortfall and restructuring debt auctions — was the first large-scale DeFi governance-compensation event. It established the "governance vote to make depositors whole at protocol-token-holder expense" pattern that subsequently recurred across multiple protocols. The mechanism is now a recognised DeFi recovery pattern, distinct from attacker-return (Lendf.me, Euler) and from operator-funded compensation (Origin Dollar).
+
+## What this example tells contributors writing future Technique pages
+
+- **T17.002 has a mechanism-design sub-pattern distinct from the deliberate-attacker sub-pattern.** The MakerDAO Black Thursday case is a *mechanism-design-failure-driven* liquidation cascade — no attacker constructed the cascade, the cascade emerged from the interaction of market conditions, network conditions, and auction-design assumptions. This is structurally distinct from the deliberate-attacker sub-pattern (2022-06 stETH depeg, 2023-02 BonqDAO oracle-driven cascade) where an attacker intentionally triggers the cascade. T17.002 contributors should preserve this sub-pattern distinction — the mechanism-failure sub-pattern is a first-class detection-engineering surface for protocols whose liquidation mechanisms are exposed to joint price-crash + congestion conditions.
+- **The minimum-bid floor is the structural mitigation for English-style liquidation auctions under congestion.** MakerDAO's Liquidations 2.0 redesign (Dutch-auction format with a minimum-bid floor) directly addresses the Black Thursday failure mode. Contributors writing T17.002 mitigation guidance should treat the minimum-bid floor as the load-bearing mitigation for the mechanism-failure sub-pattern, and should reference MakerDAO March 2020 as the canonical worked example for why the floor is necessary.
+- **Governance-voted compensation is a real recovery channel but imposes the cost on protocol-token holders.** MakerDAO's MKR-minting compensation established the governance-compensation pattern; contributors writing future T17.002 recovery-layer guidance should record this as a distinct recovery channel with its own cost-bearer (MKR holders, not the protocol's depositors).
+- **The case pairs with 2022-06 stETH depeg as the two canonical T17.002 anchors.** MakerDAO March 2020 is the *mechanism-failure-driven* anchor; stETH June 2022 is the *market-structure-driven* anchor. Together they bracket the T17.002 Technique across the 2020–2022 cohort and demonstrate that liquidation cascades can be triggered by systemic conditions (price crash + congestion) and by deliberate attacker action (depeg event), with the same downstream consequence (cascading liquidations, protocol-insolvency risk).
+
+## Public references
+
+- MakerDAO. "Black Thursday: MakerDAO's Response to the March 12, 2020 Events." MakerDAO blog, March 2020 — `[makerdaoblackthursday2020]`.
+- MakerDAO. "Liquidations 2.0: Dutch Auction Design." MakerDAO blog, 2020–2021 — `[makerdaoliquidations2020]`.
+- `[coindeskmaker2020]` — CoinDesk contemporaneous reporting on the Black Thursday liquidation cascade and MakerDAO's response.
+- `[theblockmaker2020]` — The Block contemporaneous reporting on zero-bid auctions and the compensation vote.
+- `[defiratemaker2020]` — DeFi Rate analysis of the Black Thursday liquidation mechanics and keeper-bot behaviour.
+- `[chainalysis2020defi]` — Chainalysis 2020 DeFi retrospective including Black Thursday cohort framing.
+
+## Discussion
+
+MakerDAO Black Thursday (2020-03-12) is the canonical 2020 anchor for the **mechanism-design-failure-driven** sub-pattern of T17.002 (Liquidation-Cascade Engineering). The case demonstrates that a liquidation cascade does not require an adversary — the cascade can emerge from the interaction of market conditions, network conditions, and auction-design assumptions — and that the defender-side mitigation (minimum-bid floor, Dutch-auction format, congestion-resistant keeper infrastructure) generalises across both the mechanism-failure and deliberate-attacker sub-patterns.
+
+The case is structurally distinct from the 2022-06 stETH depeg cascade (`examples/2022-06-lido-steth-depeg.md`) which is T17.002's *market-structure-driven* anchor: stETH was a deliberate depeg event propagated through Aave and Compound lending markets; MakerDAO March 2020 was a systemic-condition-driven cascade with no adversary. Together they bracket the T17.002 Technique and demonstrate that the same defender-observable artefact — cascading liquidations propagating through lending-market architecture — can originate from fundamentally different upstream causes. Contributors writing T17.002 mitigation guidance should treat both sub-patterns as first-class detection surfaces.
+
+For OAK's broader T17 coverage, the MakerDAO case + the stETH case (2022-06) + the BonqDAO case (2023-02) collectively populate the T17.002 cohort across the 2020–2023 window: MakerDAO anchors the mechanism-failure sub-pattern at the protocol-design layer, stETH anchors the market-structure sub-pattern at the cross-protocol lending layer, and BonqDAO anchors the oracle-driven sub-pattern at the price-feed layer. The cohort framing is structurally complete for v0.1.

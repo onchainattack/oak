@@ -21,6 +21,8 @@ T2 sets the conditions under which T5 (Value Extraction) becomes feasible. Many 
 
 - OAK-T2.001 — Single-Sided Liquidity Plant
 - OAK-T2.002 — Locked-Liquidity Spoof
+- OAK-T2.003 — Cross-Chain Locked-Liquidity Spoof
+- OAK-T2.004 — Initial-Liquidity Backdoor
 
 ## Maintainer notes
 

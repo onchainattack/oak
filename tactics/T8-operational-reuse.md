@@ -22,6 +22,7 @@ T8 is the connective tissue between incidents. A T7 laundering destination that 
 ## Techniques in this Tactic (v0.1)
 
 - OAK-T8.001 — Common-Funder Cluster Reuse
+- OAK-T8.002 — Cross-Chain Operator Continuity
 
 ## Maintainer notes
 

@@ -4,6 +4,19 @@
 **OAK Techniques observed:** **OAK-T9.006.003** — Off-chain Resolution-Source Coercion. The canonical worked-example anchor for the sub-Technique. Parent Technique: OAK-T9.006 (Subjective-Oracle Resolution Manipulation).
 **Attribution:** **confirmed at the action level** (Times of Israel correspondent Emanuel Fabian published a first-person account; Washington Post, Haaretz independently corroborated the threats). Specific bettor identification was not pursued by Polymarket or law enforcement at v0.1; the Washington Post account documents threats from multiple distinct anonymous accounts, consistent with a small bettor cohort acting individually rather than a coordinated operator.
 
+## Timeline (UTC unless noted)
+
+| When | Event | OAK ref |
+|---|---|---|
+| 2026-03 | Polymarket runs market on whether Iran would strike Israel within a defined window; ~$14–23M in volume; resolution depends in part on reporting by Times of Israel correspondent Emanuel Fabian | T9.006.003 (standing resolution-source coercion surface — single human reporter as load-bearing resolution input) |
+| 2026-03 | Fabian publishes article describing Iran missile launch events in language that, under one interpretation, would cause market to resolve YES (favoring bettors holding ~$900,000 in positions) | (resolution-input publication — single-source reporting creates economic bounty on specific interpretation) |
+| 2026-03 | Bettors holding the disfavored side send death threats to Fabian via DMs and social media, demanding he rewrite his report to flip the market resolution | T9.006.003 (off-chain resolution-source coercion — physical threats against human reporter to influence oracle outcome) |
+| 2026-03 | Fabian publishes first-person account in Times of Israel documenting the threats; Washington Post corroborates with follow-up reporting (March 17, 2026) | (public documentation — first-person threat account preserved as evidence) |
+| 2026-03 | Market resolves per Fabian's published account; bettors' threats do not influence the resolution; journalist does not alter reporting | (resolution — journalist's account withstands coercion; market resolves against threatening bettors) |
+| Continuing | First publicly documented case in crypto-prediction-market history of physical coercion of an off-chain human reporter as an attack vector against the resolution layer; perpetrators not publicly identified or prosecuted at v0.1 | (canonical reference — resolution-source physical coercion; novel attack class established) |
+
+**Key teaching point:** **The Fabian case (Times of Israel, March 2026) is the first publicly documented instance in crypto-prediction-market history of physical coercion of an off-chain human reporter as an attack vector against the oracle resolution layer.** The economic incentive for the extortion was generated on-chain (the prediction market created a bounty for a specific reporting outcome) but the attack operated entirely off-chain (death threats against the journalist). The case establishes T9.006.003 as a first-class Technique sub-pattern and proves a structural property that was previously theoretical: when the resolution input is a single human reporter's account, the human reporter becomes an attack surface.
+
 ## Summary
 
 In March 2026, Polymarket ran a market on whether Iran would strike Israel within a defined window, with ~$14-23M in volume. The market's resolution depended in part on reporting by Times of Israel correspondent Emanuel Fabian, whose article described the events of an Iran missile launch in language that, under one interpretation, would have caused the market to resolve YES (favouring one side of bettors holding ~$900,000 in positions).

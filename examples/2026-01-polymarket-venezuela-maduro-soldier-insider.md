@@ -4,6 +4,21 @@
 **OAK Techniques observed:** **OAK-T9.006.004** — Operational-Insider Trading on Subjective-Resolution Prediction Markets. The canonical worked-example anchor for the sub-Technique. Parent Technique: OAK-T9.006 (Subjective-Oracle Resolution Manipulation).
 **Attribution:** **confirmed at the operator level** (DOJ indictment, SDNY; defendant named, charges filed, parallel CFTC civil action). Specific Polymarket account → real-world identity attribution rests on government affidavits, KYC at the off-ramp (Kraken / brokerage), and on-chain forensics cited by prosecutors.
 
+## Timeline (UTC unless noted)
+
+| When | Event | OAK ref |
+|---|---|---|
+| 2025-12-26 | US Army Special Forces master sergeant Gannon Ken Van Dyke, operationally involved in planning and execution of Operation Absolute Resolve, opens a Polymarket account | T9.006.004 (operational-insider account creation — account-age-vs-first-bet signal) |
+| 2025-12-27 → 2026-01-02 | Van Dyke places ~13 bets totaling ~$33,034 on YES sides of Venezuela / Maduro markets (including "Maduro Out by January 31" — 436,000+ YES shares acquired December 30–January 2) | T9.006.004 (operational-insider trading — bettor is a causal actor producing the real-world outcome) |
+| 2026-01-03 | US forces execute Operation Absolute Resolve; Maduro and Cilia Flores apprehended in Caracas | (real-world event — underlying outcome that bets depended on) |
+| 2026-01-03 → 2026-01-04 | Bets resolve YES; Van Dyke generates ~$404,000 in profit | T9.006.004 (operational-insider profit realization — bets settled on classified-foreknowledge outcome) |
+| 2026-01-04 onward | Van Dyke withdraws majority of proceeds from Polymarket account; routes funds through foreign cryptocurrency vault; deposits into newly-created online brokerage account | T7.001 (laundering — proceeds routing through foreign vault + brokerage account) |
+| 2026-04 | DOJ SDNY indictment unsealed: wire fraud, commodities fraud, theft of nonpublic government information, engaging in monetary transactions in property derived from specified unlawful activity; CFTC parallel civil action filed | T9.006.004 (federal indictment — first publicly documented operational-insider prosecution in crypto-prediction-market history) |
+| 2026-04-28 | Van Dyke pleads not guilty at arraignment in SDNY; faces up to 20 years on wire-fraud count | (legal proceedings — active litigation at OAK v0.1 cutoff) |
+| 2026-04 | Kalshi confirms it had blocked the same individual on its venue; Polymarket / Chainalysis surveillance partnership operationalized in April 2026 | (cross-venue blocklist coordination — detection infrastructure established) |
+
+**Key teaching point:** **The Van Dyke case (DOJ SDNY, April 2026) is the first publicly documented case in crypto-prediction-market history where a bettor with direct operational involvement in the underlying real-world event has been criminally charged for trading on classified knowledge of that event.** The bettor was not just informed about the outcome — he was one of the causal actors producing it (US Special Forces NCO involved in planning and executing Operation Absolute Resolve). This crosses from classical insider trading (informational asymmetry) into a class structurally adjacent to market-manipulation-via-action: the bettor's operational decisions directly determine which resolution outcome triggers his payout. The case establishes T9.006.004 as a first-class Technique sub-pattern anchored in a federal indictment.
+
 ## Summary
 
 In the predawn hours of January 3, 2026, US forces apprehended Venezuelan president Nicolás Maduro and his wife Cilia Flores at a residence in Caracas in a joint military / law-enforcement mission designated **Operation Absolute Resolve**. Hours later, the President of the United States announced the operation publicly.

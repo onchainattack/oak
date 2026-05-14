@@ -39,6 +39,8 @@ OAK v0.1's Tactic catalog is on-chain-extraction-focused; Karakurt's *intrusion*
 
 ## Observed Examples
 
+*No public incidents at v0.1 — worked examples pending per-incident forensic publication.*
+
 OAK v0.1 does not yet contain a worked example whose primary axis is a Karakurt-attributed direct-cryptocurrency-firm intrusion; the on-chain angle of G18 is the *laundering of data-extortion payments* rather than direct crypto-firm intrusion. The high-salience public-record events anchoring the cluster:
 
 - **CISA / FBI / Treasury / FinCEN AA22-152A "Karakurt Data Extortion Group" advisory (June 1, 2022).** Joint cyber-security advisory characterising Karakurt TTPs across the 2021–2022 operating window, the data-extortion-only operating-model signature, and the Conti-cohort-continuity attribution at the operator-cohort level (`[cisaaa22152a]`). Attribution at *confirmed*. The advisory was updated in March 2023 to extend the Karakurt-cohort tracking through 2023.

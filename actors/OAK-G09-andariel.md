@@ -39,6 +39,8 @@ OAK v0.1's Tactic catalog is on-chain-extraction-focused; G09's *intrusion* surf
 
 ## Observed Examples
 
+*No public incidents at v0.1 — worked examples pending per-incident forensic publication.*
+
 OAK v0.1 does not currently host any per-incident worked examples under `examples/` for G09-attributed activity. The crypto-on-chain surface for Andariel is the *laundering tail of ransomware operations* and the *mining-on-compromised-infrastructure monetization tail of espionage operations*, rather than direct crypto-firm intrusion of the kind documented for G01 (Ronin, Atomic Wallet, WazirX, Bybit). Per-incident Maui-ransom-payment laundering flows have not been published with the per-payment forensic granularity that supports OAK-grade worked examples; the public record sits at the cluster-level (CISA / DOJ / OFAC / industry-vendor) rather than at the per-payment-trail level. The G09 entry is therefore anchored on threshold-event public-attribution actions rather than on incident worked examples, and worked examples are flagged for v0.x once per-incident forensic publication catches up:
 
 - **OFAC 2019 DPRK cyber designations (September 13, 2019).** Treasury press release SM-774 designating Lazarus, BlueNoroff, and Andariel as three separate sub-clusters subordinate to the DPRK Reconnaissance General Bureau under Executive Orders 13694 and 13722 (`[ofac2019dprkcyber]`). The threshold event that established Andariel as a sanctioned entity distinct from Lazarus, and the regulatory anchor for any U.S. ransom-payment counterparty screening against G09-attributed wallets. Attribution at *confirmed*.

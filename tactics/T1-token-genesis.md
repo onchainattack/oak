@@ -24,6 +24,8 @@ T1 supplies the substrate; T2 (Liquidity Establishment) and T3 (Holder Capture) 
 - OAK-T1.003 — Renounced-But-Not-Really (Proxy-Upgrade Backdoor)
 - OAK-T1.004 — Blacklist / Pausable Transfer Weaponization
 - OAK-T1.005 — Hidden Fee-on-Transfer
+- OAK-T1.006 — Honeypot-by-Design
+- OAK-T1.007 — Token-2022 Transfer-Hook Abuse
 
 ## Maintainer notes
 

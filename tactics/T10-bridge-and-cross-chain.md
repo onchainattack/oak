@@ -27,6 +27,8 @@ T10 chains directly into T7 (Laundering): bridge-extraction proceeds are typical
 - OAK-T10.001 — Validator / Signer Key Compromise
 - OAK-T10.002 — Message-Verification Bypass
 - OAK-T10.003 — Cross-Chain Replay
+- OAK-T10.004 — Optimistic-Bridge Fraud-Proof Gap
+- OAK-T10.005 — Light-Client Verification Bypass
 
 ## Maintainer notes
 

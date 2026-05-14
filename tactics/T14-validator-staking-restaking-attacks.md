@@ -38,6 +38,7 @@ The boundary against T9 is the failure-mode scope: structural failures in the co
 - OAK-T14.001 — Slashing-Condition Exploit
 - OAK-T14.002 — MEV-Boost Relay Attack
 - OAK-T14.003 — Restaking Cascading Risk
+  - OAK-T14.003.001 — LST/LRT Depeg Cascade Constrained Primitive
 
 ## Maintainer notes
 

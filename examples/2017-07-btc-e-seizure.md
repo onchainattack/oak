@@ -1,0 +1,44 @@
+# BTC-e exchange seizure and Alexander Vinnik arrest — Bitcoin — 2017-07-25 to 2017-07-26
+
+**Loss:** approximately \$4B+ in illicit transactions processed through the BTC-e exchange over the platform's operational lifespan (2011-2017), per the U.S. Department of Justice indictment and FinCEN assessment. BTC-e allegedly served as the primary laundering rail for funds from multiple high-profile cryptocurrency thefts including the Mt. Gox hack (2011-2014, approximately 300,000+ BTC routed through BTC-e), the Fancy Bear / APT28 ransomware operations, and proceeds from darknet-marketplace and narcotics-trafficking enterprises. The platform held approximately \$60M+ in customer deposits at the time of the July 2017 seizure. FinCEN assessed a civil monetary penalty of \$110M against BTC-e and a \$12M penalty against Vinnik personally for violations of the Bank Secrecy Act as an unregistered money services business.
+**OAK Techniques observed:** **OAK-T7.001** (Mixer-Routed Hop — BTC-e functioned as a systemic laundering rail at exchange scale; the platform did not implement substantive KYC/AML controls and operated as a de-facto high-volume mixer substitute where illicitly-obtained Bitcoin could be deposited, traded, and withdrawn without identity verification, breaking the chain of custody at the exchange boundary. The platform processed an estimated \$4B+ in aggregate transaction volume with effectively no AML gate — the largest documented single-exchange laundering surface in the pre-2020 record). **OAK-T11.001** (Third-Party Signing Vendor Compromise — broadly construed in reverse; BTC-e was the "custodial vendor" whose infrastructure provided the laundering surface for multiple upstream theft operators. The platform's custody infrastructure was the structural enabler for the laundering chain that followed the Mt. Gox, Fancy Bear, and adjacent upstream thefts. The case is the canonical illustration of the exchange-as-laundering-infrastructure sub-shape within the broader T11.001 custody-and-signing surface).
+**Attribution:** **confirmed (Alexander Vinnik)**. Vinnik was arrested on 2017-07-25 in Thessaloniki, Greece, on a U.S. warrant issued by the U.S. District Court for the Northern District of California. The DOJ indictment charged Vinnik with 21 counts including money laundering, operating an unlicensed money services business, and related offences. Vinnik was extradited from Greece to France in 2020-01, convicted in France on money-laundering charges (sentenced to five years), then extradited from France back to Greece and subsequently to the United States in 2024-08 (post-OAK v0.1 cutoff). The FinCEN civil monetary penalty assessed against Vinnik individually (\$12M) and against BTC-e (\$110M) was announced concurrently with the 2017-07 law-enforcement action.
+**Key teaching point:** **BTC-e is the canonical 2017 worked example of a cryptocurrency exchange as systemic laundering infrastructure — the case in which an entire exchange platform, operating for over six years at multi-billion-dollar scale, functioned as the primary laundering rail for the most significant cryptocurrency thefts and criminal enterprises of the pre-2018 era. The case established the law-enforcement template for exchange-level laundering takedowns (domain seizure, operator arrest via INTERPOL Red Notice, multi-jurisdiction coordinated action, FinCEN civil monetary penalty alongside DOJ criminal charges) and demonstrated that the exchange-level AML gate is a structural chokepoint in the cryptocurrency laundering chain.**
+
+## Summary
+
+BTC-e operated as a cryptocurrency exchange from approximately July 2011 through July 2017, registered in Cyprus and Bulgaria with operational infrastructure distributed across multiple jurisdictions. The exchange was one of the highest-volume cryptocurrency trading platforms of its era, processing an estimated \$4B+ in aggregate transaction volume over its operational lifespan with effectively no substantive KYC/AML controls. The platform's user base included a substantial proportion of Russian-language users, and BTC-e was the dominant exchange rail for the post-Soviet and Eastern European cryptocurrency trading ecosystem through the 2011-2017 window.
+
+The U.S. Department of Justice investigation established that BTC-e had served as the primary laundering rail for proceeds from multiple high-profile cryptocurrency thefts. The most significant upstream source was the Mt. Gox exchange hack (2011-2014), with approximately 300,000+ BTC from the Mt. Gox theft routed through BTC-e. Additional upstream sources included the Fancy Bear / APT28 ransomware operations, darknet-marketplace proceeds, and narcotics-trafficking enterprises. The DOJ indictment alleged that BTC-e's operators were aware of the illicit-source character of these flows and that the platform's absence of AML controls was a deliberate business-model feature rather than an operational deficiency.
+
+On 2017-07-25, the DOJ unsealed a 21-count indictment against Alexander Vinnik, a Russian national who was the alleged operator of BTC-e, in the U.S. District Court for the Northern District of California. On the same day, Vinnik was arrested by Greek authorities in Thessaloniki on a U.S. warrant. The FBI seized the BTC-e domain (btc-e.com) and FinCEN announced a \$110M civil monetary penalty against BTC-e and a \$12M penalty against Vinnik for violations of the Bank Secrecy Act. The domain seizure immediately rendered the exchange inaccessible to users; approximately \$60M+ in customer deposits held on the platform at the time of the seizure were effectively frozen.
+
+Vinnik's subsequent legal trajectory became one of the most procedurally complex extradition chains in cryptocurrency enforcement history. Greece received competing extradition requests from the United States, Russia (where Vinnik was also wanted on fraud charges), and France (where Vinnik was wanted on money-laundering charges connected to the Locky ransomware operation). The Greek courts ultimately ordered extradition to France (2020-01), then to the United States, then to Russia. Vinnik was extradited to France in January 2020, convicted on money-laundering charges (sentenced to five years), extradited back to Greece in 2022, and subsequently extradited to the United States in August 2024 (post-OAK v0.1 cutoff).
+
+## Timeline (UTC)
+
+| When | Event | OAK ref |
+|---|---|---|
+| 2011-07 | BTC-e exchange launches; operates with effectively no KYC/AML controls from inception | T11.001 (exchange as custodial-laundering infrastructure) |
+| 2011-2017 | BTC-e processes ~\$4B+ in transaction volume; serves as primary laundering rail for Mt. Gox proceeds, Fancy Bear ransomware, and darknet-marketplace flows | T7.001 (exchange-scale laundering) |
+| 2017-07-25 | DOJ unseals 21-count indictment against Vinnik; FinCEN announces \$110M civil penalty against BTC-e + \$12M against Vinnik; FBI seizes btc-e.com domain | (law-enforcement action) |
+| 2017-07-25 | Vinnik arrested by Greek authorities in Thessaloniki on U.S. warrant | (arrest) |
+| 2017-07 to 2020-01 | Multi-jurisdiction extradition contest (U.S. vs. Russia vs. France); Greek courts order extradition sequence: France first, then U.S., then Russia | (extradition litigation) |
+| 2020-01 | Vinnik extradited from Greece to France | (first extradition) |
+| 2020-12 | Vinnik convicted in France on money-laundering charges (five-year sentence) | (French conviction) |
+| 2022 | Vinnik returned to Greece after serving French sentence | (interim return) |
+| 2024-08 | Vinnik extradited to the United States to face DOJ charges | (U.S. extradition — post-OAK-v0.1-cutoff) |
+
+## Realised extraction
+
+Approximately \$4B+ in illicit funds processed over the platform's six-year operational lifespan; approximately \$60M+ in customer deposits effectively frozen by the 2017-07 domain seizure; no material return of frozen customer deposits to date. FinCEN assessed \$110M in civil monetary penalties against BTC-e and \$12M against Vinnik personally.
+
+## References
+
+- U.S. v. Vinnik, Case No. 3:16-cr-00227 (N.D. Cal. 2017) — DOJ 21-count indictment
+- FinCEN, "FinCEN Assesses \$110 Million Penalty Against BTC-e and \$12 Million Penalty Against Alexander Vinnik," July 27, 2017 (FinCEN Assessment No. 2017-03)
+- `[dojbtce2017]` — DOJ press release: "Russian National and Bitcoin Exchange Charged in 21-Count Indictment for Operating Alleged International Money Laundering Scheme," July 26, 2017
+- `[coindeskbtce2017]` — CoinDesk contemporaneous coverage of the BTC-e seizure, Vinnik arrest, and FinCEN penalty (July 2017)
+- Greek Supreme Court extradition proceedings: Vinnik extradition orders (2017-2019)
+- French judicial proceedings: Vinnik money-laundering conviction (December 2020)
+- `[reutersvinnik2024]` — Reuters. *Alexander Vinnik extradited to United States.* August 2024

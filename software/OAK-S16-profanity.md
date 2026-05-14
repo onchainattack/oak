@@ -6,7 +6,7 @@
 **First observed:** 2017 (initial release as a GPU-accelerated Ethereum vanity-address generator)
 **Used by Groups:** inferred-weak — pseudonymous attackers; press-side Lazarus speculation around the Wintermute incident is **not confirmed** and OAK records affected cases as `pseudonymous / unattributed`
 **Host platforms:** Linux / Windows / macOS (GPU-accelerated, OpenCL)
-**Observed Techniques:** OAK-T11 broadly construed (insufficient-entropy key generation; v0.x candidate sub-Technique T11.004 — see `examples/2022-09-wintermute.md`)
+**Observed Techniques:** OAK-T11.004 (Insufficient Entropy / Key Generation — Profanity-generated vanity addresses with weak entropy are the canonical T11.004 surface; see `examples/2022-09-wintermute.md` and `examples/2022-09-wintermute-profanity-cohort.md`)
 
 ## Description
 

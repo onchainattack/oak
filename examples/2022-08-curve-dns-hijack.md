@@ -2,10 +2,23 @@
 
 **Attribution:** **pseudonymous** — no public actor attribution at OAK v0.1 cutoff.
 
-**Loss reported:** \~\$575K from users who interacted with the cloned UI during the incident window.
+**Loss:** \~\$575K from users who interacted with the cloned UI during the incident window.
 **OAK Techniques observed:** OAK-T4.002 (Compromised Front-End Permit Solicitation) — primary; **OAK-T15.004** (Operator-Side Credential Compromise) — canonical anchor for the **registrar / DNS sub-shape** of T15: the load-bearing compromise was the operator's domain-registrar credential surface (`iwantmyname`), used to redirect the Curve domain's DNS resolution and serve a cloned UI from the legitimate domain. **OAK-T6** (Defense Evasion) — modifier: the frontend / DNS-layer compromise is structurally a defense-evasion that bypasses the protocol's smart-contract integrity baseline by serving a cloned UI from the protocol's primary domain. T4.002 lists OAK-T6 as a secondary parent tactic for exactly this structural reason; the Curve case is the canonical first-documented T4.002 incident and is the dated anchor for the T6 modifier framing on the front-end-compromise sub-class. OAK-T7.001 (Mixer-Routed Hop) downstream as the proceeds were routed through Tornado Cash (per public reporting of the laundering route).
 **OAK-Gnn:** [OAK-G02 Drainer-as-a-Service operators](../actors/OAK-G02-drainer-services.md) — service-layer-adjacent T4.002 case; cited on the OAK-G02 actor page as the canonical service-layer-adjacent registrar-side compromise example. The per-incident operator was not publicly tied to a named drainer-service brand, but the cloned-UI-served-from-compromised-DNS pattern is structurally adjacent to the drainer-service substrate at *inferred-weak* confidence.
 **Status:** registrar-side compromise (`iwantmyname` nameserver) identified and corrected; protocol redirected `.fi` to neutral nameservers and operated from an alternate domain (`curve.finance`) until stabilised.
+
+**Key teaching point:** **The Curve DNS hijack (August 2022) is the canonical T4.002 case demonstrating that a DeFi protocol can be fully secure at the smart-contract layer while being fully compromised at the front-end layer via registrar-side DNS attack.** The protocol's smart contracts were untouched — the exploit operated entirely at the DNS/domain layer, serving a cloned UI from the legitimate domain. The incident motivated the industry-wide adoption of registry-lock and DNS-change-control practices across major DeFi protocols, and remains the most-cited reference case for the principle that front-end security is a distinct security surface from smart-contract security.
+
+## Timeline (UTC unless noted)
+
+| When | Event | OAK ref |
+|---|---|---|
+| 2022-08 (pre-incident) | Curve Finance operates with `curve.fi` as primary domain; DNS hosted via `iwantmyname` registrar without registry-lock | (standing T4.002 surface — registrar as attack vector) |
+| 2022-08 (incident window) | Attacker compromises `iwantmyname` nameserver; redirects `curve.fi` DNS to attacker-controlled server hosting a cloned Curve UI | T4.002 (front-end compromise via DNS hijack) |
+| 2022-08 (incident window) | Users interact with cloned UI served from `curve.fi`; signing prompts route approval grants to attacker-controlled contract | T4.002 (permit/approval solicitation from compromised front-end) |
+| 2022-08 (incident window) | Attacker extracts ~$575K from users who signed during the active window; proceeds routed through Tornado Cash | T7.001 (mixer-routed laundering downstream) |
+| 2022-08 (post-incident) | Curve team redirects `.fi` to neutral nameservers; protocol operates from `curve.finance` until DNS control restored | (defender response — DNS redirection) |
+| 2022-08 (post-incident) | Curve and broader DeFi ecosystem adopt registry-lock and DNS-change-control practices | (industry-wide defensive posture shift) |
 
 ## Summary
 

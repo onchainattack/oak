@@ -20,6 +20,11 @@ T7 follows T5. T7 paths often map back to T8 (Operational Reuse) — laundering 
 ## Techniques in this Tactic (v0.1)
 
 - OAK-T7.001 — Mixer-Routed Hop
+- OAK-T7.002 — CEX Deposit Layering
+- OAK-T7.003 — Cross-Chain Bridge Laundering
+- OAK-T7.004 — NFT Wash-Laundering
+- OAK-T7.005 — Privacy-Chain Hops
+- OAK-T7.006 — DeFi Yield-Strategy Laundering
 
 ## Maintainer notes
 

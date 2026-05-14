@@ -39,6 +39,8 @@ OAK v0.1's Tactic catalog is on-chain-extraction-focused; G07's *intrusion* surf
 
 ## Observed Examples
 
+*No public incidents at v0.1 — worked examples pending per-incident forensic publication.*
+
 - **Mandiant APT43 report (March 28, 2023).** The first comprehensive public characterisation of the cluster as APT43, including RGB attribution at moderate confidence, the hash-rental-and-cloud-mining laundering rail, the \>10M phishing-NFT distribution, and the targeting profile across foreign-policy and nuclear research targets (`[mandiantapt432023]`). Attribution at *confirmed* (multi-vendor corroborated; subsequently affirmed by U.S. Treasury and ROK MOFA designations).
 - **BfV / NIS joint cyber-security advisory (March 20, 2023).** German federal counter-intelligence service and Republic of Korea NIS jointly published the operational write-up of the cluster's Chromium-extension and Android-developer-mode TTPs against Gmail and Korean-policy-expert targets (`[bfvnis2023kimsuky]`). Attribution at *confirmed*.
 - **Republic of Korea MOFA Kimsuky designation (June 2, 2023).** First-ever ROK sanctions designation of a DPRK hacking group, naming Kimsuky and citing the cluster's role in supporting DPRK weapons-programme intelligence collection (`[mofakimsuky2023]`). Attribution at *confirmed*.

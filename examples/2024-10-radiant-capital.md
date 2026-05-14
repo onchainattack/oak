@@ -5,6 +5,8 @@
 **Attribution:** **confirmed** by Radiant Capital's own post-mortem (2024-12-06) corroborated by Mandiant's high-confidence attribution to UNC4736 (also tracked as AppleJeus / Citrine Sleet), which Mandiant assesses as DPRK-nexus and aligned with the Reconnaissance General Bureau (RGB) / TEMP.Hermit cluster. Industry forensic providers (Chainalysis, SlowMist, others) corroborated the wallet-cluster attribution.
 **OAK-Gnn:** [OAK-G01 Lazarus Group / DPRK-attributed](../actors/OAK-G01-lazarus.md).
 
+**Key teaching point:** Radiant Capital is the third confirmed multi-tens-of-millions OAK-G01 supply-chain attack of 2024 and the connective case that makes the 2024-2025 wave legible as a single pattern rather than four discrete incidents:
+
 ## Summary
 
 Radiant Capital is a cross-chain DeFi lending protocol operating on Arbitrum and BNB Chain. On October 16, 2024, attackers drained approximately \$50M from Radiant's lending markets via a routine multisig signing operation that, at the on-chain layer, executed a transfer-of-ownership call against Radiant's lending-pool contracts rather than the routine parameter update Radiant's signers believed they were authorising.

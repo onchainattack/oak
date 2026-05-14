@@ -21,6 +21,12 @@ T4 produces the authority that T5 (Value Extraction) consumes. Because some T4 T
 
 - OAK-T4.001 — Permit2 Signature-Based Authority Misuse
 - OAK-T4.002 — Compromised Front-End Permit Solicitation
+- OAK-T4.003 — Address Poisoning
+- OAK-T4.004 — Allowance / Approve Drainer
+- OAK-T4.005 — setApprovalForAll NFT Drainer
+- OAK-T4.006 — WalletConnect Session Hijack
+- OAK-T4.007 — Native-App Social-Phishing Engagement-Weighted Platforms
+- OAK-T4.008 — Fake DEX Clone Frontend Phishing
 
 ## Maintainer notes
 

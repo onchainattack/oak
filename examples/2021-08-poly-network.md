@@ -1,9 +1,11 @@
 # Poly Network — Cross-Chain Bridge — 2021-08-10
 
-**Loss extracted:** \~\$611M across Ethereum, Binance Smart Chain, and Polygon — the largest DeFi loss event at the time it occurred.
+**Loss:** \~\$611M across Ethereum, Binance Smart Chain, and Polygon — the largest DeFi loss event at the time it occurred.
 **Recovery:** all funds returned by the attacker within roughly 15 days, beginning 2021-08-11. The attacker self-identified as "Mr. White Hat", framed the action as a vulnerability disclosure, and declined both a \$500K bug bounty and a "chief security advisor" role offered by Poly Network.
 **OAK Techniques observed:** OAK-T9.004 (Access-Control Misconfiguration) — primary mechanistic classification. OAK-T10.002 (Message-Verification Bypass) is a surface-similar but poorer-fit framing; see the discussion below.
 **Attribution:** **pseudonymous** — pseudonymous, self-styled "Mr. White Hat". No off-chain identity has been confirmed publicly. Full recovery makes attribution structurally less consequential here than in other large incidents of the period.
+
+**Key teaching point:** Poly Network is an unusual data point in the OAK corpus because the loss-extraction phase was unambiguous and the recovery phase was effectively complete. Roughly \$611M moved out of the bridge contracts within hours; roughly the same amount returned within fifteen days, modulo issuer-frozen USDT. Among large DeFi incidents up to OAK v0.1's coverage cut-off, this is one of the very few cases where post-event holdings approximated pre-event holdings within a short window. That outcome is structurally interesting but defensively useless: it depended entirely on the attacker's choice and on a small amount of asset-issuer cooperation. It is not an outcome defenders can plan toward, and OAK should not be read as endorsing the framing that Poly Network was "not really" a hack because the funds were returned.
 
 ## Summary
 

@@ -1,7 +1,7 @@
 # OAK-T3 — Holder Capture
 
 **Phase:** Pre-launch / Launch
-**Adjacent tactics:** T2 (Liquidity Establishment), T5 (Value Extraction)
+**Adjacent tactics:** T2 (Liquidity Establishment), T5 (Value Extraction), T17 (Market Manipulation — T3.002 wash-trade, T3.003 pump-and-dump, and T3.004 influencer-amplified promotion-and-dump are dual-parented under both T3 and T17; T3 captures the launch-time holder-concentration framing, T17 captures the post-launch market-manipulation framing)
 
 ## Scope
 
@@ -22,6 +22,7 @@ T3 turns a deployed token (T1) with set-up liquidity (T2) into a token that real
 - OAK-T3.001 — Sybil-Bundled Launch
 - OAK-T3.002 — Wash-Trade Volume Inflation
 - OAK-T3.003 — Coordinated Pump-and-Dump
+- OAK-T3.004 — Influencer-Amplified Promotion-and-Dump
 
 ## Maintainer notes
 

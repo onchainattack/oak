@@ -24,9 +24,15 @@ T11 events typically chain into T7.003 (Cross-Chain Bridge Laundering) — the c
 
 ## Techniques in this Tactic (v0.1)
 
-- OAK-T11.001 — Third-Party Signing / Custody Vendor Compromise
+- OAK-T11.001 — Third-Party Signing-Vendor UI / Signing-Flow Compromise
 - OAK-T11.002 — Wallet-Software Distribution Compromise
 - OAK-T11.003 — In-Use Multisig Smart-Contract Manipulation
+- OAK-T11.004 — Insufficient-Entropy Key Generation
+- OAK-T11.005 — Operator-Side Fake-Platform Fraud
+- OAK-T11.006 — Cold-Storage Seed Phrase Exfiltration at Rest
+- OAK-T11.007 — Hardware-Wallet Supply-Chain / Physical-Access Compromise
+- OAK-T11.008 — Embedded-Wallet Identity-Provider Compromise
+- OAK-T11.009 — Trader-Tooling Supply-Chain ENV-Key Compromise
 
 ## Maintainer notes
 
