@@ -2,6 +2,7 @@
 
 **Loss:** $200M+ from 25+ crypto hacks laundered to fiat by Lazarus Group over 2020-2023. $374K USDT frozen (Nov 2023); $3.4M frozen by 3 of 4 stablecoin issuers; undisclosed amount frozen at CEXs.
 **OAK Techniques observed:** OAK-T7 (Laundering) — multi-stage pipeline: mixer → cross-chain bridge → P2P marketplace → fiat off-ramp. Noones and Paxful P2P marketplaces identified as the fiat conversion layer.
+**OAK-Gnn:** [OAK-G01 Lazarus Group / DPRK-attributed](../actors/OAK-G01-lazarus.md).
 **Attribution:** **confirmed** — Lazarus Group (DPRK state-sponsored). ZachXBT 15-month investigation published April 2024.
 
 **Key teaching point:** The Lazarus Group $200M laundering investigation demonstrates the **P2P marketplace as fiat off-ramp** pattern: after mixer (Tornado Cash) and cross-chain bridge hops, Lazarus consolidated funds at Noones and Paxful — P2P marketplaces where crypto is traded directly for fiat between users, with lighter KYC than centralized exchanges. The P2P marketplace layer is the detection gap: P2P platforms have fewer compliance resources than major CEXs, making them the preferred final hop before fiat. Detection approach: P2P marketplace deposit addresses receiving funds traceable to known exploit wallets, especially accounts trading at volumes inconsistent with retail P2P activity.

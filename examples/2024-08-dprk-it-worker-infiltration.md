@@ -2,6 +2,7 @@
 
 **Loss:** $1.3M stolen from a single protocol treasury via malicious code pushed by DPRK IT workers; 25+ crypto projects identified as infiltrated.
 **OAK Techniques observed:** OAK-T4.007 (Native App Social Phishing / Engagement-Weighted Platforms) — hiring-stage social engineering; OAK-T11.007 (Supply Chain — Malicious Insider).
+**OAK-Gnn:** [OAK-G01 Lazarus Group / DPRK-attributed](../actors/OAK-G01-lazarus.md).
 **Attribution:** **confirmed** — Democratic People's Republic of Korea (DPRK) IT worker network. Linked to Lazarus Group infrastructure.
 
 **Key teaching point:** DPRK IT workers infiltrate crypto teams through standard hiring platforms, presenting as legitimate remote developers. Once hired and granted repository access, they push malicious code or exfiltrate private keys. The detection challenge is that they pass standard hiring checks — the attack is the hiring process itself. Detection approach: monitor for developers who share IP ranges with known DPRK worker infrastructure, use multiple pseudonymous identities, or request unusual access patterns shortly after onboarding.

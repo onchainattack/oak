@@ -2,6 +2,7 @@
 
 **Loss:** approximately \$5.6M (~3,816 BTC, ~37% of Yapizon's exchange reserves at the time).
 **OAK Techniques observed:** **OAK-T11.001** (Third-Party Signing-Vendor UI / Signing-Flow Compromise — broadly construed; the exchange's hot-wallet signing infrastructure was compromised directly, enabling the attacker to authorise the ~3,816 BTC drain). **OAK-T15.003** (Operator-Endpoint Compromise — the attacker gained access to Yapizon's internal wallet-server and signing infrastructure, constituting an operator-endpoint state that enabled the signing-flow compromise).
+**OAK-Gnn:** [OAK-G01 Lazarus Group / DPRK-attributed](../actors/OAK-G01-lazarus.md).
 **Attribution:** **inferred-strong** South Korean authorities and the UN Panel of Experts attributed the 2017 Yapizon breach to the DPRK's Lazarus Group (OAK-G01) as part of the broader DPRK cryptocurrency-exchange targeting campaign that included Bithumb (2017), Coincheck (2018), and the subsequent wave of Asian-exchange intrusions.
 **Key teaching point:** **Yapizon is the canonical "DPRK Lazarus Group first-strike against a South Korean exchange" case: the theft consumed ~37% of exchange reserves, the operator did not have the capital to absorb the loss, and the exchange filed for bankruptcy after a second hack in December 2017 — a two-strike collapse pattern that illustrates the existential risk of a single hot-wallet breach for an undercapitalised exchange, especially when the threat actor is a state-aligned persistent group that returns for a second extraction.**
 
