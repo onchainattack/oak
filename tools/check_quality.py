@@ -76,19 +76,42 @@ def _to_millions(value_str: str, unit: str | None) -> float:
 
 
 def parse_loss_millions(text: str) -> float | None:
-    """Extract dollar amounts from text, returning the largest found (normalized to millions USD)."""
-    best: float | None = None
-    for m in LOSS_RANGE_RE.finditer(text):
-        v1 = _to_millions(m.group(1), m.group(2))
-        v2 = _to_millions(m.group(3), m.group(4))
-        for v in (v1, v2):
-            if v > 0 and (best is None or v > best):
-                best = v
-    for m in LOSS_VALUE_RE.finditer(text):
-        v = _to_millions(m.group(1), m.group(2))
-        if v > 0 and (best is None or v > best):
-            best = v
-    return best
+    """Extract the primary dollar amount from a loss/volume text, normalized to millions USD.
+
+    Returns the most representative figure: skips amounts explicitly marked as
+    "initial" estimates when a "total" figure follows, handles ranges by taking
+    the higher end. Otherwise returns the first dollar figure found.
+    """
+    range_matches = list(LOSS_RANGE_RE.finditer(text))
+    value_matches = list(LOSS_VALUE_RE.finditer(text))
+
+    if not value_matches:
+        return None
+
+    # Skip figures marked "initial" if a later figure has "total"
+    initial_idx = None
+    for i, m in enumerate(value_matches):
+        after = text[m.end():m.end() + 30].lower()
+        if "initial" in after:
+            initial_idx = i
+        if "total" in after and initial_idx is not None and initial_idx < i:
+            # Found a "total" figure after an "initial" figure — use the total
+            val = value_matches[i]
+            for rm in range_matches:
+                if rm.start() <= val.start() <= rm.end():
+                    return max(_to_millions(rm.group(1), rm.group(2)),
+                              _to_millions(rm.group(3), rm.group(4)))
+            return _to_millions(val.group(1), val.group(2))
+
+    # First value — check if it's part of a range
+    first_val = value_matches[0]
+    first_start = first_val.start()
+    for m in range_matches:
+        if m.start() == first_start or m.start() <= first_start <= m.end():
+            return max(_to_millions(m.group(1), m.group(2)),
+                      _to_millions(m.group(3), m.group(4)))
+
+    return _to_millions(first_val.group(1), first_val.group(2))
 
 
 ACTOR_ATTR_STATUS_RE = re.compile(
@@ -191,7 +214,7 @@ def check_duplicate_tx_hashes(examples: list[Path]) -> list[str]:
 
 
 LOSS_LINE_RE = re.compile(
-    r"\*\*(?:Loss|Total\s+loss|Direct\s+loss|Volume(?:\s+\w+)?|Cumulative(?:\s+\w+)?|Loss\s+\w+)[^*]*?:\*\*\s*(.+?)(?:\n\*\*|\n\n|\Z)",
+    r"\*\*(?:Loss|Total\s+loss|Direct\s+loss|Volume(?:\s+\w+)?|Cumulative(?:\s+\w+)?|Loss\s+\w+)[^*]*?:\*\*\s*(.+?)(?=\*\*(?:Recovery|OAK\s+Techniques|Attribution|OAK-Gnn|Key\s+teaching))",
     re.IGNORECASE | re.DOTALL,
 )
 
@@ -199,7 +222,10 @@ LOSS_LINE_RE = re.compile(
 def extract_loss_text(text: str) -> str | None:
     """Extract the loss/volume line from an example file's frontmatter."""
     m = LOSS_LINE_RE.search(text)
-    return m.group(1).strip() if m else None
+    if not m:
+        return None
+    # Strip markdown backslash-escapes (\$ → $) so amount regexes match
+    return m.group(1).strip().replace("\\$", "$")
 
 
 def check_loss_conflicts(examples: list[Path]) -> list[str]:
