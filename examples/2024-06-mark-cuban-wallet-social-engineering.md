@@ -2,7 +2,7 @@
 
 **Loss:** Crypto assets stolen from Mark Cuban's public wallet `markcuban.eth` via social engineering. Same device indicators linked to the $243M Genesis Creditor theft (Malone Lam, Veer Chetal, Jeandiel Serrano).
 **OAK Techniques observed:** OAK-T4 (Social Engineering/Phishing) — targeted social engineering of a high-net-worth individual via their publicly known wallet address; OAK-T6 (Authorization/Key Compromise) — wallet access compromise through social engineering rather than technical exploit.
-**Attribution:** **Identified** — linked via device indicators to Malone Lam (Greavys) and associates, the same group behind the $243M Genesis Creditor theft. ZachXBT investigation published May 2025.
+**Attribution:** **confirmed** — linked via device indicators to Malone Lam (Greavys) and associates, the same group behind the $243M Genesis Creditor theft. ZachXBT investigation published May 2025.
 
 **Key teaching point:** The Mark Cuban wallet compromise demonstrates the **device fingerprint cross-case linkage** pattern: the Cuban compromise (June 2024) and the $243M Genesis Creditor theft (August 2024) were linked through identical device indicators used during the attacks. The threat actors reused the same devices/infrastructure across multiple high-value targets, creating a forensic bridge between cases. Detection approach: device fingerprinting (browser fingerprint, IP ranges, session metadata) from wallet interactions should be preserved and cross-referenced across cases; repeat device usage by threat actors is an attribution primitive that links seemingly unrelated incidents.
 

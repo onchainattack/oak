@@ -2,7 +2,7 @@
 
 **Loss:** $500K+ stolen over one month (December 2024). 15+ X/Twitter accounts compromised — including Kick, Cursor, Alex Blania, The Arena, Brett — by sending targeted phishing emails impersonating the X/Twitter team.
 **OAK Techniques observed:** OAK-T4 (Social Engineering/Phishing) — targeted email phishing campaign impersonating X/Twitter platform team to compromise high-follower organization accounts.
-**Attribution:** **Pseudonymous** — threat actor not publicly identified. Phishing emails impersonated X/Twitter to harvest account credentials.
+**Attribution:** **pseudonymous** — threat actor not publicly identified. Phishing emails impersonated X/Twitter to harvest account credentials.
 
 **Key teaching point:** The December 2024 phishing wave demonstrates the **platform-team impersonation → account takeover** pattern: the attacker sends phishing emails impersonating the X/Twitter team (e.g., "Your account has a policy violation. Click here to verify."), harvests the credentials of high-follower organization accounts (Kick, Cursor, Alex Blania, The Arena, Brett), then uses the compromised accounts to post scam content. The impersonation is of the PLATFORM'S OWN TEAM, not a crypto project — making it effective against organizations that don't hold crypto but have valuable distribution power. Detection approach: any email claiming to be from a platform's team that requests credential entry should be verified through the platform's official app/website, not through email links; organizations with verified accounts should use hardware security keys (FIDO2/WebAuthn) for platform authentication, which are phishing-resistant.
 

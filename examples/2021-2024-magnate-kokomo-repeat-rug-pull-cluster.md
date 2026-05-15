@@ -2,7 +2,7 @@
 
 **Loss:** $25M+ across 8+ projects (Magnate, Kokomo, Lendora, Solfire, Crolend, HashDAO, Leaper Finance, Sorta Finance). Same scammer group repeatedly deploying DeFi protocols, accumulating TVL, and exiting.
 **OAK Techniques observed:** OAK-T2 (Token/Investment Fraud) — fraudulent DeFi protocol with intentional rug pull design; OAK-T7 (Laundering) — laundered proceeds from previous rugs recycled as seed liquidity for next project.
-**Attribution:** **Pseudonymous** — group tracked by ZachXBT through laundered fund flows between projects. $1M of laundered funds from previous rugs used to seed Leaper Finance on Blast (April 2024).
+**Attribution:** **pseudonymous** — group tracked by ZachXBT through laundered fund flows between projects. $1M of laundered funds from previous rugs used to seed Leaper Finance on Blast (April 2024).
 
 **Key teaching point:** The Magnate/Kokomo/Lendora/Solfire cluster demonstrates the **laundered-proceeds-as-seed-capital** pattern: the scammer group recycles funds from each rug pull to seed the next project's initial liquidity, creating a self-funding scam pipeline. Each project looks independent to casual observers — different chain, different name, different UI — but the funding source (laundered proceeds from the previous rug) links them all. Detection approach: trace the seed liquidity of new DeFi protocols backwards; if the funding source is a wallet that received proceeds from a known rug pull, flag the new protocol as a likely repeat scam before it launches.
 

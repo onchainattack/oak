@@ -2,7 +2,7 @@
 
 **Loss:** $282M+ in LTC and BTC from a single victim.
 **OAK Techniques observed:** OAK-T4.007 (Native App Social Phishing / Engagement-Weighted Platforms) — primary.
-**Attribution:** **Pseudonymous** — threat actor used social engineering via hardware wallet vendor impersonation.
+**Attribution:** **pseudonymous** — threat actor used social engineering via hardware wallet vendor impersonation.
 
 **Key teaching point:** This is the second-largest known social engineering theft against a single individual (after the $243M Genesis Creditor case). The attack vector targets the **hardware wallet recovery path**, not the wallet software itself: the attacker impersonated hardware wallet support to trick the victim into revealing seed/recovery information. Detection is almost entirely pre-incident: user education about hardware wallet recovery procedures. On-chain detection is post-hoc (large unauthorized transfers from previously dormant addresses).
 

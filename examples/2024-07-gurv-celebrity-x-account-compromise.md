@@ -2,7 +2,7 @@
 
 **Loss:** $530K+ from compromises of Sydney Sweeney and Bob Odenkirk X/Twitter accounts, used to launch Solana meme coin scams. Convicted UK hacker with prior criminal history.
 **OAK Techniques observed:** OAK-T6 (Authorization/Key Compromise) — X/Twitter account takeover of verified celebrity accounts; OAK-T2 (Token/Investment Fraud) — using celebrity accounts to launch/promote scam meme coins.
-**Attribution:** **Identified** — Gurvinder Bhangu (Gurv), convicted UK hacker. ZachXBT investigation published July 2024.
+**Attribution:** **confirmed** — Gurvinder Bhangu (Gurv), convicted UK hacker. ZachXBT investigation published July 2024.
 
 **Key teaching point:** The Gurv case demonstrates the **celebrity account compromise → meme coin launch** pattern: the attacker does not drain the compromised account's followers directly — instead, he uses the celebrity's verified account to post a meme coin contract address. Followers buy the token, believing it's endorsed by the celebrity. The attacker, who pre-minted or pre-allocated the token supply, sells into the celebrity-driven buying pressure. The celebrity's account is the pump mechanism; the meme coin is the extraction vehicle. Detection approach: when a verified celebrity account with no prior crypto content suddenly posts a token contract address, flag it as a likely compromise within seconds — the detection window between the compromise post and the first victim buy is measured in minutes.
 

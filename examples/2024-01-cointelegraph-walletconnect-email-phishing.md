@@ -2,7 +2,7 @@
 
 **Loss:** $580K+ stolen from victims who received phishing emails impersonating CoinTelegraph, WalletConnect, Token Terminal, and DeFi team email accounts.
 **OAK Techniques observed:** OAK-T4 (Social Engineering/Phishing) — email-based brand impersonation targeting crypto media and infrastructure tool brands that users trust for communications.
-**Attribution:** **Pseudonymous** — theft address `0xe7D13137923142A0424771E1778865b88752B3c7` identified. Attacker identity unknown.
+**Attribution:** **pseudonymous** — theft address `0xe7D13137923142A0424771E1778865b88752B3c7` identified. Attacker identity unknown.
 
 **Key teaching point:** The January 2024 phishing wave demonstrates the **infrastructure-tool brand impersonation** pattern: the attacker impersonated NOT a wallet or exchange (where users expect to send money), but the communication and infrastructure tools that users trust for INFORMATION — CoinTelegraph (news), WalletConnect (connection protocol), Token Terminal (analytics), and DeFi team emails. Victims who received an email appearing to be from one of these trusted sources were directed to a phishing site. The impersonated brands were chosen because users have legitimate email relationships with them (newsletters, protocol notifications, airdrop announcements). Detection approach: monitor for newly registered domains visually similar to crypto media/infrastructure brands that are sending email; DMARC/SPF/DKIM validation on inbound emails from these domains would catch the impersonation.
 

@@ -2,7 +2,7 @@
 
 **Loss:** ~$28M (2024 hack); suspect identified via NFT wash trading in Oct 2025.
 **OAK Techniques observed:** OAK-T9 (Smart Contract / Protocol Exploit) — primary; OAK-T3 (Market Manipulation) — NFT wash trading used for attribution.
-**Attribution:** **Identified** — one suspect tied to the $28M Bittensor hack identified by ZachXBT through anime NFT wash trade clustering. Suspect was a former employee.
+**Attribution:** **confirmed** — one suspect tied to the $28M Bittensor hack identified by ZachXBT through anime NFT wash trade clustering. Suspect was a former employee.
 
 **Key teaching point:** The Bittensor case demonstrates the **NFT forensics for attribution** pattern: the suspect was identified NOT through the hack's on-chain trail (which was well-laundered) but through their NFT trading behavior — they engaged in wash trading of anime NFTs on a separate wallet that was traceable to their identity. This is a cross-vector attribution technique: T9 (exploit) → T3 (NFT wash trading) → attribution. Detection approach: when a hack's laundering trail is cold, pivot to the suspect's non-criminal on-chain activity (NFT trading, DeFi positions, airdrop claims) — these are often less carefully obscured than the laundering path.
 

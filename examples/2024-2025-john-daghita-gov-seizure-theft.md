@@ -2,7 +2,7 @@
 
 **Loss:** $40M+ stolen from US government cryptocurrency seizure addresses; $90M+ in suspected total thefts across multiple incidents.
 **OAK Techniques observed:** OAK-T6 (Authorization / Key Compromise) — unauthorized access to government-controlled addresses via compromised private keys or insider access.
-**Attribution:** **Identified** — John Daghita ("Lick"), US-based. His father owns CMDSS, a company with active US government IT contracts. Arrested in early 2026. Connected to Dritan Kapllani Jr via B4B relationship.
+**Attribution:** **confirmed** — John Daghita ("Lick"), US-based. His father owns CMDSS, a company with active US government IT contracts. Arrested in early 2026. Connected to Dritan Kapllani Jr via B4B relationship.
 
 **Key teaching point:** The John Daghita case demonstrates the **government seizure address vulnerability** — cryptocurrency seized by law enforcement and held in government-controlled addresses is vulnerable to insider theft if the private key management infrastructure is compromised. The attack surface is not a smart contract or a protocol — it's the government's key management (or the contractor managing it). Detection approach: monitor government-known seizure addresses for unauthorized outbound transfers, particularly during periods of contractor personnel changes.
 

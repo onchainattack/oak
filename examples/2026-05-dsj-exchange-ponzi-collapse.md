@@ -2,7 +2,7 @@
 
 **Loss:** $150M+ total; $92M+ laundered across chains in a 6-day window (April 27 – May 3, 2026).
 **OAK Techniques observed:** OAK-T2 (Token/Investment Fraud) — Ponzi scheme primary; OAK-T7 (Laundering) — cross-chain laundering exit.
-**Attribution:** **Identified** — operators of DSJ Exchange / BG Wealth Sharing platform. ZachXBT led cross-chain tracing initiative with multiple contributors.
+**Attribution:** **confirmed** — operators of DSJ Exchange / BG Wealth Sharing platform. ZachXBT led cross-chain tracing initiative with multiple contributors.
 
 **Key teaching point:** The DSJ Exchange collapse demonstrates the **Ponzi-to-cross-chain-laundering exit pattern**: when a Ponzi scheme collapses, operators attempt to move remaining funds across multiple chains (Ethereum, TRON, BSC) within days to obscure the trail. The detection approach is similar to bridge exploit laundering: monitor for exchange outflows that fan out across chains + mixers + CEX deposits within a compressed time window.
 

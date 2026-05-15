@@ -2,7 +2,7 @@
 
 **Loss:** $4.4M+ drained from 25+ victims in a single day (October 25, 2023); cumulative losses from LastPass breach exceed $250M+ across the crypto victim population.
 **OAK Techniques observed:** OAK-T6 (Authorization / Key Compromise) — seed phrase/private key exposure via compromised password manager vault; OAK-T5 (Asset Drain) — systematic drain of identified wallets.
-**Attribution:** **Pseudonymous** — threat actor(s) systematically decrypting LastPass vaults and extracting crypto-relevant secrets. Attribution to specific individuals not public.
+**Attribution:** **pseudonymous** — threat actor(s) systematically decrypting LastPass vaults and extracting crypto-relevant secrets. Attribution to specific individuals not public.
 
 **Key teaching point:** The LastPass breach demonstrates the **password manager as key compromise vector** — users who stored seed phrases or private keys in LastPass vaults had those secrets exposed when the vaults were breached and decrypted. The attack is structurally distinct from phishing (the user never interacts with the attacker) and from hot wallet compromise (the attack surface was a third-party service, not the user's device). Detection approach: LastPass published breach notifications; crypto users who had ever stored wallet secrets in LastPass should have immediately migrated all funds to new wallets. On-chain, the detection is post-hoc: systematic draining of wallets whose seed phrases were known to be in breached LastPass vaults.
 

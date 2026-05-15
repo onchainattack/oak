@@ -2,7 +2,7 @@
 
 **Loss:** $24M held across 11 connected insider wallets tied to @MustStopMurad on Ethereum and Solana. All wallets funded from a single source address `0x93f019699ef400df7dc3477dbb6400ed9445a657`.
 **OAK Techniques observed:** OAK-T3 (Market Manipulation) — influencer-driven pump with pre-positioned insider wallets distributing into retail demand.
-**Attribution:** **Identified** — 11 high-confidence wallets tied to @MustStopMurad. Attribution evidence: all wallets funded from the same source address which is tied to Murad's public ENS and other on-chain activity. Investigation published October 2024.
+**Attribution:** **confirmed** — 11 high-confidence wallets tied to @MustStopMurad. Attribution evidence: all wallets funded from the same source address which is tied to Murad's public ENS and other on-chain activity. Investigation published October 2024.
 
 **Key teaching point:** The Murad wallet cluster demonstrates the **single-funding-source attribution** pattern: all 11 insider wallets were funded from one address (`0x93f01...`), which was itself tied to Murad's public ENS and on-chain identity. The multi-wallet obfuscation (splitting positions across 11 wallets to obscure total exposure) was undone by the shared funding source — a single point of attribution failure. Detection approach: when an influencer promotes a token, trace backwards from any suspicious selling wallet to its funding source; if the funding source connects to the influencer's known addresses, the full wallet cluster is attributable.
 

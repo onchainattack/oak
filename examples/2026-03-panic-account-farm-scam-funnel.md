@@ -2,7 +2,7 @@
 
 **Loss:** No direct loss figure — the operation manufactured viral panic to drive traffic → crypto scams (fake giveaways, phishing links). 10+ coordinated accounts with purchased followers posting doom content multiple times per day.
 **OAK Techniques observed:** OAK-T2 (Token/Investment Fraud) — fake giveaways and scam links promoted via manufactured panic traffic; OAK-T4 (Social Engineering/Phishing) — coordinated inauthentic behavior creating a false reality to funnel victims to scams.
-**Attribution:** **Pseudonymous** — 10+ account network identified. Individual operators not publicly named. ZachXBT investigation published March 2026.
+**Attribution:** **pseudonymous** — 10+ account network identified. Individual operators not publicly named. ZachXBT investigation published March 2026.
 
 **Key teaching point:** The panic-account farm demonstrates the **manufactured-reality-to-scam-funnel** pattern: the operators purchased X/Twitter accounts with existing followers, used them to post doom-content about war and politics to generate viral engagement, reposted content from alt accounts to create the illusion of multiple independent voices, and then — once the panic content had generated traffic — promoted fake giveaways and scam links. The doom-content is the traffic engine; the scams are the monetization. Detection approach: cross-reference accounts that alternate between high-engagement doom/panic content and crypto scam promotion; the content transition from "WW3 imminent" to "claim your airdrop" is the detection signal.
 

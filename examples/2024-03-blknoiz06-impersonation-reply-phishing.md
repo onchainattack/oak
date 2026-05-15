@@ -2,7 +2,7 @@
 
 **Loss:** $2.6M+ from victims in a single day (March 16, 2024). Largest single victim lost ~$1.2M.
 **OAK Techniques observed:** OAK-T4 (Social Engineering/Phishing) — account impersonation via reply threading on a prominent account's posts, exploiting the meme coin trading frenzy.
-**Attribution:** **Pseudonymous** — theft address `BUYgBfavHoGbfGYseyTWpzqKNeeYFjoJsgxiQcH4in4v` identified on Solana. Impersonator account not publicly named.
+**Attribution:** **pseudonymous** — theft address `BUYgBfavHoGbfGYseyTWpzqKNeeYFjoJsgxiQcH4in4v` identified on Solana. Impersonator account not publicly named.
 
 **Key teaching point:** The @blknoiz06 impersonation demonstrates the **reply-jacking phishing** pattern: the attacker created an account impersonating a well-known crypto trader (@blknoiz06) and replied to each of his posts with phishing links. Since the impersonator's reply appeared directly under the real @blknoiz06's content, victims saw the reply in context and assumed it was from the real account. The meme coin trading frenzy amplified effectiveness — users were conditioned to act fast (buy within seconds of a mention), reducing the time spent verifying account authenticity. Detection approach: monitor for new accounts with names visually similar to high-follower crypto accounts that are replying to the real account's posts with token addresses or links; the reply-to-real-post pattern is an automated detection signal.
 

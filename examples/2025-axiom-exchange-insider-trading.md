@@ -2,7 +2,7 @@
 
 **Loss:** ~$390M in platform revenue; employees abused internal tool access to track private wallet activity for front-running and insider trading. Over $100M in illicit profits.
 **OAK Techniques observed:** OAK-T3 (Market Manipulation — Insider Trading) — primary.
-**Attribution:** **Identified** — Broox Bauer ("@WheresBroox") and multiple other Axiom Exchange employees. Investigation published Feb 2026.
+**Attribution:** **confirmed** — Broox Bauer ("@WheresBroox") and multiple other Axiom Exchange employees. Investigation published Feb 2026.
 
 **Key teaching point:** Axiom Exchange demonstrates the **centralized platform insider trading via internal tools** pattern: employees of a crypto trading platform used the lack of access controls on internal tools to look up sensitive user details (wallet addresses, trading activity) and insider-trade by tracking private wallet activity since early 2025. The detection approach: audit internal tool access logs for employees querying user wallet activity not associated with their job function, correlated against that employee's personal trading activity.
 

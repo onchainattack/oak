@@ -2,7 +2,7 @@
 
 **Loss:** $900K stolen from the TICKER presale on Base by French developer Jolan Lacroix. Stolen funds spent on meme coins and Milady NFTs.
 **OAK Techniques observed:** OAK-T2 (Token/Investment Fraud) — presale fundraiser where the developer absconds with raised funds instead of deploying the protocol.
-**Attribution:** **Identified** — Jolan Lacroix, French developer. ZachXBT investigation published March 2024.
+**Attribution:** **confirmed** — Jolan Lacroix, French developer. ZachXBT investigation published March 2024.
 
 **Key teaching point:** The Jolan Lacroix case demonstrates the **presale exit** pattern: a developer raises funds through a token presale (investors send ETH/USDC to a presale address expecting token distribution), then absconds with the funds and spends them on speculative assets (meme coins, NFTs) rather than deploying the protocol. The presale address is the detection surface — presale funds should remain in the presale wallet until the token generation event; any movement of presale funds before TGE is an exit signal. Detection approach: monitor presale addresses for outgoing transactions before the announced TGE date; if presale funds move before the protocol launches, the presale is an exit scam in progress.
 

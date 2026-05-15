@@ -2,7 +2,7 @@
 
 **Loss:** $13.3M+ across 54 identified SIM swaps targeting crypto holders (4-month period, Aug–Nov 2023).
 **OAK Techniques observed:** OAK-T4.007 (Native App Social Phishing) — SIM swap as the account takeover primitive; OAK-T6 (Authorization / Key Compromise) — credential reset via telecom compromise.
-**Attribution:** **Multiple actors** — SIM swapping is a service sold by specialized threat actors on Telegram. Individual swappers are often teenagers/young adults. Some identified and arrested; most remain pseudonymous.
+**Attribution:** **pseudonymous** — SIM swapping is a service sold by specialized threat actors on Telegram. Individual swappers are often teenagers/young adults. Some identified and arrested; most remain pseudonymous.
 
 **Key teaching point:** SIM swap is the most effective account takeover primitive in crypto because it bypasses 2FA. The attacker calls the victim's mobile carrier, socially engineers a customer service rep into transferring the victim's phone number to a SIM card they control, then uses SMS-based password resets to take over exchange, email, and social media accounts. Detection is almost entirely pre-incident: hardware 2FA (YubiKey), carrier SIM lock PINs, and removing SMS as a 2FA method.
 

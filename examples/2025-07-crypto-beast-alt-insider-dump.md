@@ -2,7 +2,7 @@
 
 **Loss:** $190M market cap → $3M (98.4% crash). 45+ connected insider wallets sold $11M+ in a single day.
 **OAK Techniques observed:** OAK-T3.003 (Pump and Dump Coordination) — primary; OAK-T3.004 (Influencer Amplified Promotion and Dump) — primary.
-**Attribution:** **Identified** — @cryptobeastreal (Crypto Beast), who publicly denied involvement while 45+ connected wallets under his control sold.
+**Attribution:** **confirmed** — @cryptobeastreal (Crypto Beast), who publicly denied involvement while 45+ connected wallets under his control sold.
 
 **Key teaching point:** The ALT case demonstrates the **insider-denial + coordinated multi-wallet dump** pattern: the influencer publicly denies being behind the token while 45+ wallets on-chain are provably connected to the same funding source. The denial is itself part of the attack — it buys time for insider wallets to exit while retail holds. Detection approach: cluster wallets by funding source, monitor for synchronized sell-offs across the cluster during influencer denial posts.
 

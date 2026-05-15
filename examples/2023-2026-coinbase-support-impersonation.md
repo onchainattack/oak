@@ -2,7 +2,7 @@
 
 **Loss:** $300M+ annually across Coinbase users (per FOIA data); individual cases range from $275K to $6.5M.
 **OAK Techniques observed:** OAK-T4.007 (Native App Social Phishing) — primary. The attack pattern is consistent across multiple identified threat actors.
-**Attribution:** **Multiple identified** — Ronald Spektor ("Ron", $6.5M, arrested Dec 2025), Christian Nieves ("Daytwo/PawsOnHips", $4M+), Haby/Havard ($2M+, Canadian), Indian call scammer ring (elderly victim, $275K recovered).
+**Attribution:** **confirmed** — Ronald Spektor ("Ron", $6.5M, arrested Dec 2025), Christian Nieves ("Daytwo/PawsOnHips", $4M+), Haby/Havard ($2M+, Canadian), Indian call scammer ring (elderly victim, $275K recovered).
 
 **Key teaching point:** Coinbase support impersonation is the highest-volume social engineering pattern in crypto. The MO is consistent across threat actors: (1) obtain victim's personal information from data brokers/leaks, (2) spoof Coinbase support phone number, (3) create urgency ("your account is being drained"), (4) trick victim into providing credentials, (5) drain account to theft addresses, (6) launder through instant exchanges. The detection approach is pre-incident: Coinbase's aggressive risk models (account restrictions, $300M+ in prevented losses) are the primary defense. On-chain detection is post-hoc (unauthorized transfers from previously normal accounts).
 

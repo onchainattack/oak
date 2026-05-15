@@ -2,7 +2,7 @@
 
 **Loss:** $650K+ from 250+ victims across 16 tracked exchange deposit addresses. Individual victims lost $250-$3K, with one victim blackmailed for $20K additional after initial payment.
 **OAK Techniques observed:** OAK-T2 (Token/Investment Fraud) — fake trading performance to sell non-existent copy-trading services; OAK-T4 (Social Engineering/Phishing) — multi-stage manipulation including fake API keys, fabricated PNL screenshots, and blackmail escalation.
-**Attribution:** **Pseudonymous** — UK-based scammer operating under X/Twitter handles @ape_31 and @60711. UK Telecom IP address 81.78.179.107 logged into victim's TradingView account. Voice recording obtained. Identity not publicly confirmed.
+**Attribution:** **pseudonymous** — UK-based scammer operating under X/Twitter handles @ape_31 and @60711. UK Telecom IP address 81.78.179.107 logged into victim's TradingView account. Voice recording obtained. Identity not publicly confirmed.
 
 **Key teaching point:** The @ape_31 scam demonstrates the **fake PNL → paid service → blackmail escalation** pattern: (1) scammer posts fabricated PNL screenshots from a Bybit demo account; (2) runs a secondary "news" account to funnel followers; (3) offers copy-trading for $250-$500; (4) gives victim a fake API key that "shows" profitable trades (which don't exist); (5) demands more money — in one case escalating from $500 to a $20K demand with "0 liquidation price" claims; (6) blocks victim on payment. Detection approach: the TradingView login IP (81.78.179.107 — UK Telecom) is an attribution artifact; Bybit demo account screenshots have identifiable UI markers; correlated on-chain analysis of deposit addresses across 250+ victims reveals the scam's full scale.
 

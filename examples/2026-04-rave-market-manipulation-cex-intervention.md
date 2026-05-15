@@ -2,7 +2,7 @@
 
 **Loss:** RAVE token price crashed from $26 to $1 (-95%) within 24 hours on April 18, 2026. An additional -40% drop from $1 to $0.60 occurred on April 19 when multisig `0x53d7` (linked to RAVE initial distribution) deposited ~23M RAVE (~$23M) to two Bitget deposit addresses.
 **OAK Techniques observed:** OAK-T3 (Market Manipulation) — coordinated sell-off by initial distribution multisig; OAK-T12 (Market/MEV/Oracle) — CEX deposit address as manipulation detection surface.
-**Attribution:** **Traced** — multisig address `0x53d7` identified as linked to RAVE initial distribution. ZachXBT offered $10K bounty. Binance, Bitget, and Gate called to investigate. Bitget deposits from `0x53d7` directly observed.
+**Attribution:** **inferred-strong** — multisig address `0x53d7` identified as linked to RAVE initial distribution. ZachXBT offered $10K bounty. Binance, Bitget, and Gate called to investigate. Bitget deposits from `0x53d7` directly observed.
 
 **Key teaching point:** The RAVE crash demonstrates the **CEX deposit address as manipulation detection surface** pattern: the second leg of the crash ($1→$0.60, -40%) was directly observable when multisig `0x53d7` (linked to RAVE's initial token distribution) sent ~23M RAVE to Bitget deposit addresses. The CEX deposit address is a public on-chain artifact that reveals insider distribution BEFORE the sell executes on the exchange order book. Detection approach: monitor CEX deposit addresses for large token inflows from wallets linked to initial token distributions/team allocations; a multisig that distributed tokens at launch sending tokens to exchange deposit addresses is an imminent sell signal.
 

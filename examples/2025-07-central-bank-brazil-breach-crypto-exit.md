@@ -2,7 +2,7 @@
 
 **Loss:** Fiat funds stolen from reserve accounts of six Brazilian financial institutions after a cyberattack on the Central Bank of Brazil's service provider C&M. Attackers converted stolen fiat to cryptocurrency.
 **OAK Techniques observed:** OAK-T9 (Smart Contract / Protocol Exploit) — extended to traditional financial infrastructure compromise with crypto off-ramp; OAK-T7 (Laundering) — fiat-to-crypto conversion as the laundering bridge from traditional finance.
-**Attribution:** **Under investigation** — cyberattack on C&M (Central Bank service provider). Attacker identity not publicly confirmed.
+**Attribution:** **unattributed** — cyberattack on C&M (Central Bank service provider). Attacker identity not publicly confirmed.
 
 **Key teaching point:** The Central Bank of Brazil breach demonstrates the **traditional-finance-breach-to-crypto-conversion** pattern: the attacker compromised NOT a crypto exchange or protocol, but a traditional financial infrastructure provider (C&M, a Central Bank service provider), then used crypto as the EXIT VEHICLE to convert stolen fiat. The crypto ecosystem is not the target — it's the laundering layer. Detection approach: when a traditional financial institution breach is detected, monitor crypto exchanges for large fiat-to-crypto purchases originating from the breached institution's jurisdictions in the hours following the breach; the conversion from stolen fiat to crypto is the detection surface.
 

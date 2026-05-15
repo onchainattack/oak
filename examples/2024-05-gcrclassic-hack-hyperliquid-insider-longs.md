@@ -2,7 +2,7 @@
 
 **Loss:** $3.3M in leveraged insider trading profits via Hyperliquid perpetual futures. Attacker opened $2.3M ORDI and $1M ETHFI longs minutes before hacking @GCRClassic X account and posting about those assets, profiting from the price movement.
 **OAK Techniques observed:** OAK-T12 (Market/MEV/Oracle) — insider positioning via derivatives before market-moving information release; OAK-T6 (Authorization/Key Compromise) — X/Twitter account compromise of @GCRClassic.
-**Attribution:** **Traced** — connected to the $CAT meme coin team on Solana. Minutes before the GCRClassic hack, an address tied to the team opened $2.3M ORDI and $1M ETHFI longs on Hyperliquid.
+**Attribution:** **inferred-strong** — connected to the $CAT meme coin team on Solana. Minutes before the GCRClassic hack, an address tied to the team opened $2.3M ORDI and $1M ETHFI longs on Hyperliquid.
 
 **Key teaching point:** The GCR Classic hack demonstrates the **derivatives pre-positioning** pattern: the attacker didn't just hack a high-profile X account to post about tokens — they opened leveraged long positions on those tokens MINUTES BEFORE the hack. When the compromised account posted about ORDI and ETHFI, the prices moved, and the attacker's pre-opened longs became profitable. This is insider trading executed through account compromise as the information-release mechanism. Detection approach: monitor for large derivative positions opened on low-activity tokens immediately before a high-profile influencer account posts about those specific tokens — the timing correlation is the detection signal.
 

@@ -2,7 +2,7 @@
 
 **Loss:** Ongoing. 12 fake verified organization accounts identified in a 48-hour period alone (August 2023). Cumulative losses from verified org phishing across the ecosystem are in the tens of millions.
 **OAK Techniques observed:** OAK-T4 (Social Engineering/Phishing) — fake verified organization accounts on X/Twitter impersonating crypto projects and protocols; OAK-T11 (Supply Chain) — the verified org credential itself is the compromised supply chain element.
-**Attribution:** **Pseudonymous** — account farm operators not publicly identified. X/Twitter's verified organization program created the new attack surface.
+**Attribution:** **pseudonymous** — account farm operators not publicly identified. X/Twitter's verified organization program created the new attack surface.
 
 **Key teaching point:** The verified organization phishing wave demonstrates the **platform verification as attack surface** pattern: X/Twitter's "Verified Organizations" program was intended to make impersonation harder (gold checkmark = real organization), but it created a black market for verified org accounts. Scammers purchase or compromise verified org accounts, then rebrand them as crypto projects (matching profile picture, display name, bio) while retaining the gold checkmark. The victim sees a verified account and trusts it, unaware that the verification was for a different organization entirely. Detection approach: monitor for verified org accounts that recently changed their display name or handle to match a known crypto brand; rapid rebranding of a verified account is the detection signal.
 

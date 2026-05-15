@@ -2,7 +2,7 @@
 
 **Loss:** 4064 BTC (~$238M) suspiciously transferred. Funds routed through ThorChain, eXch, Kucoin, ChangeNow, Railgun, and Avalanche Bridge in rapid succession. Live reaction video of threat actors receiving the funds was later obtained.
 **OAK Techniques observed:** OAK-T10 (Bridge/Cross-Chain) — multi-hop cross-chain obfuscation: Bitcoin → Avalanche Bridge → ThorChain → Railgun (privacy protocol); OAK-T7 (Laundering) — instant exchange chain (eXch, ChangeNow, Kucoin) as intermediate hops.
-**Attribution:** **Pseudonymous** — threat actors visible in private video recording of their reaction to receiving $238M. Transaction hash `4b277ba298830ea538086114803b9487558bb093b5083e383e94db687fbe9090`.
+**Attribution:** **pseudonymous** — threat actors visible in private video recording of their reaction to receiving $238M. Transaction hash `4b277ba298830ea538086114803b9487558bb093b5083e383e94db687fbe9090`.
 
 **Key teaching point:** The 4064 BTC case demonstrates the **multi-hop cross-chain obfuscation pattern** where the attacker chains together bridges, instant exchanges, CEXs, and privacy protocols in a single rapid laundering sequence: BTC → Avalanche Bridge → ThorChain → eXch → Kucoin → ChangeNow → Railgun. No single hop provides privacy, but the combination across 6+ venues and 3+ chains fragments the tracing surface to the point where no single analytics provider has full visibility. Detection approach: unified cross-chain tracing across BTC, Ethereum, Avalanche, and ThorChain in a single time window; each individual hop has a counterparty with records, but the time pressure (hours, not days) requires automated multi-venue tracing.
 

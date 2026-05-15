@@ -2,7 +2,7 @@
 
 **Loss:** 16.8+ BTC (~$588K at time) from victims who installed a fake Ledger Live application from the official Microsoft App Store.
 **OAK Techniques observed:** OAK-T4.010 (Fake Security Tool Browser Extension Phishing) — extends to fake security tool in official app store; OAK-T6 (Authorization / Key Compromise) — seed phrase entry into fake app.
-**Attribution:** **Pseudonymous** — scammer address `bc1qg05gw43elzqxqnl...` identified on-chain.
+**Attribution:** **pseudonymous** — scammer address `bc1qg05gw43elzqxqnl...` identified on-chain.
 
 **Key teaching point:** The fake Ledger Live in the Microsoft App Store demonstrates the **official app store as phishing vector** — a user who follows best practices (downloading from the official Microsoft Store, not a random website) can still install a malicious application. The attack exploits trust in the app store's verification process. Detection approach: security vendors should monitor official app stores for brand-impersonating applications; users should verify that hardware wallet applications NEVER request seed phrase entry (Ledger Live never asks for your seed phrase — only the hardware device displays it).
 

@@ -2,7 +2,7 @@
 
 **Loss:** SOL stolen from Nuddies NFT project treasury. Project founder @kyledegods faked an external hack, stole treasury funds, and spent them on NFTs — then publicly performed devastation to holders.
 **OAK Techniques observed:** OAK-T4 (Social Engineering/Phishing) — fake hack narrative to deceive project community; OAK-T9 (Smart Contract / Protocol Exploit) — insider treasury drain disguised as external attack.
-**Attribution:** **Identified** — @kyledegods, founder of Nuddies NFT project. ZachXBT investigation published April 2024.
+**Attribution:** **confirmed** — @kyledegods, founder of Nuddies NFT project. ZachXBT investigation published April 2024.
 
 **Key teaching point:** The Kyle DeGods case demonstrates the **fake hack insider theft** pattern: the project founder drains the treasury, fabricates a narrative of being hacked, and performs emotional distress to the community ("I'm devastated, my wallets were compromised") — while the stolen funds are spent on NFTs and personal purchases. The "hack" is a social engineering operation directed at the PROJECT'S OWN COMMUNITY, not at an external victim. Detection approach: when a project claims a hack, trace the stolen funds on-chain; if they flow to wallets with prior interactions with the founder or to NFT purchases on the founder's known accounts, the "hack" is self-inflicted.
 

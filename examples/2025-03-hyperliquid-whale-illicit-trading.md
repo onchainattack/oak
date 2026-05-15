@@ -2,7 +2,7 @@
 
 **Loss:** ~$20M profit by alleged threat actor via highly leveraged positions on Hyperliquid (decentralized perpetuals exchange). Profit was extracted from the Hyperliquid liquidity pool, not directly from individual counterparties.
 **OAK Techniques observed:** OAK-T12 (Market / MEV / Oracle Manipulation) — position engineering with leverage.
-**Attribution:** **Disputed** — ZachXBT investigated the alleged identity of the whale. Suspect identified as William Parker (WP/AP), a UK-based trader with prior fraud convictions. Suspect denies involvement.
+**Attribution:** **inferred-weak** — ZachXBT investigated the alleged identity of the whale. Suspect identified as William Parker (WP/AP), a UK-based trader with prior fraud convictions. Suspect denies involvement.
 
 **Key teaching point:** The Hyperliquid whale case demonstrates the **illicit position engineering** pattern on decentralized leverage platforms: a trader uses multiple accounts to build highly leveraged positions, profits when the market moves in their favor, and the profit is effectively extracted from the protocol's liquidity pool (not from identifiable counterparties). The detection approach is: identify accounts that (1) take outlier-leverage positions relative to market norms, (2) are linked on-chain to known threat actor clusters, and (3) exhibit sudden profit extraction followed by immediate withdrawal.
 

@@ -2,7 +2,7 @@
 
 **Loss:** Scammers gained access to X/Twitter's Legal Request Portal by forging fake subpoenas using compromised Italian government email accounts. Used portal access to ban accounts, look up user information, and remove posts.
 **OAK Techniques observed:** OAK-T11 (Supply Chain) — government email compromise → abuse of law enforcement portal trust relationship; OAK-T4 (Social Engineering/Phishing) — fake subpoena forgery using legitimate government email accounts.
-**Attribution:** **Pseudonymous** — scammers not publicly identified. Italian government email accounts were the compromised supply chain element.
+**Attribution:** **pseudonymous** — scammers not publicly identified. Italian government email accounts were the compromised supply chain element.
 
 **Key teaching point:** The Italian Government email → Twitter Legal Request Portal compromise demonstrates the **government-credential-as-supply-chain-attack-vector** pattern: scammers compromised Italian government email accounts, then used those legitimate government email addresses to forge subpoenas submitted to X/Twitter's Legal Request Portal. Because the requests came FROM real government email addresses, the portal processed them as legitimate law enforcement requests — granting the scammers account bans, user information lookups, and post removal capabilities. Detection approach: law enforcement portals should verify not just the email domain (which can be compromised) but also the specific authorized personnel making the request against a known directory of prosecutors/agents; email domain verification alone is insufficient.
 

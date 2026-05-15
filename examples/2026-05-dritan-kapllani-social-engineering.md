@@ -2,7 +2,7 @@
 
 **Loss:** $19M+ from multiple victims via social engineering thefts targeting crypto holders.
 **OAK Techniques observed:** OAK-T4.007 (Native App Social Phishing / Engagement-Weighted Platforms) — primary; OAK-T7 (Laundering) — post-exploit.
-**Attribution:** **Identified** — Dritan Kapllani Jr, US-based threat actor. Connected on-chain to John Daghita ("Lick") via a B4B (business) relationship. John Daghita was investigated for $40M+ theft from US government seizure addresses.
+**Attribution:** **confirmed** — Dritan Kapllani Jr, US-based threat actor. Connected on-chain to John Daghita ("Lick") via a B4B (business) relationship. John Daghita was investigated for $40M+ theft from US government seizure addresses.
 
 **Key teaching point:** The Dritan Kapllani Jr case demonstrates the **social engineering specialist** profile: a threat actor who specializes exclusively in social engineering thefts (not smart contract exploits, not ransomware) from crypto holders. The profile is characterized by: luxury lifestyle flexing (cars, watches, private jets, gambling), B4B relationships with other social engineering scammers, and targeting of high-net-worth crypto holders identified through public wallet activity. Detection approach: monitor for threat actors who flex luxury lifestyle on social media while receiving large crypto inflows from addresses linked to known victim reports.
 

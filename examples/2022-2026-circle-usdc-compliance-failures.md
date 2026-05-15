@@ -2,7 +2,7 @@
 
 **Loss:** $420M+ in alleged compliance failures across 15 documented cases since 2022. US-regulated stablecoin issuer (Circle) took minimal action against illicit funds flowing through USDC.
 **OAK Techniques observed:** OAK-T7 (Laundering) — stablecoin issuer as unwitting/negligent laundering facilitator; regulatory compliance failure as a detection gap.
-**Attribution:** **Institutional** — Circle (USDC issuer). ZachXBT investigation published April 2026 documenting 15 cases of minimal action.
+**Attribution:** **confirmed** — Circle (USDC issuer). ZachXBT investigation published April 2026 documenting 15 cases of minimal action.
 
 **Key teaching point:** The Circle USDC files demonstrate the **stablecoin issuer freeze asymmetry** pattern: when illicit funds are held in USDC, the issuer (Circle) has the technical capability to freeze them — unlike decentralized assets (ETH, BTC). But Circle's documented pattern across 15 cases shows minimal action, making USDC the preferred stablecoin for laundering. This is the inverse of the Tether freeze cooperation model. Detection approach: cross-reference stablecoin issuer freeze rates across USDC, USDT, DAI, and FDUSD; the issuer with the lowest freeze rate is the laundering destination of choice — threat actors route through the issuer that freezes least.
 

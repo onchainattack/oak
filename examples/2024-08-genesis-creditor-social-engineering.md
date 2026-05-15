@@ -2,7 +2,7 @@
 
 **Loss:** ~$243M in BTC, ETH, and other crypto assets from a single Genesis Global Capital creditor.
 **OAK Techniques observed:** OAK-T4.007 (Native App Social Phishing / Engagement-Weighted Platforms) — primary; OAK-T7 (Laundering) — post-exploit.
-**Attribution:** **Identified** — three threat actors: Malone Iam ("Greavys"), Veer Chetal ("Wiz"), and Jeandiel Serrano ("Box"). Malone arrested in Miami (Sep 2024); Wiz and Box at large as of investigation date. A fourth associate, Aakaash ("Light/Dark"), assisted with laundering.
+**Attribution:** **confirmed** — three threat actors: Malone Iam ("Greavys"), Veer Chetal ("Wiz"), and Jeandiel Serrano ("Box"). Malone arrested in Miami (Sep 2024); Wiz and Box at large as of investigation date. A fourth associate, Aakaash ("Light/Dark"), assisted with laundering.
 
 **Key teaching point:** This is the largest known social engineering theft against a single individual in crypto history. The attack demonstrates the **multi-stage impersonation escalation** pattern: the attackers chained spoofed calls (Google Support → Gemini Support), each stage extracting credentials or authorizations that enabled the next. The victim was a sophisticated institutional creditor, not a retail user. The laundering used 15+ exchanges with rapid cross-asset swapping (BTC→LTC→ETH→XMR) to break traceability.
 

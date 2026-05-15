@@ -2,7 +2,7 @@
 
 **Loss:** $2M crypto ransom paid after family member kidnapped in France. $800K frozen with Binance Security team assistance. Six suspects tied to the crime.
 **OAK Techniques observed:** OAK-T5 (Asset Drain — Ransom) — physical extortion via kidnapping with crypto ransom demand; OAK-T7 (Laundering) — ransom payment tracing and exchange freeze.
-**Attribution:** **Identified** — six suspects tied to the kidnapping. ZachXBT led tracing efforts resulting in $800K freeze with Binance Security.
+**Attribution:** **confirmed** — six suspects tied to the kidnapping. ZachXBT led tracing efforts resulting in $800K freeze with Binance Security.
 
 **Key teaching point:** The TeufeurS case demonstrates the **physical-extortion-to-crypto-ransom** pattern: a kidnapping in physical space (France) generates a crypto ransom payment on-chain. The crypto trail is the detection surface — even when the predicate crime is physical (kidnapping), the ransom payment exists on-chain and can be traced, frozen, and used to identify suspects. Detection approach: when a kidnapping involves crypto ransom, every exchange that receives ransom funds is a freeze point; rapid reporting to exchange security teams within hours of payment is the critical time window — before the funds are withdrawn or converted to privacy coins.
 
