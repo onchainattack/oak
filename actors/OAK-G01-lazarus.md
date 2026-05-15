@@ -47,6 +47,7 @@ Operationally, Lazarus's modern crypto-theft playbook combines social engineerin
 - [`examples/2019-03-dragonex.md`](../examples/2019-03-dragonex.md) — DragonEx exchange compromise
 - [`examples/2019-11-upbit.md`](../examples/2019-11-upbit.md) — Upbit exchange hot-wallet drain
 - [`examples/2020-09-kucoin.md`](../examples/2020-09-kucoin.md) — KuCoin exchange hot-wallet theft
+- [`examples/2021-08-liquid-global.md`](../examples/2021-08-liquid-global.md) — Liquid Global warm-wallet compromise (~\$91M); inferred-strong G01 attribution with G08 (BlueNoroff) macOS-tooling fingerprint overlap.
 - [`examples/2021-12-ascendex.md`](../examples/2021-12-ascendex.md) — AscendEX hot-wallet compromise (~\$77.7M) across ETH/BSC/Polygon; inferred-strong G01 attribution.
 - [`examples/2022-06-harmony-horizon.md`](../examples/2022-06-harmony-horizon.md) — Harmony Horizon Bridge
 - [`examples/2023-09-coinex.md`](../examples/2023-09-coinex.md) — CoinEx hot-wallet theft

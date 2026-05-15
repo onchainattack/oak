@@ -51,7 +51,9 @@ OAK v0.1's Tactic catalog is on-chain-extraction-focused; G08's *intrusion* surf
 - **DMM Bitcoin (May 2024) — G01-primary with G08 overlap noted.** 2024-05-dmm-bitcoin — \$305M Ginco wallet-software supply-chain compromise. Attribution: confirmed-grade by FBI / DC3 / NPA December 2024 joint statement to *TraderTraitor* (FBI naming for the broader cluster) — OAK records the case under G01, with G08 fingerprint overlap noted in concurrent industry write-ups. The case is documented as a worked example under G01 rather than G08 because the primary attribution document (FBI / DC3 / NPA, `[fbidmm2024]`) names TraderTraitor specifically.
 - **npm and PyPI supply-chain insertion (2023–2025).** Multiple Phylum / Socket / Datadog Security Labs disclosures of malicious packages inserted into the open-source ecosystem under fake-developer personas, attributed to or substantially overlapping with BlueNoroff (overlapping with the *Contagious Interview* cluster naming from Palo Alto Unit 42). Attribution at *inferred-strong* per individual package family; the cohort-level claim is documented across multiple vendor reports. Worked examples for specific package families pending v0.x.
 
-_No public incidents in OAK format at v0.1. The incidents listed above are described for operator context; formal per-campaign example files are pending v0.x._
+- **Liquid Global exchange compromise (August 2021).** [2021-08-liquid-global](../examples/2021-08-liquid-global.md) — $97M exchange hot-wallet compromise attributed to BlueNoroff / Lazarus Group with G08 fingerprint overlap. The Liquid Global incident is documented as a worked example with G08 attribution noted alongside G01. Attribution at **inferred-strong** for the G08 component per industry-forensic partition between Lazarus Group (G01 — primary operational execution) and BlueNoroff (G08 — macOS-tooling fingerprint and crypto-exchange-targeting tradecraft).
+
+*No public incidents in OAK format at v0.1. The incidents listed above are described for operator context; formal per-campaign example files are pending v0.x.*
 
 ## Citations
 

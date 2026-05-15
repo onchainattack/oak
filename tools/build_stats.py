@@ -29,6 +29,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 
 YEAR_RE = re.compile(r"^(\d{4})")
+YEAR_MONTH_RE = re.compile(r"^(\d{4}-(?:0[1-9]|1[0-2]))")
 TECH_RE = re.compile(r"\bOAK-T(\d+)(?:\.\d+){1,2}\b")
 ACTOR_RE = re.compile(r"\bOAK-G\d{2}\b")
 PLACEHOLDER_RE = re.compile(r"\bOAK-(?:G|T|M|S)nn\b")
@@ -45,7 +46,7 @@ TACTIC_NAMES = {
     5: "Value Extraction",
     6: "Defense Evasion",
     7: "Laundering",
-    8: "Operational Reuse",
+    8: "Operator Continuity / Attribution Signals",
     9: "Smart-Contract Exploit",
     10: "Bridge / Cross-Chain",
     11: "Custody / Signing",
@@ -141,9 +142,9 @@ def gather_stats() -> dict[str, object]:
             by_tactic[t] += 1
         if e["year"]:
             by_year[e["year"]] += 1
-            ym = e["name"][:7]  # "YYYY-MM"
-            if re.match(r"^\d{4}-\d{2}$", ym):
-                by_year_month[ym] += 1
+            ym_match = YEAR_MONTH_RE.match(e["name"])
+            if ym_match:
+                by_year_month[ym_match.group(1)] += 1
         by_attribution[e["strength"]] += 1
         for a in e["actors"]:
             by_actor[a] += 1
