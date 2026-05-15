@@ -46,7 +46,51 @@ LOSS_AMOUNT_RE = re.compile(
     r"(?:~|approximately\s+)?\$[\d.,]+\s*(?:million|billion|[KMBT]|thousand)?",
     re.IGNORECASE,
 )
-LOSS_VALUE_RE = re.compile(r"\$([\d.,]+)\s*([KMBT]|million|billion|thousand)?", re.IGNORECASE)
+LOSS_VALUE_RE = re.compile(
+    r"~?\$([\d.,]+)\s*([KMBT]|million|billion|thousand)?",
+    re.IGNORECASE,
+)
+# Range like $1.46–$1.5B or $1.2M–$1.8M
+LOSS_RANGE_RE = re.compile(
+    r"~?\$([\d.,]+)\s*([KMBT]|million|billion|thousand)?"
+    r"\s*[-–—]\s*"
+    r"~?\$([\d.,]+)\s*([KMBT]|million|billion|thousand)?",
+    re.IGNORECASE,
+)
+
+
+def _to_millions(value_str: str, unit: str | None) -> float:
+    """Convert a parsed value + unit to millions USD."""
+    try:
+        value = float(value_str.replace(",", ""))
+    except ValueError:
+        return 0.0
+    u = (unit or "").lower()
+    if u in ("b", "billion"):
+        value *= 1000
+    elif u in ("t", "trillion"):
+        value *= 1_000_000
+    elif u in ("thousand", "k"):
+        value /= 1000
+    return value
+
+
+def parse_loss_millions(text: str) -> float | None:
+    """Extract dollar amounts from text, returning the largest found (normalized to millions USD)."""
+    best: float | None = None
+    for m in LOSS_RANGE_RE.finditer(text):
+        v1 = _to_millions(m.group(1), m.group(2))
+        v2 = _to_millions(m.group(3), m.group(4))
+        for v in (v1, v2):
+            if v > 0 and (best is None or v > best):
+                best = v
+    for m in LOSS_VALUE_RE.finditer(text):
+        v = _to_millions(m.group(1), m.group(2))
+        if v > 0 and (best is None or v > best):
+            best = v
+    return best
+
+
 ACTOR_ATTR_STATUS_RE = re.compile(
     r"\*\*Attribution status:\*\*\s*\*?(confirmed|inferred-strong|inferred-weak|pseudonymous|unattributed)\b",
     re.IGNORECASE,
@@ -95,26 +139,6 @@ def jaccard_similarity(a: set[str], b: set[str]) -> float:
     if not a or not b:
         return 0.0
     return len(a & b) / len(a | b)
-
-
-def parse_loss_millions(text: str) -> float | None:
-    """Extract the first dollar amount from text and normalize to millions USD."""
-    m = LOSS_VALUE_RE.search(text)
-    if not m:
-        return None
-    try:
-        value = float(m.group(1).replace(",", ""))
-    except ValueError:
-        return None
-    unit = (m.group(2) or "").lower()
-    if unit in ("b", "billion"):
-        value *= 1000
-    elif unit in ("t", "trillion"):
-        value *= 1_000_000
-    elif unit in ("thousand", "k"):
-        value /= 1000
-    # "m", "million", or no suffix — already in millions
-    return value
 
 
 # --- Check functions ---
@@ -166,13 +190,24 @@ def check_duplicate_tx_hashes(examples: list[Path]) -> list[str]:
     return issues
 
 
+LOSS_LINE_RE = re.compile(
+    r"\*\*(?:Loss|Total\s+loss|Direct\s+loss|Volume(?:\s+\w+)?|Cumulative(?:\s+\w+)?|Loss\s+\w+)[^*]*?:\*\*\s*(.+?)(?:\n\*\*|\n\n|\Z)",
+    re.IGNORECASE | re.DOTALL,
+)
+
+
+def extract_loss_text(text: str) -> str | None:
+    """Extract the loss/volume line from an example file's frontmatter."""
+    m = LOSS_LINE_RE.search(text)
+    return m.group(1).strip() if m else None
+
+
 def check_loss_conflicts(examples: list[Path]) -> list[str]:
     """Compare loss amounts in example files vs actor Observed Examples descriptions."""
     issues: list[str] = []
 
     # Build actor loss descriptions from Observed Examples
     actor_example_losses: dict[str, dict[str, float]] = defaultdict(dict)
-    # actor_id -> {example_path: loss_millions}
 
     for f in sorted((REPO / "actors").glob("OAK-G*.md")):
         aid = actor_id_from_filename(f.name)
@@ -180,12 +215,10 @@ def check_loss_conflicts(examples: list[Path]) -> list[str]:
             continue
         text = f.read_text(encoding="utf-8")
 
-        # Parse Observed Examples section: each bullet line starts with example path and dash
         for line in text.split("\n"):
             stripped = line.strip()
             if not stripped.startswith("- ["):
                 continue
-            # Extract example path
             path_m = re.search(r"examples/([A-Za-z0-9._-]+\.md)", stripped)
             if not path_m:
                 continue
@@ -197,7 +230,10 @@ def check_loss_conflicts(examples: list[Path]) -> list[str]:
     # Compare against example file loss amounts
     for path in examples:
         text = path.read_text(encoding="utf-8")
-        ex_loss = parse_loss_millions(text)
+        loss_text = extract_loss_text(text)
+        if not loss_text:
+            continue
+        ex_loss = parse_loss_millions(loss_text)
         if ex_loss is None:
             continue
 
