@@ -34,102 +34,26 @@ import sys
 from collections import Counter
 from pathlib import Path
 
+from common import (
+    ID_RE,
+    PLACEHOLDER_RE,
+    ATTR_STRENGTH_RE,
+    build_inventory,
+    parse_taxonomy_gaps_candidates,
+)
+
 REPO = Path(__file__).resolve().parent.parent
 
-# OAK ID matcher: captures any prefixed reference.
-ID_RE = re.compile(
-    r"\bOAK-(?:T\d+(?:\.\d+){0,2}|G\d{2}|M\d{2}|S\d{2}|DS-\d{2})\b"
-)
-# Generic placeholders that should not be flagged as broken.
-PLACEHOLDER_RE = re.compile(r"\bOAK-(?:G|T|M|S)nn\b")
-
 H1_RE = re.compile(r"^# .+", re.MULTILINE)
-# Accept Loss / Total loss / Direct loss / Loss range / Loss alleged /
-# Volume / Volume laundered / Cumulative metrics — different incident classes
-# (laundering, market-collapse, MEV-operator, federal-complaint) use distinct
-# headers but all carry the magnitude / quantification claim the validator
-# wants to see.
 LOSS_RE = re.compile(
     r"\*\*(?:Loss|Total\s+loss|Direct\s+loss|Volume(?:\s+\w+)?|Cumulative(?:\s+\w+)?|Loss\s+\w+)[^*]*?:\*\*",
     re.IGNORECASE,
 )
-# Accept the OAK-Techniques header inline within a paragraph too — pre-template
-# legacy files frequently dump multiple `**X:**` markers in a single paragraph.
 TECHNIQUES_RE = re.compile(r"\*\*OAK Techniques observed:\*\*")
 ATTRIBUTION_RE = re.compile(r"^\*\*Attribution:\*\*", re.MULTILINE)
 SUMMARY_H2_RE = re.compile(r"^## Summary\b", re.MULTILINE)
 REFS_H2_RE = re.compile(r"^## Public references\b", re.MULTILINE)
-ATTR_STRENGTH_RE = re.compile(
-    r"\*\*(confirmed|inferred-strong|inferred-weak|pseudonymous|unattributed)\b"
-)
 TACTIC_FROM_TECH_RE = re.compile(r"OAK-T(\d+)\.\d+")
-
-
-def build_inventory() -> dict[str, set[str]]:
-    inv: dict[str, set[str]] = {
-        "tactics": set(),
-        "techniques": set(),
-        "actors": set(),
-        "mitigations": set(),
-        "software": set(),
-        "datasources": set(),
-    }
-
-    for f in (REPO / "tactics").glob("T*.md"):
-        m = re.match(r"^(T\d+)-", f.name)
-        if m:
-            inv["tactics"].add(f"OAK-{m.group(1)}")
-
-    for f in (REPO / "techniques").glob("T*.md"):
-        m = re.match(r"^(T\d+(?:\.\d+){1,2})-", f.name)
-        if m:
-            inv["techniques"].add(f"OAK-{m.group(1)}")
-
-    for f in (REPO / "actors").glob("OAK-G*.md"):
-        m = re.match(r"^(OAK-G\d{2})", f.name)
-        if m:
-            inv["actors"].add(m.group(1))
-
-    for f in (REPO / "mitigations").glob("OAK-M*.md"):
-        m = re.match(r"^(OAK-M\d{2})", f.name)
-        if m:
-            inv["mitigations"].add(m.group(1))
-
-    for f in (REPO / "software").glob("OAK-S*.md"):
-        m = re.match(r"^(OAK-S\d{2})", f.name)
-        if m:
-            inv["software"].add(m.group(1))
-
-    for f in (REPO / "data-sources").glob("OAK-DS-*.md"):
-        m = re.match(r"^(OAK-DS-\d{2})", f.name)
-        if m:
-            inv["datasources"].add(m.group(1))
-
-    return inv
-
-
-def parse_taxonomy_gaps_candidates() -> tuple[set[str], set[str]]:
-    """Collect candidate IDs proposed in TAXONOMY-GAPS.md.
-
-    Returns (numbered_candidates, placeholder_slots):
-      numbered_candidates — set of OAK-T#.###[.###] form for proposed sub-techniques
-      placeholder_slots   — set of literal "T#.x" markers (not used for resolution
-                            but useful in roll-up)
-    """
-    candidates: set[str] = set()
-    placeholders: set[str] = set()
-    path = REPO / "TAXONOMY-GAPS.md"
-    if not path.exists():
-        return candidates, placeholders
-    text = path.read_text(encoding="utf-8")
-
-    for m in re.finditer(r"\bT(\d+)\.(\d+)\.(\d+)\b", text):
-        candidates.add(f"OAK-T{m.group(1)}.{m.group(2)}.{m.group(3)}")
-    for m in re.finditer(r"\bT(\d+)\.(\d+)\b(?!\.\d)", text):
-        candidates.add(f"OAK-T{m.group(1)}.{m.group(2)}")
-    for m in re.finditer(r"\bT\d+\.x\b", text):
-        placeholders.add(m.group(0))
-    return candidates, placeholders
 
 
 def check_example_structure(path: Path) -> list[str]:
@@ -180,7 +104,6 @@ def get_attribution_strength(text: str) -> str | None:
 
 
 def get_tactic_codes(text: str) -> set[str]:
-    """Extract tactic prefixes from technique references in an example."""
     return {f"T{m}" for m in TACTIC_FROM_TECH_RE.findall(text)}
 
 

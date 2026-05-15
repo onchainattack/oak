@@ -43,138 +43,31 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parent.parent
+from common import (
+    REPO,
+    TECHNIQUE_REF_RE,
+    ACTOR_REF_RE,
+    EXAMPLE_REF_RE,
+    ATTRIBUTION_HEADER_RE,
+    ACTOR_LINK_RE,
+    ATTRIBUTION_NEGATION_RE,
+    MAPS_TO_RE,
+    section_body,
+    has_no_anchor_marker,
+    collect_oak_refs,
+    collect_example_refs,
+    build_inventory,
+    parse_taxonomy_gaps_candidates,
+    technique_id_from_filename,
+    actor_id_from_filename,
+    mitigation_id_from_filename,
+)
 
-EXAMPLE_REF_RE = re.compile(r"examples/[A-Za-z0-9._-]+\.md")
-ID_RE = re.compile(
-    r"\bOAK-(?:T\d+(?:\.\d+){0,2}|G\d{2}|M\d{2}|S\d{2}|DS-\d{2})\b"
-)
-PLACEHOLDER_RE = re.compile(r"\bOAK-(?:G|T|M|S)nn\b")
-TECHNIQUE_REF_RE = re.compile(r"\bOAK-T\d+(?:\.\d+){1,2}\b")
-ACTOR_REF_RE = re.compile(r"\bOAK-G\d{2}\b")
-
-# Canonical attribution signals (either-or, both unambiguous positive):
-#   1) `**OAK-Gnn:**` header line listing OAK-G## ids (modern template)
-#   2) A markdown link to `../actors/OAK-G\d{2}-{slug}.md` anywhere in the
-#      file (legacy and modern). Only an explicit link to an actor card is
-#      treated as a positive attribution claim — plain-text "OAK-G01"
-#      mentions in narrative text are commentary, not attribution, and are
-#      ignored to avoid false positives from negation contexts ("not OAK-G01
-#      attributed", "distinct from OAK-G01 cohort", "no public OAK-G01
-#      attribution").
-ATTRIBUTION_HEADER_RE = re.compile(
-    r"^\*\*OAK-Gnn:\*\*\s*(.+?)$", re.MULTILINE
-)
-ACTOR_LINK_RE = re.compile(
-    r"\.\./actors/(OAK-G\d{2})-[A-Za-z0-9._-]+\.md"
-)
-ATTRIBUTION_NEGATION_RE = re.compile(
-    r"\b(unattributed|not\s+(?:yet\s+)?attributed|no\s+attribution|attribution\s+pending)\b",
-    re.IGNORECASE,
-)
-MITIGATION_REF_RE = re.compile(r"\bOAK-M\d{2}\b")
 SOFTWARE_REF_RE = re.compile(r"\bOAK-S\d{2}\b")
-
-H2_RE = re.compile(r"^## (.+?)$", re.MULTILINE)
-MAPS_TO_RE = re.compile(r"^\*\*Maps to Techniques:\*\*\s*(.+?)$", re.MULTILINE)
 USED_BY_GROUPS_RE = re.compile(r"^\*\*Used by Groups:\*\*\s*(.+?)$", re.MULTILINE)
 OBSERVED_TECH_RE = re.compile(
     r"^\*\*Observed Techniques:\*\*\s*(.+?)$", re.MULTILINE
 )
-
-NO_ANCHOR_PHRASES = (
-    "no public anchor",
-    "no public incidents",
-    "no canonical example",
-    "anchor pending",
-    "pending field anchor",
-)
-
-
-def section_body(text: str, heading: str) -> str | None:
-    """Return the body of a `## heading` section, or None if not present."""
-    pattern = re.compile(
-        rf"^## {re.escape(heading)}\s*$(.+?)(?=^## |\Z)",
-        re.MULTILINE | re.DOTALL,
-    )
-    m = pattern.search(text)
-    if not m:
-        return None
-    return m.group(1)
-
-
-def has_no_anchor_marker(body: str | None) -> bool:
-    if body is None:
-        return False
-    lower = body.lower()
-    return any(phrase in lower for phrase in NO_ANCHOR_PHRASES)
-
-
-def collect_example_refs(text: str) -> set[str]:
-    return set(EXAMPLE_REF_RE.findall(text))
-
-
-def collect_oak_refs(text: str, pattern: re.Pattern[str]) -> set[str]:
-    cleaned = PLACEHOLDER_RE.sub("", text)
-    return set(pattern.findall(cleaned))
-
-
-def build_inventory() -> dict[str, set[str]]:
-    inv: dict[str, set[str]] = {
-        "techniques": set(),
-        "actors": set(),
-        "mitigations": set(),
-        "software": set(),
-    }
-    for f in (REPO / "techniques").glob("T*.md"):
-        m = re.match(r"^(T\d+(?:\.\d+){1,2})-", f.name)
-        if m:
-            inv["techniques"].add(f"OAK-{m.group(1)}")
-    for f in (REPO / "actors").glob("OAK-G*.md"):
-        m = re.match(r"^(OAK-G\d{2})", f.name)
-        if m:
-            inv["actors"].add(m.group(1))
-    for f in (REPO / "mitigations").glob("OAK-M*.md"):
-        m = re.match(r"^(OAK-M\d{2})", f.name)
-        if m:
-            inv["mitigations"].add(m.group(1))
-    for f in (REPO / "software").glob("OAK-S*.md"):
-        m = re.match(r"^(OAK-S\d{2})", f.name)
-        if m:
-            inv["software"].add(m.group(1))
-    return inv
-
-
-def parse_taxonomy_gaps_candidates() -> set[str]:
-    candidates: set[str] = set()
-    path = REPO / "TAXONOMY-GAPS.md"
-    if not path.exists():
-        return candidates
-    text = path.read_text(encoding="utf-8")
-    for m in re.finditer(r"\bT(\d+)\.(\d+)\.(\d+)\b", text):
-        candidates.add(f"OAK-T{m.group(1)}.{m.group(2)}.{m.group(3)}")
-    for m in re.finditer(r"\bT(\d+)\.(\d+)\b(?!\.\d)", text):
-        candidates.add(f"OAK-T{m.group(1)}.{m.group(2)}")
-    return candidates
-
-
-def actor_id_from_path(path: Path) -> str:
-    return path.name.split("-name", 1)[0].split("-")[0] + path.name.split("-")[1]
-
-
-def actor_id_from_filename(filename: str) -> str | None:
-    m = re.match(r"^(OAK-G\d{2})", filename)
-    return m.group(1) if m else None
-
-
-def technique_id_from_filename(filename: str) -> str | None:
-    m = re.match(r"^(T\d+(?:\.\d+){1,2})-", filename)
-    return f"OAK-{m.group(1)}" if m else None
-
-
-def mitigation_id_from_filename(filename: str) -> str | None:
-    m = re.match(r"^(OAK-M\d{2})", filename)
-    return m.group(1) if m else None
 
 
 def software_id_from_filename(filename: str) -> str | None:
@@ -188,7 +81,7 @@ def main() -> int:
     strict_tech = "--strict-techniques" in args
 
     inv = build_inventory()
-    candidates = parse_taxonomy_gaps_candidates()
+    candidates = parse_taxonomy_gaps_candidates()[0]
     valid_techniques = inv["techniques"] | candidates
 
     examples_dir = REPO / "examples"
@@ -201,8 +94,6 @@ def main() -> int:
     for ex in examples:
         text = ex.read_text(encoding="utf-8")
         rel = f"examples/{ex.name}"
-        # Canonical attribution: **OAK-Gnn:** header line + markdown links to
-        # actor cards. Plain-text body mentions are commentary, not attribution.
         attribution_actors: set[str] = set()
         for m in ATTRIBUTION_HEADER_RE.finditer(text):
             line = m.group(1)
@@ -213,7 +104,6 @@ def main() -> int:
         example_actors[rel] = attribution_actors
         example_techniques[rel] = collect_oak_refs(text, TECHNIQUE_REF_RE)
 
-    # Index actor -> set of example paths attributed in incidents
     actor_attributed_in: dict[str, set[str]] = defaultdict(set)
     for ex_path, actors in example_actors.items():
         for a in actors:
@@ -224,7 +114,6 @@ def main() -> int:
         for t in techs:
             technique_referenced_in[t].add(ex_path)
 
-    # Read actor files: extract Observed Examples body and listed example paths
     actor_observed: dict[str, set[str]] = {}
     actor_no_anchor: dict[str, bool] = {}
     for f in sorted((REPO / "actors").glob("OAK-G*.md")):
@@ -240,7 +129,6 @@ def main() -> int:
             actor_observed[aid] = collect_example_refs(body)
             actor_no_anchor[aid] = has_no_anchor_marker(body)
 
-    # Read technique files: extract Real-world examples body and listed example paths
     tech_examples: dict[str, set[str]] = {}
     tech_no_anchor: dict[str, bool] = {}
     for f in sorted((REPO / "techniques").glob("T*.md")):
@@ -256,7 +144,6 @@ def main() -> int:
             tech_examples[tid] = collect_example_refs(body)
             tech_no_anchor[tid] = has_no_anchor_marker(body)
 
-    # Read mitigation files: extract Maps to Techniques metadata
     mitigation_maps: dict[str, set[str]] = {}
     for f in sorted((REPO / "mitigations").glob("OAK-M*.md")):
         mid = mitigation_id_from_filename(f.name)
@@ -269,7 +156,6 @@ def main() -> int:
         else:
             mitigation_maps[mid] = set()
 
-    # Read software files: extract Used by Groups + Observed Techniques metadata
     software_groups: dict[str, set[str]] = {}
     software_techs: dict[str, set[str]] = {}
     for f in sorted((REPO / "software").glob("OAK-S*.md")):
@@ -317,7 +203,6 @@ def main() -> int:
             )
             warnings += 1
 
-        # Bidirectional: examples that attribute actor but actor file does not list
         missing_backlinks = sorted(attributed - listed)
         if missing_backlinks and not no_anchor:
             for path in missing_backlinks:
@@ -327,7 +212,6 @@ def main() -> int:
                 )
                 hard_fail += 1
 
-        # Reverse: examples listed in actor file but actor file does not appear in example
         missing_forward = sorted(listed - attributed)
         for path in missing_forward:
             ex_file = REPO / path
