@@ -232,6 +232,7 @@ output_alert: [oak_technique, detection_path, severity, chain,
 test_fixtures:
   positive:
     - 2026-05-thorchain-router-exploit                               # Bifrost GetSignablePayload() truncated to inner Tx only; unsigned direction flag flipped inbound→outbound; proposer forged migration observation → $7.4M drained
+    - 2024-2026-cross-chain-bridge-observer-signature-scope-audit    # Pre-exploit audit methodology: GetSignablePayload() coverage vs full ObservedTx struct; unsigned execution-relevant wrapper fields identified across multiple bridge protocols
   negative:
     - "Bridge observer protocol where GetSignablePayload() covers the full ObservedTx struct including direction, destination, chain, and memo fields"
     - "Legitimate vault migration where the destination address is cryptographically derivable from the bridge TSS pubkey"
