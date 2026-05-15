@@ -249,7 +249,7 @@ def check_loss_conflicts(examples: list[Path]) -> list[str]:
             if not path_m:
                 continue
             ex_path = f"examples/{path_m.group(1)}"
-            loss = parse_loss_millions(stripped)
+            loss = parse_loss_millions(stripped.replace("\\$", "$"))
             if loss is not None:
                 actor_example_losses[aid][ex_path] = loss
 

@@ -41,7 +41,7 @@ OAK v0.1's Tactic catalog is on-chain-extraction-focused; Cl0p's *intrusion* sur
 
 Worked examples in `examples/`:
 
-- [`examples/2023-06-moveit-clop-campaign.md`](../examples/2023-06-moveit-clop-campaign.md) — MOVEit Transfer mass-extortion campaign; ~2,500 victim organisations; estimated \$75–100M total ransom volume; canonical OAK-G14 worked example.
+- [`examples/2023-06-moveit-clop-campaign.md`](../examples/2023-06-moveit-clop-campaign.md) — MOVEit Transfer mass-extortion campaign; ~2,500 victim organisations; estimated \$75M–\$100M+ total ransom volume; canonical OAK-G14 worked example.
 
 The high-salience public-record events anchoring the cluster (narrative — see worked example above for the canonical entry):
 
