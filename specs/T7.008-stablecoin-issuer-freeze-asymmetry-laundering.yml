@@ -1,0 +1,108 @@
+oak_techniques: [OAK-T7.008]
+spec_id: oak-detection-T7.008
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect laundering flows that exploit divergence in freeze/block policies
+  across stablecoin issuers — most notably between Circle (USDC, which froze
+  Tornado Cash-sanctioned addresses) and Tether (USDT, which applied freezes
+  more selectively). The launderer routes proceeds into the stablecoin whose
+  issuer is least likely to freeze for the holding-and-transit leg.
+  Detection operates at the per-cluster stablecoin-issuer preference ratio
+  and freeze-event-triggered conversion monitoring layers. Excludes: T7.002
+  (CEX deposit layering — exchange-level compliance variation, not issuer-
+  level); T7.006 (yield-strategy laundering — yield-user crowd as cover,
+  not issuer-policy gap).
+
+data_sources: [dex_trades, tx_call_trace, funder_graph, contract_events,
+               cex_kyc_data]
+
+detection_logic:
+  description: |
+    Four detection paths. PATH A (per-cluster stablecoin-issuer preference
+    ratio): compute USDT-held to USDC-held notional ratio over rolling
+    windows per watchlisted cluster; alert on ratios exceeding threshold
+    with a shift from prior balanced baseline. PATH B (pre-off-ramp holding
+    duration by issuer): compare USDC vs. USDT pre-off-ramp holding duration;
+    alert on clusters whose USDC holding duration is significantly shorter.
+    PATH C (freeze-event-triggered conversion): on each stablecoin freeze
+    event, identify clusters converting from the frozen issuer's token to a
+    competitor's token within a configurable post-freeze window. PATH D
+    (downstream off-ramp stablecoin-mix analysis): monitor stablecoin-mix
+    of deposits at CEXes and fiat off-ramps attributed to watchlisted clusters.
+  pseudocode: |
+    # PATH A — per-cluster stablecoin-issuer preference ratio
+    for each watchlisted_cluster C:
+      for each rolling_window w:
+        usdt_notional ← Σ C.holdings("USDT", w)
+        usdc_notional ← Σ C.holdings("USDC", w)
+        if usdc_notional > 0:
+          ratio ← usdt_notional / usdc_notional
+          if ratio > issuer_preference_threshold
+             and ratio > C.historical_ratio * preference_shift_multiplier:
+            emit(PATH_A, cluster=C, window=w, usdt_usdc_ratio=ratio,
+                 historical_ratio=C.historical_ratio, severity=medium)
+
+    # PATH B — pre-off-ramp holding duration by issuer
+    for each watchlisted_cluster C:
+      for each off_ramp_deposit D:
+        usdc_holding ← avg([h.duration for h in C.holdings if h.token == "USDC"])
+        usdt_holding ← avg([h.duration for h in C.holdings if h.token == "USDT"])
+        if usdc_holding < usdt_holding * holding_duration_asymmetry:
+          emit(PATH_B, cluster=C, usdc_avg_hold=usdc_holding,
+               usdt_avg_hold=usdt_holding, severity=high)
+
+    # PATH C — freeze-event-triggered conversion
+    for each freeze_event F on stablecoin S:
+      for each watchlisted_cluster C:
+        conversions ← [T for T in C.trades
+                       if T.token_in == S and T.block ∈ [F.block, F.block + freeze_reaction_window]]
+        for each conv in conversions:
+          emit(PATH_C, cluster=C, freeze_event=F, frozen_issuer=S,
+               converted_to=conv.token_out, notional=conv.value_usd,
+               reaction_blocks=conv.block - F.block, severity=critical)
+
+    # PATH D — downstream off-ramp stablecoin-mix
+    for each exchange E:
+      for each watchlisted_cluster C depositing to E:
+        mix ← C.deposit_stablecoin_mix(E, lookback=deposit_mix_window)
+        baseline ← E.global_stablecoin_mix()
+        if mix.usdt_ratio > baseline.usdt_ratio * mix_divergence_threshold:
+          emit(PATH_D, exchange=E, cluster=C, cluster_mix=mix,
+               baseline_mix=baseline, severity=medium)
+
+parameters:
+  issuer_preference_threshold:       { type: number,   default: 3.0 }
+  preference_shift_multiplier:       { type: number,   default: 2.0 }
+  holding_duration_asymmetry:        { type: number,   default: 0.5 }
+  freeze_reaction_window:            { type: integer,  default: 7200 }     # blocks, ~24h
+  deposit_mix_window:                { type: duration, default: 90d }
+  mix_divergence_threshold:          { type: number,   default: 2.0 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               cluster, stablecoin_issuer, preference_ratio,
+               freeze_event, conversion_notional, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-post-tornado-cash-usdc-usdt-freeze-asymmetry                  # Foundational freeze-asymmetry event
+    - 2024-chainalysis-laundering-report-issuer-selection                # Cohort-level issuer-preference documentation
+  negative:
+    - "Cluster holding USDT predominantly since inception without freeze-correlated shift — stable preference, not T7.008"
+    - "Legitimate user preferring USDT for CEX deposit compatibility — no watchlisted-cluster attribution"
+
+false_positive_modes:
+  - Legitimate stablecoin preference from DeFi protocol integration (e.g., protocol exclusively supports USDC) — distinguish via per-protocol integration context
+  - Cluster that has always held predominantly USDT pre-dating any freeze event — PATH A requires a shift from prior balanced or USDC-preferred baseline
+  - Regulatory-driven stablecoin-mix shifts applying uniformly across all market participants — distinguish by restricting to watchlisted-source-cluster attribution
+  - USDC/USDT conversion for legitimate rate arbitrage during depeg events — distinguish via profitability analysis (arbitrageurs profit; launderers accept the spread)
+
+mitigations: [OAK-M23, OAK-M24]
+
+reference_implementations:
+  - { target: chainalysis-reactor,    chain: cross-chain, url: "" }
+  - { target: trm-forensics,          chain: cross-chain, url: "" }
+  - { target: elliptic-investigator,  chain: cross-chain, url: "" }

@@ -1,0 +1,114 @@
+oak_techniques: [OAK-T7.007]
+spec_id: oak-detection-T7.007
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect laundering flows routed through DEX aggregators (1inch, 0x/Matcha,
+  Paraswap, CowSwap, Odos) where the operator exploits routing complexity
+  to fragment the chain-analysis trail. Detection distinguishes between
+  legitimate execution-optimising aggregator use and fragmentation-maximising
+  laundering use by comparing per-trade route-path entropy against per-
+  aggregator per-asset-pair baselines. Excludes: T7.001 (mixer-routed hop
+  — uses explicit obfuscation services); T7.003 (cross-chain bridge
+  laundering — crosses chain boundaries, not within-chain fragmentation);
+  T7.006 (yield-strategy laundering — temporal obfuscation via yield-user
+  crowd, not structural obfuscation via routing complexity).
+
+data_sources: [dex_trades, tx_call_trace, funder_graph,
+               aggregator_routing_api]
+
+detection_logic:
+  description: |
+    Five detection paths. PATH A (route-path entropy vs. baseline): compute
+    hop count, intermediate token count, and split-venue count per
+    aggregator-routed trade attributed to a watchlisted cluster; compare
+    against per-aggregator per-asset-pair baselines. PATH B (split-route
+    efficiency analysis): compute execution price vs. optimal single-venue
+    price; flag trades sacrificing material basis points to routing
+    complexity. PATH C (aggregator-contract interaction churn): flag
+    clusters interacting with N>=3 different aggregator-router contracts
+    within a short window. PATH D (post-aggregator cluster divergence):
+    flag trades where a watchlisted input cluster produces a previously-
+    unseen output cluster. PATH E (cross-aggregator churn): detect
+    sequential aggregator routing within a short block window.
+  pseudocode: |
+    AGGREGATOR_ROUTERS = {1inch_v5, 0x_exchange_proxy, paraswap_augustus,
+                          cowswap_settlement, odos_router, uniswap_x}
+
+    # PATH A — route-path entropy vs. per-aggregator per-pair baseline
+    for each trade T attributed to watchlisted_cluster:
+      if T.router not in AGGREGATOR_ROUTERS: continue
+      baseline ← get_baseline(T.router, T.asset_pair)
+      entropy   ← (T.hop_count, T.intermediate_token_count, T.split_venue_count)
+      if any(entropy[i] > baseline[i] * route_entropy_multiplier for i in 0..2):
+        emit(PATH_A, tx=T.hash, router=T.router, asset_pair=T.asset_pair,
+             entropy, baseline, cluster=T.cluster, severity=medium)
+
+    # PATH B — split-route efficiency analysis
+    for each split_route_trade T:
+      optimal_price ← best_single_venue_price(T.asset_pair, T.block)
+      execution_price ← T.output_amount / T.input_amount
+      slippage ← (optimal_price − execution_price) / optimal_price
+      if slippage > routing_slippage_threshold:
+        emit(PATH_B, tx=T.hash, router=T.router, slippage_bps=slippage*10000,
+             cluster=T.cluster, severity=high)
+
+    # PATH C — aggregator-contract interaction churn
+    for each watchlisted_cluster C:
+      for each sliding_window w of churn_window_blocks:
+        routers_used ← unique([T.router for T in C.trades_in(w)])
+        if len(routers_used) >= min_distinct_routers:
+          emit(PATH_C, cluster=C, routers=routers_used,
+               window_start=w.start, severity=high)
+
+    # PATH D — post-aggregator cluster divergence
+    for each aggregator_trade T from watchlisted_cluster C_in:
+      C_out ← get_cluster(T.output_address)
+      if C_out.is_previously_unseen and T.value_usd > min_notional_usd:
+        emit(PATH_D, tx=T.hash, input_cluster=C_in, output_address=T.output_address,
+             output_cluster=C_out, notional_usd=T.value_usd, severity=high)
+
+    # PATH E — cross-aggregator churn
+    for each watchlisted_cluster C:
+      for each sliding_window w:
+        trades ← C.trades_in(w)
+        agg_sequence ← [T.router for T in trades if T.router in AGGREGATOR_ROUTERS]
+        if len(agg_sequence) >= min_cross_aggregator_hops:
+          emit(PATH_E, cluster=C, aggregator_sequence=agg_sequence,
+               window=w, severity=medium)
+
+parameters:
+  route_entropy_multiplier:          { type: number,   default: 2.0 }
+  routing_slippage_threshold:        { type: number,   default: 0.005 }    # 50 bps
+  churn_window_blocks:               { type: integer,  default: 100 }
+  min_distinct_routers:              { type: integer,  default: 3 }
+  min_notional_usd:                  { type: number,   default: 10000 }
+  min_cross_aggregator_hops:         { type: integer,  default: 2 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               tx, cluster, router, route_entropy, slippage_bps,
+               input_cluster, output_cluster, evidence]
+
+test_fixtures:
+  positive:
+    - 2023-2025-dprk-post-tornado-cash-aggregator-laundering            # Lazarus Group aggregator-routing chains
+    - 2024-chainalysis-laundering-report-aggregator-cohort              # Cohort-level aggregator-integration laundering
+  negative:
+    - "Aggregator-routed trade with route matching the per-pair baseline — legitimate execution optimisation, not T7.007"
+    - "Trader using a single aggregator for gas optimisation without cross-aggregator churn — standard DeFi trading behaviour"
+
+false_positive_modes:
+  - Aggregator routing complexity from thin liquidity on the direct pair — the multi-hop path is the aggregator's optimal route, not the operator's choice; calibrate PATH A baselines per liquidity regime
+  - Cross-aggregator churn from a legitimate arbitrageur routing across aggregators for price improvement — distinguish via profitability analysis (arbitrageurs are profitable; launderers accept slippage)
+  - Split-route execution from the aggregator's routing algorithm, not operator configuration — the operator may not control split-route fractions; solver-based aggregators (CowSwap, Uniswap X) select routes independently
+  - Per-aggregator per-asset-pair baselines are not publicly available at v0.1 — PATH A is dependent on forensic-provider internal baselines
+
+mitigations: [OAK-M23, OAK-M24]
+
+reference_implementations:
+  - { target: chainalysis-reactor,    chain: cross-chain, url: "" }
+  - { target: trm-forensics,          chain: cross-chain, url: "" }
+  - { target: elliptic-investigator,  chain: cross-chain, url: "" }

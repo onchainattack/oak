@@ -1,0 +1,188 @@
+oak_techniques: [OAK-T11.007.002]
+spec_id: oak-detection-T11.007.002
+version: 0.2.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect voltage-glitching, side-channel, or chip-tampering attacks against a
+  legitimate hardware wallet's microcontroller or secure element that extract
+  the encrypted seed or private-key material through physical access. The
+  canonical capability anchor is the STM32F205/F427 RDP-downgrade voltage-glitch
+  attack (Kraken Security Labs, January 2020): ~15 minutes physical access,
+  ~$500 equipment, structural MCU vulnerability — not firmware-patchable.
+  Detection operates at the hardware-vulnerability-disclosure monitoring,
+  secure-element-equipped hardware verification, BIP39 passphrase enforcement
+  verification, physical-access threat-model evaluation, and post-disclosure
+  vendor-mitigation-timeline tracking layers. Excludes: T11.007.001 (counterfeit-
+  hardware substitution — device itself is counterfeit, not a legitimate device
+  attacked via physical access); T11.007.003 (brand-trust phishing — no device
+  access required).
+
+data_sources: [breach_disclosure_feed]
+
+detection_logic:
+  description: |
+    Five orthogonal detection paths. PATH A (hardware-vulnerability-disclosure
+    monitoring): ingest coordinated-disclosure and academic research on
+    hardware-wallet physical-access vulnerabilities; classify by access time,
+    equipment cost, and patchability. PATH B (secure-element-equipped hardware
+    verification): for users with holdings above a configurable threshold,
+    verify that hardware includes a dedicated EAL5+/EAL6+ certified secure
+    element rather than a general-purpose microcontroller known vulnerable to
+    commodity voltage-glitch attacks. PATH C (BIP39 passphrase enforcement
+    verification): for users on STM32-based or general-purpose-MCU hardware,
+    verify that a strong BIP39 passphrase is in use; flag users without
+    passphrase as standing T11.007.002 surface. PATH D (physical-access threat-
+    model evaluation): evaluate the user's physical-access risk profile (travel,
+    border crossings, shared accommodations); cross-reference against hardware
+    vulnerability class. PATH E (post-disclosure vendor-mitigation-timeline
+    tracking): for each disclosed hardware vulnerability, track vendor response
+    timeline — advisory publication, hardware revision, user-migration guidance.
+  pseudocode: |
+    # Shared helpers
+    passphrase_entropy(pp) := estimate_zxcvbn_entropy(pp)   # bits
+    physical_access_risk(U) := score_physical_access_risk(U.travel_frequency,
+                                  U.border_crossings, U.shared_accommodation,
+                                  U.device_storage_location)
+
+    # PATH A — hardware-vulnerability-disclosure monitoring
+    for each disclosure D in HARDWARE_SECURITY_DISCLOSURE_FEED
+        where D.attack_type in {voltage_glitch, side_channel, jtag_swd_extraction,
+                                chip_decap, em_side_channel, laser_fault_injection}:
+      affected_devices ← [W for W in KNOWN_HARDWARE_WALLETS
+                          if W.mcu in D.affected_microcontrollers]
+      for each device in affected_devices:
+        severity ← "critical" if (not D.firmware_patchable
+                                  and D.access_time_minutes < 60
+                                  and D.equipment_cost_usd < 5000) else
+                   "high"     if (not D.firmware_patchable) else
+                   "medium"
+        emit(PATH_A, device=device.model, vendor=device.vendor,
+             mcu=device.mcu, secure_element=device.secure_element,
+             attack_type=D.attack_type, cve=D.cve_id,
+             access_time_minutes=D.access_time_minutes,
+             equipment_cost_usd=D.equipment_cost_usd,
+             firmware_patchable=D.firmware_patchable,
+             disclosure_date=D.date, coordinated_disclosure=D.was_coordinated,
+             severity=severity,
+             guidance="Physical-access seed extraction: {D.access_time_minutes} min, "
+                      "${D.equipment_cost_usd} equipment, "
+                      "{'' if D.firmware_patchable else 'NOT '}patchable. "
+                      "BIP39 passphrase is the load-bearing mitigation.")
+
+    # PATH B — secure-element-equipped hardware verification
+    for each hardware_wallet_user U where U.holdings_usd > min_holdings_threshold:
+      se_level ← U.device.secure_element_certification   # e.g., "EAL5+", "EAL6+", "none"
+      mcu_risk ← U.device.mcu_family in KNOWN_VULNERABLE_MCU_FAMILIES
+      if se_level == "none" and mcu_risk:
+        known_attacks ← [D for D in HARDWARE_DISCLOSURES
+                         if U.device.mcu in D.affected_microcontrollers]
+        emit(PATH_B, user=U.id, device=U.device.model, vendor=U.device.vendor,
+             mcu=U.device.mcu, secure_element="none",
+             holdings_usd=U.holdings_usd,
+             known_vulnerabilities=len(known_attacks),
+             cheapest_known_attack_usd=min(D.equipment_cost_usd for D in known_attacks),
+             severity="high",
+             guidance="Device uses general-purpose MCU known vulnerable to physical-"
+                      "access seed extraction. For holdings > ${min_holdings_threshold}, "
+                      "upgrade to secure-element device (EAL5+/EAL6+).")
+
+    # PATH C — BIP39 passphrase enforcement verification
+    for each hardware_wallet_user U where U.device.mcu_family in STM32_MCU_FAMILIES:
+      if U.device.passphrase_enabled:
+        entropy ← passphrase_entropy(U.passphrase)
+        if entropy < min_passphrase_entropy:
+          emit(PATH_C, user=U.id, device=U.device.model,
+               passphrase_enabled=true, passphrase_entropy_bits=entropy,
+               required_entropy_bits=min_passphrase_entropy,
+               holdings_usd=U.holdings_usd, severity="medium",
+               guidance="BIP39 passphrase entropy ({entropy} bits) below minimum "
+                        "({min_passphrase_entropy} bits). Weak passphrase on STM32 "
+                        "hardware: physical-access seed extraction yields a wallet "
+                        "protected by only {entropy}-bit passphrase entropy.")
+      else:
+        emit(PATH_C, user=U.id, device=U.device.model,
+             passphrase_enabled=false, holdings_usd=U.holdings_usd,
+             severity="critical",
+             guidance="BIP39 passphrase is MANDATORY on STM32-based hardware. "
+                      "Without passphrase: ~15 min, ~$500 physical access = "
+                      "complete wallet drain. Enable passphrase NOW and migrate "
+                      "funds to a passphrase-protected wallet.")
+
+    # PATH D — physical-access threat-model evaluation
+    for each hardware_wallet_user U with_holdings > min_holdings_threshold:
+      risk_score ← physical_access_risk(U)
+      vulnerability_class ← classify_device_vulnerability(U.device)
+      combined_risk ← min(risk_score × vulnerability_class.exposure_multiplier, 1.0)
+      if combined_risk > min_physical_risk_threshold:
+        emit(PATH_D, user=U.id, device=U.device.model,
+             physical_risk_score=risk_score,
+             device_vulnerability_class=vulnerability_class.class_name,
+             combined_risk=combined_risk,
+             risk_factors={
+               international_travel: U.travel_frequency > travel_threshold,
+               border_crossings: U.border_crossings > 0,
+               shared_accommodation: U.uses_hotel_safes or U.uses_checked_luggage,
+             },
+             severity="high" if combined_risk > 0.7 else "medium",
+             guidance="Combined physical-access risk ({combined_risk:.0%}) is elevated. "
+                      "Ensure BIP39 passphrase is strong and device is never left "
+                      "unattended in hotel safes, checked luggage, or border inspection.")
+
+    # PATH E — post-disclosure vendor-mitigation-timeline tracking
+    for each disclosure D in HARDWARE_SECURITY_DISCLOSURE_FEED:
+      for each vendor V in D.affected_vendors:
+        advisory ← V.advisories.find(related_to=D)
+        hw_revision ← V.hardware_revisions.find(addressing=D.affected_mcu)
+        timeline ← {
+          disclosure_date:   D.date,
+          advisory_date:     advisory.date if advisory else null,
+          hw_fix_date:       hw_revision.release_date if hw_revision else null,
+          migration_guidance_date: V.migration_guidance_for(D)?.date,
+        }
+        delays ← {
+          advisory_lag: (advisory.date − D.date) if advisory else (now − D.date),
+          hw_fix_lag:   (hw_revision.release_date − D.date) if hw_revision else null,
+        }
+        emit(PATH_E, vendor=V.name, disclosure=D.cve_id or D.reference,
+             timeline=timeline, delays=delays,
+             severity="high" if delays.advisory_lag > max_advisory_lag else "medium")
+
+parameters:
+  min_holdings_threshold:              { type: number,   default: 10000 }    # USD
+  min_passphrase_entropy:              { type: number,   default: 50 }       # bits
+  min_physical_risk_threshold:         { type: number,   default: 0.3 }
+  travel_threshold:                    { type: integer,  default: 2 }        # trips/year
+  max_advisory_lag:                    { type: duration, default: 90d }
+  known_vulnerable_mcu_families:       { type: list,     default: [STM32F2, STM32F4, STM32F1, nRF52840] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               device_model, device_vendor, mcu, attack_type,
+               access_time_minutes, equipment_cost_usd, firmware_patchable,
+               passphrase_enabled, passphrase_entropy_bits, physical_risk_score,
+               combined_risk, advisory_lag, evidence]
+
+test_fixtures:
+  positive:
+    - 2020-01-trezor-kraken-rdp-downgrade                                       # Trezor One/Model T voltage-glitch RDP downgrade (~15 min, ~$500, $0 loss)
+    - 2019-08-wallet-fail-trezor-keepkey-35c3-disclosure                         # Wallet.fail 35C3 multi-vendor hardware-side seed extraction demonstration
+    - 2023-01-ledger-donjon-side-channel                                         # Ledger Donjon side-channel research (laboratory-grade attack on secure element)
+  negative:
+    - "Hardware wallet with EAL6+ certified secure element AND BIP39 passphrase enabled with >50 bits entropy — seed extraction requires laboratory equipment AND passphrase brute-force"
+    - "Hardware wallet that has never left the user's possession, stored in a personal safe, with no international travel history — minimal physical-access opportunity"
+
+false_positive_modes:
+  - User with a secure-element-equipped device (Ledger Nano, Trezor Safe 3/5) flagged for PATH B — the secure element addresses the STM32-class voltage-glitch vulnerability at the hardware layer; the check should verify MCU family, not just secure-element absence
+  - User with STM32-based hardware who never travels, stores the device in a personal safe, and has no physical-access threat exposure — the T11.007.002 surface exists (PATH C still flags passphrase absence) but PATH D risk evaluation may return below-threshold combined risk
+  - Side-channel research demonstrating a laboratory-grade attack against a secure element (Ledger Donjon 2023) — the attack cost (lab equipment, expertise) is orders of magnitude above the STM32-class commodity attack; distinguish via equipment_cost_usd and access_time_minutes thresholds in PATH A
+
+mitigations: [OAK-M22, OAK-M21]
+
+reference_implementations:
+  - { target: kraken-security-labs,       chain: cross-chain, url: "" }
+  - { target: ledger-donjon,              chain: cross-chain, url: "" }
+  - { target: trezor-security-blog,       chain: cross-chain, url: "" }
+  - { target: wallet-fail-35c3,           chain: cross-chain, url: "" }
+  - { target: common-criteria-cert,       chain: cross-chain, url: "" }

@@ -1,0 +1,106 @@
+oak_techniques: [OAK-T14.006]
+spec_id: oak-detection-T14.006
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect induction of liveness faults — missed attestations, missed block
+  proposals, or validator downtime — in a target validator or validator set
+  to trigger consensus-layer penalties. Covers four sub-classes: (a) DDoS/
+  network-partition attack on validator infrastructure, (b) eclipse/network-
+  view poisoning, (c) correlation-penalty multiplier exploitation, and
+  (d) operator-side passive liveness-fault surface (cloud-provider outages).
+  Detection operates at the validator-client monitoring, consensus-layer
+  participation-rate analysis, and infrastructure-diversity audit layers.
+  Excludes: T14.001 (slashing-condition exploit — one-time slash for
+  equivocation, not continuous inactivity penalty).
+
+data_sources: [beacon_proposer_assignments, contract_events]
+
+detection_logic:
+  description: |
+    Four detection paths. PATH A (validator participation-rate anomaly):
+    per-epoch participation-rate tracking with alerting on deviations from
+    the validator's rolling average. PATH B (inactivity-leak activation
+    monitoring): alert when the Beacon Chain's inactivity-leak mechanism
+    activates and correlate with per-validator downtime. PATH C
+    (infrastructure-concentration audit): flag validators whose operator
+    runs all validators on a single cloud provider, region, or ISP.
+    PATH D (correlation-penalty monitoring): alert when multiple validators
+    operated by the same entity fault simultaneously.
+  pseudocode: |
+    # PATH A — validator participation-rate anomaly
+    for each validator V:
+      for each epoch e:
+        participation ← V.attestations_in(e) / V.expected_attestations(e)
+        rolling_avg  ← avg(V.participation_rate, lookback=participation_baseline_epochs)
+        if rolling_avg − participation > participation_drop_threshold:
+          emit(PATH_A, validator=V.index, epoch=e, participation,
+               rolling_avg, drop=rolling_avg − participation, severity=high)
+
+    # PATH B — inactivity-leak activation
+    for each epoch e where finality_lost_duration >= inactivity_leak_trigger_epochs:
+      for each validator V that is_offline_during(e):
+        penalty ← compute_inactivity_penalty(V, e)
+        if penalty > min_inactivity_penalty_eth:
+          emit(PATH_B, validator=V.index, epoch=e, penalty_eth=penalty,
+               offline_duration=V.offline_since(e), severity=critical)
+
+    # PATH C — infrastructure-concentration audit
+    for each validator_operator O:
+      providers ← {V.cloud_provider for V in O.validators}
+      regions   ← {V.cloud_region   for V in O.validators}
+      isps      ← {V.isp            for V in O.validators}
+      if len(providers) == 1 and len(regions) == 1:
+        emit(PATH_C, operator=O, provider=providers, region=regions,
+             validator_count=len(O.validators),
+             concentration_risk="single_provider_single_region", severity=medium)
+      if len(isps) == 1:
+        emit(PATH_C, operator=O, isp=isps,
+             validator_count=len(O.validators),
+             concentration_risk="single_isp", severity=low)
+
+    # PATH D — correlation-penalty monitoring
+    for each operator O:
+      for each epoch e:
+        faulting ← [V for V in O.validators if not V.attested_in(e)]
+        if len(faulting) > correlation_penalty_trigger:
+          penalty_multiplier ← correlation_penalty_multiplier(len(faulting))
+          emit(PATH_D, operator=O, epoch=e, faulting_count=len(faulting),
+               total_validators=len(O.validators), penalty_multiplier,
+               severity=high)
+
+parameters:
+  participation_baseline_epochs:     { type: integer,  default: 225 }      # ~24h on Ethereum
+  participation_drop_threshold:      { type: number,   default: 0.1 }
+  inactivity_leak_trigger_epochs:    { type: integer,  default: 4 }
+  min_inactivity_penalty_eth:        { type: number,   default: 0.01 }
+  correlation_penalty_trigger:       { type: integer,  default: 5 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               validator_index, operator, epoch, participation_drop,
+               penalty_eth, faulting_count, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-2025-ethereum-validator-ddos-extortion-campaigns              # Active adversary DDoS against validators
+    - 2024-08-rocket-pool-validator-downtime-outage                      # Passive correlated liveness fault
+    - 2022-2025-ethereum-beacon-chain-inactivity-leak-griefing           # Inactivity-leak economic analysis
+  negative:
+    - "Single validator missing 1–2 attestations per epoch — normal operational noise, not a liveness-fault event"
+    - "Validator downtime coincident with a publicly-documented cloud-provider outage — passive infrastructure failure, not active griefing"
+
+false_positive_modes:
+  - Single-validator attestation misses within normal operational variance — calibrate PATH A threshold per validator historical reliability
+  - Cloud-provider outages affecting many validators are passive infrastructure failures, not active T14.006 attacks — PATH C is a standing risk metric, not a detection alert
+  - Validator-client software bug causing attestation misses — not an attack but a software-quality event; distinguish via client-version correlation
+  - DVT validator sets with correlated multi-operator downtime from shared infrastructure — the DVT architecture can create correlated faults without an active adversary
+
+mitigations: [OAK-M09]
+
+reference_implementations:
+  - { target: beaconcha-in,          chain: evm,    url: "" }
+  - { target: rated-network,         chain: evm,    url: "" }
+  - { target: ssv-network,           chain: evm,    url: "" }

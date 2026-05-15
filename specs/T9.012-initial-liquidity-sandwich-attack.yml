@@ -1,0 +1,224 @@
+oak_techniques: [OAK-T9.012]
+spec_id: oak-detection-T9.012
+version: 0.2.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect initial-liquidity sandwich attacks where an attacker sandwiches a
+  token deployer's addLiquidity transaction — front-running with a token
+  purchase at the pre-liquidity price and back-running with a sale at the
+  post-liquidity price. The defining structural feature is the temporal
+  ordering within a single block: buy → addLiquidity → sell, with the deployer's
+  quote-asset deposit setting the reference price that the attacker exploits.
+  Detection operates at the block-level bundle analysis, pool-state LP-share
+  divergence, known-sniper-address monitoring, token-launch-platform post-launch
+  surveillance, and cross-chain token-launch sandwich correlation layers.
+  Excludes: T5.004 (sandwich MEV — sandwiches regular swaps in established
+  pools, not the liquidity addition itself); T9.013 (slippage-manipulation
+  sandwich — exploits the victim's slippage tolerance parameter, not the
+  liquidity-addition sequencing); T17.001 (cross-venue arbitrage — exploits
+  price discrepancy between venues, not the temporal sequencing of liquidity
+  addition).
+
+data_sources: [tx_call_trace, dex_trades, contract_events, contract_bytecode,
+               contract_storage, mempool_transaction, bundle_data,
+               token_deployment_events]
+
+detection_logic:
+  description: |
+    Five orthogonal detection paths. PATH A (block-level bundle analysis):
+    detect bundles where a buy for a newly deployed token lands immediately
+    before the token's first addLiquidity and a sell lands immediately after,
+    with all three attributed to different addresses; compute the attacker's
+    profit as a fraction of the deployer's LP contribution. PATH B (pool-state
+    LP-share divergence): compare the deployer's LP-token share to the expected
+    share given the deposited quote-asset amount; the divergence isolates the
+    pre-liquidity token acquisition. PATH C (known-sniper-address monitoring):
+    alert on any watchlisted sniper/MEV address interacting with a newly
+    deployed token's pool in the first N blocks; attribute via address
+    clustering. PATH D (token-launch-platform post-launch monitoring): for
+    token launches on known platforms (pump.fun, Uniswap V2/V3/V4 factories,
+    PancakeSwap, Raydium), monitor the first N blocks post-pool-creation for
+    sandwich patterns using platform-specific factory addresses. PATH E
+    (cross-chain token-launch sandwich correlation): for the same deployer
+    address launching tokens across multiple chains, correlate sandwich
+    patterns; identify MEV bots that target the same deployer across chains.
+  pseudocode: |
+    # Shared helpers
+    sandwich_profit_ratio(bundle) :=
+      (bundle.back_run.quote_output − bundle.front_run.quote_input) /
+       max(bundle.add_liquidity.quote_deposited, 1)
+    same_entity(A, B) := address_cluster_distance(A, B) < sniper_clustering_threshold
+    sniper_attribution_score(S, platform) :=
+      (1 if S.address in KNOWN_SNIPER_REGISTRY else 0)
+      + (1 if S.has_tornado_cash_deposit else 0)
+      + (1 if S.funding_source == "fixed_float" or S.funding_source == "cex_kyc_free" else 0)
+
+    # PATH A — block-level bundle analysis
+    for each block B:
+      pool_creations ← [tx for tx in B if creates_new_pool(tx)]
+      for each pool_creation PC in pool_creations:
+        txs_in_block ← B.transactions ordered by position
+        pc_index ← index_of(PC, txs_in_block)
+        if pc_index > 0 and pc_index < len(txs_in_block) − 1:
+          front_tx ← txs_in_block[pc_index − 1]
+          back_tx  ← txs_in_block[pc_index + 1]
+          if is_token_buy(front_tx, PC.token) and is_token_sell(back_tx, PC.token):
+            if same_entity(front_tx.from, back_tx.from):
+              profit_quote ← back_tx.quote_output − front_tx.quote_input
+              profit_ratio ← sandwich_profit_ratio({
+                front_run: front_tx, add_liquidity: PC, back_run: back_tx
+              })
+              # Check bundle attribution
+              bundle_type ← classify_bundle(front_tx, PC, back_tx)  # atomic_bundle, mempool_snipe, coincidence
+              emit(PATH_A, block=B.number, token=PC.token, pool=PC.pool_address,
+                   sniper=front_tx.from, deployer=PC.from,
+                   front_tx=front_tx.hash, add_liq_tx=PC.hash,
+                   back_tx=back_tx.hash,
+                   profit_quote=profit_quote, profit_ratio=profit_ratio,
+                   bundle_type=bundle_type,
+                   severity="critical" if profit_ratio > 0.5 else
+                            "high"     if profit_ratio > 0.1 else
+                            "medium",
+                   guidance="Initial-liquidity sandwich: {front_tx.from} extracted "
+                            "{profit_quote} quote tokens ({profit_ratio:.1%} of deployer's "
+                            "liquidity) via {bundle_type}. Deployer lost {profit_ratio:.1%} "
+                            "of LP value to the sandwich.")
+
+    # PATH B — pool-state LP-share divergence
+    for each newly_created_pool P:
+      deployer_expected_share ← P.deployer_quote_deposit / P.total_quote_reserves
+      deployer_actual_share ← P.deployer_lp_balance / P.total_lp_supply
+      divergence ← deployer_expected_share − deployer_actual_share
+      if divergence > min_lp_share_divergence:
+        # Reconstruct the sandwich from pool state
+        pre_liquidity_buy_volume ← divergence × P.total_quote_reserves
+        estimated_sniper_profit ← pre_liquidity_buy_volume × (P.pool_fee_rate or 0.003)
+        emit(PATH_B, pool=P.address, token=P.token, deployer=P.deployer,
+             expected_share=deployer_expected_share,
+             actual_share=deployer_actual_share,
+             divergence=divergence,
+             estimated_sniper_volume=pre_liquidity_buy_volume,
+             estimated_sniper_profit=estimated_sniper_profit,
+             pool_creation_tx=P.creation_tx,
+             severity="high",
+             guidance="LP-share divergence: deployer expected {deployer_expected_share:.1%} "
+                      "but got {deployer_actual_share:.1%}. ~{pre_liquidity_buy_volume} "
+                      "quote tokens of pre-liquidity volume extracted from deployer's LP.")
+
+    # PATH C — known-sniper-address monitoring
+    for each known_sniper S in SNIPER_WATCHLIST:
+      for each interaction I in S.recent_trades where I.block ≤ first_n_blocks:
+        if I.pool_created_at < max_pool_age:
+          attribution ← sniper_attribution_score(S, I.platform)
+          # Check for repeat-offense pattern
+          same_deployer_count ← count_same_deployer_interactions(S, I.deployer)
+          emit(PATH_C, token=I.token, pool=I.pool, sniper=S.address,
+               trade_type=I.type, amount=I.amount, block=I.block_number,
+               sniper_attribution_score=attribution,
+               deployer=I.deployer,
+               repeat_offense_count=same_deployer_count,
+               funding_source=S.funding_source,
+               severity="critical" if (attribution >= 2 and same_deployer_count > 1) else
+                        "high"     if attribution >= 2 else
+                        "medium",
+               guidance="Known sniper {S.address} (attribution={attribution}) "
+                        "interacted with token {I.token} at block {I.block_number} "
+                        "({same_deployer_count} interactions with deployer {I.deployer}).")
+
+    # PATH D — token-launch-platform post-launch monitoring
+    for each platform PLATFORM in TOKEN_LAUNCH_PLATFORMS:
+      for each pool P created by PLATFORM:
+        trades ← get_trades_in_blocks(P.address, P.creation_block,
+                                       max_blocks=first_n_blocks)
+        sandwich_pattern ← detect_sandwich_around_addLiquidity(trades, P.creation_tx)
+        if sandwich_pattern ≠ ∅:
+          # Compute platform-specific heuristics
+          deployer_history ← get_deployer_history(P.deployer, PLATFORM)
+          repeat_deployer ← len(deployer_history.prior_launches) > 0
+          emit(PATH_D, platform=PLATFORM, pool=P.address, token=P.token,
+               sandwich=sandwich_pattern,
+               deployer_prior_launches=len(deployer_history.prior_launches),
+               deployer_is_repeat=repeat_deployer,
+               platform_creation_method=PLATFORM.factory_method,
+               severity="high" if repeat_deployer else "medium",
+               guidance="Sandwich detected on {PLATFORM}: {sandwich_pattern.sniper} "
+                        "sandwiched addLiquidity for {P.token}. "
+                        + ("Repeat deployer — deployer may be unaware of private-relay "
+                           "options." if repeat_deployer else
+                           "First launch from this deployer."))
+
+    # PATH E — cross-chain token-launch sandwich correlation
+    for each deployer D in CROSS_CHAIN_DEPLOYER_REGISTRY:
+      launches_by_chain ← group_by_chain(D.token_launches)
+      if len(launches_by_chain) > 1:
+        sandwich_incidents ← []
+        for each chain C, launches L in launches_by_chain:
+          for each launch in L:
+            sandwich ← detect_sandwich_around_addLiquidity(launch.trades, launch.create_tx)
+            if sandwich ≠ ∅:
+              sandwich_incidents.append({
+                chain: C,
+                token: launch.token,
+                sniper: sandwich.sniper,
+                profit: sandwich.profit,
+                bundle_type: sandwich.bundle_type
+              })
+        if len(sandwich_incidents) > 1:
+          # Check if same sniper across chains
+          snipers_by_chain ← group_by_sniper(sandwich_incidents)
+          cross_chain_snipers ← [s for s in snipers_by_chain if len(s.chains) > 1]
+          emit(PATH_E, deployer=D.address, deployments=len(D.token_launches),
+               chains_affected=launches_by_chain.keys(),
+               sandwich_incidents=sandwich_incidents,
+               cross_chain_sniper_count=len(cross_chain_snipers),
+               total_profit_across_chains=sum(i.profit for i in sandwich_incidents),
+               severity="critical" if len(cross_chain_snipers) > 0 else "high",
+               guidance="Deployer {D.address} was sandwiched on {len(sandwich_incidents)} "
+                        "launches across {len(launches_by_chain)} chains. "
+                        + ("{len(cross_chain_snipers)} sniper(s) operate across chains — "
+                           "coordinated MEV extraction." if len(cross_chain_snipers) > 0 else
+                           "Chain-specific snipers — no cross-chain coordination detected."))
+
+parameters:
+  min_lp_share_divergence:             { type: number,   default: 0.02 }
+  first_n_blocks:                      { type: integer,  default: 10 }
+  sniper_watchlist:                    { type: list,     default: [] }
+  token_launch_platforms:              { type: list,     default: [] }
+  sniper_clustering_threshold:         { type: number,   default: 0.8 }
+  min_sandwich_profit_ratio:           { type: number,   default: 0.01 }
+  max_pool_age:                        { type: duration, default: 1h }
+  cross_chain_deployer_registry:       { type: list,     default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               token, pool, deployer, sniper, profit_quote, profit_ratio,
+               lp_share_divergence, sniper_attribution_score,
+               cross_chain_sniper_count, bundle_type, evidence]
+
+test_fixtures:
+  positive:
+    - 2020-2025-initial-liquidity-sandwich-cohort                            # Uniswap V2 token-launch sandwiching by MEV bots
+    - 2021-2025-pancakeswap-token-launch-mev-bsc                            # BSC PancakeSwap new-pool sandwich attacks
+    - 2024-2025-pump-fun-solana-launch-sniping                              # Solana pump.fun/Raydium token-launch MEV sniping
+  negative:
+    - "Token deployer uses Flashbots Protect / private relay for addLiquidity — transaction is not observable in the public mempool"
+    - "Token deployed and liquidity added atomically in a single constructor transaction via factory contract — no interleaving window"
+    - "AddLiquidity transaction where no buy precedes and no sell follows in the same block — no sandwich pattern present"
+
+false_positive_modes:
+  - Legitimate arbitrageur trading in the first blocks after pool creation without front-running the addLiquidity itself — PATH A distinguishes via bundle-level ordering: the buy must precede the addLiquidity, not follow it; verify tx position ordering within the block
+  - Deployer intentionally creating a pool with a low initial LP share to distribute tokens to early participants (e.g., fair-launch tokenomics) — verify via deployer's known address, tokenomics documentation, and cross-reference against the deployer's prior launch history in PATH D
+  - MEV bot that buys post-addLiquidity and sells later without sandwiching the addLiquidity — the sandwich specifically requires front-run buy + back-run sell straddling the addLiquidity; PATH A checks tx_index ordering
+  - Sniper address that is a legitimate early community member who received an allocation — PATH C distinguishes via sniper_attribution_score: known Tornado Cash deposits, CEX funding sources, and repeat-offense patterns indicate MEV extraction, not community participation
+  - Bundle that appears sandwiched but is actually three independent traders operating coincidentally — PATH A classify_bundle distinguishes atomic bundles (Flashbots/MEV-relay) from mempool snipes from coincidental ordering
+
+mitigations: [OAK-M02, OAK-M09, OAK-M11, OAK-M20, OAK-M21]
+
+reference_implementations:
+  - { target: eigenphi,               chain: cross-chain, url: "" }
+  - { target: flashbots,              chain: cross-chain, url: "" }
+  - { target: blocksec-phalcon,       chain: cross-chain, url: "" }
+  - { target: zeromev,                chain: cross-chain, url: "" }
+  - { target: dextools,               chain: cross-chain, url: "" }

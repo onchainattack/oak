@@ -1,0 +1,97 @@
+oak_techniques: [OAK-T4.010]
+spec_id: oak-detection-T4.010
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect phishing via fake browser extensions that impersonate legitimate
+  security tools — MetaMask, Ledger Live, Rabby, Phantom, Trust Wallet, or
+  "wallet security scanners." Detection operates at the browser-extension
+  permission audit, publisher verification, and wallet-side extension-origin
+  verification layers. Excludes: T4.008 (fake-DEX clone-frontend — website,
+  not browser extension); T4.009 (pre-token anticipation phishing — token-
+  launch timing, not extension-persistence surface); T11.007.003 (brand-
+  trust active phishing for seed-phrase exfiltration — the extraction arm
+  when the fake extension targets seed phrases).
+
+data_sources: [tx_call_trace]
+
+detection_logic:
+  description: |
+    Four detection paths. PATH A (browser-extension permission audit): flag
+    extensions requesting broad host permissions combined with clipboard or
+    native-messaging permissions. PATH B (publisher verification): compare
+    extension publisher name against legitimate vendor's official publisher
+    account. PATH C (wallet-side extension-origin verification): detect
+    injected content scripts that hook wallet-provider objects at sign time.
+    PATH D (extension-ID blocklisting): community-curated lists of known-
+    malicious extension IDs distributed to wallet vendors.
+  pseudocode: |
+    LEGITIMATE_VENDORS ← {metamask, rabby, phantom, ledger, trust_wallet, ...}
+
+    # PATH A — browser-extension permission audit
+    for each installed_extension E:
+      broad_host ← "*://*/*" in E.permissions
+      clipboard  ← "clipboardRead" in E.permissions or "clipboardWrite" in E.permissions
+      native_msg ← "nativeMessaging" in E.permissions
+      if broad_host and (clipboard or native_msg):
+        if E.publisher not in LEGITIMATE_VENDORS:
+          emit(PATH_A, extension=E.id, name=E.name, publisher=E.publisher,
+               permissions=E.permissions, install_count=E.installs, severity=high)
+
+    # PATH B — publisher verification
+    for each extension E with wallet_brand_keywords in E.name:
+      canonical_publisher ← LEGITIMATE_VENDORS[matched_brand].publisher
+      if E.publisher ≠ canonical_publisher
+         and typosquat_distance(E.publisher, canonical_publisher) < publisher_typosquat_threshold:
+        emit(PATH_B, extension=E.id, name=E.name, publisher=E.publisher,
+             canonical_publisher, store=E.store, severity=critical)
+
+    # PATH C — wallet-side extension-origin verification
+    for each wallet_signing_flow S:
+      provider_hooks ← detect_injected_provider_hooks(S.browser_context)
+      if provider_hooks ≠ ∅:
+        for each hook H in provider_hooks:
+          if H.origin not in LEGITIMATE_VENDORS:
+            source_extension ← identify_extension(H)
+            emit(PATH_C, extension=source_extension.id, hook_type=H.type,
+                 wallet_provider=S.provider, severity=critical)
+            surface_user_warning("Extension {source_extension.name} is intercepting wallet signing")
+
+    # PATH D — extension-ID blocklist
+    for each extension_install E:
+      if E.id in KNOWN_MALICIOUS_EXTENSION_IDS:
+        emit(PATH_D, extension=E.id, name=E.name, blocklist_source=E.id.blocklist,
+             severity=critical)
+
+parameters:
+  publisher_typosquat_threshold:     { type: integer,  default: 3 }         # Levenshtein
+  known_malicious_extension_ids:     { type: list,     default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               extension_id, extension_name, publisher, permissions,
+               provider_hook_detected, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-2025-fake-browser-extension-phishing-cohort                    # Fake MetaMask, Ledger Live, Rabby, Phantom extensions
+    - 2024-01-fake-metamask-extension-chrome-store                       # "MetaMask Labs" typosquat, 30K+ installs
+    - 2023-2025-fake-revoke-cash-wallet-security-extension-phishing      # Counterfeit security-tool extensions
+  negative:
+    - "Legitimate MetaMask extension installed from the verified Chrome Web Store publisher — canonical extension, not T4.010"
+    - "Browser extension with clipboard access for a legitimate password manager — broad permissions justified by functionality"
+
+false_positive_modes:
+  - Legitimate password manager or productivity extension with broad permissions — distinguish via absence of wallet-provider hooking
+  - Extension with wallet-keyword in name from a legitimate adjacent vendor (e.g., a portfolio tracker) — PATH B requires publisher typosquat, not just keyword match
+  - Wallet-side provider hook from a legitimate companion extension (e.g., a hardware-wallet bridge) — add to LEGITIMATE_VENDORS allowlist
+
+mitigations: [OAK-M22]
+
+reference_implementations:
+  - { target: scamsniffer,           chain: cross-chain, url: "" }
+  - { target: metamask,              chain: cross-chain, url: "" }
+  - { target: rabby,                 chain: cross-chain, url: "" }
+  - { target: phantom,               chain: cross-chain, url: "" }

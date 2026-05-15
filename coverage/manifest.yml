@@ -62,6 +62,8 @@ vendors:
     coverage: gap
   - id: OAK-T2.004
     coverage: gap
+  - id: OAK-T2.005
+    coverage: gap
   - id: OAK-T3.001
     coverage: full
     detector_id: D03
@@ -71,6 +73,8 @@ vendors:
   - id: OAK-T3.003
     coverage: partial
   - id: OAK-T3.004
+    coverage: gap
+  - id: OAK-T3.005
     coverage: gap
   - id: OAK-T4.001
     coverage: gap
@@ -87,6 +91,10 @@ vendors:
   - id: OAK-T4.007
     coverage: gap
   - id: OAK-T4.008
+    coverage: gap
+  - id: OAK-T4.009
+    coverage: gap
+  - id: OAK-T4.010
     coverage: gap
   - id: OAK-T5.001
     coverage: full
@@ -119,6 +127,8 @@ vendors:
     coverage: partial
   - id: OAK-T6.007
     coverage: gap
+  - id: OAK-T6.008
+    coverage: gap
   - id: OAK-T7.001
     coverage: partial
   - id: OAK-T7.002
@@ -131,10 +141,20 @@ vendors:
     coverage: gap
   - id: OAK-T7.006
     coverage: gap
+  - id: OAK-T7.007
+    coverage: gap
+  - id: OAK-T7.008
+    coverage: gap
   - id: OAK-T8.001
     coverage: full
     detector_id: D08
   - id: OAK-T8.002
+    coverage: gap
+  - id: OAK-T8.003
+    coverage: gap
+  - id: OAK-T8.004
+    coverage: gap
+  - id: OAK-T8.005
     coverage: gap
   - id: OAK-T9.001
     coverage: gap
@@ -148,6 +168,20 @@ vendors:
     coverage: gap
   - id: OAK-T9.006
     coverage: gap
+  - id: OAK-T9.007
+    coverage: gap
+  - id: OAK-T9.008
+    coverage: gap
+  - id: OAK-T9.009
+    coverage: gap
+  - id: OAK-T9.010
+    coverage: gap
+  - id: OAK-T9.011
+    coverage: gap
+  - id: OAK-T9.012
+    coverage: gap
+  - id: OAK-T9.013
+    coverage: gap
   - id: OAK-T10.001
     coverage: gap
   - id: OAK-T10.002
@@ -157,6 +191,12 @@ vendors:
   - id: OAK-T10.004
     coverage: gap
   - id: OAK-T10.005
+    coverage: gap
+  - id: OAK-T10.006
+    coverage: gap
+  - id: OAK-T10.007
+    coverage: gap
+  - id: OAK-T10.008
     coverage: gap
   - id: OAK-T11.001
     coverage: gap
@@ -168,9 +208,25 @@ vendors:
     coverage: gap
   - id: OAK-T11.005
     coverage: gap
+  - id: OAK-T11.005.001
+    coverage: gap
+  - id: OAK-T11.005.002
+    coverage: gap
+  - id: OAK-T11.005.003
+    coverage: gap
   - id: OAK-T11.006
     coverage: gap
+  - id: OAK-T11.006.001
+    coverage: gap
+  - id: OAK-T11.006.002
+    coverage: gap
   - id: OAK-T11.007
+    coverage: gap
+  - id: OAK-T11.007.001
+    coverage: gap
+  - id: OAK-T11.007.002
+    coverage: gap
+  - id: OAK-T11.007.003
     coverage: gap
   - id: OAK-T11.008
     coverage: gap
@@ -179,6 +235,10 @@ vendors:
   - id: OAK-T12.001
     coverage: gap
   - id: OAK-T12.002
+    coverage: gap
+  - id: OAK-T12.004
+    coverage: gap
+  - id: OAK-T12.005
     coverage: gap
   - id: OAK-T13.001
     coverage: gap
@@ -204,6 +264,12 @@ vendors:
     coverage: gap
   - id: OAK-T14.003.001
     coverage: gap
+  - id: OAK-T14.004
+    coverage: gap
+  - id: OAK-T14.005
+    coverage: gap
+  - id: OAK-T14.006
+    coverage: gap
   - id: OAK-T15.001
     coverage: gap
   - id: OAK-T15.002
@@ -213,6 +279,8 @@ vendors:
   - id: OAK-T15.004
     coverage: gap
   - id: OAK-T15.005
+    coverage: gap
+  - id: OAK-T15.006
     coverage: gap
   - id: OAK-T16.001
     coverage: gap
@@ -231,6 +299,8 @@ vendors:
   - id: OAK-T17.003
     coverage: gap
   - id: OAK-T17.004
+    coverage: gap
+  - id: OAK-T17.005
     coverage: gap
 - key: goplus
   name: GoPlus Security
@@ -270,6 +340,8 @@ vendors:
   - id: OAK-T2.003
     coverage: partial
   - id: OAK-T2.004
+    coverage: partial
+  - id: OAK-T2.005
     coverage: partial
   - id: OAK-T3.001
     coverage: na
@@ -358,6 +430,8 @@ vendors:
     coverage: partial
   - id: OAK-T2.004
     coverage: partial
+  - id: OAK-T2.005
+    coverage: partial
   - id: OAK-T6.001
     coverage: documented
 - key: honeypot-is
@@ -380,6 +454,8 @@ vendors:
   - id: OAK-T2.002
     coverage: documented
   - id: OAK-T2.004
+    coverage: partial
+  - id: OAK-T2.005
     coverage: partial
 - key: slither
   name: Slither
@@ -406,6 +482,10 @@ vendors:
   - id: OAK-T9.005
     coverage: full
     detector_id: reentrancy-eth
+  - id: OAK-T9.009
+    coverage: documented
+  - id: OAK-T9.011
+    coverage: documented
   - id: OAK-T13.001.003
     coverage: documented
 - key: mythx
@@ -420,6 +500,8 @@ vendors:
   - id: OAK-T9.001
     coverage: documented
   - id: OAK-T9.005
+    coverage: documented
+  - id: OAK-T9.009
     coverage: documented
   - id: OAK-T13.001.003
     coverage: documented
@@ -439,6 +521,8 @@ vendors:
   - id: OAK-T9.005
     coverage: full
     detector_id: SWC-107
+  - id: OAK-T9.011
+    coverage: documented
 - key: securify
   name: Securify
   product: Securify
@@ -452,6 +536,8 @@ vendors:
     coverage: documented
   - id: OAK-T9.005
     coverage: full
+  - id: OAK-T9.009
+    coverage: documented
   - id: OAK-T13.001.003
     coverage: documented
 - key: certora
@@ -472,6 +558,8 @@ vendors:
   - id: OAK-T9.005
     coverage: documented
   - id: OAK-T10.002
+    coverage: documented
+  - id: OAK-T12.004
     coverage: documented
   - id: OAK-T13.001.003
     coverage: documented
@@ -549,6 +637,10 @@ vendors:
     coverage: documented
   - id: OAK-T9.005
     coverage: documented
+  - id: OAK-T9.010
+    coverage: documented
+  - id: OAK-T9.011
+    coverage: documented
   - id: OAK-T10.002
     coverage: documented
   - id: OAK-T11.003
@@ -584,6 +676,10 @@ vendors:
     coverage: documented
   - id: OAK-T9.005
     coverage: documented
+  - id: OAK-T9.010
+    coverage: documented
+  - id: OAK-T9.011
+    coverage: documented
   - id: OAK-T10.002
     coverage: documented
   - id: OAK-T11.003
@@ -615,7 +711,19 @@ vendors:
     coverage: documented
   - id: OAK-T9.005
     coverage: documented
+  - id: OAK-T9.007
+    coverage: partial
+  - id: OAK-T9.008
+    coverage: partial
+  - id: OAK-T9.010
+    coverage: documented
+  - id: OAK-T9.011
+    coverage: documented
+  - id: OAK-T9.012
+    coverage: documented
   - id: OAK-T10.002
+    coverage: documented
+  - id: OAK-T10.008
     coverage: documented
   - id: OAK-T11.003
     coverage: documented
@@ -667,6 +775,12 @@ vendors:
     coverage: documented
   - id: OAK-T9.005
     coverage: documented
+  - id: OAK-T9.009
+    coverage: documented
+  - id: OAK-T9.010
+    coverage: documented
+  - id: OAK-T9.011
+    coverage: documented
   - id: OAK-T10.002
     coverage: documented
   - id: OAK-T10.004
@@ -674,6 +788,10 @@ vendors:
   - id: OAK-T10.005
     coverage: documented
   - id: OAK-T11.003
+    coverage: documented
+  - id: OAK-T12.004
+    coverage: documented
+  - id: OAK-T12.005
     coverage: documented
   - id: OAK-T13.001
     coverage: documented
@@ -716,6 +834,12 @@ vendors:
     coverage: documented
   - id: OAK-T9.005
     coverage: documented
+  - id: OAK-T9.009
+    coverage: documented
+  - id: OAK-T9.010
+    coverage: documented
+  - id: OAK-T9.011
+    coverage: documented
   - id: OAK-T10.002
     coverage: documented
   - id: OAK-T10.003
@@ -723,6 +847,10 @@ vendors:
   - id: OAK-T10.004
     coverage: documented
   - id: OAK-T10.005
+    coverage: documented
+  - id: OAK-T12.004
+    coverage: documented
+  - id: OAK-T12.005
     coverage: documented
   - id: OAK-T13.001
     coverage: documented
@@ -813,6 +941,10 @@ vendors:
     coverage: documented
   - id: OAK-T9.005
     coverage: documented
+  - id: OAK-T12.004
+    coverage: documented
+  - id: OAK-T12.005
+    coverage: documented
   - id: OAK-T13.001
     coverage: documented
   - id: OAK-T13.001.001
@@ -872,6 +1004,8 @@ vendors:
     coverage: documented
   - id: OAK-T6.002
     coverage: documented
+  - id: OAK-T15.006
+    coverage: documented
 - key: hexens
   name: Hexens
   product: Audits
@@ -928,6 +1062,8 @@ vendors:
     coverage: documented
   - id: OAK-T5.005
     coverage: documented
+  - id: OAK-T5.008
+    coverage: documented
   - id: OAK-T6.006
     coverage: documented
   - id: OAK-T7.001
@@ -942,10 +1078,22 @@ vendors:
     coverage: documented
   - id: OAK-T7.006
     coverage: documented
+  - id: OAK-T7.007
+    coverage: documented
+  - id: OAK-T7.008
+    coverage: documented
+  - id: OAK-T7.009
+    coverage: documented
   - id: OAK-T8.001
     coverage: documented
   - id: OAK-T8.002
     coverage: documented
+  - id: OAK-T8.003
+    coverage: documented
+  - id: OAK-T8.004
+    coverage: documented
+  - id: OAK-T8.005
+    coverage: partial
   - id: OAK-T9.001
     coverage: documented
   - id: OAK-T9.006
@@ -954,13 +1102,25 @@ vendors:
     coverage: documented
   - id: OAK-T10.001
     coverage: documented
+  - id: OAK-T10.006
+    coverage: documented
+  - id: OAK-T10.007
+    coverage: documented
   - id: OAK-T11.001
     coverage: documented
   - id: OAK-T11.004
     coverage: documented
   - id: OAK-T11.005
     coverage: documented
+  - id: OAK-T11.005.001
+    coverage: documented
+  - id: OAK-T11.005.002
+    coverage: documented
+  - id: OAK-T11.005.003
+    coverage: documented
   - id: OAK-T12.001
+    coverage: documented
+  - id: OAK-T17.005
     coverage: documented
 - key: trm-labs
   name: TRM Labs
@@ -976,6 +1136,8 @@ vendors:
   techniques:
   - id: OAK-T5.005
     coverage: documented
+  - id: OAK-T5.008
+    coverage: documented
   - id: OAK-T6.006
     coverage: documented
   - id: OAK-T7.001
@@ -990,13 +1152,29 @@ vendors:
     coverage: documented
   - id: OAK-T7.006
     coverage: documented
+  - id: OAK-T7.007
+    coverage: documented
+  - id: OAK-T7.008
+    coverage: documented
+  - id: OAK-T7.009
+    coverage: documented
   - id: OAK-T8.001
     coverage: documented
   - id: OAK-T8.002
     coverage: documented
+  - id: OAK-T8.003
+    coverage: documented
+  - id: OAK-T8.004
+    coverage: documented
+  - id: OAK-T8.005
+    coverage: partial
   - id: OAK-T9.001
     coverage: documented
   - id: OAK-T10.001
+    coverage: documented
+  - id: OAK-T10.006
+    coverage: documented
+  - id: OAK-T10.007
     coverage: documented
   - id: OAK-T11.001
     coverage: documented
@@ -1004,7 +1182,17 @@ vendors:
     coverage: documented
   - id: OAK-T11.005
     coverage: documented
+  - id: OAK-T11.005.001
+    coverage: documented
+  - id: OAK-T11.005.002
+    coverage: documented
+  - id: OAK-T11.005.003
+    coverage: documented
   - id: OAK-T11.006
+    coverage: documented
+  - id: OAK-T11.006.001
+    coverage: documented
+  - id: OAK-T17.005
     coverage: documented
 - key: elliptic
   name: Elliptic
@@ -1020,6 +1208,8 @@ vendors:
   techniques:
   - id: OAK-T5.005
     coverage: documented
+  - id: OAK-T5.008
+    coverage: documented
   - id: OAK-T6.006
     coverage: documented
   - id: OAK-T7.001
@@ -1034,17 +1224,41 @@ vendors:
     coverage: documented
   - id: OAK-T7.006
     coverage: documented
+  - id: OAK-T7.007
+    coverage: documented
+  - id: OAK-T7.008
+    coverage: documented
+  - id: OAK-T7.009
+    coverage: documented
   - id: OAK-T8.001
     coverage: documented
   - id: OAK-T8.002
     coverage: documented
+  - id: OAK-T8.003
+    coverage: documented
+  - id: OAK-T8.004
+    coverage: documented
+  - id: OAK-T8.005
+    coverage: partial
   - id: OAK-T10.001
+    coverage: documented
+  - id: OAK-T10.006
+    coverage: documented
+  - id: OAK-T10.007
     coverage: documented
   - id: OAK-T11.001
     coverage: documented
   - id: OAK-T11.004
     coverage: documented
   - id: OAK-T11.005
+    coverage: documented
+  - id: OAK-T11.005.001
+    coverage: documented
+  - id: OAK-T11.005.002
+    coverage: documented
+  - id: OAK-T11.005.003
+    coverage: documented
+  - id: OAK-T17.005
     coverage: documented
 - key: nansen
   name: Nansen
@@ -1106,6 +1320,8 @@ vendors:
   - id: OAK-T6.003
     coverage: partial
   - id: OAK-T6.006
+    coverage: documented
+  - id: OAK-T8.003
     coverage: documented
   - id: OAK-T14.002
     coverage: documented

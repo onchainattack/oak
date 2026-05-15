@@ -1,0 +1,110 @@
+oak_techniques: [OAK-T14.005]
+spec_id: oak-detection-T14.005
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect builder-level transaction censorship in proposer-builder separation
+  (PBS) architectures where block builders deliberately exclude specific
+  transactions from their block proposals to benefit their own or allied
+  searchers' transaction flows. Covers both profit-driven censorship
+  (excluding rival MEV bundles) and compliance-driven censorship (excluding
+  OFAC-sanctioned interactions). Detection operates at the per-builder
+  transaction-inclusion audit and builder-searcher correlation layers.
+  Excludes: T14.002 (MEV-Boost relay attack — relay-layer manipulation,
+  not builder-layer); T5.004 (sandwich MEV — per-transaction pattern,
+  not builder-censorship infrastructure).
+
+data_sources: [beacon_proposer_assignments, mempool_trace,
+               tx_call_trace, dex_trades]
+
+detection_logic:
+  description: |
+    Four detection paths. PATH A (per-builder transaction-inclusion audit):
+    for each builder, compute the set of searcher addresses whose transactions
+    appear in the builder's blocks; compare across builders; flag builders
+    whose inclusion set materially deviates from the global top-N-searchers
+    set. PATH B (per-transaction inclusion-delay monitoring): track
+    transactions observed in the public mempool; alert on transactions that
+    remain un-included beyond a configurable slot-count threshold while
+    paying competitive priority fees. PATH C (builder-allied-searcher
+    correlation): identify searcher addresses appearing exclusively in a
+    specific builder's blocks. PATH D (OFAC-compliance censorship): track
+    inclusion rates of transactions interacting with OFAC-sanctioned
+    addresses per builder.
+  pseudocode: |
+    # PATH A — per-builder transaction-inclusion audit
+    for each builder B:
+      B_searchers ← {addr for tx in B.blocks if tx.from ∈ known_searchers}
+      global_searchers ← {addr for tx in all_blocks if tx.from ∈ known_searchers}
+      missing ← global_searchers − B_searchers
+      if len(missing) / len(global_searchers) > builder_exclusion_threshold:
+        emit(PATH_A, builder=B, excluded_searchers=missing,
+             exclusion_ratio=len(missing)/len(global_searchers), severity=high)
+
+    # PATH B — per-transaction inclusion-delay monitoring
+    for each tx T in public_mempool:
+      slots_pending ← current_slot − T.first_seen_slot
+      if slots_pending > inclusion_delay_threshold
+         and T.priority_fee >= competitive_fee_percentile:
+        included_by ← [B for B in builders if T.hash ∈ B.blocks]
+        if included_by == ∅:
+          emit(PATH_B, tx=T.hash, from=T.from, to=T.to,
+               slots_pending, priority_fee=T.priority_fee,
+               severity=high)
+
+    # PATH C — builder-allied-searcher correlation
+    for each builder B:
+      B_only ← [S for S in B_searchers
+                 if S.appears_in(B.blocks) / S.total_appearances > exclusivity_ratio]
+      for each searcher S in B_only:
+        mev_share ← S.mev_extracted_in(B.blocks) / B.total_mev
+        if mev_share > builder_searcher_mev_threshold:
+          emit(PATH_C, builder=B, searcher=S, exclusivity=S.appears_in(B.blocks)/S.total_appearances,
+               mev_share, severity=medium)
+
+    # PATH D — OFAC-compliance censorship
+    for each builder B:
+      sanctioned_txs ← [T for T in mempool where T.interacts_with(ofac_sdn_addresses)]
+      B_included ← [T for T in sanctioned_txs if T.hash ∈ B.blocks]
+      inclusion_rate ← len(B_included) / len(sanctioned_txs)
+      if inclusion_rate == 0 and len(sanctioned_txs) > min_sanctioned_sample:
+        emit(PATH_D, builder=B, inclusion_rate=0,
+             sanctioned_tx_count=len(sanctioned_txs), severity=medium)
+
+parameters:
+  builder_exclusion_threshold:       { type: number,   default: 0.2 }
+  inclusion_delay_threshold:         { type: integer,  default: 6 }        # slots
+  competitive_fee_percentile:        { type: number,   default: 50 }
+  exclusivity_ratio:                 { type: number,   default: 0.8 }
+  builder_searcher_mev_threshold:    { type: number,   default: 0.1 }
+  min_sanctioned_sample:             { type: integer,  default: 10 }
+  ofac_sdn_addresses:                { type: list,     default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               builder, searcher, excluded_transactions, inclusion_delay,
+               censorship_type, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-2025-tornado-cash-ofac-builder-censorship                    # OFAC-compliance censorship, extensively measured
+    - 2022-2025-ethereum-block-builder-eof-centralization               # Builder-allied searcher exclusivity
+  negative:
+    - "Builder with below-average inclusion set matching its market share — no statistically significant exclusion pattern"
+    - "Transaction delayed by network congestion rather than builder censorship — inclusion delay without builder-specific exclusion pattern"
+
+false_positive_modes:
+  - Builder concentration is a structural feature of PBS — per-builder inclusion-set variance from a small builder is noise, not censorship; calibrate PATH A thresholds per builder market share
+  - Transaction inclusion delay from network congestion or low priority fee — PATH B must verify competitive fee percentile before flagging
+  - Builder-allied searcher exclusivity from private order flow (searcher submits bundles exclusively to one builder) — this is structural PBS behaviour, not necessarily malicious; PATH C is a transparency metric, not a detection alert
+  - OFAC-compliance censorship is a regulatory compliance decision, not an "attack" — PATH D is an observability metric; treat as a transparency signal, not a detection incident
+
+mitigations: [OAK-M09]
+
+reference_implementations:
+  - { target: eigenphi,               chain: evm,    url: "" }
+  - { target: censorship-dot-pics,     chain: evm,    url: "" }
+  - { target: mevwatch-dot-info,       chain: evm,    url: "" }
+  - { target: relayscan,              chain: evm,    url: "" }

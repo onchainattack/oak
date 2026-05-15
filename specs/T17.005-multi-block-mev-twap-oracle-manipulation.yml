@@ -1,0 +1,109 @@
+oak_techniques: [OAK-T17.005]
+spec_id: oak-detection-T17.005
+version: 0.1.0
+maturity: observed
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect TWAP oracle price manipulation conducted across multiple
+  consecutive blocks via proposer-controlled sequencing (MEV-Boost
+  builder coordination, validator collusion, or proposer-bribery).
+  The attacker controls the block-proposer slot for multiple sequential
+  blocks to "grind" a TWAP oracle toward a target price, relaxing the
+  single-block capital constraint of T9.001. Excludes: T9.001 (single-block
+  oracle manipulation — atomic within one tx); T17.004 (TWAP window
+  manipulation against downstream settlement math — window-selection
+  primitive, not proposer-control primitive); T17.001 (cross-venue
+  arbitrage — exploits existing price differences, doesn't create them).
+
+data_sources: [dex_trades, contract_storage, contract_events,
+               tx_call_trace, reference_price_feed, mempool_trace,
+               beacon_proposer_assignments]
+
+detection_logic:
+  description: |
+    Four detection paths. PATH A (multi-block proposer concentration):
+    alert when a single builder/validator proposes more than N blocks in
+    a configurable window — the structural precondition for T17.005.
+    PATH B (TWAP deviation from reference): compare the protocol's consumed
+    TWAP to a reference TWAP from a deep-liquid venue; flag divergence
+    exceeding threshold. PATH C (joint proposer-concentration + TWAP
+    deviation): combine PATH A and PATH B — flag when proposer concentration
+    and TWAP deviation co-occur. PATH D (per-block trade-volume anomaly
+    within proposer-concentrated windows): within a detected proposer-
+    concentration window, flag blocks where trade volume on the TWAP's
+    input venue exceeds the venue's typical per-block volume.
+  pseudocode: |
+    # PATH A — multi-block proposer concentration monitoring
+    for each sliding_window of window_blocks:
+      proposers ← [b.proposer for b in window_blocks]
+      for each builder B in unique(proposers):
+        consecutive ← max_consecutive_blocks(B, proposers)
+        if consecutive > proposer_concentration_threshold:
+          emit(PATH_A, builder=B, consecutive_blocks=consecutive,
+               window_start=window_blocks[0].number, severity=medium)
+
+    # PATH B — TWAP-vs-reference deviation
+    for each protocol P consuming TWAP oracle O:
+      for each block b:
+        consumed_twap ← O.twap(b)
+        reference_twap ← reference_twap(O.asset, b, reference_venues)
+        deviation ← |consumed_twap − reference_twap| / reference_twap
+        if deviation > twap_deviation_threshold:
+          emit(PATH_B, protocol=P, oracle=O, consumed_twap,
+               reference_twap, deviation, block=b, severity=high)
+
+    # PATH C — joint proposer-concentration + TWAP deviation
+    for each PATH_A alert A and PATH_B alert B:
+      if overlap(A.window, B.block, joint_window_tolerance):
+        positions ← [p for p in P.positions if benefits_from(p, B.deviation)]
+        if positions ≠ ∅:
+          emit(PATH_C, builder=A.builder, protocol=B.protocol,
+               deviation=B.deviation, beneficiary_positions=positions,
+               severity=critical)
+
+    # PATH D — per-block trade-volume anomaly in proposer-concentrated windows
+    for each PATH_A alert A:
+      for each block b in A.consecutive_window:
+        venue_volume ← trade_volume(O.input_venue, b)
+        baseline ← avg_trade_volume(O.input_venue, lookback=volume_baseline_blocks)
+        if venue_volume > baseline * volume_anomaly_multiplier:
+          emit(PATH_D, block=b, venue=O.input_venue, volume=venue_volume,
+               baseline=baseline, builder=A.builder, severity=high)
+
+parameters:
+  window_blocks:                     { type: integer,  default: 10 }
+  proposer_concentration_threshold:  { type: integer,  default: 3 }
+  twap_deviation_threshold:          { type: number,   default: 0.05 }
+  reference_venues:                  { type: list,     default: [cex_mid, multi_venue_twap_30m] }
+  joint_window_tolerance:            { type: integer,  default: 10 }       # blocks
+  volume_baseline_blocks:            { type: integer,  default: 7200 }     # ~24h on Ethereum
+  volume_anomaly_multiplier:         { type: number,   default: 3.0 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               builder, protocol, oracle, deviation, beneficiary,
+               proposer_sequence, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-04-inverse-finance-twap                                     # Multi-block TWAP execution pattern
+    - 2023-2025-multi-block-mev-twap-oracle-grinding-cohort            # Post-Merge builder-concentration cohort
+    - 2024-2025-jupiter-dca-solana-twap-oracle-manipulation            # Solana deterministic leader schedule
+  negative:
+    - "Routine builder concentration in post-Merge PBS (single builder proposing 2-3 consecutive blocks without correlated TWAP deviation)"
+    - "Legitimate TWAP deviation during high-volatility market events without proposer concentration"
+
+false_positive_modes:
+  - Builder concentration is a structural feature of post-Merge Ethereum PBS — proposer concentration alone is not a T17.005 signal; require joint proposer-concentration + TWAP deviation
+  - TWAP deviation during genuine market volatility (CEX outage, depeg event) without proposer concentration — PATH B alone is insufficient
+  - Single-builder consecutive blocks from a dominant builder (beaverbuild, Titan) without correlated price movement — routine PBS operation
+  - Solana leader-schedule pre-visibility makes multi-slot grinding a different structural class than Ethereum PBS-based grinding; calibrate PATH A per-chain
+
+mitigations: [OAK-M09, OAK-M16, OAK-M17]
+
+reference_implementations:
+  - { target: eigenphi,               chain: evm,    url: "" }
+  - { target: flashbots-mev-boost,    chain: evm,    url: "" }
+  - { target: forta-bot,              chain: evm,    url: "" }
+  - { target: relayscan,              chain: evm,    url: "" }

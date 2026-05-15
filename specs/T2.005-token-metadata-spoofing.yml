@@ -1,0 +1,95 @@
+oak_techniques: [OAK-T2.005]
+spec_id: oak-detection-T2.005
+version: 0.1.0
+maturity: observed
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect token contracts whose ERC-20 `name()`, `symbol()`, and `decimals()`
+  return values impersonate a legitimate high-value token (USDT, USDC, WBTC,
+  ETH) while the token's actual behaviour differs materially. Detection
+  operates at the static token-metadata cross-reference layer — comparing
+  on-chain metadata tuples against canonical token registries. Excludes:
+  T6.006 (counterfeit token impersonation — full-spectrum brand-counterfeit
+  including off-chain brand assets; T2.005 is the on-chain metadata-primitive
+  mechanism); T1.001 (modifiable tax/anti-sell — transfer-function behaviour,
+  not metadata-layer impersonation).
+
+data_sources: [contract_bytecode, contract_storage, dex_trades]
+
+detection_logic:
+  description: |
+    Four detection paths. PATH A (token-metadata cross-reference against
+    canonical registries): for every name/symbol/decimals tuple observed
+    on-chain, check against a canonical token registry; flag tokens whose
+    metadata matches a registry entry but whose contract address does not.
+    PATH B (decimals mismatch as leading indicator): flag tokens whose
+    symbol matches a known asset but whose decimals differ from the canonical
+    value. PATH C (wallet-side token-address verification): at the wallet UI
+    layer, cross-reference displayed tokens against canonical deployment
+    addresses. PATH D (transfer-function simulation): simulate a transfer
+    and compare actual balance change against expected amount.
+  pseudocode: |
+    CANONICAL_REGISTRY ← load_registry()   # Uniswap Token List, CoinGecko, 1inch, chain-specific
+
+    # PATH A — token-metadata cross-reference against canonical registries
+    for each token T deployed on chain:
+      metadata ← (eth_call(T, "name()"), eth_call(T, "symbol()"), eth_call(T, "decimals()"))
+      for each entry E in CANONICAL_REGISTRY:
+        if metadata.name == E.name and metadata.symbol == E.symbol:
+          if T.address ≠ E.canonical_address:
+            emit(PATH_A, token=T.address, name=metadata.name, symbol=metadata.symbol,
+                 canonical_address=E.canonical_address, registry=E.source, severity=high)
+
+    # PATH B — decimals mismatch as leading indicator
+    for each token T:
+      symbol ← eth_call(T, "symbol()")
+      decimals ← eth_call(T, "decimals()")
+      canonical ← CANONICAL_REGISTRY.lookup(symbol)
+      if canonical ≠ ∅ and decimals ≠ canonical.decimals:
+        emit(PATH_B, token=T.address, symbol, actual_decimals=decimals,
+             canonical_decimals=canonical.decimals, severity=critical)
+
+    # PATH C — wallet-side token-address verification
+    for each token T displayed in wallet_ui:
+      canonical ← CANONICAL_REGISTRY.lookup(T.symbol)
+      if canonical ≠ ∅ and T.address ≠ canonical.address:
+        show_impersonation_warning(T.symbol, T.address, canonical.address)
+
+    # PATH D — transfer-function simulation
+    for each newly_deployed_token T:
+      result ← simulate_transfer(T, non_deployer_from, test_amount)
+      actual_balance_change ← result.receiver_balance_after − result.receiver_balance_before
+      if actual_balance_change ≠ test_amount:
+        emit(PATH_D, token=T.address, expected=test_amount,
+             actual=actual_balance_change, fee_detected=test_amount − actual_balance_change,
+             severity=high)
+
+parameters:
+  canonical_registry:                { type: list,     default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               token_address, impersonated_symbol, canonical_address,
+               metadata_tuple, decimals_mismatch, evidence]
+
+test_fixtures:
+  positive:
+    - 2020-2021-uniswap-fake-token-impersonation-wave                    # Uniswap V2 fake USDT/USDC wave
+    - 2021-bsc-pancakeswap-token-impersonation-wave                     # BSC PancakeSwap fake-token wave
+    - 2024-06-bera-chain-fake-airdrop-token-metadata-spoofing           # Pre-mainnet impersonator tokens
+  negative:
+    - "Token with unique name/symbol not matching any canonical registry entry — not impersonating, legitimate new token deployment"
+    - "Token whose name/symbol coincidentally matches but with a clearly distinct address on a different chain — cross-chain deployments, not impersonation"
+
+false_positive_modes:
+  - Cross-chain canonical deployments of the same token (e.g., USDC on multiple chains with different addresses) — calibrate PATH A to be per-chain
+  - Legitimate token with the same symbol but different name (e.g., "Ethereum Token" with symbol "ETH") — require both name AND symbol match for PATH A
+  - Token whose metadata matches a canonical entry but whose deployment predates the registry entry — the registry is incomplete, not the token is impersonating
+
+mitigations: [OAK-M01]
+
+reference_implementations:
+  - { target: goplus,                chain: cross-chain, url: "" }
+  - { target: tokensniffer,          chain: cross-chain, url: "" }
+  - { target: honeypot-is,           chain: cross-chain, url: "" }

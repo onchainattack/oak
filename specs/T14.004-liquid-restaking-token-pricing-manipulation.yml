@@ -1,0 +1,272 @@
+oak_techniques: [OAK-T14.004]
+spec_id: oak-detection-T14.004
+version: 0.2.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect liquid-restaking-token (LRT) pricing manipulation through primitives
+  specific to the restaking stack: AVS yield manipulation, slashing-event
+  arbitrage, withdrawal-queue gaming, and LRT/ETH or LRT/LST DEX-pool
+  manipulation. The defining structural feature is the multi-layer dependency
+  chain: LRT price ← NAV ← AVS event stream ← EigenLayer operator behavior.
+  An attacker with foreknowledge of, or control over, AVS-level events can
+  trade LRTs ahead of NAV updates that the market has not yet priced in.
+  Detection operates at the LRT NAV-to-DEX-price divergence monitoring,
+  AVS-event-feed + LRT price co-movement analysis, withdrawal-queue price-vs-
+  redemption comparison, EigenLayer withdrawal-queue activity profiling, LRT
+  issuer oracle-update-cadence audit, and cross-LRT market-wide depeg
+  discrimination layers. Excludes: T14.003 (restaking cascading risk — systemic
+  propagation, not active manipulation); T9.001 (oracle price manipulation —
+  general oracle surface, not LRT-specific NAV/withdrawal-queue primitives);
+  T17.001 (cross-venue arbitrage — general arbitrage, not restaking-specific
+  primitives).
+
+data_sources: [dex_trades, contract_events, contract_storage, token_prices,
+               avs_event_feed, validator_set_attestation, tx_call_trace,
+               withdrawal_queue_state]
+
+detection_logic:
+  description: |
+    Five orthogonal detection paths. PATH A (LRT NAV-to-DEX-price divergence
+    monitoring): continuously compute the percentage divergence between the
+    issuer-reported NAV and the DEX-traded spot price; classify divergence by
+    AVS-event correlation, withdrawal-queue activity, and market-wide stress
+    to discriminate manipulation from legitimate depeg. PATH B (AVS event feed
+    + LRT price co-movement analysis): monitor LRT/ETH and LRT/LST pool
+    trading volume and price in blocks surrounding AVS events (yield
+    distribution, slashing, operator-set changes); flag abnormal price moves
+    that precede public AVS event knowledge. PATH C (withdrawal-queue price-vs-
+    redemption monitoring): compare the withdrawal-queue redemption rate to the
+    concurrent DEX spot price; flag spreads that exceed the risk-free return
+    for the escrow period — indicating a manipulation premium rather than
+    arbitrage. PATH D (EigenLayer withdrawal-queue activity profiling): monitor
+    deposit/withdrawal/cancellation events for patterns correlated with AVS
+    event timing; flag addresses whose queue activity consistently precedes
+    LRT price moves. PATH E (cross-LRT market-wide depeg discrimination):
+    when an LRT depegs, compute the pairwise correlation of its price deviation
+    with all other LRTs; classify the depeg as idiosyncratic (likely T14.004)
+    or systemic (likely T14.003).
+  pseudocode: |
+    # Shared helpers
+    nav_depeg_severity(L, divergence, avs_correlation, market_correlation) :=
+      "critical"  if avs_correlation > avs_event_correlation_threshold
+                    and market_correlation < market_wide_depeg_correlation else
+      "high"      if avs_correlation > avs_event_correlation_threshold else
+      "medium"    if divergence > max_nav_divergence else
+      "low"
+    avs_event_foreknowledge_score(A, event) :=
+      (1 if A.queue_activity_before_event else 0)
+      + (1 if A.dex_trades_before_event else 0)
+      + (1 if A.previous_foreknowledge_incidents > 0 else 0)
+    market_wide_depeg_correlation(L, all_lrts) :=
+      mean(pearson_r(L.price_deviation_series, O.price_deviation_series)
+           for O in all_lrts if O ≠ L)
+
+    # PATH A — LRT NAV-to-DEX-price divergence monitoring
+    for each LRT L:
+      nav ← L.issuer_reported_nav
+      dex_price ← get_dex_spot_price(L.dex_pool, quote_asset=ETH)
+      divergence ← abs(dex_price − nav) / max(nav, 1)
+      if divergence > max_nav_divergence:
+        # Correlate with AVS events
+        nearby_avs_events ← get_avs_events(L.underlying_avs, lookback_blocks=avs_lookback_blocks)
+        avs_correlation ← max(event.price_impact_score for event in nearby_avs_events) if nearby_avs_events else 0
+        # Correlate with other LRTs
+        market_correlation ← market_wide_depeg_correlation(L, ALL_LRTS)
+        # Withdrawal queue activity
+        queue_activity ← get_queue_activity_surge(L.withdrawal_queue, recent_blocks=avs_lookback_blocks)
+        severity ← nav_depeg_severity(L, divergence, avs_correlation, market_correlation)
+        emit(PATH_A, lrt=L.symbol, lrt_address=L.address, chain=L.chain,
+             nav=nav, dex_price=dex_price, divergence=divergence,
+             avs_correlation=avs_correlation,
+             market_wide_correlation=market_correlation,
+             nearby_avs_events=nearby_avs_events,
+             withdrawal_queue_surge=queue_activity,
+             severity=severity,
+             guidance="LRT {L.symbol} NAV-DEX divergence: {divergence:.2%}. "
+                      + ("AVS-event correlated (r={avs_correlation:.2f}) AND market-"
+                         "isolated (cross-LRT r={market_correlation:.2f}) — likely "
+                         "T14.004 manipulation." if severity == "critical" else
+                         "AVS-event correlated but not market-isolated — possible "
+                         "systemic stress." if severity == "high" else
+                         "Divergence exceeds threshold — monitor for AVS-event link."))
+
+    # PATH B — AVS event feed + LRT price co-movement analysis
+    for each AVS_event E in AVS_EVENT_FEED
+        where E.type in {yield_distribution, slashing, operator_set_change,
+                         strategy_addition, strategy_removal, fee_change}:
+      for each LRT L with_exposure_to E.avs:
+        pre_event_price ← get_twap(L.dex_pool, E.block − price_lookback_blocks, E.block)
+        pre_event_volume ← get_cumulative_volume(L.dex_pool, E.block − price_lookback_blocks, E.block)
+        post_event_price ← get_twap(L.dex_pool, E.block, E.block + price_lookback_blocks)
+        price_move ← (post_event_price − pre_event_price) / max(pre_event_price, 1)
+        if abs(price_move) > max_avs_event_price_move:
+          # Determine whether the price move PRECEDES the public event
+          # (foreknowledge) or FOLLOWS it (legitimate reaction)
+          pre_event_move ← (get_twap(L.dex_pool, E.block − price_lookback_blocks * 2,
+                                     E.block − price_lookback_blocks) − pre_event_price) / max(pre_event_price, 1)
+          foreknowledge ← abs(pre_event_move) > abs(price_move) * 0.5
+          emit(PATH_B, avs=E.avs, event_type=E.type, event_tx=E.tx_hash,
+               lrt=L.symbol, chain=L.chain,
+               pre_price=pre_event_price, post_price=post_event_price,
+               price_move=price_move, pre_event_volume=pre_event_volume,
+               price_move_pre_event=pre_event_move,
+               foreknowledge_indicated=foreknowledge,
+               block_delta_to_event=E.block − get_first_trade_block(L.dex_pool, E.block),
+               severity="critical" if foreknowledge else
+                        "high"     if abs(price_move) > max_avs_event_price_move * 2 else
+                        "medium",
+               guidance="LRT {L.symbol} price moved {price_move:.2%} around AVS {E.avs} "
+                        "{E.type} event at block {E.block}. "
+                        + ("PRE-EVENT MOVE: {pre_event_move:.2%} before public event — "
+                           "foreknowledge indicated." if foreknowledge else
+                           "Post-event reaction: {price_move:.2%} in response to public AVS event."))
+
+    # PATH C — withdrawal-queue price-vs-redemption monitoring
+    for each LRT L with withdrawal_queue:
+      redemption_rate ← L.queue.current_redemption_rate    # ETH per LRT
+      dex_spot_price ← get_dex_spot_price(L.dex_pool, ETH)
+      spread ← abs(dex_spot_price − redemption_rate) / max(redemption_rate, 1)
+      escrow_risk_free_return ← risk_free_rate × L.queue.escrow_period_days / 365
+      if spread > escrow_risk_free_return × spread_multiplier:
+        # Check for queue gaming: large deposits immediately before queue closes
+        queue_gaming ← detect_queue_front_running(L.withdrawal_queue)
+        emit(PATH_C, lrt=L.symbol, lrt_address=L.address, chain=L.chain,
+             redemption_rate=redemption_rate, dex_spot_price=dex_spot_price,
+             spread=spread,
+             escrow_period_days=L.queue.escrow_period_days,
+             risk_free_return=escrow_risk_free_return,
+             excess_spread=spread − escrow_risk_free_return,
+             queue_gaming_detected=queue_gaming,
+             severity="high" if queue_gaming else "medium",
+             guidance="LRT {L.symbol}: DEX price {dex_spot_price} vs redemption "
+                      "{redemption_rate} — spread={spread:.2%} exceeds risk-free return "
+                      "for {L.queue.escrow_period_days}d escrow ({escrow_risk_free_return:.2%}). "
+                      + ("QUEUE GAMING DETECTED: addresses front-running the withdrawal "
+                         "queue." if queue_gaming else
+                         "Excess spread: {spread − escrow_risk_free_return:.2%}."))
+
+    # PATH D — EigenLayer withdrawal-queue activity profiling
+    for each withdrawal_queue Q in EIGENLAYER_QUEUES:
+      for each address A in Q.recent_activity:
+        deposits ← Q.deposits_by(A)
+        cancellations ← Q.cancellations_by(A)
+        withdrawals ← Q.withdrawals_by(A)
+        if len(deposits) > min_queue_actions and len(cancellations) > min_queue_actions:
+          # Profile the timing of queue actions against AVS events
+          avs_event_proximity_deposits ← correlate_with_avs_events(deposits)
+          avs_event_proximity_cancellations ← correlate_with_avs_events(cancellations)
+          max_proximity ← max(avs_event_proximity_deposits, avs_event_proximity_cancellations)
+          if max_proximity > queue_event_correlation_threshold:
+            # Compute foreknowledge score
+            foreknowledge ← avs_event_foreknowledge_score(A, {
+              queue_activity_before_event: max_proximity > queue_event_correlation_threshold,
+              dex_trades_before_event: has_dex_trades_before_avs_events(A, Q.related_lrt),
+              previous_foreknowledge_incidents: count_prior_incidents(A)
+            })
+            emit(PATH_D, queue=Q.address, lrt=Q.related_lrt,
+                 address=A, entity=resolve_entity(A),
+                 deposit_count=len(deposits), cancellation_count=len(cancellations),
+                 withdrawal_count=len(withdrawals),
+                 avs_correlation=max_proximity,
+                 foreknowledge_score=foreknowledge,
+                 total_volume_eth=sum(d.value_eth for d in deposits),
+                 severity="critical" if foreknowledge >= 2 else "high",
+                 guidance="Address {A} ({resolve_entity(A)}): {len(deposits)} deposits, "
+                          "{len(cancellations)} cancellations, AVS-event correlation="
+                          "{max_proximity:.2f}. Foreknowledge score={foreknowledge}. "
+                          "Pattern consistent with withdrawal-queue gaming against AVS events.")
+
+    # PATH E — cross-LRT market-wide depeg discrimination
+    for each LRT L where abs(L.dex_price − L.nav) / L.nav > max_nav_divergence:
+      # Build correlation matrix with all other LRTs
+      correlations ← {}
+      for each other LRT O in ALL_LRTS where O ≠ L:
+        corr ← pearson_r(L.price_deviation_series[−depeg_lookback_blocks:],
+                         O.price_deviation_series[−depeg_lookback_blocks:])
+        correlations[O.symbol] ← corr
+      market_correlation ← mean(correlations.values())
+      # Categorize the depeg
+      if market_correlation < market_wide_depeg_correlation:
+        # Idiosyncratic depeg — investigate for manipulation
+        avs_events ← get_recent_avs_events(L.underlying_avs, depeg_lookback_blocks)
+        queue_anomalies ← detect_queue_anomalies(L.withdrawal_queue, depeg_lookback_blocks)
+        emit(PATH_E, lrt=L.symbol, lrt_address=L.address, chain=L.chain,
+             divergence=L.current_divergence,
+             market_wide_correlation=market_correlation,
+             pairwise_correlations=correlations,
+             depeg_category="idiosyncratic",
+             concurrent_avs_events=avs_events,
+             queue_anomalies=queue_anomalies,
+             severity="critical" if (len(avs_events) > 0 or len(queue_anomalies) > 0) else "high",
+             guidance="LRT {L.symbol} shows IDIOSYNCRATIC depeg (cross-LRT r={market_correlation:.2f}) "
+                      "— not explained by market-wide stress. "
+                      + ("AVS events ({len(avs_events)}) and queue anomalies "
+                         "({len(queue_anomalies)}) detected in the depeg window — "
+                         "consistent with T14.004 manipulation."
+                         if len(avs_events) > 0 or len(queue_anomalies) > 0 else
+                         "No AVS-event or queue-anomaly link found — investigate other "
+                         "idiosyncratic causes."))
+      else:
+        # Systemic depeg — likely T14.003, not T14.004
+        emit(PATH_E, lrt=L.symbol, lrt_address=L.address, chain=L.chain,
+             divergence=L.current_divergence,
+             market_wide_correlation=market_correlation,
+             pairwise_correlations=correlations,
+             depeg_category="systemic",
+             concurrent_affected_lrts=[sym for sym, corr in correlations if corr > 0.7],
+             severity="medium",
+             guidance="LRT {L.symbol} depeg is SYSTEMIC (cross-LRT r={market_correlation:.2f}). "
+                      "Depeg is consistent with market-wide LRT stress (T14.003), not "
+                      "idiosyncratic manipulation (T14.004). Affected peers: "
+                      "{concurrent_affected_lrts}.")
+
+parameters:
+  max_nav_divergence:                  { type: number,   default: 0.05 }
+  price_lookback_blocks:               { type: integer,  default: 100 }
+  max_avs_event_price_move:            { type: number,   default: 0.03 }
+  spread_multiplier:                   { type: number,   default: 3.0 }
+  min_queue_actions:                   { type: integer,  default: 3 }
+  queue_event_correlation_threshold:   { type: number,   default: 0.7 }
+  max_oracle_cadence_blocks:           { type: integer,  default: 100 }
+  avs_lookback_blocks:                 { type: integer,  default: 200 }
+  avs_event_correlation_threshold:     { type: number,   default: 0.6 }
+  market_wide_depeg_correlation:       { type: number,   default: 0.5 }
+  depeg_lookback_blocks:               { type: integer,  default: 500 }
+  risk_free_rate:                      { type: number,   default: 0.05 }     # 5% annual
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               lrt, nav, dex_price, divergence,
+               avs_event_correlation, market_wide_correlation,
+               withdrawal_queue_spread, foreknowledge_score,
+               depeg_category, oracle_cadence, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-04-renzo-ezeth-depeg                                                  # Renzo ezETH DEX discount to NAV following airdrop announcement
+    - 2024-05-ether-fi-weeth-discount-depeg                                      # Ether.fi weETH 5-12% sustained DEX discount to NAV
+    - 2024-06-kelp-rseth-depeg                                                   # Kelp rsETH composition-change-triggered NAV-to-DEX divergence
+    - 2024-07-puffer-pufeth-depeg                                                # Puffer pufETH ~4-7% discount to ETH backing
+    - 2022-2025-coinbase-cbeth-structural-discount                               # Coinbase cbETH chronic structural discount — no redemption mechanism
+  negative:
+    - "LRT trading at a discount during a market-wide sell-off consistent across multiple LRTs — not T14.004 (no AVS-event foreknowledge or withdrawal-queue exploitation)"
+    - "LRT with per-block NAV oracle update cadence and DEX-traded within 0.5% of NAV — NAV and DEX price in coherence"
+    - "LRT depeg where cross-LRT correlation > 0.7 and no AVS events in the depeg window — systemic stress (T14.003), not idiosyncratic manipulation"
+
+false_positive_modes:
+  - Market-wide LRT depeg during systemic stress (e.g., broad crypto sell-off) — PATH E distinguishes via cross-LRT correlation: if multiple LRTs from different issuers depeg simultaneously with r > 0.5, the cause is systemic (T14.003), not T14.004
+  - LRT discount driven by airdrop-expectation adjustment (e.g., Renzo ezETH April 2024) rather than AVS-event exploitation — PATH A cross-references against AVS event feed; airdrop-driven depegs should have low AVS-event correlation
+  - Withdrawal-queue deposit/cancellation activity from legitimate arbitrageurs capturing DEX-vs-redemption spread — PATH D distinguishes via AVS-event correlation: T14.004 activity is precisely timed against AVS events; passive spread-capture shows no event correlation
+  - LRT NAV update lag causing apparent divergence that resolves at the next oracle update — PATH A compares against the issuer's oracle cadence (PATH E in original); divergence within one oracle update period may be a cadence artifact
+  - Individual LRT depeg caused by issuer-specific operational issues (e.g., strategy composition change) — PATH E discriminates via the combination of market_wide_correlation and AVS_event_correlation; operational issues show low AVS correlation but may also show low market correlation
+
+mitigations: [OAK-M02, OAK-M08, OAK-M09, OAK-M11, OAK-M20]
+
+reference_implementations:
+  - { target: gauntlet,               chain: cross-chain, url: "" }
+  - { target: chaos-labs,             chain: cross-chain, url: "" }
+  - { target: steakhouse-financial,   chain: cross-chain, url: "" }
+  - { target: eigenlayer-explorer,    chain: cross-chain, url: "" }
+  - { target: defillama,              chain: cross-chain, url: "" }

@@ -1,0 +1,288 @@
+oak_techniques: [OAK-T9.011]
+spec_id: oak-detection-T9.011
+version: 0.2.0
+maturity: stable
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect smart-contract exploits that weaponise rounding direction in
+  integer-division-based token accounting to extract value. The canonical
+  surface is ERC-4626 vault share-price manipulation via donation + rounding
+  (the "inflation attack"), where the attacker donates assets to a vault
+  to inflate totalAssets, causing subsequent deposits to round down to
+  zero shares. Also covers the reverse direction (donation to deflate
+  totalAssets, causing redemption rounding that extracts excess assets)
+  and lending-market (cToken/Compound V2 fork) exchangeRate manipulation
+  via the same primitive. The defining structural feature is the integer-
+  division rounding direction: the attacker exploits the asymmetry between
+  the vault's internal accounting precision and the discrete share quantum.
+  Detection operates at the per-vault share-price monitoring, donation-
+  event + deposit sequence correlation, victim-side zero-share detection,
+  pre-deployment virtual-shares audit, and cross-protocol vault-attack
+  campaign correlation layers. Excludes: T9.001 (oracle price manipulation —
+  no oracle involved); T9.002 (flash-loan-enabled — flash loans are a tool,
+  not the exploit primitive, though they frequently compose); T9.005
+  (reentrancy — no re-entry); T9.012 (initial-liquidity sandwich — liquidity-
+  addition sequencing, not vault-share rounding).
+
+data_sources: [dex_trades, contract_storage, contract_events,
+               tx_call_trace, reference_price_feed, contract_bytecode,
+               contract_deployment, liquidation_events]
+
+detection_logic:
+  description: |
+    Five orthogonal detection paths. PATH A (per-vault share-price monitoring):
+    track the per-share redemption value (totalAssets / totalSupply) over time;
+    alert on sudden increases not explained by yield — consistent with
+    donation events that skew the ratio; calibrate sensitivity by vault age
+    and totalSupply magnitude. PATH B (donation-event + deposit sequence
+    correlation): alert on ERC-20 Transfer events directly to a vault contract
+    address (donation without deposit) followed by a Deposit event within a
+    configurable window where the depositor receives fewer shares than expected
+    given the pre-donation ratio. PATH C (victim-side zero-share / share-
+    shortfall detection): alert on Deposit events where sharesMinted deviates
+    from expected shares by more than the rounding tolerance; classify by
+    shortfall severity. PATH D (pre-deployment virtual-shares + rounding-
+    direction audit): static analysis verifying virtual-shares/dead-shares
+    initialisation, rounding-direction control (round-down for deposits,
+    round-down for redemptions), and the absence of donation-to-vault entry
+    points that bypass deposit accounting. PATH E (cross-protocol vault-attack
+    campaign correlation): correlate donation-attack patterns across vaults
+    sharing the same attacker address, same funding source, or same fork
+    substrate; identify attacker campaigns targeting multiple vault
+    deployments.
+  pseudocode: |
+    # Shared helpers
+    inflation_attack_profitability(V, donation_amount) :=
+      min_deposit_to_zero_share ← donation_amount × V.totalSupply / V.virtual_shares_offset + 1
+      profit_ratio ← donation_amount / min_deposit_to_zero_share
+      return profit_ratio
+    expected_shares(deposit_assets, total_assets_before, total_supply_before) :=
+      (deposit_assets × total_supply_before) / total_assets_before
+    vault_front_runnable(V) := V.totalSupply < virtual_shares_minimum
+                               or V.totalAssets < min_vault_tvl
+    rounding_direction_audit(V) := {
+      deposit_rounds_down: V.convertToShares(1) == 0 when 1 < V.totalAssets / V.totalSupply,
+      redeem_rounds_down: V.convertToAssets(1) <= V.totalAssets / V.totalSupply,
+      has_virtual_offset: V.totalSupply > 0 and V.balanceOf(0x0) > 0,   # dead shares
+    }
+
+    # PATH A — per-vault share-price ratio monitoring
+    for each vault V:
+      for each block b where b % share_price_check_interval == 0:
+        total_assets  ← eth_call(V, "totalAssets()", b)
+        total_supply  ← eth_call(V, "totalSupply()", b)
+        if total_supply == 0: continue
+        share_price   ← total_assets / total_supply
+        ref_price     ← reference_price(V.underlying, b)
+        divergence    ← abs(share_price − ref_price) / max(ref_price, 1)
+        # Calibrate: small/empty vaults are more sensitive to donation
+        vault_tvl ← total_assets × ref_price
+        is_front_runnable ← vault_front_runnable(V)
+        if divergence > share_price_divergence_threshold:
+          # Track the rate of change — sudden jumps indicate donation
+          prev_share_price ← V.share_price_at(b − share_price_check_interval)
+          if prev_share_price > 0:
+            jump_ratio ← share_price / prev_share_price
+          else:
+            jump_ratio ← 1.0
+          emit(PATH_A, vault=V, block=b, share_price=share_price,
+               ref_price=ref_price, divergence=divergence,
+               jump_ratio=jump_ratio, tvl_usd=vault_tvl,
+               total_supply=total_supply,
+               front_runnable=is_front_runnable,
+               severity="critical" if (is_front_runnable and divergence > 0.5) else
+                        "high"     if divergence > share_price_divergence_threshold * 3 else
+                        "medium",
+               guidance="Vault {V} share-price divergence: {divergence:.2%} "
+                        "(share_price={share_price}, ref={ref_price}). "
+                        + ("Jump ratio: {jump_ratio:.1f}x — consistent with donation attack. "
+                           "Vault is front-runnable (TVL=${vault_tvl}, supply={total_supply})."
+                           if is_front_runnable else
+                           "Vault TVL=${vault_tvl} — above front-running threshold."))
+
+    # PATH B — donation-event + deposit sequence correlation
+    for each vault V:
+      for each event_window w of size donation_deposit_window:
+        donations ← [e for e in V.Transfer_events[−w:]
+                     if e.to == V.address and e.from ≠ V.deposit_entrypoint]
+        for each donation d in donations:
+          deposits ← [e for e in V.Deposit_events
+                      if e.block ∈ [d.block, d.block + donation_deposit_window]
+                      and e.from ≠ d.from]
+          for each dep in deposits:
+            total_assets_before ← V.totalAssets(dep.block − 1)
+            total_supply_before ← V.totalSupply(dep.block − 1)
+            if total_supply_before == 0: continue
+            expected ← expected_shares(dep.assets, total_assets_before, total_supply_before)
+            shortfall_ratio ← (expected − dep.shares) / max(expected, 1)
+            if shortfall_ratio > rounding_tolerance:
+              # Compute the donation's effect on share price
+              pre_donation_share_price ← V.share_price_before(d.block)
+              post_donation_share_price ← V.share_price_at(dep.block)
+              price_impact ← (post_donation_share_price − pre_donation_share_price) / max(pre_donation_share_price, 1)
+              emit(PATH_B, vault=V, donation_tx=d.tx, deposit_tx=dep.tx,
+                   donor=d.from, victim=dep.from,
+                   donation_amount=d.amount, donation_asset=d.token,
+                   deposited=dep.assets, shares_received=dep.shares,
+                   expected_shares=expected, shortfall_ratio=shortfall_ratio,
+                   price_impact=price_impact,
+                   block_delta=dep.block − d.block,
+                   severity="critical",
+                   guidance="Donation-attack sequence: {d.from} donated {d.amount} {d.token} "
+                            "at block {d.block} → share price impact {price_impact:.2%} → "
+                            "{dep.from} deposited {dep.assets} and received {dep.shares} "
+                            "shares (expected {expected}, shortfall {shortfall_ratio:.1%}).")
+
+    # PATH C — victim-side zero-share / share-shortfall detection
+    for each vault V:
+      for each Deposit event D:
+        if D.assets > zero_share_asset_min:
+          if D.shares == 0:
+            # Zero-share mint: definitive T9.011 signal
+            total_assets ← V.totalAssets(D.block − 1)
+            total_supply ← V.totalSupply(D.block − 1)
+            # Reconstruct the donation that caused this
+            preceding_donations ← [e for e in V.Transfer_events
+                                   if e.to == V.address
+                                   and e.block in [D.block − donation_deposit_window, D.block]
+                                   and e.from ≠ V.deposit_entrypoint]
+            emit(PATH_C, vault=V, tx=D.tx, victim=D.from,
+                 deposited=D.assets, shares_received=0,
+                 total_assets_before=total_assets,
+                 total_supply_before=total_supply,
+                 preceding_donation_count=len(preceding_donations),
+                 preceding_donation_total=sum(d.amount for d in preceding_donations),
+                 severity="critical",
+                 guidance="ZERO-SHARE DEPOSIT: {D.from} deposited {D.assets} and received "
+                          "0 shares. {len(preceding_donations)} preceding donation(s) totaling "
+                          "{sum(d.amount for d in preceding_donations)}. DEFINITIVELY T9.011 "
+                          "inflation attack. Vault lacks virtual-shares/dead-shares protection.")
+          else:
+            # Partial shortfall
+            total_assets_before ← V.totalAssets(D.block − 1)
+            total_supply_before ← V.totalSupply(D.block − 1)
+            if total_supply_before > 0:
+              expected ← expected_shares(D.assets, total_assets_before, total_supply_before)
+              shortfall ← (expected − D.shares) / max(expected, 1)
+              if shortfall > rounding_tolerance:
+                emit(PATH_C, vault=V, tx=D.tx, victim=D.from,
+                     deposited=D.assets, shares_received=D.shares,
+                     expected_shares=expected, shortfall_ratio=shortfall,
+                     severity="high",
+                     guidance="Share shortfall: {D.from} received {D.shares} shares "
+                              "(expected {expected}, shortfall {shortfall:.1%}). "
+                              "Rounding-direction exploitation without full zero-share capture.")
+
+    # PATH D — pre-deployment virtual-shares + rounding-direction audit
+    for each newly_deployed_vault V:
+      audit ← {}
+      initial_supply ← eth_call(V, "totalSupply()", V.deployment_block)
+      if initial_supply == 0:
+        audit.no_virtual_shares ← true
+      # Check for dead-shares mint in deployment transaction
+      dead_shares_minted ← V.deployment_tx emits Transfer(0x0, V.address, >0)
+      if not dead_shares_minted:
+        audit.no_dead_shares_minted ← true
+      # Verify rounding direction
+      rounding ← rounding_direction_audit(V)
+      if not rounding.deposit_rounds_down:
+        audit.deposit_rounds_up ← true
+      if not rounding.has_virtual_offset:
+        audit.no_virtual_offset ← true
+      # Check for unprotected donation entry points
+      donation_surface ← V.has_receive_function or V.has_fallback_function or V.has_callback_function
+      if donation_surface:
+        audit.unprotected_donation_surface ← true
+
+      if len(audit) > 0:
+        emit(PATH_D, vault=V, deployment_tx=V.deployment_tx,
+             audit_findings=audit,
+             vault_fork_substrate=V.fork_substrate,
+             has_virtual_shares=(initial_supply > 0),
+             severity="critical" if "no_virtual_shares" in audit else
+                      "high"     if "no_dead_shares_minted" in audit else
+                      "medium",
+             guidance="Vault {V} deployment audit gaps: {audit.keys()}. "
+                      + ("NO VIRTUAL SHARES: vault is front-runnable via donation "
+                         "inflation attack from block 0." if "no_virtual_shares" in audit else
+                         "Mint dead shares in deployment to protect first depositor.")
+                      + (" Unprotected donation surface: {donation_surface}."
+                         if "unprotected_donation_surface" in audit else ""))
+
+    # PATH E — cross-protocol vault-attack campaign correlation
+    for each attacker A in KNOWN_ROUNDING_ATTACKERS:
+      vault_targets ← A.donation_attacks grouped by vault_fork_substrate
+      for each (fork, attacks) in vault_targets:
+        if len(attacks) > 1:
+          # Same attacker, same fork substrate — campaign pattern
+          total_extracted ← sum(a.victim_loss_usd for a in attacks)
+          emit(PATH_E, attacker=A.address, entity=A.attributed_entity,
+               fork_substrate=fork, vault_count=len(attacks),
+               vaults=[a.vault for a in attacks],
+               victim_count=sum(a.victim_count for a in attacks),
+               total_extracted_usd=total_extracted,
+               attack_timespan=(min(a.timestamp for a in attacks),
+                                max(a.timestamp for a in attacks)),
+               severity="critical",
+               guidance="Rounding-attack campaign: {A.address} ({A.attributed_entity}) "
+                        "targeted {len(attacks)} vaults on {fork} fork substrate — "
+                        "{sum(a.victim_count)} victims, ${total_extracted} extracted. "
+                        "Campaign exploits the shared rounding vulnerability across "
+                        "the fork substrate.")
+      # Also correlate by funding source for unattributed attackers
+      for each funding_source FS in distinct(A.donation_attacks.map(a → a.funding_source)):
+        funded_attacks ← [a for a in A.donation_attacks if a.funding_source == FS]
+        if len(funded_attacks) > 1 and len(funded_attacks) < len(A.donation_attacks):
+          emit(PATH_E, attacker=A.address, funding_source=FS,
+               funded_attack_count=len(funded_attacks),
+               vaults=[a.vault for a in funded_attacks],
+               total_extracted_usd=sum(a.victim_loss_usd for a in funded_attacks),
+               severity="high",
+               guidance="Attacker {A.address} funded {len(funded_attacks)} of "
+                        "{len(A.donation_attacks)} attacks from {FS}.")
+
+parameters:
+  share_price_divergence_threshold:    { type: number,   default: 0.01 }
+  donation_deposit_window:             { type: integer,  default: 10 }       # blocks
+  rounding_tolerance:                  { type: number,   default: 0.01 }
+  zero_share_asset_min:                { type: number,   default: 100 }      # USD
+  virtual_shares_minimum:              { type: integer,  default: 1000 }     # 1000 units to resist inflation
+  share_price_check_interval:          { type: integer,  default: 50 }       # blocks
+  min_vault_tvl:                       { type: number,   default: 10000 }    # USD — below this, vault is front-runnable
+  known_rounding_attackers:            { type: list,     default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               vault, donor, victim, assets, shares, share_price,
+               divergence, shortfall_ratio, front_runnable,
+               fork_substrate, campaign_vault_count, evidence]
+
+test_fixtures:
+  positive:
+    - 2023-04-hundred-finance                                         # Empty-market donation → zero shares
+    - 2024-05-sonne-finance                                           # Compound V2 fork, donation + rounding
+    - 2024-09-onyx                                                    # Lending-market cToken T9.011
+    - 2025-02-zklend                                                  # StarkNet — cross-VM demonstration
+    - 2026-03-venus-protocol-supply-cap-donation-attack               # Dismissed-audit-finding donation attack
+  negative:
+    - "Vault share-price increase from legitimate yield harvest / reward accrual across many blocks"
+    - "Direct ERC-20 transfer to vault from a legitimate user who bypassed the deposit entrypoint in error, without follow-on deposit from a different address"
+    - "Vault with virtual-shares/dead-shares initialised at deployment — first depositor protected from inflation attack"
+    - "Vault with totalSupply > virtual_shares_minimum and totalAssets > min_vault_tvl — donation required to cause zero-share mint exceeds practical attacker capital"
+
+false_positive_modes:
+  - Legitimate vault yield accrual (reward harvest, fee sweep) producing gradual share-price increase across many blocks — PATH A distinguishes via jump_ratio: sustained yield shows gradual increase, donation attacks show sudden step-function jumps within a single block
+  - User error: direct ERC-20 transfer to vault address without intent to donate — PATH B distinguishes by absence of follow-on victim deposit from a different address within the window; isolated transfers without follow-on deposits are user error
+  - Vaults with meaningful totalAssets (above min_vault_tvl) are practically unexploitable — the donation magnitude required to skew the share ratio exceeds what the attacker can recover from victim deposits; PATH A calibrates severity via front_runnable flag and vault_tvl
+  - Legitimate first-deposit into a freshly deployed vault before dead-shares mint — PATH D is a pre-deployment audit flag, not a runtime alert; PATH A and PATH C suppress alerts for the canonical deployer address making the first deposit
+  - Vault share-price jump caused by a legitimate large withdrawal that burns shares and increases per-share value — PATH A cross-references against withdrawal events in the same window; share-price increases from withdrawals are economically legitimate
+
+mitigations: [OAK-M01, OAK-M02, OAK-M08, OAK-M09, OAK-M20]
+
+reference_implementations:
+  - { target: forta-bot,              chain: evm,    url: "" }
+  - { target: blocksec-phalcon,       chain: evm,    url: "" }
+  - { target: oz-defender-sentinel,   chain: evm,    url: "" }
+  - { target: slither,                chain: evm,    url: "" }
+  - { target: foundry,                chain: evm,    url: "" }

@@ -1,0 +1,180 @@
+oak_techniques: [OAK-T11.005.002]
+spec_id: oak-detection-T11.005.002
+version: 0.2.0
+maturity: observed
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect fake-custodian and fake-asset-manager fraud where the operator
+  presents a fake custodial wallet, "wealth management", "AI-trading" yield
+  product, or Bitcoin-denominated investment vehicle backed by a custodial
+  wallet they control. The on-chain receivables (investor deposits in
+  BTC/ETH/stablecoins) are real; the trading/yield-generation/arbitrage
+  operation claimed as the return source is entirely fictitious. Payouts to
+  early entrants are funded from later entrants' deposits — the classic Ponzi
+  structure applied to cryptocurrency receivables. Covers three historical
+  eras: Bitcoin-forum Ponzi (2011–2017, anchored by Bitcoin Savings & Trust),
+  multi-asset wallet Ponzi (2018–2019, anchored by PlusToken), and global MLM
+  "AI-trading" Ponzi (2020–2026, anchored by HyperVerse/CryptoFX/Forsage).
+  Excludes: T11.005.001 (fake-CEX — exchange/trading pitch, not yield/wealth-
+  management); T11.005.003 (compound-operated — industrial forced-labour
+  scale); T5.005 (treasury-management exit — real DeFi protocol operator exit,
+  not entirely fictitious platform from inception).
+
+data_sources: [tx_call_trace, contract_events, domain_registration,
+               regulator_enforcement_feed, certificate_transparency_log]
+
+detection_logic:
+  description: |
+    Five orthogonal detection paths. PATH A (regulator-enforcement-feed
+    ingestion): ingest SEC, CFTC, DOJ, FCA enforcement actions naming
+    specific fake-custodian/fake-asset-manager entities; cross-reference
+    against active domains and operator wallets. PATH B (on-chain Ponzi
+    payout-structure detection): compute the ratio of new-deposit inflow
+    to existing-investor payout outflow; trace individual payout UTXOs to
+    their funding source — flag when >threshold fraction of payouts are
+    funded from new depositor inflows rather than trading-counterparty
+    profits. PATH C (Ponzi-sustainability invariant check): compare the
+    platform's claimed yield to the measured on-chain yield implied by
+    deposit inflow vs. payout outflow; a claimed 7% weekly return is
+    structurally impossible when the on-chain payout ratio is <1.0.
+    PATH D (off-chain OSINT corporate-registry verification): verify
+    corporate registration, trading-desk license, and asset-management
+    registration in the claimed jurisdiction; flag platforms with zero
+    verifiable registrations. PATH E (three-era victim-acquisition pattern
+    matching): classify the platform's victim-acquisition surface into
+    one of the three historical eras; use era-specific detection heuristics.
+  pseudocode: |
+    # Shared helpers
+    payout_depositor_ratio(P) := Σ utxo_value(u) for u in trace_inputs(P)
+                                  where u.source in NEW_DEPOSITOR_ADDRESSES
+                                  / P.value
+    onchain_implied_yield(C)   := Σ investor_payouts(C, window=365d)
+                                  / Σ investor_deposits(C, window=365d)
+    claimed_yield_annual(P)    := (1 + P.advertised_weekly_return) ^ 52 − 1
+
+    # PATH A — regulator-enforcement-feed ingestion
+    for each enforcement_action E in REGULATOR_ENFORCEMENT_FEEDS
+        where E.entity_type in {custodian, asset_manager, yield_fund, investment_platform}:
+      domains ← resolve_domains(E.entity_name)
+      wallets  ← E.published_addresses ∪ discover_operator_wallets(domains)
+      for each domain D in domains:
+        if D.is_active and serves_investment_ui(D):
+          emit(PATH_A, entity=E.entity_name, domain=D, regulator=E.source,
+               action_date=E.date, alleged_victim_count=E.victim_count,
+               alleged_loss_usd=E.loss_usd, operator_wallets=wallets,
+               severity="critical")
+
+    # PATH B — on-chain Ponzi payout-structure detection
+    for each operator_wallet_cluster C where C.promises_yield:
+      new_deposits  ← [tx for tx in C.inflows if tx.age < ponzi_lookback_window]
+      investor_pays ← [tx for tx in C.outflows if tx.dest not in KNOWN_EXCHANGE_WALLETS
+                       and tx.dest not in OPERATOR_CONTROLLED_ADDRESSES]
+      if sum(new_deposits) == 0: continue
+      payout_inflow_ratio ← sum(investor_pays) / sum(new_deposits)
+      # Per-payout depositor-funding trace
+      ponzi_funded_count ← 0
+      for each payout P in investor_pays where P.value > dust_threshold:
+        pdr ← payout_depositor_ratio(P)
+        if pdr > ponzi_funding_threshold:
+          ponzi_funded_count += 1
+      ponzi_fraction ← ponzi_funded_count / max(len(investor_pays), 1)
+      if ponzi_fraction > min_ponzi_tx_fraction and len(investor_pays) >= min_payout_count:
+        emit(PATH_B, cluster=C.id, payout_count=len(investor_pays),
+             ponzi_funded_fraction=ponzi_fraction,
+             payout_inflow_ratio=payout_inflow_ratio,
+             total_deposits_usd=C.total_inflow_usd,
+             estimated_victims=C.unique_depositors,
+             severity="critical" if ponzi_fraction > 0.8 else "high")
+
+    # PATH C — Ponzi-sustainability invariant
+    for each platform P where P.claims_yield:
+      cluster ← find_operator_cluster(P)
+      claimed_yield  ← claimed_yield_annual(P)
+      onchain_yield  ← onchain_implied_yield(cluster)
+      sustainability_gap ← claimed_yield − onchain_yield
+      if claimed_yield > RISK_FREE_RATE × yield_rf_multiplier:
+        emit(PATH_C, entity=P.entity_name,
+             claimed_annual_yield=claimed_yield,
+             onchain_implied_yield=onchain_yield,
+             sustainability_gap=sustainability_gap,
+             risk_free_rate=RISK_FREE_RATE,
+             severity="high",
+             guidance="Claimed {claimed_yield:.0%} annual vs {onchain_yield:.1%} on-chain — "
+                      "structurally Ponzi when gap exceeds {yield_rf_multiplier}x risk-free")
+
+    # PATH D — off-chain OSINT corporate-registry verification
+    for each yield_platform P:
+      checks ← {
+        corporate_registration:  check_registry(P.claimed_jurisdiction, P.entity_name),
+        trading_desk_license:    verify_license(P.claimed_jurisdiction, P.entity_name, "trading_desk"),
+        asset_mgmt_registration: verify_license(P.claimed_jurisdiction, P.entity_name, "asset_manager"),
+        audit_report:            find_published_audit(P.entity_name),
+        proof_of_reserves:       verify_proof_of_reserves(P),
+      }
+      failed ← [k for k, v in checks if not v]
+      if len(failed) >= min_failed_checks:
+        emit(PATH_D, entity=P.entity_name, claimed_jurisdiction=P.claimed_jurisdiction,
+             failed_verifications=failed, passed_verifications=[k for k, v in checks if v],
+             severity="high" if len(failed) >= 4 else "medium")
+
+    # PATH E — three-era victim-acquisition pattern classification
+    for each platform P:
+      era ← classify_era(P):
+        "bitcoin_forum"   if P.acquisition_channels ⊆ {bitcointalk, forum_posts, forum_pm}
+        "multi_asset_app" if P.acquisition_channels ∩ {telegram, discord, wechat, kakao} ≠ ∅
+        "mlm_affinity"    if P.has_mlm_structure and P.has_affinity_targeting
+        else "unknown"
+      era_signals ← {
+        bitcoin_forum:   len(P.btc_addresses) > 0 and P.launch_year < 2018,
+        multi_asset_app: len(P.accepted_assets) > 3 and P.has_mobile_app,
+        mlm_affinity:    P.referral_commission > 0 and P.localized_marketing_languages > 1,
+      }
+      matching_era ← [e for e, matches in era_signals if matches]
+      emit(PATH_E, entity=P.entity_name, detected_era=era,
+           era_signals=matching_era, launch_year=P.launch_year,
+           acquisition_channels=P.acquisition_channels,
+           severity="medium")
+
+parameters:
+  ponzi_lookback_window:               { type: duration, default: 90d }
+  ponzi_funding_threshold:             { type: number,   default: 0.5 }
+  min_ponzi_tx_fraction:               { type: number,   default: 0.3 }
+  min_payout_count:                    { type: integer,  default: 10 }
+  dust_threshold:                      { type: number,   default: 100 }     # USD
+  yield_rf_multiplier:                 { type: number,   default: 2.0 }
+  min_failed_checks:                   { type: integer,  default: 3 }
+  risk_free_rate:                      { type: number,   default: 0.05 }
+  known_exchange_wallets:              { type: list,     default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               entity, domain, regulator, operator_wallets,
+               ponzi_funded_fraction, claimed_yield, onchain_implied_yield,
+               failed_verifications, detected_era, evidence]
+
+test_fixtures:
+  positive:
+    - 2012-08-bitcoin-savings-trust                                              # Bitcoin Savings & Trust (~700K BTC, 2011–2012)
+    - 2019-06-plus-token                                                         # PlusToken multi-asset wallet Ponzi (~$2–5.7B)
+    - 2024-01-hyperverse-hyperfund                                               # HyperVerse/HyperFund MLM "AI-trading" Ponzi (~$1.7–1.9B)
+    - 2022-09-cryptofx-chavez                                                    # CryptoFX Latino-community MLM (~$300M)
+    - 2014-2017-onecoin-ignatova                                                  # OneCoin multi-level fake-cryptocurrency Ponzi (~$4B)
+  negative:
+    - "Registered investment advisor with verifiable SEC/FCA registration, audited track record, and on-chain yield mechanically traceable to lending-market interest or AMM LP fees"
+    - "DeFi yield protocol with transparent smart-contract architecture where yield-generation strategy is on-chain verifiable"
+
+false_positive_modes:
+  - Early-stage fund without yet-established corporate registration but with transparent operator identity, on-chain verifiable trading, and no MLM structure — distinguish via PATH B (Ponzi payout trace) and PATH E (era classification)
+  - High-yield DeFi protocol with verifiable on-chain yield source (lending-market interest, AMM LP fees) — the yield is mechanically generated, not depositor-funded; distinguish via on-chain yield-source traceability and absence of PATH B's Ponzi payout pattern
+  - Platform with MLM-style referral commissions that is a legitimate affiliate-marketing program with a real product independent of the referral structure — distinguish via PATH D corporate-registry and product-verification checks
+  - Wallet cluster flagged by PATH B where apparent "new-depositor-funded payouts" are actually trading profits from a DEX whose router address is not yet in KNOWN_EXCHANGE_WALLETS — maintain the known-exchange-wallet registry per chain
+
+mitigations: [OAK-M22, OAK-M21, OAK-M23, OAK-M24]
+
+reference_implementations:
+  - { target: chainalysis-crypto-crime,   chain: cross-chain, url: "" }
+  - { target: trm-labs-forensics,         chain: cross-chain, url: "" }
+  - { target: elliptic-holistic-screen,   chain: cross-chain, url: "" }
+  - { target: sec-edgar-feed,             chain: cross-chain, url: "" }
+  - { target: behindmlm,                  chain: cross-chain, url: "" }

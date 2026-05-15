@@ -94,6 +94,7 @@ test_fixtures:
   negative:
     - "Bridge upgrade where post-upgrade smoke test rejects all invalid messages"
     - "Templated arbitrage routed through a bridge — diverse args, lock/release balanced"
+    - 2026-05-thorchain-router-exploit      # NOT T10.002: message was cryptographically valid; fault was in address resolution (newVault semantics), not message verification (→ T10.008)
 
 false_positive_modes:
   - templated cross-chain swap orders processed by an aggregator (PATH B's diverse-args canonical_form filter handles)

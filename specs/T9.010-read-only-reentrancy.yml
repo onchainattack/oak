@@ -1,0 +1,224 @@
+oak_techniques: [OAK-T9.010]
+spec_id: oak-detection-T9.010
+version: 0.2.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect read-only reentrancy attacks where an attacker re-enters a view/pure
+  function on a target contract while the target is mid-execution — reading
+  state that is temporarily inconsistent. The loss is realized on a third
+  (consumer) protocol that trusted the stale view-function output for a pricing,
+  accounting, liquidation, or collateral-valuation decision. The defining
+  structural feature is the cross-protocol dependency: the vulnerable target
+  and the victim consumer are distinct contracts, and the attack exploits the
+  consumer's trust in the target's view-function freshness during the target's
+  own state transition. Detection operates at the cross-protocol integration
+  audit, per-transaction staticcall-trace monitoring, consumer-protocol
+  dependency-graph construction, protocol-level economic-action-vs-view-function
+  mapping, and cross-protocol stale-read damage-propagation analysis layers.
+  Excludes: T9.005 (reentrancy — state-mutating functions, loss on target);
+  T9.001 (oracle price manipulation — staleness from oracle-update cadence,
+  not mid-execution stale state).
+
+data_sources: [tx_call_trace, contract_bytecode, contract_storage,
+               contract_events, dex_trades, liquidation_events,
+               lending_protocol_state]
+
+detection_logic:
+  description: |
+    Five orthogonal detection paths. PATH A (pre-deployment integration audit):
+    for every protocol integration where protocol C reads a view function on
+    protocol T for pricing/accounting, verify that T cannot be mid-execution
+    at the moment C reads it; rank integrations by economic exposure. PATH B
+    (per-transaction staticcall monitoring): alert on transactions where a
+    staticcall to protocol T occurs while T's outermost call frame has not yet
+    returned, and the staticcall result is consumed for a value-transfer
+    decision; compare stale value against settled value. PATH C (post-deployment
+    consumer-protocol dependency-graph construction): for each consumer protocol,
+    build a directed graph of external view-function reads → economic actions;
+    flag paths where the data source has a read-only reentrancy surface. PATH D
+    (per-protocol economic-action-vs-view-function mapping): enumerate all
+    economic actions (liquidations, collateral adjustments, borrows, redeems)
+    and their dependent view-function calls; verify reentrancy guards cover
+    staticcall paths. PATH E (cross-protocol stale-read damage-propagation
+    analysis): for each confirmed read-only reentrancy incident, trace the
+    stale read through all consuming protocols to bound total damage.
+  pseudocode: |
+    # Shared helpers
+    reentrancy_surface_score(T) :=
+      (1 if T.has_external_calls_during_state_transition else 0)
+      + (1 if T.has_raw_call_during_state_transition else 0)
+      + (1 if T.protocol_fee_recipient_is_user_supplied else 0)
+      + (1 if T.has_token_transfer_before_state_commit else 0)
+      + (2 if T.lacks_staticcall_reentrancy_guard else 0)
+    economic_exposure(C, F) := C.tvl_affected_by(F)  # USD value at risk from stale read of F
+    is_consumed_for_value_transfer(protocol, staticcall_result) :=
+      staticcall_result.influences(protocol.liquidation_decision)
+      or staticcall_result.influences(protocol.borrow_limit)
+      or staticcall_result.influences(protocol.collateral_ratio)
+      or staticcall_result.influences(protocol.redemption_rate)
+      or staticcall_result.influences(protocol.mint_amount)
+
+    # PATH A — pre-deployment integration audit
+    for each integration (consumer_C, target_T, view_fn_F):
+      if is_consumed_for_value_transfer(C, F):
+        reentrancy_surface ← reentrancy_surface_score(T)
+        exposure ← economic_exposure(C, F)
+        if reentrancy_surface > 0:
+          emit(PATH_A, consumer=C, target=T, view_function=F,
+               economic_action=F.purpose,
+               reentrancy_surface_score=reentrancy_surface,
+               economic_exposure_usd=exposure,
+               severity="critical" if (reentrancy_surface >= 3 and exposure > high_exposure_threshold) else
+                        "high"     if reentrancy_surface >= 2 else
+                        "medium",
+               guidance="Target {T} has reentrancy surface score={reentrancy_surface} "
+                        "for view function {F} consumed by {C} for {F.purpose}. "
+                        "TVL at risk: ${exposure}. Verify staticcall reentrancy guard on {T}.")
+
+    # PATH B — per-transaction staticcall trace monitoring
+    for each transaction T:
+      call_trace ← get_call_trace(T.hash)
+      for each frame F in call_trace where F.type == STATICCALL:
+        target ← F.to
+        target_outer_frame ← find_outermost_frame(call_trace, target)
+        if target_outer_frame ≠ ∅ and not target_outer_frame.returned:
+          # Target is mid-execution — the staticcall read stale state
+          consumer_frame ← find_consumer_value_transfer(call_trace, F)
+          if consumer_frame ≠ ∅:
+            stale_value ← F.return_data
+            settled_value ← simulate_staticcall(target, F.input, block=T.block_number)
+            divergence ← abs(stale_value − settled_value) / max(settled_value, 1)
+            if divergence > min_divergence_threshold:
+              economic_action ← classify_economic_action(consumer_frame)
+              loss_estimate ← estimate_value_at_risk(stale_value, settled_value,
+                                                     economic_action, consumer_frame)
+              emit(PATH_B, tx=T.hash, target=target, consumer=consumer_frame.contract,
+                   view_function=F.selector, stale_value=stale_value,
+                   settled_value=settled_value, divergence=divergence,
+                   economic_action=economic_action,
+                   estimated_loss_usd=loss_estimate,
+                   attacker=T.from,
+                   severity="critical",
+                   guidance="Read-only reentrancy: {target}.{F.selector}() returned stale "
+                            "value {stale_value} (settled={settled_value}, divergence="
+                            "{divergence:.2%}) consumed by {consumer_frame.contract} for "
+                            "{economic_action}. Estimated loss: ${loss_estimate}.")
+
+    # PATH C — consumer-protocol dependency-graph construction
+    for each protocol P:
+      dep_graph ← DirectedGraph()
+      for each economic_action A in P.economic_actions:
+        for each view_read R in A.dependent_view_calls:
+          dep_graph.add_edge(A, R.target, label=R.function)
+          target_surface ← reentrancy_surface_score(R.target)
+          if target_surface > 0:
+            # Trace all economic actions reachable through this stale read
+            downstream_actions ← dep_graph.descendants(R.target)
+            dep_graph.set_edge_metadata(A, R.target, {
+              reentrancy_surface: target_surface,
+              downstream_actions: downstream_actions,
+              aggregate_exposure: sum(a.tvl for a in downstream_actions)
+            })
+      # Emit the full dependency graph for audit
+      for each edge E in dep_graph.edges where E.metadata.reentrancy_surface > 0:
+        emit(PATH_C, protocol=P, target=E.target, view_function=E.function,
+             upstream_action=E.source, downstream_actions=E.metadata.downstream_actions,
+             aggregate_exposure_usd=E.metadata.aggregate_exposure,
+             severity="high" if E.metadata.aggregate_exposure > high_exposure_threshold else "medium",
+             guidance="Protocol {P} action '{E.source}' depends on {E.target}.{E.function}() "
+                      "which has reentrancy_surface={E.metadata.reentrancy_surface}. "
+                      "Aggregate downstream exposure: ${E.metadata.aggregate_exposure}.")
+
+    # PATH D — per-protocol economic-action-vs-view-function mapping
+    for each protocol P in LENDING_PROTOCOLS ∪ DEFI_PROTOCOLS:
+      audit_findings ← []
+      for each economic_action EA in [liquidate, borrow, redeem, mint, withdraw,
+                                       adjust_collateral, roll_loan]:
+        view_deps ← P.get_view_function_dependencies(EA)
+        for each view_fn VF in view_deps:
+          target ← VF.target_contract
+          reentrancy_guard ← analyze_staticcall_reentrancy_guard(target, VF.selector)
+          if not reentrancy_guard.covers_staticcall_paths:
+            audit_findings.append({
+              action: EA,
+              view_fn: VF,
+              target: target,
+              guard_gap: "staticcall reentrancy not covered",
+              exposure: P.tvl_for_action(EA)
+            })
+      if audit_findings ≠ ∅:
+        emit(PATH_D, protocol=P, audit_findings=audit_findings,
+             total_actions_audited=len(audit_findings),
+             worst_case_exposure_usd=max(f.exposure for f in audit_findings),
+             severity="critical" if any(f.exposure > high_exposure_threshold for f in audit_findings) else "high")
+
+    # PATH E — cross-protocol stale-read damage-propagation analysis
+    for each confirmed_incident I in READ_ONLY_REENTRANCY_INCIDENTS:
+      stale_target ← I.target_contract
+      stale_value ← I.stale_value
+      settled_value ← I.settled_value
+      divergence ← abs(stale_value − settled_value) / max(settled_value, 1)
+      # Enumerate all protocols that read from this target in the same block
+      affected_protocols ← []
+      for each protocol P in KNOWN_PROTOCOLS:
+        reads_in_block ← P.get_view_reads_in_block(I.block_number, stale_target)
+        for each read R in reads_in_block:
+          if R.tx_index > I.tx_index and R.consumed_for_value_transfer:
+            loss ← compute_loss_from_stale_read(R, stale_value, settled_value)
+            affected_protocols.append({
+              protocol: P,
+              action: R.economic_action,
+              stale_read_tx: R.tx_hash,
+              estimated_loss_usd: loss
+            })
+      emit(PATH_E, incident_tx=I.tx_hash, target=stale_target,
+           view_function=I.view_function, divergence=divergence,
+           direct_victim=I.consumer_protocol,
+           blast_radius_protocols=affected_protocols,
+           total_estimated_loss_usd=(I.direct_loss + sum(p.estimated_loss_usd for p in affected_protocols)),
+           severity="critical")
+
+parameters:
+  min_divergence_threshold:            { type: number,   default: 0.01 }
+  high_exposure_threshold:             { type: number,   default: 1000000 }    # $1M
+  known_lending_protocols:             { type: list,     default: [] }
+  economic_action_types:               { type: list,     default: [liquidate, borrow, redeem,
+                                                                   mint, withdraw, adjust_collateral,
+                                                                   roll_loan] }
+  staticcall_depth_limit:              { type: integer,  default: 5 }
+  max_incident_lookback_blocks:        { type: integer,  default: 100 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               tx, target_contract, consumer_contract, view_function,
+               stale_value, settled_value, divergence,
+               reentrancy_surface_score, economic_exposure_usd,
+               blast_radius_protocols, evidence]
+
+test_fixtures:
+  positive:
+    - 2023-07-curve-vyper-market-xyz-read-only-reentrancy                    # Curve Vyper + Market.xyz stale get_virtual_price() read
+    - 2023-04-sentiment-balancer-read-only-reentrancy                        # Sentiment Protocol stale Balancer LP-token price read
+    - 2024-03-cygnus-finance-read-only-reentrancy                           # Cygnus Finance LP-token oracle stale-read (~$200K)
+  negative:
+    - "DEX aggregator reading pool reserves during a multi-hop route computation in-flight — legitimate composability, no economic action against stale read"
+    - "Staticcall to a target whose outermost call frame has returned in the current transaction — the read is against settled state"
+    - "Protocol that reads a view function for event emission or logging only — the read result does not influence value transfer"
+
+false_positive_modes:
+  - Legitimate cross-protocol composability where a DEX aggregator reads pool reserves to compute an optimal route mid-transaction — PATH B distinguishes via is_consumed_for_value_transfer: aggregator route computation does not trigger an economic action against the stale read
+  - View-function read from a target that is mid-execution but the read result is used only for event emission or logging — PATH B classify_economic_action returns null for non-economic consumers; no alert emitted
+  - Target contract whose reentrancy guard also covers staticcall paths — PATH A and PATH D verify reentrancy_surface_score specifically checks lacks_staticcall_reentrancy_guard; contracts with comprehensive guards score lower
+  - Multi-hop DeFi transaction where the apparent divergence is an artifact of the call-trace frame ordering rather than actual stale-state consumption — PATH B simulates the staticcall at the settled block state to ground-truth the divergence
+  - Protocol upgrade that intentionally changes a view function's behavior, making the pre-upgrade integration audit stale — PATH C and PATH D are continuous monitors that re-evaluate on each protocol upgrade
+
+mitigations: [OAK-M01, OAK-M02, OAK-M08, OAK-M09, OAK-M20]
+
+reference_implementations:
+  - { target: forta,                  chain: cross-chain, url: "" }
+  - { target: blocksec-phalcon,       chain: cross-chain, url: "" }
+  - { target: openzeppelin-defender,  chain: cross-chain, url: "" }
+  - { target: chainalysis,            chain: cross-chain, url: "" }
+  - { target: tenderly,               chain: cross-chain, url: "" }

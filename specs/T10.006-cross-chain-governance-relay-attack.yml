@@ -1,0 +1,237 @@
+oak_techniques: [OAK-T10.006]
+spec_id: oak-detection-T10.006
+version: 0.2.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect cross-chain governance relay attacks where an adversary exploits
+  the message-relay infrastructure (LayerZero, Wormhole, Chainlink CCIP,
+  Hyperlane, Axelar) to execute a governance action on a target chain that
+  was never approved — or was fraudulently modified — on the source chain.
+  The defining structural feature is the gap between the source-chain
+  governance event and the target-chain execution: the relay infrastructure
+  delivers a message whose payload diverges from the canonical governance
+  proposal. Detection operates at the per-message cross-chain event
+  correlation, relayer-permission audit, cross-chain replay monitoring,
+  pre-deployment governance-relay configuration verification, and cross-chain
+  governance timelock-enforcement monitoring layers. Excludes: T10.002
+  (message-verification bypass — general bridge messages, not governance-
+  specific); T9.003 (governance attack — single-chain governance capture, not
+  relay-bypass); T10.003 (cross-chain replay — transaction replay, not
+  governance-message replay).
+
+data_sources: [contract_events, tx_call_trace, contract_bytecode,
+               governance_events, bridge_message_logs, contract_storage,
+               relayer_authorization_events]
+
+detection_logic:
+  description: |
+    Five orthogonal detection paths. PATH A (per-message cross-chain
+    correlation): for each governance message executed on the target chain,
+    cross-reference against the source chain's governance contract event log;
+    flag any target-chain execution whose source-chain proposal ID is absent
+    or whose parameters differ — including parameter insertion, deletion, and
+    value modification. PATH B (relayer-address permission audit): monitor the
+    set of addresses authorized to deliver governance messages on each target
+    chain; alert on unauthorized relayer changes, relayer additions not
+    traceable to a verifiable source-chain governance event, and relayer-role
+    concentration. PATH C (cross-chain replay monitoring): maintain a registry
+    of executed governance messages indexed by (sourceChain, sourceProposalId,
+    targetChain); alert on replay attempts across chains or repeated execution
+    on the same chain. PATH D (pre-deployment governance-relay configuration
+    audit): verify source-chain address gating, nonce/replay protection,
+    finality-gating by chain, relayer authorization, payload-hash verification,
+    and upgradeability-gating. PATH E (cross-chain governance timelock-
+    enforcement monitoring): verify that the combined source-chain governance
+    timelock and relay latency satisfy the target chain's security assumptions;
+    flag governance relays where the end-to-end latency is below the target
+    chain's expected governance delay.
+  pseudocode: |
+    # Shared helpers
+    governance_message_hash(M) := keccak256(
+      M.source_chain, M.source_proposal_id, M.params, M.target_chain, M.nonce)
+    canonical_params(proposal) := proposal.executable_params   # the calldata to deliver
+    param_diff(A, B) := {
+      inserted: [k for k in B if k not in A],
+      deleted:  [k for k in A if k not in B],
+      modified: [(k, A[k], B[k]) for k in A ∩ B if A[k] ≠ B[k]]
+    }
+    end_to_end_latency(R) := R.target_execution_timestamp − R.source_approval_timestamp
+
+    # PATH A — per-message cross-chain correlation
+    for each governance_execution E on target_chain TC:
+      source_chain ← E.message.source_chain
+      source_proposal_id ← E.message.proposal_id
+      source_proposal ← query_governance_events(source_chain, source_proposal_id)
+      if source_proposal == ∅:
+        emit(PATH_A, target_chain=TC, tx=E.tx, proposal_id=source_proposal_id,
+             executor=E.executor, message_params=E.message.params,
+             relay_protocol=E.message.relay_protocol,
+             severity="critical",
+             reason="no source proposal found",
+             guidance="Governance execution on {TC} claims source proposal "
+                      "{source_proposal_id} on {source_chain}, but no such proposal "
+                      "exists in the source governance contract's event log. "
+                      "DEFINITIVELY unauthorized relay.")
+      elif E.message.params ≠ canonical_params(source_proposal):
+        diff ← param_diff(canonical_params(source_proposal), E.message.params)
+        emit(PATH_A, target_chain=TC, tx=E.tx, proposal_id=source_proposal_id,
+             source_params=canonical_params(source_proposal),
+             delivered_params=E.message.params,
+             param_diff=diff,
+             relay_protocol=E.message.relay_protocol,
+             source_proposal_proposer=source_proposal.proposer,
+             source_proposal_votes=source_proposal.vote_counts,
+             severity="critical",
+             guidance="Parameter divergence in relayed governance message: "
+                      "inserted={diff.inserted}, deleted={diff.deleted}, "
+                      "modified={diff.modified}. Source proposal passed with "
+                      "{source_proposal.vote_counts.for}/{source_proposal.vote_counts.total} votes.")
+
+    # PATH B — relayer-address permission audit
+    for each governance_executor GX on target_chain:
+      authorized_relayers ← get_authorized_relayers(GX.address)
+      canonical_set ← GX.canonical_relayer_set
+      for each relayer R in authorized_relayers:
+        if R not in canonical_set:
+          # Track the source of the relayer addition
+          addition_event ← find_relayer_addition_event(GX, R)
+          source_proposal ← find_corresponding_governance_proposal(addition_event)
+          emit(PATH_B, executor=GX.address, relayer=R,
+               canonical_set=canonical_set,
+               addition_tx=addition_event.tx,
+               addition_timestamp=addition_event.block_timestamp,
+               has_source_proposal=(source_proposal ≠ ∅),
+               source_proposal_id=source_proposal?.id,
+               severity="critical" if source_proposal == ∅ else "high",
+               guidance="Relayer {R} added to {GX.address} without verifiable "
+                        "source-chain governance proposal."
+                        if source_proposal == ∅ else
+                        "Relayer {R} added via source proposal {source_proposal.id} — "
+                        "verify the proposal authorized this specific executor.")
+      # Relayer concentration check
+      if len(authorized_relayers) == 1:
+        emit(PATH_B, executor=GX.address, relayer=authorized_relayers[0],
+             concentration="single_relayer",
+             severity="high",
+             guidance="Single relayer {authorized_relayers[0]} controls all governance "
+                      "message delivery to {GX.address}. Relayer compromise = full "
+                      "governance-relay compromise.")
+
+    # PATH C — cross-chain replay monitoring
+    executed_registry ← {}   # keyed by (sourceChain, sourceProposalId, targetChain)
+    for each governance_execution E:
+      message_key ← (E.source_chain, E.source_proposal_id, E.target_chain)
+      if message_key in executed_registry:
+        first_execution ← executed_registry[message_key]
+        emit(PATH_C, target_chain=E.target_chain, tx=E.tx,
+             source_chain=E.source_chain, proposal_id=E.source_proposal_id,
+             first_execution_tx=first_execution.tx,
+             first_execution_block=first_execution.block,
+             replay_delay_blocks=E.block_number − first_execution.block,
+             relay_protocol=E.message.relay_protocol,
+             severity="critical",
+             guidance="Replay detected: governance proposal {E.source_proposal_id} "
+                      "from {E.source_chain} already executed on {E.target_chain} "
+                      "at block {first_execution.block}. Replay at block {E.block_number} "
+                      "({E.block_number − first_execution.block} blocks later).")
+      executed_registry[message_key] ← {
+        tx: E.tx,
+        block: E.block_number,
+        timestamp: E.block_timestamp,
+        executor: E.executor
+      }
+
+    # PATH D — pre-deployment governance-relay configuration audit
+    for each cross_chain_governance_relay R:
+      config ← R.executor_config
+      source_chain_finality_blocks ← finality_blocks_by_chain[R.source_chain]
+      checks ← {
+        source_chain_addr_gated: config.source_governance_address ≠ 0x0
+                                  and is_contract(config.source_governance_address),
+        nonce_replay_protection: config.has_nonce_or_proposal_id,
+        finality_gated: config.min_source_confirmations ≥ source_chain_finality_blocks,
+        relayer_authorization: config.relayer_set is not open
+                               and len(config.relayer_set) > 0,
+        payload_hash_verified: config.verifies_payload_hash_on_target,
+        upgradeability_gated: config.executor_upgrade_has_timelock
+                              and config.executor_upgrade_requires_governance,
+      }
+      for each (check_name, passed) in checks:
+        if not passed:
+          emit(PATH_D, relay=R.protocol, executor=R.executor_address,
+               source_chain=R.source_chain, target_chain=R.target_chain,
+               failed_check=check_name,
+               config_snapshot=config,
+               severity="critical" if check_name in {
+                 "source_chain_addr_gated", "payload_hash_verified"} else
+                        "high",
+               guidance="Governance-relay configuration gap: {check_name}. "
+                        "Relay: {R.protocol}, {R.source_chain} → {R.target_chain}.")
+
+    # PATH E — cross-chain governance timelock-enforcement monitoring
+    for each governance_relay R in ACTIVE_GOVERNANCE_RELAYS:
+      for each execution E in R.recent_executions:
+        latency ← end_to_end_latency(E)
+        source_timelock ← get_governance_timelock(R.source_chain, R.source_governance)
+        relay_latency ← latency − source_timelock
+        target_expected_delay ← target_chain_governance_delay[R.target_chain]
+        if latency < target_expected_delay:
+          emit(PATH_E, relay=R.protocol, executor=E.executor,
+               source_chain=R.source_chain, target_chain=R.target_chain,
+               source_timelock=source_timelock,
+               relay_latency=relay_latency,
+               end_to_end_latency=latency,
+               target_expected_delay=target_expected_delay,
+               latency_gap=target_expected_delay − latency,
+               proposal_id=E.source_proposal_id,
+               severity="high",
+               guidance="Governance relay latency ({latency}s) below target chain's "
+                        "expected governance delay ({target_expected_delay}s). "
+                        "Source timelock: {source_timelock}s, relay latency: "
+                        "{relay_latency}s. Target-chain users have insufficient time "
+                        "to react to governance changes.")
+
+parameters:
+  min_finality_blocks:                 { type: integer,  default: 12 }
+  finality_blocks_by_chain:            { type: object,   default: {
+    ethereum: 12, polygon: 256, arbitrum: 64, optimism: 64,
+    bsc: 48, avalanche: 12, base: 64, solana: 32
+  }}
+  max_relay_latency:                   { type: duration, default: 1h }
+  governance_timelock_min:             { type: duration, default: 48h }
+  target_chain_governance_delay:       { type: object,   default: {} }
+  executed_message_registry_window:    { type: duration, default: 365d }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               target_chain, source_chain, executor, proposal_id,
+               param_diff, relayer, replay_detected, relay_protocol,
+               timelock_enforcement_gap, evidence]
+
+test_fixtures:
+  positive:
+    - 2023-2024-layerzero-governance-relay-misconfiguration-audit-cohort     # LayerZero OFT governance relay source-address/nonce/finality gaps
+    - 2024-07-compound-cross-chain-governance-relay                         # Compound cross-chain governance relay misconfiguration
+    - 2023-09-stargate-layerzero-governance-relay-multisig                  # Stargate/LayerZero multisig-controlled bridge parameter relay
+  negative:
+    - "Governance message delivered by a backup relayer whose delegation is traceable to a verifiable source-chain governance event — relayer delegation, not T10.006"
+    - "Cross-chain governance execution with verifiable source-chain proposal, matching parameters, from the authorized relayer set — legitimate cross-chain delivery"
+    - "Governance relay with end-to-end latency exceeding the target chain's expected governance delay — users have adequate reaction time"
+
+false_positive_modes:
+  - Legitimate governance message delivered via a different relay path than expected (e.g., backup relayer protocol) — PATH A distinguishes via source-chain governance event verification: if the proposal exists and parameters match, the relay path change is operational, not an attack
+  - Governance message delivered by a relayer added through a legitimate governance proposal that was not indexed in the detector's relayer-change history — PATH B cross-references each relayer addition against source-chain governance events; calibrate history ingestion to cover the full governance timeline
+  - Replay detection false positive when a governance proposal legitimately executes on multiple target chains with the same source proposal ID — PATH C scopes the replay registry per (sourceChain, sourceProposalId, targetChain) tuple; multi-chain execution of the same proposal is expected behavior
+  - Parameter divergence caused by a legitimate amendment to the proposal during the governance process (the executed params differ from the originally proposed params because governance amended them) — PATH A compares against canonical_params(source_proposal), which represents the final approved version, not the initial proposal
+  - Cross-chain governance relay whose latency appears below the target's expected delay because the source-chain governance timelock was waived via emergency governance — cross-reference against emergency-governance events on the source chain
+
+mitigations: [OAK-M01, OAK-M02, OAK-M08, OAK-M09, OAK-M11]
+
+reference_implementations:
+  - { target: wormhole-explorer,       chain: cross-chain, url: "" }
+  - { target: layerzero-scan,          chain: cross-chain, url: "" }
+  - { target: chainalysis,             chain: cross-chain, url: "" }
+  - { target: tenderly,                chain: cross-chain, url: "" }
+  - { target: openzeppelin-defender,   chain: cross-chain, url: "" }

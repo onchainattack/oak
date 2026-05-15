@@ -1,0 +1,215 @@
+oak_techniques: [OAK-T9.008]
+spec_id: oak-detection-T9.008
+version: 0.2.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect diamond-proxy (EIP-2535) architectures where the audit scope covers
+  only a subset of deployed facets and additional unaudited facets have been
+  added post-audit — or where the facet upgrade authority is not bound by the
+  audit scope. Detection operates at the diamond-Louper-vs-audit-report
+  comparison, post-audit facet-deployment-date cross-reference, DiamondCut
+  event monitoring, facet-function-selector collision detection, and facet-
+  upgrade-authority governance-attack-surface assessment layers. Excludes:
+  T6.003 (audit of different bytecode version — audited facets match their
+  audited bytecode here); T6.005 (proxy-upgrade malicious switching — diamondCut
+  is a legitimate design primitive); T6.002 (fake-audit claim — the audit is
+  truthful about what it covers); T9.003 (governance attack — diamond owner
+  key compromise, not unaudited-facet addition).
+
+data_sources: [contract_bytecode, tx_call_trace, contract_events,
+               contract_storage, governance_events, audit_report_feed,
+               contract_deployment]
+
+detection_logic:
+  description: |
+    Five orthogonal detection paths. PATH A (diamond-Louper-vs-audit-report
+    comparison): enumerate the current facet set via the diamond's Louper
+    interface and compare against the audit report's facet list; flag facets
+    present on-chain but absent from the audit report, discriminating between
+    facet additions and facet replacements. PATH B (post-audit facet-deployment-
+    date cross-reference): for each facet in the current diamond state, check
+    the facet contract's deployment timestamp against the audit report publication
+    date; flag facets deployed after the audit window. PATH C (DiamondCut-event
+    monitoring): monitor DiamondCut events for new facet additions; trigger an
+    alert when new facets are added post-audit, particularly those introducing
+    external-call surfaces, token-transfer logic, or delegatecall forwarding.
+    PATH D (facet-function-selector collision detection): detect when a
+    post-audit facet registers a function selector that overlaps with an audited
+    facet's selector, creating a silent shadowing of audited logic. PATH E
+    (facet-upgrade-authority governance-attack-surface assessment): enumerate
+    the diamond's upgrade-authority structure — single EOA, multisig, DAO
+    governance, or selfdestruct-enabled facet — and assess the attack surface
+    for unaudited-facet injection.
+  pseudocode: |
+    # Shared helpers
+    facet_bytecode_hash_match(F, audit_report) := F.deployed_bytecode_hash in audit_report.facet_bytecode_hashes
+    diamond_cut_action_type(E) := decode_diamond_cut_action(E.calldata)   # Add, Replace, Remove
+    upgrade_authority_risk_score(A) :=
+      10.0 if A.type == "single_EOA" else
+       5.0 if A.type == "multisig" and A.threshold == 1 else
+       3.0 if A.type == "multisig" and A.threshold < A.signers / 2 else
+       1.0 if A.type == "DAO_governance" and A.timelock < governance_timelock_min else
+       0.5
+
+    # PATH A — diamond-Louper-vs-audit-report comparison
+    for each diamond_proxy D:
+      current_facets ← query_louper(D.address)   # facets(), facetAddresses(), facetFunctionSelectors()
+      audited_facets ← load_audit_report_facets(D.audit_report)
+      unaudited ← current_facets − audited_facets
+      # Discriminate additions from replacements
+      for each facet F in unaudited:
+        if facet_bytecode_hash_match(F, D.audit_report):
+          # Facet was re-deployed at a different address with same bytecode — lower severity
+          emit(PATH_A, diamond=D.address, facet=F.address, facet_selectors=F.selectors,
+               audit_report=D.audit_report, audit_date=D.audit_date,
+               facet_disposition="relocated", severity="low")
+        else:
+          action ← diamond_cut_action_type(F.associated_diamond_cut_event)
+          emit(PATH_A, diamond=D.address, facet=F.address, facet_selectors=F.selectors,
+               audit_report=D.audit_report, audit_date=D.audit_date,
+               facet_disposition=action, severity="high",
+               guidance="Unaudited facet {F.address} ({'added' if action=='Add' else 'unknown'}) "
+                        "with {len(F.selectors)} selectors. Bytecode does not match any audited "
+                        "version. Verify facet function surface and re-audit before user exposure.")
+
+    # PATH B — post-audit facet-deployment-date cross-reference
+    for each diamond_proxy D with audit_report:
+      for each facet F in query_louper(D.address):
+        deployment_ts ← get_contract_deployment_timestamp(F.address)
+        if deployment_ts > D.audit_date:
+          days_post_audit ← (deployment_ts − D.audit_date) / 86400
+          # Check whether a supplemental audit exists for this facet
+          supplemental ← find_supplemental_audit(D, F.address)
+          if supplemental == ∅:
+            emit(PATH_B, diamond=D.address, facet=F.address,
+                 deployment_date=deployment_ts, audit_date=D.audit_date,
+                 days_post_audit=days_post_audit,
+                 has_supplemental_audit=false,
+                 severity="high" if days_post_audit > max_post_audit_facet_age_days else "medium",
+                 guidance="Facet deployed {days_post_audit} days post-audit with no supplemental "
+                          "audit. Audit coverage gap: {days_post_audit} days.")
+          else:
+            emit(PATH_B, diamond=D.address, facet=F.address,
+                 deployment_date=deployment_ts, audit_date=D.audit_date,
+                 days_post_audit=days_post_audit,
+                 has_supplemental_audit=true,
+                 supplemental_audit=supplemental.report_id,
+                 severity="low")
+
+    # PATH C — DiamondCut-event monitoring
+    for each DiamondCut_event E:
+      diamond ← E.address
+      audit_date ← get_audit_date(diamond)
+      if E.block.timestamp > audit_date:
+        added_facets ← decode_diamond_cut_facets(E.calldata)
+        for each facet F in added_facets:
+          risk_score ← 0
+          if has_external_call_surface(F):              risk_score += 2
+          if has_token_transfer_logic(F):               risk_score += 3
+          if has_delegatecall_forwarding(F):            risk_score += 3
+          if has_selfdestruct_capability(F):            risk_score += 4
+          if risk_score >= min_facet_risk_score:
+            emit(PATH_C, diamond=diamond, facet=F.address,
+                 selector_count=F.selector_count,
+                 facet_bytecode_hash=F.bytecode_hash,
+                 risk_score=risk_score,
+                 diamond_cut_tx=E.transactionHash,
+                 diamond_cut_initiator=E.initiator,
+                 severity="critical" if risk_score >= 6 else "high",
+                 guidance="Post-audit DiamondCut added facet {F.address} with risk_score="
+                          "{risk_score}. External calls: {has_external_call_surface(F)}, "
+                          "token transfers: {has_token_transfer_logic(F)}, "
+                          "delegatecall: {has_delegatecall_forwarding(F)}.")
+
+    # PATH D — facet-function-selector collision detection
+    for each diamond_proxy D:
+      audited_selectors ← load_audit_report_selectors(D.audit_report)
+      current_facets ← query_louper(D.address)
+      for each facet F in (current_facets − load_audit_report_facets(D.audit_report)):
+        for each selector S in F.function_selectors:
+          if S in audited_selectors:
+            original_facet ← audited_selectors[S].facet
+            # Verify: same function signature or different?
+            original_sig ← audited_selectors[S].signature
+            new_sig ← F.selector_signatures[S]
+            emit(PATH_D, diamond=D.address, new_facet=F.address,
+                 shadowed_facet=original_facet,
+                 colliding_selector=S,
+                 original_signature=original_sig,
+                 new_signature=new_sig,
+                 is_same_signature=(original_sig == new_sig),
+                 severity="critical",
+                 guidance="Selector collision: {S} ({new_sig}) in new facet {F.address} "
+                          "shadows {original_sig} in audited facet {original_facet}. "
+                          "All calls to this selector now route to the unaudited facet.")
+
+    # PATH E — facet-upgrade-authority governance-attack-surface assessment
+    for each diamond_proxy D:
+      authority ← {
+        type: D.upgrade_authority.type,        # single_EOA, multisig, DAO_governance, selfdestruct_facet
+        address: D.upgrade_authority.address,
+        threshold: D.upgrade_authority.multisig_threshold,
+        signers: D.upgrade_authority.multisig_signers,
+        timelock: D.upgrade_authority.timelock_seconds,
+        governance_contract: D.upgrade_authority.governance_contract,
+      }
+      risk ← upgrade_authority_risk_score(authority)
+      unfixable_risk ← authority.type == "selfdestruct_facet" or (
+        authority.type == "single_EOA" and authority.timelock == 0)
+      # Count unaudited facets currently installed
+      unaudited_count ← len(query_louper(D.address) − load_audit_report_facets(D.audit_report))
+      emit(PATH_E, diamond=D.address, upgrade_authority=authority,
+           authority_risk_score=risk, unfixable_upgrade_risk=unfixable_risk,
+           unaudited_facet_count=unaudited_count,
+           diamond_owner=D.owner,
+           severity="critical" if (unfixable_risk and unaudited_count > 0) else
+                    "high"     if risk > 5 else
+                    "medium",
+           guidance="Diamond upgrade authority: {authority.type} (risk={risk}). "
+                    + ("SINGLE EOA WITH NO TIMELOCK — unaudited facets can be injected instantly. "
+                       if unfixable_risk else
+                       "Upgrade authority can add unaudited facets within {authority.timelock}s."))
+
+parameters:
+  audit_report_registry:              { type: list,     default: [] }
+  min_facet_age_for_alert:            { type: duration, default: 0h }
+  min_facet_risk_score:               { type: integer,  default: 3 }
+  max_post_audit_facet_age_days:      { type: integer,  default: 30 }
+  diamond_cut_event_history_window:   { type: duration, default: 365d }
+  governance_timelock_min:            { type: duration, default: 48h }
+  diamond_loupe_interface_id:         { type: string,   default: "0x48e2b093" }    # ERC-165 for IDiamondLoupe
+  supplemental_audit_registry:        { type: list,     default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               diamond_address, unaudited_facet, audit_report, audit_date,
+               deployment_date, facet_risk_score, selector_collision,
+               upgrade_authority_risk, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-07-li-finance-diamond-facet-exploit                              # Li.Fi post-audit facet addition call-verification gap (~$10M)
+    - 2022-07-li-fi-v1-diamond-facet-exploit                               # Li.Fi v1 diamond-facet vulnerability (~$600K)
+    - 2023-04-paribus-diamond-facet-exploit                                # Paribus post-audit facet addition (~$150K)
+  negative:
+    - "Diamond with all facets listed in the audit report and no post-audit additions — all facets covered"
+    - "Newly-deployed facet that has been re-audited and included in a supplemental audit report before deployment"
+    - "Diamond with DAO-governed timelocked upgrade authority where all facets have been audited — both audit coverage and governance constraint satisfied"
+
+false_positive_modes:
+  - Facet replacement via diamondCut that replaces an audited facet with an updated version — distinguish via facet-replacement vs facet-addition intent in the DiamondCut event; PATH A discriminates via action type and bytecode comparison
+  - Governance-approved post-audit facet addition with a published supplemental audit — PATH A and PATH B cross-reference against supplemental_audit_registry; only flag when no supplemental audit exists
+  - Diamond proxy where the audit report pre-dates the diamond deployment (pre-deployment audit) and the audit covered all facets at deployment — treat deployment date as the baseline, not audit publication date; PATH B adjusts to min(audit_date, diamond_deployment_date)
+  - Facet redeployed at a new address with identical audited bytecode (e.g., gas optimization redeployment) — PATH A discriminates via facet_bytecode_hash_match; identical bytecode flagged as "relocated" at low severity
+  - Legitimate governance proposal to add a new facet that passed a full governance vote with timelock — PATH E distinguishes via governance type and timelock; DAO-governed timelocked additions are lower severity
+
+mitigations: [OAK-M01, OAK-M02, OAK-M08, OAK-M09, OAK-M20]
+
+reference_implementations:
+  - { target: louper-dev,             chain: cross-chain, url: "" }
+  - { target: blocksec-phalcon,       chain: cross-chain, url: "" }
+  - { target: openzeppelin-defender,  chain: cross-chain, url: "" }
+  - { target: defillama,              chain: cross-chain, url: "" }
+  - { target: tenderly,               chain: cross-chain, url: "" }

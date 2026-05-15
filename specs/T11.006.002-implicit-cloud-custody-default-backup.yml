@@ -1,0 +1,172 @@
+oak_techniques: [OAK-T11.006.002]
+spec_id: oak-detection-T11.006.002
+version: 0.2.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect implicit cloud-custody surfaces created when a wallet vendor's mobile
+  app does not opt out of OS-level cloud-backup defaults — `NSURLIsExcludedFromBackupKey`
+  not set on iOS, `allowBackup` not set to `false` on Android — resulting in
+  the encrypted wallet vault being automatically synced to a cloud surface
+  (iCloud, Google Drive, OneDrive) tied to a separate-identity security posture
+  (Apple ID, Google account, Microsoft account). The defining structural feature
+  is that neither the user nor the wallet vendor actively chose to create this
+  custody surface — it arises from OS-level defaults. The effective custody
+  security model becomes the cloud account's security posture: SIM-swap
+  susceptibility, Support social-engineering vectors, credential-stuffing
+  resistance. Detection operates at the wallet-vendor cloud-backup posture audit,
+  user-side cloud-backup audit, cloud-account compromise correlation, vendor
+  advisory-timeline monitoring, and cross-vendor posture-comparison layers.
+  Excludes: T11.006.001 (user-initiated plaintext-equivalent seed storage —
+  opt-in by user action, not opt-in by inaction).
+
+data_sources: [breach_disclosure_feed, tx_call_trace, domain_registration,
+               certificate_transparency_log]
+
+detection_logic:
+  description: |
+    Five orthogonal detection paths. PATH A (wallet-vendor cloud-backup posture
+    audit): for each wallet app, verify the OS-level cloud-backup opt-out flags
+    across iOS and Android; flag apps that do not opt out, rank by estimated
+    user base. PATH B (user-side cloud-backup audit): for each device, check
+    whether the wallet app's data is included in the device's active cloud-
+    backup; surface per-user guidance. PATH C (cloud-account compromise +
+    wallet-drain correlation): monitor cloud-account compromise events (SIM-swap,
+    Apple-ID phishing, Support social-engineering) and correlate with subsequent
+    wallet drains where the cloud backup contained the wallet vault. PATH D
+    (vendor-advisory-timeline monitoring): track vendor-published security
+    advisories on cloud-backup posture; flag wallets that have not published
+    cloud-backup guidance within a configurable window of their first public
+    cloud-backup-related drain. PATH E (cross-vendor cloud-backup posture
+    comparison): maintain a public registry of wallet-app cloud-backup postures;
+    rank wallets by exposure (user base × default-on backup × no advisory).
+  pseudocode: |
+    # Shared helpers
+    ios_opted_out(W)    := W.info_plist["NSURLIsExcludedFromBackupKey"] == true
+    android_opted_out(W) := W.android_manifest["android:allowBackup"] == "false"
+    cloud_exposure_score(W) := (not ios_opted_out(W) ? W.ios_user_base : 0)
+                               + (not android_opted_out(W) ? W.android_user_base : 0)
+
+    # PATH A — wallet-vendor cloud-backup posture audit
+    for each wallet_app W in KNOWN_WALLET_APPS:
+      posture ← {
+        ios:     { opt_out: ios_opted_out(W),
+                   guidance_published: W.has_ios_backup_guidance },
+        android: { opt_out: android_opted_out(W),
+                   guidance_published: W.has_android_backup_guidance },
+      }
+      failed_platforms ← [p for p in [ios, android] if not posture[p].opt_out]
+      if failed_platforms ≠ ∅:
+        exposure ← cloud_exposure_score(W)
+        emit(PATH_A, wallet=W.name, version=W.latest_version,
+             failed_platforms=failed_platforms,
+             posture_detail=posture,
+             estimated_exposed_users=exposure,
+             severity="high" if exposure > large_wallet_threshold else "medium",
+             guidance="{W.name} does not opt out of cloud-backup on {failed_platforms}. "
+                      "Encrypted wallet vault is auto-synced to cloud storage. "
+                      "Cloud-account compromise = wallet compromise.")
+
+    # PATH B — user-side cloud-backup audit
+    for each wallet_user U:
+      device_backups ← []
+      if U.platform == "ios":
+        wallet_in_backup ← check_icloud_backup_contains(U.device_id, U.wallet.bundle_id)
+        if wallet_in_backup:
+          device_backups.append(("iCloud", U.apple_id_security_score))
+      elif U.platform == "android":
+        wallet_in_backup ← check_google_drive_backup_contains(U.device_id, U.wallet.package)
+        if wallet_in_backup:
+          device_backups.append(("Google Drive", U.google_account_security_score))
+      if device_backups ≠ ∅:
+        for each (backup_name, account_score) in device_backups:
+          emit(PATH_B, user=U.id, wallet=U.wallet.name, platform=U.platform,
+               cloud_backup=backup_name, cloud_account_security_score=account_score,
+               severity="high",
+               guidance="Wallet vault in {backup_name}. Cloud-account compromise = "
+                        "wallet drain. Disable wallet-app backup in device settings. "
+                        "Enable hardware-backed 2FA on cloud account.")
+
+    # PATH C — cloud-account compromise + wallet-drain correlation
+    for each cloud_compromise C in CLOUD_COMPROMISE_FEED
+        where C.type in {sim_swap, apple_id_phishing, support_social_engineering,
+                         credential_stuffing, session_token_theft}:
+      affected ← [U for U in WALLET_USERS
+                  if U.cloud_account_id == C.account_id
+                  and U.wallet_data_in_cloud_backup]
+      for each user U in affected:
+        drains ← [D for D in U.recent_transactions
+                  if D.is_drain and D.date > C.compromise_date
+                  and D.date < C.compromise_date + max_compromise_to_drain_window]
+        if drains ≠ ∅:
+          emit(PATH_C, user=U.id, wallet=U.wallet.name,
+               compromise_type=C.type, compromise_date=C.date,
+               cloud_account=C.account_id,
+               drain_amount_usd=sum(d.value for d in drains),
+               drain_tx_count=len(drains),
+               time_to_drain=min(d.date for d in drains) − C.compromise_date,
+               severity="critical")
+
+    # PATH D — vendor-advisory-timeline monitoring
+    for each wallet_app W in KNOWN_WALLET_APPS:
+      first_public_drain ← find_first_cloud_backup_drain(W)
+      if first_public_drain ≠ ∅:
+        advisory ← W.first_cloud_backup_advisory
+        if advisory == ∅:
+          emit(PATH_D, wallet=W.name, first_public_drain_date=first_public_drain.date,
+               advisory_published=false,
+               time_since_first_drain=now − first_public_drain.date,
+               estimated_exposed_users=cloud_exposure_score(W),
+               severity="high")
+        elif advisory.date > first_public_drain.date + max_advisory_lag:
+          emit(PATH_D, wallet=W.name, first_public_drain_date=first_public_drain.date,
+               advisory_date=advisory.date, advisory_lag=advisory.date − first_public_drain.date,
+               severity="medium")
+
+    # PATH E — cross-vendor cloud-backup posture comparison
+    for each wallet_app W in KNOWN_WALLET_APPS:
+      exposure_rank ← rank_by_cloud_exposure(KNOWN_WALLET_APPS)
+      posture_summary ← {
+        ios_opt_out: ios_opted_out(W),
+        android_opt_out: android_opted_out(W),
+        guidance_url: W.cloud_backup_guidance_url,
+        exposed_user_estimate: cloud_exposure_score(W),
+        exposure_percentile: exposure_rank.percentile(W),
+      }
+      emit(PATH_E, wallet=W.name, posture=posture_summary,
+           severity="high" if posture_summary.exposure_percentile > 90 else "medium")
+
+parameters:
+  large_wallet_threshold:              { type: integer,  default: 1000000 }   # users
+  max_compromise_to_drain_window:      { type: duration, default: 30d }
+  max_advisory_lag:                    { type: duration, default: 48h }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               wallet_app, platform, cloud_backup_opt_out,
+               cloud_compromise_type, drain_amount_usd, time_to_drain,
+               advisory_lag, exposure_rank, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-04-icloud-metamask-seed-phrase-cohort                                 # iCloud-backup MetaMask (~$650K Iacovone case; ~$2.5M+ broader cohort)
+    - 2022-2024-android-google-drive-wallet-backup-cohort                         # Android Google-Drive wallet-backup seed exfiltration
+    - 2024-01-ios-whatsapp-icloud-wallet-backup-cohort                            # iOS WhatsApp iCloud-backup wallet-seed exfiltration (~$2.5M, ~30+ victims)
+  negative:
+    - "Wallet app that sets NSURLIsExcludedFromBackupKey=true on iOS and android:allowBackup=false on Android — cloud-backup explicitly opted out at the app level"
+    - "User who has disabled cloud-backup for the wallet app at the device level — wallet vault not included in cloud-backup regardless of app-level default"
+
+false_positive_modes:
+  - Wallet app whose data is captured by a full-device encrypted backup (iTunes/Finder) rather than iCloud — this requires physical access to the computer holding the backup; the surface is T11.007.002-class (physical-access), not T11.006.002 (cloud-account compromise)
+  - Cloud-account compromise correlated with wallet drain where the wallet vault was not in the cloud backup — the drain may be via email-based phishing (T11.007.003-class) or credential-stuffing against the wallet service directly; verify the cloud backup actually contained wallet data
+  - Wallet app where cloud-backup is explicitly opt-in and the user affirmatively enabled it — the surface is closer to T11.006.001 (user-initiated) than T11.006.002 (implicit default); cross-reference the app's default posture
+
+mitigations: [OAK-M22, OAK-M21]
+
+reference_implementations:
+  - { target: metamask-security-advisories,  chain: cross-chain, url: "" }
+  - { target: rabby-security,               chain: cross-chain, url: "" }
+  - { target: phantom-security,              chain: cross-chain, url: "" }
+  - { target: apple-platform-security,       chain: cross-chain, url: "" }
+  - { target: google-android-security,       chain: cross-chain, url: "" }

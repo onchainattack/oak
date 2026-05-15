@@ -1,0 +1,280 @@
+oak_techniques: [OAK-T10.008]
+spec_id: oak-detection-T10.008
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect attacks where an attacker poisons the address resolution mechanism
+  during bridge/vault migration (churn, rotation, upgrade) to receive on-chain
+  custody of assets meant for the legitimate successor entity. The defining
+  structural feature is the gap between off-chain consensus address resolution
+  and on-chain validation: the consensus/relayer layer directs allowances,
+  approvals, or custody to an address that has NOT been cryptographically
+  proven to belong to the legitimate successor (TSS group, multisig, governance
+  contract). The attacker exploits the absence of on-chain cryptographic
+  identity binding during migration events. Detection operates at vault churn
+  address-validation, pre-migration address-poisoning campaign correlation,
+  post-migration allowance-usage anomaly, cross-chain vault-address consistency
+  verification, and bridge-relayer address-resolution integrity monitoring
+  layers. Excludes: T10.001 (validator-signer key compromise — no key material
+  is compromised; the consensus layer is tricked into directing custody to a
+  wrong address, not signing with stolen keys); T10.002 (message-verification
+  bypass — the on-chain message is cryptographically valid; the problem is
+  the semantic content: `newVault` resolves to an attacker address); T4.003
+  (address poisoning — T4.003 covers user-level transaction-history poisoning
+  to trick users into pasting wrong addresses; T10.008 is protocol-level
+  address resolution poisoning during structural migration events); T6.005
+  (proxy upgrade malicious switching — proxy implementation switching, not
+  bridge-vault custodian switching); T9.004 (access control — not a missing
+  access-control check; the access control works correctly once allowances
+  are assigned; the flaw is in who receives the allowance).
+
+data_sources: [contract_events, contract_storage, tx_call_trace,
+               bridge_message_logs, validator_set_attestation,
+               contract_bytecode, funder_graph, token_transfer_events]
+
+detection_logic:
+  description: |
+    Five orthogonal detection paths. PATH A (vault-migration address validation
+    anomaly): during `transferAllowance` or equivalent migration events,
+    verify that the `newVault` address is derivable from the TSS/validator-set
+    public key material and has prior on-chain history as a vault signer.
+    PATH B (pre-migration address-poisoning campaign): detect clusters of dust
+    transactions from lookalike addresses (vanity-suffix-matched) to a single
+    recipient address in the window before a vault migration event. PATH C
+    (post-migration allowance-usage anomaly): monitor addresses that receive
+    large allowances during migration for selective outbound patterns — ETH
+    passed through without allowance checks while ERC20 allowances sit
+    untouched, followed by mass drain. PATH D (cross-chain vault-address
+    consistency verification): verify that the newVault address accepted on
+    one chain's router matches the vault address derived from the same TSS
+    public key on other chains. PATH E (bridge-relayer address-resolution
+    integrity monitoring): monitor Bifrost-equivalent relayer events for
+    address resolution divergences — cases where the resolved destination
+    address does not match the cryptographically expected vault address
+    for that migration slot.
+  pseudocode: |
+    # Shared helpers
+    vanity_address_score(A, known_vaults) :=
+      # Returns 0.0-1.0. Measures byte-pattern similarity to legitimate vaults.
+      max(byte_prefix_match(A, V.address) for V in known_vaults)
+
+    vault_address_derivable_from_tss(A, tss_pubkey, chain) :=
+      # Verify that address A is the deterministic EVM address derived
+      # from the TSS group's compressed public key.
+      derived ← derive_evm_address(tss_pubkey)
+      return A == derived
+
+    allowance_idle_period(A, router) :=
+      # Time between allowance received and first ERC20 drain attempt.
+      # ETH outbounds of type transferOut(eth_out) don't count —
+      # they bypass _vaultAllowance via msg.value.
+      allowance_block ← block_of_first_transferAllowance_to(A, router)
+      first_erc20_drain ← block_of_first_erc20_transferOut_from(A, router)
+      return first_erc20_drain − allowance_block  # in blocks
+
+    cross_chain_vault_mismatch(newVault_evm, tss_pubkey, bitcoin_chain) :=
+      btc_vault ← derive_bitcoin_address(tss_pubkey)
+      evm_vault_from_btc_key ← derive_evm_address(tss_pubkey)
+      return (newVault_evm ≠ evm_vault_from_btc_key)
+
+    # PATH A — vault migration address validation anomaly
+    for each migration_event M on bridge B where M.type ∈ {transferAllowance, migrate, churn}:
+      new_vault ← M.newVault
+      old_vault ← M.msg_sender
+      # Check 1: Is newVault derivable from TSS pubkey?
+      tss_matches ← vault_address_derivable_from_tss(new_vault, B.tss_pubkey, B.chain)
+      # Check 2: Has newVault ever operated as a vault before?
+      prior_vault_history ← count_prior_vault_events(new_vault, B, lookback=pre_migration_history_blocks)
+      # Check 3: Was newVault funded from a known THORChain entity?
+      funder ← get_funder(new_vault)
+      known_funder ← funder ∈ B.known_vault_funders
+      if not tss_matches or (prior_vault_history == 0 and not known_funder):
+        emit(PATH_A, bridge=B.name, chain=B.chain,
+             new_vault=new_vault, old_vault=old_vault,
+             tss_derived=tss_matches,
+             prior_vault_history=prior_vault_history,
+             funder=funder, known_funder=known_funder,
+             migration_tx=M.tx, migration_block=M.block,
+             memo=M.memo,
+             severity="critical" if not tss_matches else "high",
+             guidance="Vault migration address validation FAILED: "
+                      + ("newVault {new_vault} is NOT derivable from TSS pubkey. "
+                         if not tss_matches else
+                         "newVault {new_vault} has no prior vault history and "
+                         "was funded from non-THORChain source {funder}. ")
+                      + "migration_tx={M.tx}, memo={M.memo}. "
+                      "T10.008 vault address resolution poisoning indicated.")
+
+    # PATH B — pre-migration address poisoning campaign
+    for each vault V in KNOWN_BRIDGE_VAULTS:
+      # Find addresses that received dust from lookalike addresses
+      # near vaults in the pre-migration window
+      dust_recipients ← {}
+      for each tx T in token_transfer_events
+          where T.block ≥ V.creation_block − poisoning_lookback_blocks
+            and T.block ≤ V.last_migration_block:
+        if T.amount_usd < dust_threshold_usd
+           and vanity_address_score(T.from, [V]) > vanity_similarity_threshold
+           and T.from ≠ V.address:
+          dust_recipients[T.to] ← dust_recipients.get(T.to, []) + [T]
+      for each (recipient, dust_txs) in dust_recipients:
+        if len(dust_txs) ≥ min_dust_senders:
+          # Check if recipient later received allowance during migration
+          subsequent_allowance ← get_transferAllowance_to(recipient, V.router,
+                                                           after=min(dust_txs[].block))
+          if subsequent_allowance ≠ ∅:
+            vanity_score ← vanity_address_score(recipient, [V])
+            lookalike_senders ← {t.from for t in dust_txs}
+            emit(PATH_B, bridge=V.bridge, chain=V.chain,
+                 vault=V.address, poisoned_recipient=recipient,
+                 dust_sender_count=len(lookalike_senders),
+                 lookalike_senders=lookalike_senders,
+                 vanity_score=vanity_score,
+                 dust_window=[min(t.block for t in dust_txs),
+                              max(t.block for t in dust_txs)],
+                 subsequent_allowance=subsequent_allowance,
+                 severity="critical",
+                 guidance="Pre-migration address poisoning campaign: "
+                          "{len(lookalike_senders)} lookalike addresses "
+                          "(vanity_score={vanity_score:.2f}) sent dust to "
+                          "{recipient} before it received vault allowance "
+                          "via transferAllowance. Pattern consistent with "
+                          "T10.008 vault churn address poisoning.")
+
+    # PATH C — post-migration allowance-usage anomaly
+    for each address A that received transferAllowance in last post_migration_window_blocks:
+      router ← allowance_source_router(A)
+      idle_blocks ← allowance_idle_period(A, router)
+      if idle_blocks > idle_allowance_alert_blocks:
+        # Check the pattern: ETH outbounds processed, ERC20s held
+        eth_outbounds ← count_transferOut_eth(A, router,
+                                               from=A.allowance_block,
+                                               to=A.allowance_block + idle_blocks)
+        erc20_outbounds ← count_transferOut_erc20(A, router,
+                                                   from=A.allowance_block,
+                                                   to=A.allowance_block + idle_blocks)
+        if eth_outbounds > min_eth_outbounds and erc20_outbounds == 0:
+          # Check if drain eventually happened
+          drain_events ← get_erc20_drain_events(A, router,
+                                                  after=A.allowance_block + idle_blocks)
+          total_drained_usd ← sum(e.amount_usd for e in drain_events)
+          emit(PATH_C, bridge=router.bridge, chain=router.chain,
+               vault=A, router=router.address,
+               allowance_received_block=A.allowance_block,
+               idle_blocks=idle_blocks,
+               eth_outbounds_processed=eth_outbounds,
+               erc20_held=sum(allowance for (asset, allowance) in A.erc20_allowances),
+               drained_usd=total_drained_usd,
+               drain_block=(drain_events[0].block if drain_events else null),
+               severity="critical" if total_drained_usd > 0 else "high",
+               guidance="Anomalous allowance usage: {A} received vault allowance "
+                        "at block {A.allowance_block}, processed {eth_outbounds} "
+                        "ETH outbounds but held ERC20 allowances for {idle_blocks} "
+                        "blocks. "
+                        + (f"Drained ${total_drained_usd} at block {drain_events[0].block}. "
+                           if total_drained_usd > 0 else
+                           "ERC20 allowances still held — potential pre-drain positioning. ")
+                        + "Pattern matches T10.008 post-migration positioning.")
+
+    # PATH D — cross-chain vault address consistency verification
+    for each bridge B where B.chains.length > 1:
+      for each migration_event M on B:
+        new_vaults_by_chain ← {}
+        for each chain C in B.chains:
+          new_vaults_by_chain[C] ← M.newVault_on_chain(C)
+        # All newVault addresses across chains must derive from same TSS pubkey
+        tss_pubkey ← B.tss_pubkey
+        for each (chain, vault_addr) in new_vaults_by_chain:
+          if not vault_address_derivable_from_tss(vault_addr, tss_pubkey, chain):
+            # Find which chains have matching vs mismatching addresses
+            mismatched_chains ← [(c, a) for (c, a) in new_vaults_by_chain
+                                 if not vault_address_derivable_from_tss(a, tss_pubkey, c)]
+            matched_chains ← [(c, a) for (c, a) in new_vaults_by_chain
+                              if vault_address_derivable_from_tss(a, tss_pubkey, c)]
+            emit(PATH_D, bridge=B.name, chain=chain,
+                 mismatched_vault=vault_addr,
+                 mismatched_chains=mismatched_chains,
+                 matched_chains=matched_chains,
+                 tss_pubkey=tss_pubkey,
+                 migration_tx=M.tx,
+                 severity="critical",
+                 guidance="Cross-chain vault address mismatch: "
+                          "{vault_addr} on {chain} does not derive from TSS "
+                          "pubkey {tss_pubkey}, while {matched_chains} do. "
+                          "The {chain} vault migration was poisoned. "
+                          "T10.008 confirmed via cross-chain inconsistency.")
+
+    # PATH E — bridge-relayer address-resolution integrity monitoring
+    for each relayer R in BRIDGE_RELAYERS:
+      for each MIGRATE_event E from R where E.memo starts_with "MIGRATE:":
+        # Get the address that the relayer resolved
+        resolved_address ← E.resolved_new_vault_address
+        # Get the cryptographically expected address from TSS pubkey
+        chain ← E.target_chain
+        expected_address ← derive_chain_address(R.bridge.tss_pubkey, chain)
+        # Get L1 consensus state at MIGRATE block height
+        l1_block ← parse_migrate_block_height(E.memo)  # e.g., "MIGRATE:26146440" → 26146440
+        l1_expected ← R.bridge.l1_vault_address_at(l1_block)
+        if resolved_address ≠ expected_address:
+          # The relayer resolved to an unexpected address
+          emit(PATH_E, bridge=R.bridge.name, chain=chain,
+               relayer=R.address,
+               l1_block=l1_block,
+               resolved=resolved_address,
+               expected=expected_address,
+               l1_expected=l1_expected,
+               migration_tx=E.tx,
+               memo=E.memo,
+               severity="critical",
+               guidance="Relayer address resolution anomaly: {R.address} "
+                        "resolved newVault={resolved_address} for "
+                        "{E.memo}, but TSS-derived address is "
+                        "{expected_address}, L1 expected={l1_expected}. "
+                        "Bifrost-equivalent relayer may be poisoned — "
+                        "T10.008 address resolution compromise.")
+
+parameters:
+  pre_migration_history_blocks:         { type: integer,  default: 6500 }     # ~1 day on Ethereum
+  poisoning_lookback_blocks:            { type: integer,  default: 21600 }    # ~3 days on Ethereum
+  dust_threshold_usd:                   { type: number,   default: 0.01 }
+  vanity_similarity_threshold:          { type: number,   default: 0.5 }      # byte-pattern similarity
+  min_dust_senders:                     { type: integer,  default: 3 }
+  post_migration_window_blocks:         { type: integer,  default: 43200 }    # ~6 days on Ethereum
+  idle_allowance_alert_blocks:          { type: integer,  default: 14400 }    # ~2 days on Ethereum
+  min_eth_outbounds:                    { type: integer,  default: 10 }
+  known_vault_funders:                  { type: list,     default: [] }        # addresses authorized to fund new vaults
+  tss_pubkey_registry:                  { type: object,   default: {} }        # bridge → TSS pubkey mapping
+  cross_chain_consistency_required:     { type: boolean,  default: true }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               bridge, new_vault, old_vault, tss_derived,
+               vanity_score, dust_campaign, idle_blocks,
+               drained_usd, cross_chain_mismatch, evidence]
+
+test_fixtures:
+  positive:
+    - 2026-05-thorchain-router-exploit                               # Vault churn address poisoning: MIGRATE:26146440 → attacker receives allowances → $7.4M drained
+  negative:
+    - "Legitimate vault churn where newVault is derivable from TSS pubkey and has prior vault operational history"
+    - "Freshly deployed vault funded from known THORChain treasury/funder address with on-chain TSS pubkey verification"
+    - "Normal vault migration: transferAllowance → immediate ERC20 outbounds alongside ETH (no idle period)"
+    - "Individual dust transactions to a user address without subsequent vault allowance receipt — user-level address poisoning (T4.003), not T10.008"
+
+false_positive_modes:
+  - Legitimate vault migration to a newly-generated address (e.g., post-TSS-key-rotation) — PATH A distinguishes via TSS pubkey derivation: even a brand-new vault address must be derivable from the TSS pubkey; if the derivation check passes, the address is legitimate regardless of history
+  - Dust transactions from unrelated MEV bots or airdrop spammers that happen to use addresses with similar byte suffixes — PATH B requires the dust recipient to subsequently receive a transferAllowance; dust alone without allowance receipt is not T10.008
+  - Vault address that holds ERC20 allowances idle because the protocol has low swap volume on those assets, not because the vault is attacker-controlled — PATH C distinguishes via the eventual drain event: a legitimate vault will eventually process ERC20 outbounds at normal volume; an attacker drains in a single burst block
+  - Cross-chain address mismatch caused by legitimate TSS key rotation where one chain's router has not yet been updated — PATH D cross-references against the migration event timestamp: if the mismatch coincides with a documented TSS key rotation, the alert is downgraded
+  - Bifrost relayer resolution latency where the resolved address temporarily differs from the expected address due to block reorgs or L1→L2 finality delay — PATH E uses a grace period of N blocks before emitting
+
+mitigations: [OAK-M02, OAK-M08, OAK-M09, OAK-M11, OAK-M20]
+
+reference_implementations:
+  - { target: foundry,                chain: evm,    url: "" }
+  - { target: metasleuth,             chain: evm,    url: "" }
+  - { target: phalcon-blocksec,       chain: evm,    url: "" }
+  - { target: l2beat,                 chain: cross-chain, url: "" }
+  - { target: manual_review,          chain: cross-chain, url: "" }

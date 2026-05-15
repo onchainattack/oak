@@ -1,0 +1,165 @@
+oak_techniques: [OAK-T11.005.001]
+spec_id: oak-detection-T11.005.001
+version: 0.2.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect fake centralised exchanges and pig-butchering (Sha Zhu Pan)
+  investment platforms — operator-controlled UIs with no real exchange
+  backend where balance displays, trade functionality, and profit/loss
+  dashboards are entirely database fictions. Users deposit real
+  cryptocurrency to operator-controlled wallets believing they are
+  depositing to a legitimate exchange; withdrawals are either blocked
+  outright or gated behind escalating "tax"/"verification fee" preconditions
+  that never resolve. Covers two acquisition-era sub-classes: romance-scam
+  feeder-narrative pig-butchering (2020–2026 dominant) and cold-call/email-
+  spam boiler-room fake exchanges (pre-2020). Excludes: T11.005.002
+  (fake-custodian/fake-asset-manager — yield/wealth-management pitch, not
+  exchange trading); T11.005.003 (compound-operated — industrial scale via
+  forced-labour compounds, not per-platform fraud shape); T4 phishing
+  (acquires credentials to real platforms, not deposits to fake ones);
+  T1.x rug-pull tokens (token-side on-chain fraud, not off-chain platform
+  fiction).
+
+data_sources: [tx_call_trace, contract_events, domain_registration,
+               certificate_transparency_log, regulator_enforcement_feed,
+               ofac_sdn_list]
+
+detection_logic:
+  description: |
+    Five orthogonal detection paths spanning on-chain forensics and off-chain
+    OSINT. PATH A (regulator-enforcement-feed ingestion): cross-reference
+    published regulator warnings against active domains and operator-wallet
+    clusters; flag platforms named in ≥2 independent regulator feeds.
+    PATH B (licensed-VASP registry cross-reference): for each platform
+    claiming a jurisdiction, verify presence in that jurisdiction's published
+    licensed-VASP registry; flag absent platforms that nevertheless accept
+    deposits. PATH C (on-chain deposit-fan-in without trading-outflow):
+    detect wallet clusters with high fan-in concentration (many depositors →
+    few operator wallets) and trading-outflow ratio below threshold —
+    the canonical fake-CEX on-chain fingerprint. PATH D (romance-scam
+    feeder-narrative cross-platform clustering): cluster victim reports by
+    feeder-narrative signature (initial-contact platform, investment pitch
+    template, platform UI description); flag clusters whose operator wallets
+    overlap with PATH C's low-trading-outflow clusters. PATH E (cross-jurisdiction
+    enforcement-action correlation): correlate PATH A regulator warnings
+    with PATH C on-chain clusters; escalate to critical when ≥1 federal
+    enforcement action (DOJ indictment, OFAC designation) matches.
+  pseudocode: |
+    # Shared helpers
+    fan_in_ratio(C)    := |unique_depositor_addresses(C)| / |operator_wallets(C)|
+    trading_ratio(C)   := Σ outflow(C, dest ∈ KNOWN_EXCHANGE_HOT_WALLETS)
+                          / Σ inflow(C)
+    narrative_sig(V)   := (V.first_contact_platform, V.pitch_template_hash,
+                            V.described_ui_features, V.deposit_asset)
+
+    # PATH A — regulator-enforcement-feed ingestion
+    for each warning W in REGULATOR_FEEDS where W.entity_type == "exchange":
+      domains ← resolve_domains(W.entity_name)
+      wallets  ← W.published_addresses ∪ discover_operator_wallets(domains)
+      for each domain D in domains:
+        if D.is_active and serves_deposit_ui(D):
+          cross_ref_count ← |{feed in REGULATOR_FEEDS :
+                              feed mentions W.entity_name or feed overlaps wallets}|
+          emit(PATH_A, entity=W.entity_name, domain=D, regulator=W.source,
+               cross_regulator_count=cross_ref_count,
+               operator_wallets=wallets, warning_date=W.date,
+               severity="high" if cross_ref_count ≥ 2 else "medium")
+
+    # PATH B — licensed-VASP registry cross-reference
+    for each deposit_accepting_platform P claiming_jurisdiction J:
+      registry ← LICENSED_VASP_REGISTRIES[J]
+      is_licensed ← P.entity_name in registry or
+                    any(w in registry.known_wallets for w in P.operator_wallets)
+      if not is_licensed and P.total_deposits_usd > min_deposit_threshold:
+        emit(PATH_B, entity=P.entity_name, claimed_jurisdiction=J,
+             registry_url=registry.source, total_deposits=P.total_deposits_usd,
+             deposit_address_count=len(P.deposit_addresses),
+             severity="high",
+             guidance="Verify {P.entity_name} appears in {J} licensed-VASP registry")
+
+    # PATH C — on-chain deposit-fan-in without trading-outflow
+    for each operator_wallet_cluster C:
+      fir ← fan_in_ratio(C)
+      tr  ← trading_ratio(C)
+      if fir > min_fan_in_ratio and tr < max_trading_outflow_ratio:
+        deposit_addrs ← len(C.deposit_addresses)
+        victim_est   ← estimate_unique_depositors(C.deposit_addresses, dust_threshold)
+        emit(PATH_C, cluster=C.id, fan_in_ratio=fir, trading_ratio=tr,
+             total_deposits_usd=C.total_inflow_usd, deposit_address_count=deposit_addrs,
+             estimated_victims=victim_est, operator_wallets=C.operator_addresses,
+             severity="critical" if C.total_inflow_usd > large_cluster_threshold else "high")
+
+    # PATH D — romance-scam feeder-narrative cross-platform clustering
+    for each victim_report_feed F in VICTIM_REPORT_AGGREGATORS:
+      sig ← narrative_sig(F)
+      cluster ← NARRATIVE_CLUSTERS.find_or_create(sig)
+      cluster.add(F)
+      if cluster.member_count > min_narrative_cluster_size:
+        # cross-reference with PATH C
+        linked_clusters ← [C for C in LOW_TRADING_CLUSTERS
+                           if wallet_overlap(cluster.deposit_addresses, C.deposit_addresses)]
+        if linked_clusters ≠ ∅:
+          emit(PATH_D, narrative_cluster=cluster.id,
+               member_count=cluster.member_count,
+               common_pitch=cluster.dominant_pitch_template,
+               initial_contact_platforms=cluster.top_platforms,
+               linked_onchain_clusters=[C.id for C in linked_clusters],
+               severity="critical")
+
+    # PATH E — cross-jurisdiction enforcement-action correlation
+    for each entity E in ENFORCEMENT_ACTIONS where E.type in {indictment, designation, forfeiture}:
+      onchain_cluster ← find_matching_cluster(E.addresses, LOW_TRADING_CLUSTERS)
+      if onchain_cluster ≠ ∅:
+        emit(PATH_E, entity=E.entity, enforcement_type=E.type,
+             jurisdiction=E.jurisdiction, action_date=E.date,
+             onchain_cluster=onchain_cluster.id,
+             total_deposits=onchain_cluster.total_inflow_usd,
+             victim_count_estimate=onchain_cluster.estimated_victims,
+             forfeiture_amount=E.forfeiture_usd, severity="critical")
+
+parameters:
+  min_fan_in_ratio:                    { type: number,   default: 10.0 }     # depositors per operator wallet
+  max_trading_outflow_ratio:           { type: number,   default: 0.05 }     # <5% to known exchange wallets
+  min_deposit_threshold:               { type: number,   default: 100000 }   # USD
+  large_cluster_threshold:             { type: number,   default: 10000000 }  # $10M
+  dust_threshold:                      { type: number,   default: 10 }       # USD — ignore dust UTXOs
+  min_narrative_cluster_size:          { type: integer,  default: 5 }
+  regulator_feed_refresh_interval:     { type: duration, default: 24h }
+  known_exchange_hot_wallets:          { type: list,     default: [] }
+  licensed_vasp_registries:            { type: object,   default: {} }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               entity_name, domain, operator_wallets, regulator,
+               fan_in_ratio, trading_ratio, total_deposits_usd,
+               estimated_victims, narrative_cluster, enforcement_action,
+               evidence]
+
+test_fixtures:
+  positive:
+    - 2023-09-jpex-hong-kong                                                   # JPEX unlicensed-exchange fraud (~$200M, ~2,600+ victims)
+    - 2024-2025-doj-sec-pig-butchering-enforcement-cohort                      # DOJ Operation Token Mirrors, SEC v. NanoBit ($5.8B U.S. 2024)
+    - 2013-12-gbl-bitcoin-exchange-scam                                        # GBL Bitcoin Exchange Ponzi (~$5M, ~9,640 BTC)
+    - 2025-01-huione-guarantee-fake-cex                                        # Huione Guarantee fake-CEX ($1.2B+ aggregate)
+    - 2014-10-moolah-alex-green-fraud                                          # Moolah / Alex Green exchange fraud (~$4M+)
+  negative:
+    - "Licensed exchange appearing in claimed jurisdiction's VASP registry with verifiable proof-of-reserves and >50% trading-outflow ratio to known exchange hot wallets"
+    - "Newly-launched exchange not yet in regulator registries but with observable matched-trading outflow, transparent operator identity, and no blocked-withdrawal reports"
+
+false_positive_modes:
+  - Exchange using internal off-chain order-book matching with low on-chain trading-outflow — cross-reference against published settlement-address disclosure and proof-of-reserves; require PATH C + PATH D co-occurrence before escalating to critical
+  - Domain flagged by PATH A that is a legitimate exchange's testnet/staging subdomain — verify the domain serves a deposit-accepting production UI, not a development environment
+  - New exchange not yet appearing in regulator registries but with transparent corporate registration in its claimed jurisdiction — distinguish via absence of the other four PATH signals; licensed-VASP-registry absence alone is not dispositive
+  - Victim report cluster with common feeder narrative but on-chain deposits go to a real exchange's deposit addresses — the narrative may be a social-engineering front for a real exchange account takeover, not T11.005.001
+
+mitigations: [OAK-M22, OAK-M21, OAK-M23, OAK-M24]
+
+reference_implementations:
+  - { target: chainalysis-crypto-crime,   chain: cross-chain, url: "" }
+  - { target: trm-labs-forensics,         chain: cross-chain, url: "" }
+  - { target: elliptic-holistic-screen,   chain: cross-chain, url: "" }
+  - { target: fbi-ic3-psa-feed,           chain: cross-chain, url: "" }
+  - { target: fincen-advisory-feed,       chain: cross-chain, url: "" }
+  - { target: ofac-sdn-api,               chain: cross-chain, url: "" }

@@ -1,0 +1,164 @@
+oak_techniques: [OAK-T11.007.001]
+spec_id: oak-detection-T11.007.001
+version: 0.2.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect counterfeit hardware-wallet devices distributed through informal
+  retail channels (Chinese marketplaces — AliExpress/Taobao third-party
+  sellers; Telegram-based resellers; in-person counterfeit-product markets;
+  second-hand purchases without packaging) that brand-impersonate legitimate
+  Ledger/Trezor/similar products. Two sub-classes: (a) pre-seeded recovery
+  phrase — the device ships with a pre-printed recovery card whose seed the
+  operator already knows; (b) secure-element substitution — the legitimate
+  secure element is replaced with an attacker-controlled microcontroller
+  (ESP32-S3 or similar) that stores seeds in plaintext flash and includes an
+  embedded radio (Wi-Fi/BLE) for exfiltration, defeating the air-gap. Detection
+  operates at the purchase-channel verification, vendor-side device-genuineness
+  check, tamper-evident packaging inspection, hardware-teardown fingerprint
+  comparison, and known-counterfeit-cohort tracking layers. Excludes: T11.007.002
+  (physical-access seed extraction from a legitimate device — chip-level attack,
+  not device substitution); T11.007.003 (brand-trust-leveraged phishing —
+  channel counterfeiting, not device counterfeiting).
+
+data_sources: [certificate_transparency_log, domain_registration]
+
+detection_logic:
+  description: |
+    Five orthogonal detection paths. PATH A (unauthorized-purchase-channel
+    flagging): flag hardware purchases through informal channels; rank by
+    vendor, model, and purchase-channel risk. PATH B (vendor-side device-
+    genuineness check enforcement): execute the vendor's cryptographic
+    authenticity verification on first connection; flag devices that fail,
+    categorise failure mode. PATH C (tamper-evident packaging + hardware-
+    teardown fingerprint comparison): verify vendor-supplied tamper-evident
+    seal at unboxing; compare PCB photographs against vendor-published
+    reference teardowns. PATH D (pre-seeded-recovery-card detection): flag
+    any hardware wallet that ships with a pre-filled recovery card — the
+    definitive T11.007.001 signal. PATH E (known-counterfeit-cohort tracking):
+    maintain a registry of known counterfeit batches (chip markings, PCB
+    layout signatures, firmware hashes); alert on matches.
+  pseudocode: |
+    # Shared helpers
+    is_authorized_channel(ch) := ch in AUTHORIZED_RETAILERS[device.vendor]
+    genuineness_score(dev)    := execute_vendor_crypto_challenge(dev)
+
+    # PATH A — unauthorized-purchase-channel flagging
+    for each hardware_wallet_device D in DEVICE_REGISTRY:
+      risk_factors ← []
+      if D.purchase_channel not in AUTHORIZED_RETAILERS[D.vendor]:
+        risk_factors.append("unauthorized_channel")
+      if D.purchased_second_hand:
+        risk_factors.append("second_hand")
+      if D.packaging_missing:
+        risk_factors.append("no_original_packaging")
+      if D.price < MARKET_PRICE[D.vendor][D.model] × min_price_ratio:
+        risk_factors.append("below_market_price")
+      channel_risk_score ← len(risk_factors)
+      if channel_risk_score > 0:
+        emit(PATH_A, device=D.id, vendor=D.vendor, model=D.model,
+             serial=D.claimed_serial, purchase_channel=D.purchase_channel,
+             risk_factors=risk_factors, risk_score=channel_risk_score,
+             severity="critical" if channel_risk_score ≥ 3 else "high",
+             guidance="Device from {D.purchase_channel} with {channel_risk_score} risk "
+                      "factors. Structurally indistinguishable from deliberate seed-"
+                      "exfiltration device. Replace with authorized-retailer purchase.")
+
+    # PATH B — vendor-side device-genuineness check enforcement
+    for each hardware_wallet W on first_connection:
+      attestation ← genuineness_score(W)
+      if not attestation.passed:
+        failure_detail ← {
+          secure_element_attestation: attestation.se_attestation_ok,
+          firmware_hash_match: attestation.firmware_hash == VENDOR_FIRMWARE_HASHES[W.vendor][W.model],
+          bootloader_integrity: attestation.bootloader_verified,
+          certificate_chain_valid: attestation.device_cert_chain_valid,
+        }
+        failed ← [k for k, v in failure_detail if not v]
+        emit(PATH_B, device_serial=W.claimed_serial, vendor=W.vendor, model=W.model,
+             failed_checks=failed, attestation_detail=failure_detail,
+             purchase_channel=W.purchase_channel,
+             severity="critical",
+             guidance="Device FAILED vendor genuineness check on {failed}. "
+                      "Do NOT deposit funds. This device may be a counterfeit with "
+                      "pre-known seed or radio exfiltration capability.")
+
+    # PATH C — tamper-evident packaging + hardware-teardown fingerprint comparison
+    for each hardware_wallet D at_unboxing:
+      packaging_checks ← {
+        seal_intact:          D.packaging.seal_matches(VENDOR_SEAL_PATTERN[D.vendor]),
+        seal_authentic:       not detect_seal_reapplication(D.packaging),
+        hologram_present:     D.packaging.has_hologram == VENDOR_HOLOGRAM_SPEC[D.vendor],
+        print_quality_ok:     D.packaging.print_dpi ≥ VENDOR_PRINT_STANDARD[D.vendor],
+        serial_matches_box:   D.device_serial == D.packaging.serial,
+      }
+      pkg_failed ← [k for k, v in packaging_checks if not v]
+      if pkg_failed ≠ ∅:
+        emit(PATH_C, device=D.id, vendor=D.vendor, model=D.model,
+             failed_packaging_checks=pkg_failed,
+             hardware_teardown_available=false,
+             severity="high")
+
+    # PATH D — pre-seeded-recovery-card detection
+    for each hardware_wallet D in DEVICE_REGISTRY:
+      if D.included_recovery_card.is_pre_filled:
+        emit(PATH_D, device=D.id, vendor=D.vendor, model=D.model,
+             purchase_channel=D.purchase_channel, purchase_date=D.purchase_date,
+             recovery_card_handwriting=D.recovery_card.is_handwritten,
+             severity="critical",
+             guidance="Legitimate vendors NEVER ship a pre-filled recovery card. "
+                      "This device is DEFINITIVELY a seed-exfiltration device. "
+                      "Do NOT deposit funds. Do NOT use the pre-printed seed. "
+                      "Dispose of device and recovery card securely. "
+                      "If you already deposited, move funds IMMEDIATELY to a "
+                      "known-secure wallet.")
+
+    # PATH E — known-counterfeit-cohort tracking
+    for each counterfeit_batch B in KNOWN_COUNTERFEIT_REGISTRY:
+      for each device D in DEVICE_REGISTRY:
+        matches ← 0
+        if D.mcu_model == B.reported_mcu:               matches += 1
+        if D.pcb_photo_hash in B.known_pcb_hashes:       matches += 2
+        if D.firmware_hash in B.known_firmware_hashes:    matches += 2
+        if D.purchase_channel in B.known_distribution:    matches += 1
+        if D.chip_markings_scraped == B.reported_scraped: matches += 2
+        if matches >= min_counterfeit_match_score:
+          emit(PATH_E, device=D.id, vendor=D.vendor, model=D.model,
+               matching_batch=B.id, batch_attribution=B.operator_attribution,
+               batch_first_seen=B.first_reported, batch_estimated_devices=B.estimated_circulation,
+               match_score=matches, severity="critical")
+
+parameters:
+  min_price_ratio:                     { type: number,   default: 0.6 }     # below 60% of market price
+  min_counterfeit_match_score:         { type: integer,  default: 3 }
+  authorized_retailers:                { type: object,   default: {} }
+  known_counterfeit_registry:          { type: list,     default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               device_vendor, device_model, purchase_channel,
+               genuineness_failure_mode, tamper_evidence, pre_seeded_card,
+               counterfeit_batch_match, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-01-counterfeit-ledger-nano-s-plus-cohort                             # ESP32-S3 counterfeit Ledger (~$9.5M+, ~50+ victims, 20+ ecosystems)
+    - 2017-2019-ledger-nano-s-counterfeit-cohort                                 # Early Ledger Nano S counterfeit with pre-seeded recovery cards
+  negative:
+    - "Hardware wallet purchased directly from the vendor's official website in sealed tamper-evident packaging, passing vendor genuineness check with blank recovery card"
+    - "Device that passes the vendor's cryptographic attestation on first connection, matches known-good firmware hash, and ships with a blank recovery card"
+
+false_positive_modes:
+  - Second-hand hardware wallet from a verified individual with intact tamper-evident packaging and blank recovery card — second-hand is a risk elevation (PATH A flags it), not a definitive counterfeit; execute PATH B genuineness check and PATH C packaging inspection before concluding
+  - Device that fails genuineness check due to vendor-side server outage or SDK version mismatch — retry with updated vendor software before concluding counterfeit; the failure_detail in PATH B distinguishes cryptographic attestation failure from connectivity failure
+  - Packaging with cosmetic damage from shipping that mimics tampering — PATH C distinguishes via seal integrity: a broken seal is definitive; scuffed packaging with intact seal is cosmetic
+  - PATH C PCB mismatch due to a legitimate hardware revision, not a counterfeit — cross-reference against vendor-published revision history; flag only when PCB layout differs from ALL known legitimate revisions
+
+mitigations: [OAK-M22, OAK-M21]
+
+reference_implementations:
+  - { target: ledger-live-genuineness,    chain: cross-chain, url: "" }
+  - { target: trezor-suite-authenticity,  chain: cross-chain, url: "" }
+  - { target: cyble-research-intel,       chain: cross-chain, url: "" }
+  - { target: kraken-security-labs,       chain: cross-chain, url: "" }

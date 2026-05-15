@@ -1,0 +1,130 @@
+oak_techniques: [OAK-T8.005]
+spec_id: oak-detection-T8.005
+version: 0.1.0
+maturity: stable
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect attacker-side procedural operational security failures that create
+  attribution bridges between on-chain entities and real-world identities.
+  Covers seven axes: handle/identity reuse across operations, VPN/VPS
+  exit-node reuse, funding-exchange reuse, physical-world opsec failures,
+  temporal/timezone fingerprinting, stylometric/linguistic fingerprinting,
+  and operational-tooling procurement fingerprinting. Detection operates at
+  the off-chain intelligence layer and is primarily a law-enforcement
+  workflow rather than an on-chain detector automation concern.
+
+data_sources: [cex_kyc_data, ofac_sdn_feed, sar_filing_workflow,
+               funder_graph, sec_8k_filings]
+
+detection_logic:
+  description: |
+    Six detection paths operating at the cross-layer (on-chain × off-chain)
+    correlation surface. PATH A (handle cross-referencing): for each
+    pseudonymous handle associated with an operational on-chain entity,
+    query across forums, WHOIS records, and domain-registration databases;
+    flag matches where the same handle appears in operational and
+    non-operational contexts. PATH B (stylometric correlation): compute
+    a stylometric fingerprint from written communications tied to an
+    operational pseudonymous identity; compare against corpora from other
+    identities and known individuals' public writing samples. PATH C
+    (IP/ASN cross-incident correlation): cluster operational events by
+    IP or ASN across nominally-separate incidents. PATH D (funding-exchange
+    cross-referencing): trace upstream funding sources for on-chain
+    operational addresses; flag clusters where the same exchange withdrawal
+    address funds both operational and personally-attributable on-chain
+    addresses. PATH E (infrastructure-procurement trail): trace domain,
+    server, and VPN procurement channels to billing identities. PATH F
+    (temporal fingerprinting): compute UTC-hour distribution of transaction
+    submission and deployment times per operator cluster.
+  pseudocode: |
+    # PATH A — handle cross-referencing
+    for each pseudonymous_handle H associated with on_chain_entity E:
+      matches ← ∅
+      for each corpus C in {forums, whois, domain_reg, darknet_archives}:
+        hits ← query(H, C)
+        for each hit h in hits:
+          if h.context is non_operational or h.contains_pii:
+            matches ← matches ∪ {(h, C)}
+      if matches ≠ ∅:
+        emit(PATH_A, handle=H, entity=E, contexts=matches, severity=medium)
+
+    # PATH B — stylometric correlation
+    for each operational_corpus O:
+      fingerprint ← stylometric_profile(O)   # n-gram freq, function-word dist,
+                                              # error-pattern catalog, punctuation sig
+      for each candidate_identity C:
+        similarity ← compare(fingerprint, stylometric_profile(C.public_writing))
+        if similarity > stylometric_threshold:
+          emit(PATH_B, operational_corpus=O, candidate=C,
+               similarity, severity=high)
+
+    # PATH C — IP/ASN cross-incident correlation
+    for each operational_event e:
+      record(e.ip, e.asn, e.timestamp)
+    for each (ip, asn) cluster across nominally_separate_incidents:
+      if cluster.incident_count > min_incident_count:
+        emit(PATH_C, ip=cluster.ip, asn=cluster.asn,
+             incidents=cluster.incidents, severity=medium)
+
+    # PATH D — funding-exchange cross-referencing
+    for each on_chain_operational_address A:
+      upstream ← trace_funding_sources(A, hops=trace_hops)
+      exchange_withdrawals ← [s for s in upstream if s.is_cex_withdrawal]
+      for each withdrawal W in exchange_withdrawals:
+        personal_addresses ← [a for a in funder_graph(W.cluster)
+                              if a.is_personally_attributable]
+        if personal_addresses ≠ ∅:
+          emit(PATH_D, operational_address=A, exchange=W.cex,
+               withdrawal_tx=W.tx, linked_addresses=personal_addresses,
+               severity=high)
+
+    # PATH E — infrastructure-procurement trail
+    for each operational_infrastructure I:
+      billing ← trace_procurement(I)   # registrar, hosting provider, payment processor
+      if billing.has_pii:
+        emit(PATH_E, infrastructure=I, billing_identity=billing.pii,
+             procurement_channel=billing.channel, severity=critical)
+
+    # PATH F — temporal fingerprinting
+    for each operator_cluster C:
+      hours ← [tx.block.timestamp.hour for tx in C.on_chain_activity]
+      distribution ← histogram(hours)
+      if distribution.concentration > temporal_concentration_threshold:
+        tz_estimate ← infer_timezone(distribution)
+        emit(PATH_F, cluster=C, timezone=tz_estimate,
+             concentration=distribution.concentration, severity=low)
+
+parameters:
+  trace_hops:                        { type: integer,  default: 5 }
+  stylometric_threshold:             { type: number,   default: 0.85 }
+  min_incident_count:                { type: integer,  default: 2 }
+  temporal_concentration_threshold:  { type: number,   default: 0.7 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               operator_cluster, handle, matched_identity,
+               procurement_channel, evidence]
+
+test_fixtures:
+  positive:
+    - 2013-silk-road-altoid-handle                                # PATH A — handle reuse bridge
+    - 2021-bitcoin-fog-sterlingov-exchange-funding                # PATH D + PATH E
+    - 2018-welcome-to-video-son-jong-woo-cross-layer              # PATH D × T8.003 cross-layer
+    - 2022-hydra-marketplace-german-server-seizure                # PATH E — hosting jurisdiction
+  negative:
+    - "Common forum handle shared by coincidence across unrelated users with no PII linkage"
+    - "VPN exit-node shared by unrelated users of the same commercial VPN service"
+
+false_positive_modes:
+  - Forum-handle coincidence — common usernames appear across contexts without common authorship; require PII linkage or multi-axis corroboration before escalation
+  - VPN exit-node sharing — multiple users behind the same VPN provider share IPs without common operational identity; require additional correlation axes
+  - Stylometric false positives from shared native-language profile or educational background rather than common authorship
+  - Single-axis T8.005 match is an intelligence lead, not an attribution conclusion; multi-axis corroboration is the escalation threshold
+
+mitigations: [OAK-M10]
+
+reference_implementations:
+  - { target: chainalysis-reactor,    chain: cross-chain, url: "" }
+  - { target: trm-forensics,          chain: cross-chain, url: "" }
+  - { target: elliptic-investigator,  chain: cross-chain, url: "" }

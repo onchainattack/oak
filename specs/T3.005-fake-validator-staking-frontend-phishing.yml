@@ -1,0 +1,96 @@
+oak_techniques: [OAK-T3.005]
+spec_id: oak-detection-T3.005
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect phishing campaigns targeting staking users with fake staking
+  frontends that impersonate legitimate liquid-staking protocols (Lido,
+  Rocket Pool, Marinade) or validator-delegation portals. The attacker
+  deploys a typosquat domain and UI mirroring the legitimate staking
+  interface; the user's deposit is routed to an attacker-controlled address
+  rather than the canonical staking contract. Detection operates at the
+  domain-reputation and wallet-side deposit-destination verification layers.
+  Excludes: T4.008 (fake-DEX clone-frontend phishing — swap users, not
+  staking users); T4.009 (pre-token brand-anticipation phishing — future
+  token, not active staking protocol).
+
+data_sources: [contract_bytecode, contract_storage, dex_trades,
+               tx_call_trace]
+
+detection_logic:
+  description: |
+    Four detection paths. PATH A (domain-reputation services): flag domains
+    that are typosquats of known liquid-staking protocol domains and serve
+    a staking-interface UI. PATH B (wallet-side deposit-destination
+    verification): compare the destination address of a staking-deposit
+    transaction against the canonical staking contract address for the
+    protocol the user's UI purports to be. PATH C (on-chain deposit-flow
+    anomaly detection): monitor deposit-flow distribution across depositor
+    addresses for canonical staking contracts; flag anomalous drops in
+    deposit volume coincident with increases in deposits to unidentified
+    addresses. PATH D (search-engine advertisement monitoring): flag
+    sponsored-result domains for staking-protocol keywords that differ from
+    the legitimate protocol's canonical domain.
+  pseudocode: |
+    STAKING_PROTOCOLS ← {lido, rocket_pool, marinade, jito, ...}
+
+    # PATH A — domain-reputation typosquat detection
+    for each protocol P in STAKING_PROTOCOLS:
+      canonical_domains ← P.canonical_domains
+      for each newly_registered_domain D:
+        if typosquat_distance(D, canonical_domains) < min_typosquat_distance:
+          if serves_staking_ui(D):
+            emit(PATH_A, domain=D, protocol=P, canonical=canonical_domains,
+                 distance=typosquat_distance(D, canonical_domains), severity=high)
+
+    # PATH B — wallet-side deposit-destination verification
+    for each staking_deposit_tx T:
+      displayed_protocol ← extract_protocol_from_ui(T.origin_domain)
+      canonical_contract ← STAKING_PROTOCOLS[displayed_protocol].canonical_contract
+      if T.to ≠ canonical_contract:
+        emit(PATH_B, tx=T.hash, displayed_protocol, canonical_contract,
+             actual_destination=T.to, victim=T.from, value=T.value,
+             severity=critical)
+
+    # PATH C — on-chain deposit-flow anomaly
+    for each protocol P in STAKING_PROTOCOLS:
+      canonical_flow ← P.canonical_contract.deposit_volume, lookback=baseline_window
+      current_flow   ← P.canonical_contract.deposit_volume, lookback=current_window
+      if current_flow < canonical_flow * deposit_drop_threshold:
+        unidentified_deposits ← find_unidentified_deposits(P.name, current_window)
+        if unidentified_deposits ≠ ∅:
+          emit(PATH_C, protocol=P, canonical_drop=canonical_flow − current_flow,
+               suspect_addresses=unidentified_deposits, severity=medium)
+
+parameters:
+  min_typosquat_distance:            { type: integer,  default: 3 }         # Levenshtein
+  baseline_window:                   { type: duration, default: 30d }
+  deposit_drop_threshold:            { type: number,   default: 0.5 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               protocol, typosquat_domain, canonical_contract,
+               actual_destination, victim, value, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-2023-lido-steth-staking-phishing-cohort                        # Lido stETH staking-interface phishing
+    - 2024-2025-eigenlayer-airdrop-staking-frontend-phishing-cohort       # EigenLayer restaking phishing
+    - 2024-2025-rocket-pool-rpl-staking-phishing-cohort                   # Rocket Pool node-operator phishing
+  negative:
+    - "Staking deposit to canonical Lido contract from lido.fi — legitimate deposit, not T3.005"
+    - "Domain with similar name registered years before the protocol existed — coincidental typosquat, not phishing"
+
+false_positive_modes:
+  - Domain typosquat registered defensively by the protocol itself — distinguish via WHOIS registrant identity
+  - Legitimate staking deposit to a protocol's new or upgraded staking contract — canonical contract registry must be kept current
+  - Deposit-volume drop from market conditions (rate change, competitor launch) rather than phishing — require unidentified-deposit correlation for PATH C
+
+mitigations: [OAK-M22]
+
+reference_implementations:
+  - { target: scamsniffer,           chain: cross-chain, url: "" }
+  - { target: phishtank,             chain: cross-chain, url: "" }
+  - { target: openphish,             chain: cross-chain, url: "" }

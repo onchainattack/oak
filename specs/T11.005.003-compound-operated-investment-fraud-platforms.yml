@@ -1,0 +1,171 @@
+oak_techniques: [OAK-T11.005.003]
+spec_id: oak-detection-T11.005.003
+version: 0.2.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect compound-operated investment-fraud platforms — the industrial-scale
+  distribution of fake-CEX / fake-investment-platform fraud through forced-
+  labour scam compounds in Southeast Asia (Cambodia, Myanmar/Burma, Laos,
+  Philippines). Multiple operator-controlled entities work in concert across
+  layers — fake platform, fake custodian, fake recovery service — appearing
+  as independent operators while being co-located, co-managed, and co-financed
+  from a single compound or operator group. The defining feature is industrial
+  throughput: thousands of trafficked workers operating romance-scam feeder
+  narratives across dozens of languages, with integrated laundering
+  infrastructure (Huione Group, Prince Group). Detection operates at the
+  cross-platform wallet-cluster overlap, federal-record (OFAC/FinCEN/DOJ)
+  attribution, victim-narrative clustering, and multi-layer fraud stacking
+  detection layers. Excludes: T11.005.001 (per-platform fake-CEX — the single
+  fraud unit, not the industrial-organizational shape); T11.005.002 (per-product
+  fake-custodian — the single fraud product, not the compound ecosystem).
+
+data_sources: [tx_call_trace, ofac_sdn_list, regulator_enforcement_feed,
+               domain_registration, certificate_transparency_log]
+
+detection_logic:
+  description: |
+    Five orthogonal detection paths. PATH A (cross-platform wallet-cluster
+    overlap with known compound entities): cluster victim-deposit wallets
+    across multiple seemingly-independent platforms; flag clusters whose
+    deposit flows converge on wallets attributed to OFAC-designated compound
+    entities or FinCEN-identified laundering infrastructure. PATH B (federal-
+    record compound-attribution ingestion): ingest OFAC designations, FinCEN
+    section 311 actions, and DOJ civil-forfeiture filings; cross-reference
+    against active domains and on-chain operator-wallet clusters. PATH C
+    (victim-narrative clustering at compound scale): cluster victim reports
+    by feeder-narrative signature across jurisdictions; flag clusters with
+    structurally identical templates, per-language localization, and multi-
+    platform commonality — the industrial replication signature. PATH D
+    (multi-layer fraud stacking detection): detect victims of the initial
+    platform fraud subsequently targeted by recovery-service scams whose
+    operator wallets trace to the same compound entity. PATH E (compound-
+    mobility jurisdictional-arbitrage tracking): monitor compound operator
+    relocation patterns across jurisdictions in response to law-enforcement
+    pressure; cross-reference against domain registration date and geolocation.
+  pseudocode: |
+    # Shared helpers
+    compound_overlap_score(C, E) := |C.wallets ∩ E.known_wallets| / |C.wallets|
+    narrative_template_hash(R)   := hash(R.feeder_platform, R.pitch_structure,
+                                         R.ui_description_keywords, R.deposit_asset)
+
+    # PATH A — cross-platform wallet-cluster overlap with compound entities
+    for each compound_entity E in COMPOUND_ENTITY_REGISTRY:
+      for each platform_cluster C in UNRELATED_PLATFORM_CLUSTERS:
+        overlap ← C.wallets ∩ E.known_wallets
+        if overlap ≠ ∅:
+          overlap_value ← sum(inflow_value(w) for w in overlap)
+          total_flow    ← sum(inflow_value(w) for w in C.wallets)
+          flow_fraction ← overlap_value / max(total_flow, 1)
+          emit(PATH_A, compound=E.name, platform_cluster=C.id,
+               designation=E.designation_type, designation_date=E.date,
+               overlapping_wallets=len(overlap), flow_fraction=flow_fraction,
+               overlap_value_usd=overlap_value,
+               severity="critical" if flow_fraction > 0.1 else "high")
+
+    # PATH B — federal-record compound-attribution ingestion
+    for each enforcement_action A in FEDERAL_ACTIONS
+        where A.action_type in {ofac_designation, fincen_311, doj_forfeiture,
+                                doj_indictment, unodc_threat_assessment}:
+      domains ← A.identified_domains ∪ discover_associated_domains(A.entity_name)
+      wallets  ← A.identified_wallets
+      for each domain D in domains:
+        if D.is_active:
+          estimated_workers ← A.estimated_trafficked_workers or estimate_from_infrastructure(D, wallets)
+          emit(PATH_B, compound=A.entity_name, location=A.jurisdiction,
+               action_type=A.action_type, action_date=A.date,
+               domain=D, operator_wallets=wallets,
+               estimated_workers=estimated_workers,
+               forfeiture_amount_usd=A.forfeiture_usd,
+               severity="critical")
+
+    # PATH C — victim-narrative clustering at compound scale
+    for each victim_report R in VICTIM_REPORT_AGGREGATORS:
+      th ← narrative_template_hash(R)
+      cluster ← NARRATIVE_CLUSTERS.find_or_create(th)
+      cluster.add(R)
+      if cluster.member_count > min_compound_narrative_size:
+        languages      ← {R.language for R in cluster.reports}
+        jurisdictions  ← {R.victim_jurisdiction for R in cluster.reports}
+        platforms      ← {R.platform_name for R in cluster.reports}
+        # Industrial-scale signal: same template, many languages, many platforms
+        if len(languages) > min_languages and len(platforms) > min_platforms:
+          linked_compound ← find_compound_wallet_overlap(cluster.deposit_addresses)
+          emit(PATH_C, narrative_cluster=cluster.id,
+               member_count=cluster.member_count,
+               language_count=len(languages),
+               platform_count=len(platforms),
+               jurisdiction_count=len(jurisdictions),
+               linked_compound=linked_compound,
+               template_signature=th, severity="critical")
+
+    # PATH D — multi-layer fraud stacking detection
+    for each victim V in VICTIM_REGISTRY where V.initial_fraud_entity ≠ ∅:
+      initial_compound ← find_compound(V.initial_fraud_operator_wallets)
+      if initial_compound == ∅: continue
+      recovery_contacts ← [C for C in V.post_fraud_contacts
+                           if C.pitch_type == "recovery_service"]
+      for each contact RC in recovery_contacts:
+        recovery_wallets ← trace_operator_wallets(RC)
+        recovery_compound ← find_compound(recovery_wallets)
+        if recovery_compound == initial_compound:
+          emit(PATH_D, victim=V.id, initial_platform=V.initial_fraud_entity,
+               recovery_platform=RC.entity_name,
+               compound=initial_compound,
+               stacking_layers=2,
+               initial_loss_usd=V.initial_loss,
+               recovery_solicitation_date=RC.date,
+               severity="critical")
+
+    # PATH E — compound-mobility jurisdictional-arbitrage tracking
+    for each compound E in COMPOUND_ENTITY_REGISTRY:
+      domain_timeline ← [(D.registered, D.geo_country, D.domain)
+                          for D in E.associated_domains]
+      relocations ← detect_jurisdiction_switches(domain_timeline)
+      if len(relocations) > 0:
+        recent ← relocations[−1]
+        emit(PATH_E, compound=E.name,
+             relocation_chain=[r.jurisdiction for r in relocations],
+             current_jurisdiction=recent.to_jurisdiction,
+             previous_jurisdiction=recent.from_jurisdiction,
+             relocation_date=recent.date,
+             enforcement_pressure=check_enforcement_actions(recent.from_jurisdiction, recent.date),
+             severity="medium")
+
+parameters:
+  compound_entity_registry:            { type: list,     default: [] }
+  min_compound_narrative_size:         { type: integer,  default: 10 }
+  min_languages:                       { type: integer,  default: 3 }
+  min_platforms:                       { type: integer,  default: 2 }
+  victim_report_aggregators:           { type: list,     default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               compound, location, domain, operator_wallets, designation_type,
+               narrative_cluster, victim_count, stacking_layers,
+               relocation_jurisdiction, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-10-huione-compound-fraud-cohort                                      # Huione Group / Prince Group ($15B Bitcoin forfeiture, $225M USDT seizure)
+    - 2024-01-kk-park-compound-takedown                                         # KK Park Myanmar/Thailand (~6,000–7,000 trafficked workers)
+    - 2025-01-huione-guarantee-fake-cex                                         # Huione Guarantee fake-CEX as compound-laundering infrastructure
+  negative:
+    - "Single-operator fake-platform fraud with no compound infrastructure, no trafficked-worker cohort, no multi-language victim clusters, and no multi-layer fraud stacking — per-platform T11.005.001, not T11.005.003"
+    - "Legitimate Southeast Asian exchange with verifiable regulatory registration and no link to OFAC-designated entities or forced-labour compounds"
+
+false_positive_modes:
+  - Wallet cluster overlap with a compound-associated address that is a reused legitimate-exchange hot wallet — verify fund-flow direction (victim → compound, not compound → exchange) and the address's role (deposit aggregation vs. trading settlement)
+  - Victim narrative cluster that shares patterns with known compound templates but arises from independent single operators copying the template without compound infrastructure — distinguish via PATH A wallet overlap with known compound entities
+  - Platform flagged as compound-operated because operator wallets share infrastructure (same gas station, same CEX deposit address) with a known compound entity — distinguish via direct deposit-flow tracing: only flag if victim deposits flow directly to compound-controlled wallets
+
+mitigations: [OAK-M22, OAK-M21, OAK-M23, OAK-M24]
+
+reference_implementations:
+  - { target: chainalysis-crypto-crime,   chain: cross-chain, url: "" }
+  - { target: trm-labs-forensics,         chain: cross-chain, url: "" }
+  - { target: elliptic-holistic-screen,   chain: cross-chain, url: "" }
+  - { target: ofac-sdn-api,               chain: cross-chain, url: "" }
+  - { target: fincen-311-feed,            chain: cross-chain, url: "" }
+  - { target: unodc-toc-threat-assessment, chain: cross-chain, url: "" }

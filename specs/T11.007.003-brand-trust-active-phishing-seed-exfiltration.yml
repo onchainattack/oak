@@ -1,0 +1,199 @@
+oak_techniques: [OAK-T11.007.003]
+spec_id: oak-detection-T11.007.003
+version: 0.2.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect active phishing campaigns that impersonate legitimate hardware-wallet
+  vendor communications — email, physical mail, trojanised companion apps, fake
+  firmware-update flows, fake browser extensions — to solicit the user's BIP39
+  seed phrase directly. The defining structural feature is channel counterfeiting,
+  not device counterfeiting: the hardware device itself is legitimate; the
+  communication that solicits the seed phrase is attacker-controlled. The attacker
+  leverages the legitimate vendor's brand trust plus personalisation data (e.g.,
+  the December 2020 Ledger customer-data breach: ~273,000 email + physical-address
+  + phone-number records) to produce apparent legitimacy. Covers four sub-campaign
+  classes: email phishing (Ledger-data-breach-leveraged, 2020 onward), physical-
+  mail phishing (Trezor-impersonating letters with QR codes, 2025–2026), trojanised
+  companion apps (2023 onward), and fake browser extensions (MetaMask/Rabby/
+  Phantom impersonation, 2022–2025). Detection operates at the vendor-phishing-
+  campaign-feed ingestion, typosquat-domain surveillance, companion-app integrity
+  verification, seed-phrase-solicitation invariant enforcement, and cross-channel
+  campaign correlation layers. Excludes: T11.007.001 (counterfeit-hardware
+  substitution — device itself is counterfeit); T11.007.002 (physical-access
+  seed extraction — requires device access, not communication-channel
+  counterfeiting).
+
+data_sources: [domain_registration, certificate_transparency_log,
+               breach_disclosure_feed]
+
+detection_logic:
+  description: |
+    Five orthogonal detection paths. PATH A (vendor-phishing-campaign-feed
+    ingestion): ingest vendor-published phishing-campaign tracking feeds and
+    threat-intelligence reports; classify by channel, personalisation source,
+    and estimated recipient volume. PATH B (typosquat-domain surveillance):
+    monitor newly-registered domains for near-miss/typosquat patterns against
+    hardware-wallet vendor canonical domains; flag domains serving seed-phrase-
+    solicitation UIs. PATH C (companion-app integrity verification): for each
+    wallet companion app installation, verify the download source against the
+    vendor's official distribution channels; flag apps from unofficial sources,
+    categorise by whether they solicit the seed phrase. PATH D (seed-phrase-
+    solicitation invariant enforcement): flag any communication — email, physical
+    mail, in-app prompt, phone call, chat support, browser extension — that
+    requests the seed phrase, regardless of claimed sender identity. PATH E
+    (cross-channel campaign correlation): correlate PATH A campaign feeds with
+    PATH B typosquat domains and PATH D solicitation reports; identify multi-
+    channel campaigns targeting the same vendor's user base.
+  pseudocode: |
+    # Shared helpers
+    typosquat_dist(D, canon) := levenshtein(D.name, canon) / max(len(D.name), len(canon))
+    solicitation_patterns      := {seed_phrase, recovery_phrase, secret_phrase,
+                                   mnemonic, private_key, wallet_import,
+                                   verify_wallet, firmware_recovery, security_upgrade}
+
+    # PATH A — vendor-phishing-campaign-feed ingestion
+    for each campaign C in VENDOR_PHISHING_FEEDS:
+      channels ← C.observed_channels
+      personalisation ← C.data_breach_reference or "none"
+      emit(PATH_A, target_vendor=C.vendor, campaign_type=C.campaign_type,
+           channels=channels, domain_count=len(C.domains),
+           personalisation_source=personalisation,
+           estimated_recipients=C.estimated_volume,
+           active_period=(C.first_seen, C.last_seen or "ongoing"),
+           reported_victim_count=C.reported_victims,
+           reported_loss_usd=C.reported_loss,
+           severity="high",
+           guidance="Active phishing campaign impersonating {C.vendor} via "
+                    "{channels}. Personalisation from {personalisation}. "
+                    "REMEMBER: {C.vendor} will NEVER ask for your seed phrase "
+                    "via ANY channel — email, mail, phone, app, or support.")
+
+    # PATH B — typosquat-domain surveillance
+    for each vendor V in HARDWARE_WALLET_VENDORS:
+      for each domain D in NEWLY_REGISTERED_DOMAINS where D.age < domain_surveillance_window:
+        for each canon in V.canonical_domains:
+          dist ← typosquat_dist(D, canon)
+          if dist > 0 and dist < min_typosquat_distance:
+            content_signal ← analyze_domain_content(D)
+            risk_score ← 0
+            if content_signal.serves_seed_solicitation_ui:    risk_score += 3
+            if content_signal.impersonates_vendor_branding:   risk_score += 2
+            if content_signal.has_firmware_update_template:   risk_score += 1
+            if content_signal.has_qr_code_flow:               risk_score += 1
+            if risk_score >= min_typosquat_risk_score:
+              emit(PATH_B, vendor=V.name, typosquat=D, canonical=canon,
+                   levenshtein_distance=dist,
+                   registration_date=D.registered, registrar=D.registrar,
+                   hosting_country=D.hosting_geo,
+                   risk_score=risk_score, content_signals=content_signal,
+                   severity="critical" if risk_score >= 4 else "high")
+
+    # PATH C — companion-app integrity verification
+    for each wallet_companion_app A in COMPANION_APP_REGISTRY:
+      source_check ← {
+        from_official_site:   A.download_source in VENDOR_OFFICIAL_DOMAINS[A.vendor],
+        from_authenticated_store: A.app_store_listing.is_verified_developer,
+        checksum_matches:     verify_published_checksum(A.binary, A.vendor, A.version),
+        code_signed:          A.binary.is_code_signed_by(A.vendor.certificate),
+      }
+      failed ← [k for k, v in source_check if not v]
+      prompts_for_seed ← detect_seed_solicitation_patterns(A.binary, solicitation_patterns)
+      if failed ≠ ∅ or prompts_for_seed:
+        emit(PATH_C, app=A.name, vendor=A.vendor, version=A.version,
+             download_source=A.download_source,
+             integrity_failures=failed,
+             prompts_for_seed=prompts_for_seed,
+             severity="critical" if prompts_for_seed else "high",
+             guidance="Companion app integrity failure: {failed}. "
+                      + ("App solicits seed phrase — DEFINITIVELY malicious. "
+                         if prompts_for_seed else
+                         "Download ONLY from {A.vendor} official site. "
+                         "Never enter seed phrase into a companion app."))
+
+    # PATH D — seed-phrase-solicitation invariant enforcement
+    for each user_communication C in USER_COMMUNICATION_FEED:
+      solicitation_score ← 0
+      matched_patterns ← []
+      for each pattern in solicitation_patterns:
+        if pattern in C.content.lower():
+          solicitation_score += 1
+          matched_patterns.append(pattern)
+      if solicitation_score > 0:
+        claimed_sender ← C.display_sender
+        channel ← C.channel   # email, physical_mail, in_app_prompt, phone, chat, extension
+        vendor_impersonated ← match_vendor_branding(claimed_sender)
+        if vendor_impersonated ≠ ∅ or claimed_sender in KNOWN_VENDOR_NAMES:
+          emit(PATH_D, vendor=vendor_impersonated or claimed_sender,
+               communication_type=C.type, channel=channel,
+               claimed_sender=claimed_sender, actual_origin=C.actual_origin,
+               matched_patterns=matched_patterns,
+               solicitation_score=solicitation_score,
+               has_personalisation=C.contains_personal_data,
+               personalisation_fields=C.personal_data_fields,
+               victim=C.recipient,
+               severity="critical",
+               surface_warning="URGENT: {vendor_impersonated or claimed_sender} will "
+                               "NEVER ask for your seed phrase. This {channel} message "
+                               "is a phishing attempt. Do NOT enter your seed phrase. "
+                               "Do NOT scan any QR code. Do NOT click any link.")
+
+    # PATH E — cross-channel campaign correlation
+    for each vendor V in HARDWARE_WALLET_VENDORS:
+      campaigns   ← [C for C in PATH_A_ALERTS if C.target_vendor == V]
+      domains     ← [D for D in PATH_B_ALERTS if D.vendor == V]
+      solicitations ← [S for S in PATH_D_ALERTS if S.vendor == V]
+      # Cluster by time window and channel overlap
+      correlated ← cluster_by_time_and_channel(campaigns, domains, solicitations,
+                                                correlation_window=30d)
+      for each cluster in correlated:
+        if len(cluster.campaigns) > 0 and len(cluster.domains) > 0:
+          emit(PATH_E, vendor=V, cluster_period=cluster.time_range,
+               campaign_count=len(cluster.campaigns),
+               typosquat_domain_count=len(cluster.domains),
+               solicitation_count=len(cluster.solicitations),
+               channels=union(C.channels for C in cluster.campaigns),
+               domains=cluster.domains,
+               estimated_victim_intersection=estimate_overlap(cluster),
+               severity="critical")
+
+parameters:
+  min_typosquat_distance:              { type: number,   default: 0.25 }    # normalised Levenshtein
+  domain_surveillance_window:          { type: duration, default: 90d }
+  min_typosquat_risk_score:            { type: integer,  default: 3 }
+  correlation_window:                  { type: duration, default: 30d }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               vendor, campaign_type, channel, typosquat_domain,
+               domain_risk_score, companion_app_source, solicitation_score,
+               solicitation_patterns_matched, cross_channel_correlation,
+               evidence]
+
+test_fixtures:
+  positive:
+    - 2023-2026-fake-firmware-update-phishing-cohort                             # Ledger-data-breach-leveraged email phishing; Kaspersky spring 2023 (85K+ emails)
+    - 2024-01-fake-trezor-suite-download                                         # Fake Trezor Suite download campaign (~$3.2M, ~80+ victims)
+    - 2025-2026-trezor-impersonating-physical-mail-campaign                      # Physical letters with QR codes to typosquat domains
+    - 2024-01-fake-metamask-extension-chrome-store                               # Fake MetaMask extension seed-phrase solicitation
+    - 2023-2025-fake-revoke-cash-wallet-security-extension-phishing             # Counterfeit security-tool extension seed-phrase capture
+  negative:
+    - "Communication from the vendor that mentions seed-phrase security in an advisory context (e.g., 'never share your seed phrase') but does NOT solicit it — legitimate security advisory"
+    - "User who downloads the companion app from the vendor's official GitHub releases page and verifies the published checksum — legitimate installation"
+
+false_positive_modes:
+  - Legitimate vendor communication that mentions seed-phrase security in an advisory context — PATH D distinguishes via solicitation_score: advisories use negative framing ("never share"), phishing uses positive framing ("enter your seed phrase to verify")
+  - Domain with coincidental typosquat distance to a vendor domain that is a legitimate unrelated business — PATH B's content_signal analysis filters: only flag if the domain serves seed-solicitation UI or impersonates vendor branding
+  - Third-party wallet app that legitimately imports a seed phrase for wallet recovery (e.g., importing a MetaMask seed into Rabby) — the legitimate-vendor-never-asks invariant applies to vendor-branded communications, not to third-party wallet import flows; distinguish via app publisher identity vs. claimed vendor identity
+  - Browser extension with wallet-like functionality that requests seed import as its core feature — distinguish via the extension's store listing publisher vs. the impersonated vendor; a legitimate third-party wallet that supports seed import is not T11.007.003
+
+mitigations: [OAK-M22, OAK-M21]
+
+reference_implementations:
+  - { target: ledger-phishing-tracker,        chain: cross-chain, url: "" }
+  - { target: trezor-security-advisories,     chain: cross-chain, url: "" }
+  - { target: metamask-security,              chain: cross-chain, url: "" }
+  - { target: kaspersky-threat-intelligence,  chain: cross-chain, url: "" }
+  - { target: group-ib-phishing-intel,        chain: cross-chain, url: "" }
+  - { target: certspotter-ct-logs,            chain: cross-chain, url: "" }

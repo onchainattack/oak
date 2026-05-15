@@ -1,0 +1,222 @@
+oak_techniques: [OAK-T9.009]
+spec_id: oak-detection-T9.009
+version: 0.2.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect cross-contract reinitialization attacks where an attacker triggers a
+  target contract's initialization function via a callback from a peer contract,
+  exploiting the absence of reinitialization guards across the cross-contract
+  boundary. The defining structural feature is the instruction-level gap between
+  the external call site and the initializer guard write — the attacker's
+  callback executes while the guard flag has not yet been committed to storage.
+  Detection operates at the pre-deployment static-analysis, per-transaction
+  call-trace monitoring, post-deployment proxy-state audit, factory-deployed
+  proxy reinitialization surface enumeration, and cross-chain proxy
+  reinitialization monitoring layers. Excludes: T9.005 (reentrancy — state-
+  mutating functions, not initialization path); T9.004 (access-control
+  misconfiguration — missing access check, not timing-gap in initialization
+  guard commitment); T9.008 (diamond-facet audit gap — unaudited logic, not
+  reinitialization of audited logic).
+
+data_sources: [tx_call_trace, contract_bytecode, contract_storage,
+               contract_events, governance_events, contract_deployment,
+               chain_reorg_events]
+
+detection_logic:
+  description: |
+    Five orthogonal detection paths. PATH A (pre-deployment static analysis):
+    flag any initialize function that performs an external call before the
+    initializer modifier's guard flag write; measure the instruction-level gap
+    between the external call and the SSTORE that commits the guard; rank by
+    gap distance. PATH B (per-transaction call-trace monitoring): alert on
+    transactions whose internal call trace shows a contract's initialize
+    function selector appearing more than once, with the inner call originating
+    from a peer contract invoked during the outer initialization. PATH C
+    (post-deployment proxy-state audit): verify that privileged roles (owner,
+    admin, guardian) were set exactly once by the canonical deployer address;
+    detect role overwrites via reinitialization. PATH D (factory-deployed proxy
+    reinitialization surface enumeration): for each proxy deployed via a
+    factory contract, verify that the factory's deployment-and-initialization
+    sequence is atomic; flag factory-deployed proxies whose initialization can
+    be front-run or called post-deployment. PATH E (cross-chain proxy
+    reinitialization monitoring): for proxies deployed across multiple chains
+    via the same deployer address, verify that initialization is not replayable
+    across chains.
+  pseudocode: |
+    # Shared helpers
+    reinit_guard_gap(F) := instruction_distance(F.first_external_call_offset,
+                                                F.initializer_guard_sstore_offset)
+    is_atomic_deploy_and_init(T) := T.deployer_bytecode.deploys_and_calls_initialize_in_same_tx
+    cross_chain_init_replayable(P, chains) :=
+      any(c1, c2 in chains where c1 ≠ c2 and
+          P.initialize_tx[c1].input == P.initialize_tx[c2].input and
+          P.initialized_version[c1] == P.initialized_version[c2])
+
+    # PATH A — pre-deployment static analysis
+    for each upgradeable_proxy P:
+      init_bytecode ← get_initialize_function_bytecode(P.implementation)
+      external_calls ← find_external_calls_before_guard_write(init_bytecode)
+      if external_calls ≠ ∅:
+        for each call C in external_calls:
+          gap ← reinit_guard_gap(C.enclosing_function)
+          # Classify the call target
+          target_type ← classify_target(C.target, P.implementation)
+          emit(PATH_A, proxy=P.address, implementation=P.implementation,
+               external_call_site=C.offset, called_contract=C.target,
+               call_target_type=target_type,   # known_protocol, user_supplied, zero_address, delegatecall_target
+               guard_gap_instructions=gap,
+               severity="critical" if target_type == "user_supplied" and gap > max_guard_gap_instructions else
+                        "high"     if gap > max_guard_gap_instructions else
+                        "medium",
+               guidance="Initialize function performs external call to {C.target} ({target_type}) "
+                        "at offset {C.offset} — {gap} instructions before guard write. "
+                        + ("USER-SUPPLIED TARGET: attacker can control callback destination. "
+                           if target_type == "user_supplied" else
+                           "Reinitialization surface exists across the call boundary."))
+
+    # PATH B — per-transaction call-trace monitoring
+    for each transaction T:
+      call_trace ← get_call_trace(T.hash)
+      init_calls ← [frame for frame in call_trace
+                    if frame.selector in initialize_function_selectors]
+      if len(init_calls) > 1:
+        outer_init ← init_calls[0]
+        inner_init ← init_calls[1]
+        if inner_init.caller == outer_init.external_call_target:
+          # Detect what changed between outer and inner init
+          state_diff ← compute_state_diff(outer_init.contract,
+                                          pre=outer_init, post=inner_init)
+          emit(PATH_B, tx=T.hash, target=outer_init.contract,
+               inner_call_origin=inner_init.caller,
+               outer_init_params=outer_init.input,
+               inner_init_params=inner_init.input,
+               outer_init_selector=outer_init.selector,
+               inner_init_selector=inner_init.selector,
+               state_overwrites=state_diff,
+               severity="critical",
+               guidance="Reinitialization detected: {inner_init.caller} called back into "
+                        "{outer_init.contract}.initialize() during the outer initialization. "
+                        "State overwrites: {state_diff}. The attacker captured control between "
+                        "the external call and the guard write.")
+
+    # PATH C — post-deployment proxy-state audit
+    for each upgradeable_proxy P:
+      owner ← eth_call(P.address, "owner()")
+      canon_deployer ← P.canonical_deployer
+      if owner ≠ canon_deployer:
+        init_version ← eth_call(P.address, "getInitializedVersion()")
+        # Check whether the init version was also overwritten
+        canonical_version ← P.canonical_initialization_version
+        version_overwritten ← init_version > canonical_version
+        # Trace ownership change to source transaction
+        ownership_change_tx ← find_role_grant_event(P.address, "owner", owner)
+        callback_in_trace ← has_cross_contract_callback(ownership_change_tx)
+        emit(PATH_C, proxy=P.address, current_owner=owner,
+             canonical_deployer=canon_deployer,
+             init_version=init_version,
+             canonical_version=canonical_version,
+             version_overwritten=version_overwritten,
+             ownership_change_tx=ownership_change_tx.hash,
+             via_callback=callback_in_trace,
+             severity="critical" if (callback_in_trace and version_overwritten) else "high",
+             guidance="Privileged role deviation: owner={owner} ≠ deployer={canon_deployer}. "
+                      + ("Ownership changed via callback during reinitialization — "
+                         "DEFINITIVELY T9.009." if callback_in_trace else
+                         "Verify ownership change was governance-approved."))
+
+    # PATH D — factory-deployed proxy reinitialization surface enumeration
+    for each proxy_factory F in FACTORY_CONTRACT_REGISTRY:
+      proxies ← F.deployed_proxies
+      for each proxy P in proxies:
+        if not is_atomic_deploy_and_init(P.deployment_tx):
+          # Proxy was deployed, then initialized in a separate tx — window exists
+          deploy_block ← P.deployment_block
+          init_block ← P.initialization_block
+          gap_blocks ← init_block − deploy_block
+          # Check for malicious initialization between deploy and legit init
+          intervening_txs ← get_transactions_between(deploy_block, init_block, P.address)
+          malicious_init ← [tx for tx in intervening_txs
+                            if tx.selector in initialize_function_selectors
+                            and tx.from ≠ F.deployer]
+          emit(PATH_D, factory=F.address, proxy=P.address,
+               deploy_block=deploy_block, init_block=init_block,
+               block_gap=gap_blocks,
+               has_malicious_init=(len(malicious_init) > 0),
+               malicious_init_txs=malicious_init,
+               severity="critical" if len(malicious_init) > 0 else
+                        "high"     if gap_blocks > 0 else
+                        "medium",
+               guidance="Factory-deployed proxy {P.address} not atomically initialized: "
+                        "{gap_blocks} block gap between deploy and init. "
+                        + ("MALICIOUS INITIALIZATION DETECTED in intervening blocks."
+                           if len(malicious_init) > 0 else
+                           "Front-running window exists for reinitialization attack."))
+
+    # PATH E — cross-chain proxy reinitialization monitoring
+    for each deployer_addr A in CROSS_CHAIN_DEPLOYER_REGISTRY:
+      deployments ← group_by_proxy_bytecode(A.deployments)
+      for each proxy_group PG in deployments:
+        if len(PG.chains) > 1:
+          for each chain C in PG.chains:
+            proxy ← PG.proxies[C]
+            init_status ← {
+              initialized: proxy.initialized,
+              version: proxy.initialized_version,
+              initializer: proxy.initializer_address,
+              init_tx: proxy.initialize_transaction_hash,
+            }
+            if cross_chain_init_replayable(proxy, PG.chains):
+              other_chain ← [c for c in PG.chains if c ≠ C][0]
+              emit(PATH_E, proxy_bytecode_hash=PG.bytecode_hash,
+                   chain=C, proxy_address=proxy.address,
+                   init_status=init_status,
+                   replayed_from_chain=other_chain,
+                   severity="critical",
+                   guidance="Proxy {proxy.address} on {C} shares initialization parameters "
+                            "with {PG.proxies[other_chain].address} on {other_chain}. "
+                            "Cross-chain initialization replay is possible — verify that "
+                            "chain_id is included in the initialization domain separator.")
+
+parameters:
+  initialize_function_selectors:       { type: list,     default: [0x8129fc1c, 0xc4d66de8, 0x709a2c5e] }   # initialize(), initialize(address), initialize(address,address)
+  max_guard_gap_instructions:          { type: integer,  default: 50 }
+  reinit_version_registry:             { type: list,     default: [] }
+  factory_contract_registry:           { type: list,     default: [] }
+  cross_chain_deployer_registry:       { type: list,     default: [] }
+  proxy_deployer_registry:             { type: list,     default: [] }
+  min_callback_depth:                  { type: integer,  default: 1 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               proxy_address, implementation, tx, init_call_count,
+               inner_call_origin, guard_gap_instructions,
+               factory_deploy_gap_blocks, cross_chain_replay_detected,
+               privileged_role_deviation, evidence]
+
+test_fixtures:
+  positive:
+    - 2023-03-paraspace-reinitialization-blocksec-whitehat                   # ParaSpace reinitialization via cross-contract callback
+    - 2023-08-exactly-reinitialization                                       # Exactly Protocol DebtManager reinitialization (~$7.3M)
+    - 2024-01-astaria-reinitialization                                       # Astaria reinitialization (pre-deployment audit finding)
+  negative:
+    - "Legitimate proxy upgrade calling a new initializer version with governance-approved version number via OpenZeppelin reinitializer modifier"
+    - "Contract whose initialize function performs no external calls before setting the initialized flag — not vulnerable to T9.009"
+    - "Factory-deployed proxy where deployment and initialization are atomic within a single constructor transaction — no front-running window"
+
+false_positive_modes:
+  - Governance-approved proxy upgrade that calls a new initializer version with a distinct version number via reinitializer(n) — distinguish via the version-number increment and governance proposal event; PATH C checks version_overwritten against canonical_version
+  - Initialize function selector collision where a non-initialize function shares the selector — verify the function signature matches the expected initialize pattern; PATH B cross-references init_calls[1].caller against outer_init.external_call_target
+  - Proxy deployed via factory with a one-time initialization in the constructor — the deployment and initialization are atomic, no cross-contract callback window exists; PATH D verifies is_atomic_deploy_and_init
+  - Cross-chain proxy where each chain's initialization includes the chain_id in the domain separator — PATH E verifies cross_chain_init_replayable by comparing raw initialization calldata; chain_id-aware init functions produce distinct calldata per chain
+  - Upgradeable contract whose initializer is intentionally callable by users for version migration (e.g., reinitializer pattern with version gating) — distinguish via the version parameter: legitimate reinitializers require a specific version number that monotonically increases
+
+mitigations: [OAK-M01, OAK-M02, OAK-M08, OAK-M09, OAK-M20]
+
+reference_implementations:
+  - { target: slither,                chain: cross-chain, url: "" }
+  - { target: mythx,                  chain: cross-chain, url: "" }
+  - { target: openzeppelin-defender,  chain: cross-chain, url: "" }
+  - { target: blocksec-phalcon,       chain: cross-chain, url: "" }
+  - { target: foundry,                chain: cross-chain, url: "" }

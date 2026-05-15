@@ -1,0 +1,93 @@
+oak_techniques: [OAK-T4.009]
+spec_id: oak-detection-T4.009
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect phishing campaigns exploiting a structural information gap: a
+  platform has publicly signalled future token plans but has not yet
+  launched a token, and attackers construct typosquat domains and dApps
+  purporting to be the official "airdrop claim" or "token launch" portal.
+  Detection operates at the platform-side pre-launch defensive domain
+  registration, domain-reputation, and on-chain token-deployment-absence
+  verification layers. Excludes: T4.002 (compromised front-end — real
+  platform's existing surface); T4.008 (fake-DEX clone-frontend — existing
+  DEX UI cloned); T6.002 (fake-audit claim — lies about audit, not about
+  a future token event).
+
+data_sources: [contract_bytecode, dex_trades, tx_call_trace]
+
+detection_logic:
+  description: |
+    Three detection paths. PATH A (domain-reputation ingestion of pre-token-
+    anticipation patterns): flag domains combining platform-name + airdrop/
+    claim/token/launch keywords when the claimed token has no on-chain
+    deployment. PATH B (platform-side pre-launch defensive registration
+    gap audit): for platforms that have signalled future token plans, verify
+    that the top-N typosquat patterns are defensively registered by the
+    platform. PATH C (wallet-side pre-trade simulation): flag domains
+    matching pre-token-anticipation patterns and surface a warning when the
+    claimed token is not deployed on-chain.
+  pseudocode: |
+    ANTICIPATION_KEYWORDS ← {airdrop, claim, token, launch, rewards, allocation}
+    PLATFORMS_WITH_SIGNALLED_TOKENS ← load_signalled_platforms()
+
+    # PATH A — domain-reputation: pre-token-anticipation pattern matching
+    for each newly_registered_domain D:
+      for each platform P in PLATFORMS_WITH_SIGNALLED_TOKENS:
+        if P.name.lower() in D.name.lower():
+          if any(kw in D.name.lower() for kw in ANTICIPATION_KEYWORDS):
+            token_deployed ← P.token_contract ≠ ∅
+            if not token_deployed:
+              emit(PATH_A, domain=D, platform=P, keywords=matched_keywords(D, ANTICIPATION_KEYWORDS),
+                   registration_date=D.registered, severity=high)
+
+    # PATH B — platform-side pre-launch defensive registration gap audit
+    for each platform P in PLATFORMS_WITH_SIGNALLED_TOKENS:
+      for each pattern in [f"{P.name}-{kw}" for kw in ANTICIPATION_KEYWORDS]:
+        typosquats ← generate_typosquats(pattern)
+        registered ← [t for t in typosquats if is_registered(t)]
+        owned_by_platform ← [t for t in registered if t.registrant == P.known_registrant]
+        unowned ← registered − owned_by_platform
+        if unowned ≠ ∅:
+          emit(PATH_B, platform=P, unowned_typosquats=unowned,
+               recommendation="register_defensively", severity=medium)
+
+    # PATH C — wallet-side pre-trade simulation
+    for each wallet_connection to domain D:
+      for each platform P in PLATFORMS_WITH_SIGNALLED_TOKENS:
+        if P.name.lower() in D.lower() and any(kw in D.lower() for kw in ANTICIPATION_KEYWORDS):
+          if not P.token_deployed:
+            if D ∉ P.canonical_domains:
+              surface_warning("This domain claims an airdrop for a token not yet deployed on-chain")
+
+parameters:
+  signalled_platforms:               { type: list,     default: [] }
+  anticipation_keywords:             { type: list,     default: [airdrop, claim, token, launch, rewards] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               domain, platform, token_claimed, token_deployed,
+               registration_date, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-10-polymarket-pre-token-anticipation-phishing                  # POLY airdrop anticipation post-CMO confirmation
+    - 2024-eigenlayer-token-anticipation-phishing                        # Pre-EIGEN restaker targeting
+    - 2023-2024-zksync-airdrop-anticipation-phishing                     # Extended 12+ month pre-launch window
+  negative:
+    - "Platform's own defensively-registered typosquat domain — registered by the platform, not an attacker"
+    - "Legitimate airdrop claim portal for a token already deployed on-chain at a known canonical address"
+
+false_positive_modes:
+  - Platform's own defensively-registered domain caught by PATH A — distinguish via WHOIS registrant identity
+  - Legitimate third-party tool or community site (e.g., airdrop aggregator, portfolio tracker) with platform-name + airdrop in domain — distinguish via absence of wallet-drainer backend
+  - Token deployed on-chain at time of detection (post-launch legitimate claim portal) — PATH A must re-check token deployment status at alert time
+
+mitigations: [OAK-M22]
+
+reference_implementations:
+  - { target: scamsniffer,           chain: cross-chain, url: "" }
+  - { target: web3-antivirus,        chain: cross-chain, url: "" }
+  - { target: seal-isac,             chain: cross-chain, url: "" }

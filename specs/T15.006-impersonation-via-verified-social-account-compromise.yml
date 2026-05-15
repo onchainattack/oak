@@ -1,0 +1,87 @@
+oak_techniques: [OAK-T15.006]
+spec_id: oak-detection-T15.006
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect compromise of verified or officially-branded social media accounts
+  used to distribute phishing links, malicious contract addresses, or
+  transaction prompts. The attacker exploits the platform's verification
+  signal itself — followers trust the message because the platform's
+  verification badge confirms the account's authenticity. Detection operates
+  at the platform-side anomaly detection and on-chain downstream victim-
+  clustering layers. Excludes: T15.005 (operator-communication-channel
+  takeover — channel trust-substrate, not platform verification signal);
+  T4.007 (native-app social phishing — phishing via platform's in-app
+  browser, not compromised verified account as distribution vector).
+
+data_sources: [tx_call_trace, dex_trades, funder_graph]
+
+detection_logic:
+  description: |
+    Two detection layers. LAYER 1 (platform-side anomaly detection —
+    highest precision): platform-internal signals — login from unrecognised
+    device, IP-address change, MFA-bypass event, posting-pattern deviation
+    on a verified account. LAYER 2 (on-chain downstream victim clustering —
+    secondary): cluster drainer events by malicious contract address; cross-
+    reference victim addresses against known verified-account follower bases
+    to attribute downstream extraction to a specific account compromise.
+  pseudocode: |
+    # LAYER 1 — platform-side anomaly detection (platform-internal)
+    on verified_account A:
+      for each login_event L:
+        if L.device not in A.known_devices
+           or L.ip.geo != A.typical_geo
+           or L.mfa_method != A.enrolled_mfa:
+          if A.posts_containing(wallet_interaction_patterns) within post_compromise_window:
+            emit(LAYER_1, account=A.handle, platform=A.platform,
+                 anomaly_type=classify(L), post_time=A.last_post.time,
+                 follower_count=A.followers, severity=critical)
+
+    # LAYER 2 — on-chain downstream victim clustering
+    for each drainer_address D in active_drainer_feed:
+      victims ← [T.from for T in D.inflow_transactions
+                 if T.value_usd > min_victim_extraction_usd]
+      victim_time_window ← [min(T.timestamp), max(T.timestamp)] for T in D.inflow_transactions
+      for each verified_account_compromise C in active_compromise_feed:
+        if overlap(C.post_time_window, victim_time_window) > 0:
+          follower_overlap ← victims ∩ C.known_followers
+          if len(follower_overlap) >= min_follower_overlap:
+            emit(LAYER_2, drainer=D, compromised_account=C.handle,
+                 platform=C.platform, victim_count=len(follower_overlap),
+                 total_victims=len(victims), severity=high)
+
+parameters:
+  post_compromise_window:            { type: duration, default: 1h }
+  min_victim_extraction_usd:          { type: number,   default: 100 }
+  min_follower_overlap:              { type: integer,  default: 3 }
+  active_drainer_feed:               { type: list,     default: [] }
+  active_compromise_feed:            { type: list,     default: [] }
+  wallet_interaction_patterns:       { type: list,     default: [] }
+
+output_alert: [oak_technique, detection_layer, severity, chain,
+               platform, compromised_account, follower_count,
+               drainer_address, victim_count, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-02-solana-x-account-compromise-cohort                        # Jupiter/Pump.fun/DogWifCoin verified-account wave
+    - 2022-04-bored-ape-discord-wave                                    # BAYC Discord moderator verified-role compromise
+    - 2024-01-sec-x-account-compromise                                  # SEC @SECGov verified-account SIM-swap
+  negative:
+    - "Verified account posting a legitimate mint link from a known device and geo — no anomaly, no compromise"
+    - "Drainer victims not concentrated among any single verified account's follower base — generic phishing, not T15.006"
+
+false_positive_modes:
+  - Verified-account operator travelling and logging in from a new geo — legitimate geo-change, not compromise; distinguish via MFA confirmation and lack of anomalous posting
+  - Legitimate verified-account posts containing wallet-interaction prompts (mint links, airdrop claims) — the post content alone is not a T15.006 signal; require login anomaly or posting-pattern deviation
+  - Coincidental victim-overlap between a verified-account follower base and a drainer's victim set — require temporal correlation (compromise post time window overlapping with drainer inflow window)
+
+mitigations: [OAK-M22]
+
+reference_implementations:
+  - { target: scamsniffer,           chain: cross-chain, url: "" }
+  - { target: slowmist,              chain: cross-chain, url: "" }
+  - { target: certik-skynet,         chain: cross-chain, url: "" }

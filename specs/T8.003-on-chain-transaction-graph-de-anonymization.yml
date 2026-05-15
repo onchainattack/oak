@@ -1,0 +1,104 @@
+oak_techniques: [OAK-T8.003]
+spec_id: oak-detection-T8.003
+version: 0.1.0
+maturity: observed
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect on-chain transaction graph de-anonymization — the use of
+  blockchain transaction graph analysis to link pseudonymous addresses
+  to real-world entities or cluster addresses controlled by the same
+  entity. Covers five canonical clustering heuristics: co-spend (multi-
+  input clustering), change-address detection, exchange-deposit address
+  clustering, cross-chain behavioural fingerprinting, and off-chain data
+  integration. Detection is dual-use: defenders use it for compliance
+  attribution; adversaries use it for target identification. The spec
+  covers the defender-side detection surface. Excludes: T8.001 (on-chain
+  funder-graph cluster reuse — address-level clustering, not transaction-
+  graph-level); T8.002 (cross-chain operator continuity — operator-level,
+  not address-level).
+
+data_sources: [tx_call_trace, dex_trades, funder_graph]
+
+detection_logic:
+  description: |
+    Three detection paths operating at the on-chain transaction graph layer.
+    PATH A (UTXO clustering): apply multi-input clustering with change-
+    address detection heuristics per chain. PATH B (deposit-address pattern
+    matching): cluster deposit addresses by derivation-pattern and attribute
+    common-deposit-pattern source addresses to the same entity. PATH C
+    (cross-chain behavioural fingerprinting): compare per-chain behavioural
+    fingerprints; match across chains where similarity exceeds threshold.
+    PATH D (deanonymization-exposure monitoring): check whether organizational
+    addresses appear in public address-label databases.
+  pseudocode: |
+    # PATH A — UTXO multi-input clustering (Bitcoin / UTXO chains)
+    for each tx T in recent_blocks:
+      if len(T.inputs) > 1:
+        cluster ← cluster_union(T.inputs)   # all input addresses share control
+        for each output o in T.outputs:
+          if is_change_output(o, T):        # fresh address, non-round amount, sender wallet fingerprint
+            cluster ← cluster ∪ {o.address}
+        if cluster.has_entity_label:
+          emit(PATH_A, tx=T.hash, cluster=cluster,
+               attributed_entity=cluster.entity_label, severity=low)
+
+    # PATH B — exchange deposit-address pattern matching
+    for each exchange E:
+      deposit_pattern ← learn_pattern(E.known_deposit_addresses)
+      for each address A not in E.known_deposit_addresses:
+        if matches_pattern(A, deposit_pattern):
+          for each source S funding A:
+            source_cluster ← get_cluster(S)
+            source_cluster.exchange_attribution ← E
+            emit(PATH_B, address=A, exchange=E, source_cluster=source_cluster,
+                 severity=low)
+
+    # PATH C — cross-chain behavioural fingerprinting
+    for each address cluster C_a on chain_A:
+      fp_a ← behavioural_fingerprint(C_a)    # timing distribution, counterparty topology,
+                                              # amount-rounding conventions
+      for each chain_B ≠ chain_A:
+        for each cluster C_b on chain_B:
+          fp_b ← behavioural_fingerprint(C_b)
+          similarity ← compare(fp_a, fp_b)
+          if similarity > cross_chain_match_threshold:
+            emit(PATH_C, cluster_a=C_a, cluster_b=C_b,
+                 chain_a=chain_A, chain_b=chain_B, similarity, severity=medium)
+
+    # PATH D — deanonymization-exposure monitoring
+    for each organizational_address A in watchlist:
+      labels ← query_public_label_databases(A)
+      if labels ≠ ∅ and labels.entity == A.known_entity:
+        emit(PATH_D, address=A, entity=A.known_entity,
+             label_sources=labels.sources, severity=high)
+
+parameters:
+  cross_chain_match_threshold:       { type: number,   default: 0.85 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               address, cluster, attributed_entity, label_source,
+               cross_chain_match, evidence]
+
+test_fixtures:
+  positive:
+    - 2013-meiklejohn-bitcoin-clustering                                 # Foundational academic demonstration
+    - 2014-chainalysis-founding-silk-road-tracing                        # Canonical industry origin case
+    - 2013-2015-blockchain-forensics-emergence                           # Industry emergence cohort
+  negative:
+    - "Single-use address with no co-spend and no exchange-deposit pattern match — not clusterable from on-chain data alone"
+    - "Address separated from known entity by sufficient mixing hops — clustering confidence below attribution threshold"
+
+false_positive_modes:
+  - CoinJoin transactions produce false co-spend edges — the multi-input heuristic must exclude known CoinJoin patterns (Wasabi, Samourai Whirlpool, JoinMarket)
+  - Shared deposit-address derivation pattern from the same HD-wallet library rather than the same entity — calibrate pattern specificity
+  - Cross-chain behavioural fingerprint matches from shared wallet software (same default timing, same default rounding) — require multi-axis fingerprint similarity, not single-axis
+
+mitigations: [OAK-M10, OAK-M23, OAK-M24]
+
+reference_implementations:
+  - { target: chainalysis-reactor,    chain: cross-chain, url: "" }
+  - { target: trm-forensics,          chain: cross-chain, url: "" }
+  - { target: elliptic-investigator,  chain: cross-chain, url: "" }
+  - { target: oxt-me,                 chain: bitcoin,  url: "" }

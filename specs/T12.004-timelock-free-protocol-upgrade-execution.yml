@@ -1,0 +1,92 @@
+oak_techniques: [OAK-T12.004]
+spec_id: oak-detection-T12.004
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect the governance design anti-pattern where a protocol's upgrade
+  authority can execute a protocol upgrade without a mandatory timelock
+  delay between governance approval and on-chain execution. Covers four
+  sub-shapes: proxy-admin instant upgrade, governance-executor direct
+  execution, multisig-direct upgrade authority, and governance-overrideable
+  timelock. Detection operates at the governance-design audit and same-block
+  event-correlation layers. Excludes: T12.002 (multisig compromise — covers
+  the key-exfiltration primitive, not the governance-design decision);
+  T12.005 (flash-loan governance vote manipulation — covers vote-power
+  acquisition, not timelock absence).
+
+data_sources: [contract_bytecode, contract_storage, contract_events,
+               governance_events, tx_call_trace]
+
+detection_logic:
+  description: |
+    Three detection paths. PATH A (pre-deployment governance audit):
+    verify the upgrade path enforces a mandatory timelock interposed between
+    governance approval and proxy upgrade function. PATH B (same-block
+    upgrade monitoring): alert when an Upgraded event fires in the same
+    block as a ProposalExecuted event — the canonical T12.004 on-chain
+    signature. PATH C (timelock-parameter drift monitoring): track the
+    timelock contract's minimum-delay parameter over time; alert on
+    reductions below the documented governance-security window.
+  pseudocode: |
+    # PATH A — pre-deployment governance audit
+    for each newly_deployed_protocol P:
+      upgrade_path ← trace_upgrade_authority(P.proxy)
+      has_timelock ← any(isinstance(c, TimelockController) for c in upgrade_path)
+      if not has_timelock:
+        emit(PATH_A, protocol=P, finding="no_timelock_in_upgrade_path",
+             upgrade_authority=upgrade_path[-1], severity=critical)
+      else:
+        min_delay ← upgrade_path.timelock.getMinDelay()
+        if min_delay < min_timelock_duration:
+          emit(PATH_A, protocol=P, finding="timelock_delay_too_short",
+               min_delay, required=min_timelock_duration, severity=high)
+
+    # PATH B — same-block upgrade + proposal execution
+    for each block b:
+      upgraded_events       ← [e for e in b.events if e.signature == "Upgraded(address)"]
+      proposal_exec_events  ← [e for e in b.events if e.signature == "ProposalExecuted(uint256)"]
+      if upgraded_events ≠ ∅ and proposal_exec_events ≠ ∅:
+        for each (u, p) in product(upgraded_events, proposal_exec_events):
+          if shares_proxy(u.address, p.address):
+            emit(PATH_B, block=b.number, proxy=u.address,
+                 proposal=p.proposal_id, severity=critical)
+
+    # PATH C — timelock-parameter drift
+    for each timelock_contract T:
+      for each governance_action on T:
+        if action.changes("minDelay"):
+          new_delay ← T.getMinDelay()
+          if new_delay < min_timelock_duration:
+            emit(PATH_C, timelock=T, old_delay=action.old_delay,
+                 new_delay, severity=critical)
+
+parameters:
+  min_timelock_duration:             { type: duration, default: 24h }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               protocol, proxy, upgrade_authority, timelock_config,
+               same_block_events, evidence]
+
+test_fixtures:
+  positive:
+    - 2020-2021-defi-timelock-free-upgrade-cohort                       # "Move fast" era protocols without timelocks
+    - 2021-02-furucombo                                                 # Timelock-free proxy owner enabled rapid drain
+    - 2020-06-bancor                                                    # Timelock-free production upgrade
+  negative:
+    - "Compound GovernorBravo + Timelock — 48-hour timelock interposed between governance and proxy"
+    - "OpenZeppelin TimelockController with minDelay ≥ 24h — timelock present and load-bearing"
+
+false_positive_modes:
+  - Same-block governance execution + contract-upgrade event pair on a protocol with a documented emergency-DAO or pre-announced scheduled upgrade — distinguish via protocol-documented governance design vs. deviation from stated policy
+  - Timelock-free design as an explicit, documented governance choice rather than an oversight — the detection event is a design-choice disclosure, not a detection incident
+  - Proxy upgrade via a different path (e.g., beacon-proxy pattern, UUPS) where the event signature differs from the standard `Upgraded(address)` — calibrate PATH B event signatures per proxy pattern
+
+mitigations: [OAK-M11]
+
+reference_implementations:
+  - { target: oz-defender-sentinel,  chain: evm,    url: "" }
+  - { target: tally,                 chain: evm,    url: "" }
+  - { target: boardroom,             chain: evm,    url: "" }

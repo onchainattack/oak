@@ -1,0 +1,114 @@
+oak_techniques: [OAK-T12.005]
+spec_id: oak-detection-T12.005
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect governance-attack transactions where the attacker acquires voting
+  power via uncollateralized flash-loan borrowing rather than through
+  market purchase, delegation, or long-term accumulation. The attacker
+  borrows governance tokens from DEX liquidity pools, uses the temporary
+  voting power to pass a malicious proposal, and repays the flash loan
+  within the same transaction. Detection operates at the same-block
+  flash-loan + governance-event correlation layer. Excludes: T9.003
+  (governance attack — broad parent class); T16.003 (delegation-cluster
+  vote takeover — uses delegation-graph manipulation, not flash loans);
+  T12.004 (timelock-free upgrade — governance-design decision, not
+  vote-power acquisition primitive).
+
+data_sources: [tx_call_trace, contract_events, governance_events,
+               dex_trades, contract_bytecode]
+
+detection_logic:
+  description: |
+    Four detection paths. PATH A (same-block flash-loan + governance-event
+    correlation): monitor for transactions where a flash-loan borrow event
+    coincides with a governance ProposalCreated or ProposalExecuted event
+    from the same address. PATH B (governance-token balance-spike
+    monitoring): monitor governance-token Transfer events for addresses
+    that receive a controlling percentage of total supply within a single
+    block and transfer the same quantity out within the same or immediately
+    following block. PATH C (pre-deployment snapshot-mechanism audit):
+    verify that the governance contract measures voting power at a prior
+    block height via getPriorVotes or equivalent. PATH D (governance-token
+    DEX-liquidity vs. quorum comparison): compare the maximum flash-loan-able
+    quantity of governance tokens against the quorum threshold.
+  pseudocode: |
+    FLASHLOAN_SELECTORS = {
+      "flashLoan(address,address[],uint256[],uint256[],address,bytes,uint16)",
+      "flash(address,uint256,uint256,bytes)",
+      "flashLoan(address,address[],uint256[],bytes)",
+    }
+
+    # PATH A — same-block flash-loan + governance-event correlation
+    for each tx T:
+      has_flashloan ← any(f.selector ∈ FLASHLOAN_SELECTORS for f in T.frames)
+      if not has_flashloan: continue
+      gov_events ← [e for e in T.events
+                    if e.signature ∈ {ProposalCreated, ProposalExecuted, VoteCast}]
+      for each gov_event in gov_events:
+        if gov_event.address == T.from or funded_by(T.from, gov_event.address, hops=2):
+          borrow_usd ← usd_value(T.flashloan_amounts)
+          if borrow_usd > min_flashloan_usd:
+            emit(PATH_A, tx=T.hash, proposer=T.from, borrow_usd,
+                 gov_event=gov_event.signature, severity=critical)
+
+    # PATH B — governance-token balance-spike
+    for each governance_token G:
+      for each block b:
+        large_transfers ← [t for t in G.Transfers_in(b)
+                           if t.amount / G.totalSupply > balance_spike_ratio]
+        for each transfer in large_transfers:
+          outflows ← [t for t in G.Transfers_from(transfer.to, b, b + spike_window)
+                      if t.amount == transfer.amount]
+          if outflows ≠ ∅:
+            emit(PATH_B, token=G, address=transfer.to, amount=transfer.amount,
+                 block=b, severity=high)
+
+    # PATH C — pre-deployment snapshot-mechanism audit
+    for each governance_contract G:
+      has_get_prior_votes ← "getPriorVotes" in G.function_selectors
+      uses_balance_of     ← "balanceOf" in G.voting_power_computation
+      if not has_get_prior_votes and uses_balance_of:
+        emit(PATH_C, governance=G, finding="no_snapshot_mechanism",
+             recommendation="implement_getPriorVotes", severity=critical)
+
+    # PATH D — DEX liquidity vs quorum
+    for each governance_contract G:
+      dex_liquidity ← total_dex_liquidity(G.token)
+      quorum        ← G.quorumVotes()
+      if dex_liquidity >= quorum:
+        emit(PATH_D, governance=G, dex_liquidity, quorum,
+             ratio=dex_liquidity / quorum, severity=high)
+
+parameters:
+  min_flashloan_usd:                 { type: number,   default: 500000 }
+  balance_spike_ratio:               { type: number,   default: 0.01 }
+  spike_window:                      { type: integer,  default: 2 }        # blocks
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               tx, governance_contract, proposer, borrow_usd,
+               dex_liquidity, quorum, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-04-beanstalk                                                 # ~$182M — largest T12.005 by notional
+    - 2022-05-fortress-protocol                                        # Canonical same-transaction flash-loan governance acquisition
+    - 2022-04-elephant-money                                           # Two-hop acquisition (flash-loaned BNB → governance tokens)
+  negative:
+    - "Legitimate governance proposal created by a long-term token holder with no same-block flash-loan event"
+    - "Flash-loan for atomic arbitrage on a DEX pair — no governance-event correlation"
+
+false_positive_modes:
+  - Legitimate governance proposal coincident with an unrelated flash-loan transaction in the same block — require address-level correlation (proposer == flash-loan recipient)
+  - Protocol treasury management using flash loans for rebalancing coincident with a scheduled governance proposal — require proposal-malice classification in addition to flash-loan correlation
+  - Flash-loan event + governance event from different addresses with no funding relationship — PATH A requires proposer == flash-loan recipient or funder-graph link
+
+mitigations: [OAK-M11, OAK-M09]
+
+reference_implementations:
+  - { target: forta-bot,              chain: evm,    url: "" }
+  - { target: blocksec-phalcon,       chain: evm,    url: "" }
+  - { target: tally,                  chain: evm,    url: "" }

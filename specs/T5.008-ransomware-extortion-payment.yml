@@ -1,0 +1,128 @@
+oak_techniques: [OAK-T5.008]
+spec_id: oak-detection-T5.008
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect on-chain ransomware extortion payments — cryptocurrency
+  transfers from a victim organisation to an attacker-controlled
+  address under operational-extortion duress (encrypted data,
+  threatened disclosure, business disruption). Detection operates
+  at the address-attribution and behavioural-pattern layers rather
+  than the transaction-authorisation layer, because the victim
+  cryptographically authorises the payment with their own key.
+  Covers the RaaS (ransomware-as-a-service) affiliate-split
+  two-hop payment structure. Excludes: T5.001/T5.002 (LP drains —
+  no LP involved); T5.005 (treasury-management exit — no duress);
+  T4 family (phishing — no smart-contract approval solicited);
+  T9 family (smart-contract exploit — no contract vulnerability
+  exploited).
+
+data_sources: [ransomware_operator_address_feed, ofac_sdn_feed,
+               cex_kyc_data, corporate_treasury_watchlist,
+               funder_graph, laundering_path_graph,
+               sec_8k_filings, data_breach_notifications]
+
+detection_logic:
+  description: |
+    Four orthogonal paths. PATH A (known-address hit): any payment
+    to an address on a live-updated ransomware-operator threat-intel
+    feed triggers an immediate alert — highest precision, canonical
+    T5.008 detection. PATH B (behavioural payment pattern): a large
+    single payment from a corporate/institutional address to a
+    previously cold address, followed by immediate splitting and
+    laundering — the structural T5.008 signal absent prior labelling.
+    PATH C (RaaS affiliate split): detect the two-hop payment
+    structure (victim → affiliate 70-80% → operator 20-30%) that is
+    the RaaS-model fingerprint. PATH D (correlation): on-chain
+    payment timestamp and amount correlated with SEC 8-K filings or
+    data-breach notifications within a configurable window.
+  pseudocode: |
+    # PATH A — known ransomware operator address hit
+    on tx T to addr A in ransomware_operator_address_feed:
+      usd_value ← usd_at_block(T.value, T.token, T.block)
+      cluster ← funder_graph_cluster(T.from, hops = trace_hops)
+      laundering_path ← trace_forward(A, hops = laundering_hops)
+      emit(PATH_A, tx=T.hash, operator_address=A,
+           usd_value, victim_cluster=cluster,
+           laundering_path, severity=critical)
+
+    # PATH B — behavioural payment pattern (unlabelled address)
+    for each tx T from addr V in corporate_treasury_watchlist:
+      if T.value_usd < min_ransom_threshold: continue
+      dest ← T.to
+      if dest in any_previously_interacted(V): continue
+      # check for immediate laundering after receipt
+      post ← post_receipt_activity(dest, lookback = post_payment_window)
+      laundering ← classify_laundering_chain(post, hops = laundering_hops)
+      if laundering ∩ {mixer, cex_deposit, cross_chain_bridge, privacy_chain} ≠ ∅:
+        emit(PATH_B, tx=T.hash, suspect_address=dest,
+             usd_value=T.value_usd, laundering_chain=laundering,
+             severity=high)
+
+    # PATH C — RaaS affiliate-split two-hop pattern
+    for each addr A flagged by PATH_A or PATH_B:
+      outflows ← outflows_in_window(A, split_window)
+      if len(outflows) == 1 and split_window ≤ 24h:
+        share ← outflows[0].value / inflow(A, split_window)
+        if affiliate_split_lo ≤ share ≤ affiliate_split_hi:
+          operator_addr ← outflows[0].to
+          emit(PATH_C, affiliate=A, operator=operator_addr,
+               affiliate_share=share,
+               raas_strain=classify_raas_strain(operator_addr),
+               severity=critical)
+
+    # PATH D — temporal correlation with public disclosure
+    for each PATH_A or PATH_B alert:
+      victim_entity ← resolve_entity(T.from)
+      disclosures ← sec_8k_filings ∪ data_breach_notifications
+      for d in disclosures where d.entity == victim_entity:
+        if |d.timestamp − T.timestamp| ≤ correlation_window:
+          emit(PATH_D, tx=T.hash, disclosure=d,
+               correlation_delta=|d.timestamp − T.timestamp|,
+               severity=high)
+
+parameters:
+  trace_hops:                         { type: integer,  default: 3 }
+  laundering_hops:                    { type: integer,  default: 5 }
+  min_ransom_threshold:               { type: number,   default: 50000 }
+  post_payment_window:                { type: duration, default: 72h }
+  split_window:                       { type: duration, default: 24h }
+  affiliate_split_lo:                 { type: number,   default: 0.6 }
+  affiliate_split_hi:                 { type: number,   default: 0.85 }
+  correlation_window:                 { type: duration, default: 30d }
+  ransomware_operator_address_feed:   { type: list,     default: [] }
+  corporate_treasury_watchlist:       { type: list,     default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               tx, operator_address, usd_value, victim_entity,
+               affiliate_share, raas_strain, laundering_path,
+               disclosure_correlation, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-02-change-healthcare-ransom        # $22M ALPHV/BlackCat — PATH_A + PATH_C
+    - 2023-09-caesars-entertainment           # ~$15M ALPHV/Scattered Spider
+    - 2021-05-colonial-pipeline               # 75 BTC DarkSide, FBI seizure of 63.7 BTC
+    - 2020-2024-ransomware-extortion-landmark-cohort  # 12-incident cohort
+  negative:
+    - "Legitimate corporate treasury payment to a known regulated counterparty"
+    - "Insurance claim payout to a publicly-disclosed cyber-insurance settlement address"
+
+false_positive_modes:
+  - Corporate payments to legitimate cybersecurity incident-response or negotiation vendors — filter via known-vendor address allowlist
+  - Legitimate large transfers to cold-storage or newly-provisioned corporate wallets — filter via self-transfer detection (T.from and T.to share funder cluster)
+  - Insurance claim payouts that coincidentally fall within the ransomware value band — correlate with public disclosure to confirm extortion context
+  - PATH B false positives where the destination address's laundering behaviour is coincidental rather than extortive — require downstream laundering classification confidence above floor
+  - RaaS affiliate-split detection false positives where a legitimate payment is split across operational wallets — the affiliate_split window and share thresholds must be calibrated per RaaS strain
+
+mitigations: [OAK-M26, OAK-M27]
+
+reference_implementations:
+  - { target: chainalysis-reactor,    chain: cross-chain, url: "" }
+  - { target: trm-forensics,          chain: cross-chain, url: "" }
+  - { target: elliptic-investigator,  chain: cross-chain, url: "" }
+  - { target: ofac-sdn-feed,          chain: cross-chain, url: "" }
+  - { target: recorded-future,        chain: cross-chain, url: "" }

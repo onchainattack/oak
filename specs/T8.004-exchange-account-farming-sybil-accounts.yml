@@ -1,0 +1,118 @@
+oak_techniques: [OAK-T8.004]
+spec_id: oak-detection-T8.004
+version: 0.1.0
+maturity: observed
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect exchange account farming — the creation and maintenance of multiple
+  exchange accounts under synthetic, stolen, or fabricated identities to
+  circumvent per-account withdrawal limits, KYC thresholds, and transaction-
+  monitoring triggers. Detection operates at the exchange-side KYC-onboarding
+  metadata layer (device fingerprints, IP/ASN correlation, document-template
+  artefact detection) and the cross-layer correlation surface (T8.001
+  on-chain funder-graph × T8.004 exchange-account identity cluster).
+  Excludes: T8.001 (on-chain funder-graph cluster — address-level, not
+  account-identity-level); T8.003 (on-chain transaction-graph de-anonymization
+  — address attribution, not exchange-account clustering).
+
+data_sources: [cex_kyc_data, funder_graph, tx_call_trace]
+
+detection_logic:
+  description: |
+    Six detection paths. PATH A (device-fingerprint clustering): cluster
+    KYC-onboarding sessions by browser/device fingerprint; flag clusters
+    where >=3 distinct KYC identities share a single device fingerprint.
+    PATH B (IP/ASN correlation): cluster accounts whose onboarding IPs
+    share an ASN/subnet; flag clusters where IP-geolocated country mismatches
+    claimed KYC residence. PATH C (document-template artefact detection):
+    compute perceptual hash and noise-profile fingerprint on KYC document
+    images; cluster by artefact similarity. PATH D (temporal creation
+    clustering): flag batch-onboarding signatures — N accounts created
+    within a narrow window from shared infrastructure. PATH E (cross-layer
+    T8.001 × T8.004 correlation): build bipartite graph connecting on-chain
+    deposit-source clusters and exchange-account identity clusters. PATH F
+    (cross-exchange KYC-document matching): match identity-document hashes
+    across KYC submissions at different exchanges.
+  pseudocode: |
+    # PATH A — device-fingerprint clustering
+    for each onboarding_session S:
+      fp ← compound_device_fp(S)    # canvas hash, WebGL, fonts, screen, tz, user-agent
+      cluster ← get_or_create_cluster(fp)
+      cluster.add(S.account_id, S.kyc_identity)
+    for each (fp, cluster) where cluster.distinct_identities >= min_shared_fp_identities:
+      emit(PATH_A, device_fingerprint=fp, account_count=len(cluster),
+           identities=cluster.kyc_identities, severity=high)
+
+    # PATH B — IP/ASN + geo-to-claimed-residence mismatch
+    for each onboarding_session S:
+      ip_country ← geolocate(S.ip)
+      claimed_country ← S.kyc_document.residence_country
+      if ip_country ≠ claimed_country:
+        peer_accounts ← [a for a in accounts if a.onboarding_asn == S.asn]
+        if len(peer_accounts) >= min_geo_mismatch_accounts:
+          emit(PATH_B, asn=S.asn, mismatched_accounts=peer_accounts,
+               ip_country, claimed_country, severity=medium)
+
+    # PATH C — document-template artefact detection
+    for each kyc_document D:
+      phash ← perceptual_hash(D.image)
+      noise_profile ← noise_fingerprint(D.image)
+      for each (phash_cluster, noise_cluster) where distance < template_similarity_threshold:
+        if cluster.distinct_identities >= min_template_shared_identities:
+          emit(PATH_C, document_cluster=phash_cluster,
+               identity_count=cluster.distinct_identities, severity=critical)
+
+    # PATH D — batch-onboarding temporal clustering
+    for each (ip, device_fp) tuple:
+      creation_times ← [a.created_at for a in accounts_by(ip, device_fp)]
+      intervals ← diff(sorted(creation_times))
+      if all(i < batch_creation_max_interval for i in intervals):
+        emit(PATH_D, ip=ip, device_fp=device_fp,
+             account_count=len(creation_times), window=max(creation_times)-min(creation_times),
+             severity=high)
+
+    # PATH E — cross-layer T8.001 × T8.004 bipartite graph
+    bipartite ← build_graph(on_chain_clusters, exchange_account_clusters)
+    for each on_chain_cluster C in bipartite:
+      exchange_accounts ← bipartite.neighbors(C)
+      if len(exchange_accounts) > max_accounts_per_cluster
+         and distinct_identities(exchange_accounts) > min_distinct_ids:
+        emit(PATH_E, on_chain_cluster=C, exchange_accounts=exchange_accounts,
+             account_count=len(exchange_accounts), severity=critical)
+
+parameters:
+  min_shared_fp_identities:          { type: integer,  default: 3 }
+  min_geo_mismatch_accounts:         { type: integer,  default: 2 }
+  template_similarity_threshold:     { type: number,   default: 0.95 }
+  min_template_shared_identities:    { type: integer,  default: 3 }
+  batch_creation_max_interval:       { type: duration, default: 1h }
+  max_accounts_per_cluster:          { type: integer,  default: 2 }
+  min_distinct_ids:                  { type: integer,  default: 3 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               exchange, on_chain_cluster, account_cluster, device_fingerprint,
+               identity_count, evidence]
+
+test_fixtures:
+  positive:
+    - 2011-2017-btc-e-account-infrastructure                            # Account-farming-as-business-model
+    - 2018-2025-dprk-it-worker-exchange-account-farming                 # State-level T8.004 at scale
+    - 2017-2025-exchange-account-farming-cohort                         # Cross-exchange cohort
+  negative:
+    - "Multiple accounts from the same household sharing an IP but with distinct, liveness-checked identity documents"
+    - "Legitimate corporate accounts with multiple authorised traders sharing device fingerprints — corporate-program accounts, not farmed"
+
+false_positive_modes:
+  - Multiple accounts from the same household/IP (family members, roommates) — distinguish via liveness-detection verification and per-identity behavioural divergence
+  - Corporate/institutional accounts with multiple authorised users sharing device fingerprints — these are legitimate multi-user programs, distinguishable via corporate-program enrollment
+  - Shared device fingerprint from the same refurbished-device reseller, not the same operator — require additional correlation axes (IP, temporal, behavioural)
+  - Cross-layer correlation (PATH E) false positives from exchange hot-wallet clustering — ensure on-chain clusters exclude known exchange infrastructure addresses
+
+mitigations: [OAK-M04, OAK-M07]
+
+reference_implementations:
+  - { target: chainalysis-kyt,        chain: cross-chain, url: "" }
+  - { target: trm-wallet-screening,   chain: cross-chain, url: "" }
+  - { target: elliptic-navigator,     chain: cross-chain, url: "" }

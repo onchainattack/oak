@@ -1,0 +1,264 @@
+oak_techniques: [OAK-T10.007]
+spec_id: oak-detection-T10.007
+version: 0.2.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect bridge validator economic-incentive misalignment — the structural
+  condition where the aggregate validator stake bonding a bridge's validator
+  set is materially smaller than the bridge's TVL, creating a rational-economic-
+  attacker condition. The defining structural feature is not the absence of
+  stake but the misalignment between stake-at-risk and assets-at-risk: when
+  the validator set can profit from bridge compromise more than it loses from
+  slashing. Detection operates at the per-bridge stake/TVL ratio monitoring,
+  validator-concentration analysis, slashing-enforceability audit, validator-
+  revenue sustainability analysis, and cross-bridge comparative economic-
+  security ranking layers. Excludes: T10.001 (validator-signer key compromise —
+  technical key extraction, not economic-incentive assessment); T10.004
+  (optimistic-bridge fraud-proof gap — honest-challenger assumption failure,
+  not validator-stake insufficiency); T9.002 (flash-loan-enabled exploit —
+  temporary capital for governance attacks, not structural stake/TVL misalignment).
+
+data_sources: [contract_bytecode, contract_storage, contract_events,
+               validator_set_attestation, staking_rewards, bridge_message_logs,
+               token_prices]
+
+detection_logic:
+  description: |
+    Five orthogonal detection paths. PATH A (per-bridge stake/TVL ratio
+    monitoring): compute the aggregate slashable validator stake and the
+    bridge's current TVL; alert on bridges where stake/TVL falls below
+    configurable thresholds, accounting for stake concentration and slashing
+    enforceability. PATH B (validator-concentration monitoring): compute the
+    Herfindahl-Hirschman Index and Gini coefficient for the validator-set
+    stake distribution; flag concentrated validator sets where the quorum
+    threshold can be met by fewer than the minimum number of independent
+    entities. PATH C (slashing-enforceability audit): verify that slashing
+    conditions are implemented on-chain, tested, not bypassable via unstaked
+    withdrawal, and have a verifiable history of enforcement. PATH D
+    (validator-revenue sustainability analysis): compute validators'
+    annualized staking-reward yield against a risk-adjusted cost-of-capital
+    benchmark; flag validators whose economic incentive to validate is below
+    the incentive to collude. PATH E (cross-bridge comparative economic-
+    security ranking): rank all bridges by a composite cryptoeconomic security
+    margin that accounts for stake ratio, decentralization, slashing
+    enforceability, and validator sustainability; surface the ranking for
+    cross-bridge risk comparison.
+  pseudocode: |
+    # Shared helpers
+    cryptoeconomic_security_margin(B) :=
+      B.stake_TVL_ratio × B.slashing_enforceability_score × B.decentralization_score
+      − B.validator_collusion_premium
+      where:
+        decentralization_score := 1 − gini(B.validator_stakes)
+        validator_collusion_premium := max(0, B.tvl × risk_free_rate
+                                           − sum(v.annualized_yield for v in B.validator_set))
+    gini(values) := 2 × sum(i × sorted_values[i] for i in range(len(values))) /
+                    (len(values) × sum(values)) − (len(values) + 1) / len(values)
+    quorum_entity_count(B) := count_distinct_legal_entities(
+      top_validators_by_stake(B.validator_set, B.quorum))
+
+    # PATH A — per-bridge stake/TVL ratio monitoring
+    for each bridge B:
+      aggregate_stake ← sum(v.stake for v in B.validator_set)
+      tvl ← compute_bridge_tvl(B)
+      ratio ← aggregate_stake / max(tvl, 1)
+      # Account for non-slashable stake (liquid staking, re-staked stake with dual obligations)
+      slashable_stake ← sum(v.slashable_stake for v in B.validator_set)
+      effective_ratio ← slashable_stake / max(tvl, 1)
+      if ratio < stake_tvl_ratio_warning:
+        emit(PATH_A, bridge=B.name, chain=B.chain,
+             aggregate_stake=aggregate_stake, slashable_stake=slashable_stake,
+             tvl=tvl, nominal_ratio=ratio, effective_ratio=effective_ratio,
+             slashable_stake_pct=slashable_stake / max(aggregate_stake, 1),
+             validator_count=len(B.validator_set),
+             quorum=B.quorum,
+             security_model=B.security_model_documentation,
+             severity="critical" if effective_ratio < stake_tvl_ratio_critical else "high",
+             guidance="Bridge {B.name} stake/TVL ratio: nominal={ratio:.2f}, "
+                      "effective={effective_ratio:.2f} ({slashable_stake/aggregate_stake:.0%} "
+                      "slashable). TVL=${tvl} secured by ${effective_ratio < ratio ? 'only' : ''} "
+                      "${slashable_stake} at-risk stake. "
+                      + ("CRITICAL: effective stake below critical threshold. "
+                         "Validator set can profit from bridge compromise."
+                         if effective_ratio < stake_tvl_ratio_critical else
+                         "Stake/TVL below warning threshold."))
+
+    # PATH B — validator-concentration monitoring
+    for each bridge B:
+      total_stake ← sum(v.stake for v in B.validator_set)
+      # Herfindahl-Hirschman Index
+      hhi ← sum((v.stake / total_stake)² for v in B.validator_set)
+      # Gini coefficient for stake distribution
+      gini_coefficient ← gini([v.stake for v in B.validator_set])
+      # Entity-level concentration
+      top_validators ← sorted(B.validator_set, by=stake, descending)[:concentration_n]
+      threshold_entities ← quorum_entity_count(B)
+      # Check: can a single entity unilaterally sign?
+      single_entity_can_sign ← any(
+        count_stake_controlled_by_entity(E, B.validator_set) >= B.quorum
+        for E in distinct_entities(B.validator_set)
+      )
+      if hhi > max_hhi_threshold or gini_coefficient > stake_concentration_gini_threshold:
+        emit(PATH_B, bridge=B.name, chain=B.chain,
+             hhi=hhi, gini_coefficient=gini_coefficient,
+             validator_count=len(B.validator_set),
+             quorum_entities=threshold_entities,
+             quorum_required=B.quorum,
+             single_entity_can_sign=single_entity_can_sign,
+             top_validator_share=top_validators[0].stake / total_stake,
+             top_3_share=sum(v.stake for v in top_validators[:3]) / total_stake,
+             severity="critical" if single_entity_can_sign else
+                      "high"     if threshold_entities < min_threshold_entities else
+                      "medium",
+             guidance="Validator concentration: HHI={hhi:.3f}, Gini={gini_coefficient:.3f}, "
+                      "{threshold_entities} entities control quorum ({B.quorum}-of-"
+                      "{len(B.validator_set)}). "
+                      + ("SINGLE ENTITY CAN SIGN — bridge security is unilateral trust."
+                         if single_entity_can_sign else
+                         "Top validator holds {top_validator_share:.1%} of stake."))
+
+    # PATH C — slashing-enforceability audit
+    for each bridge B:
+      slashing_checks ← {
+        onchain_contract_exists: B.slashing_contract ≠ 0x0
+                                  and is_contract(B.slashing_contract),
+        slashing_logic_verified: B.slashing_contract_audit is not empty,
+        unstake_withdrawal_gated: B.unstake_delay_seconds ≥ min_unstake_delay
+                                  and B.unstake_requires_slashing_clearance,
+        slashing_history_exists: len(B.historical_slash_events) > 0,
+        slashing_conditions_testable: B.slashing_tests_public
+                                       and B.slashing_test_coverage > 0.8,
+        no_bypass_via_governance: B.governance_cannot_disable_slashing
+                                   or B.governance_slashing_disable_timelock ≥ min_governance_timelock,
+        slashing_amount_meaningful: B.max_slashable_per_validator / max(B.tvl, 1) > min_slashable_ratio,
+      }
+      failed ← [k for k, v in slashing_checks if not v]
+      if B.security_model_claims_slashing and len(failed) > 0:
+        emit(PATH_C, bridge=B.name, chain=B.chain,
+             failed_checks=failed,
+             slashing_contract=B.slashing_contract,
+             unstake_delay=B.unstake_delay_seconds,
+             security_model_documentation=B.security_model_documentation,
+             audit_reports=B.slashing_contract_audit,
+             historical_slash_count=len(B.historical_slash_events),
+             severity="critical" if "onchain_contract_exists" in failed else "high",
+             guidance="Slashing enforceability gaps: {failed}. "
+                      "Bridge {B.name} claims slashing deterrence but "
+                      + ("has no on-chain slashing contract — slashing is purely "
+                         "off-chain/legal." if "onchain_contract_exists" in failed else
+                         "slashing enforcement is incomplete: {failed}."))
+
+    # PATH D — validator-revenue sustainability analysis
+    for each bridge B:
+      for each validator V in B.validator_set:
+        annual_rewards ← sum(V.staking_rewards, trailing=365d)
+        annual_yield ← annual_rewards / max(V.stake, 1)
+        risk_adjusted_cost_of_capital ← cost_of_capital_benchmark + B.risk_premium
+        if annual_yield < risk_adjusted_cost_of_capital:
+          yield_gap ← risk_adjusted_cost_of_capital − annual_yield
+          # Estimate the TVL at which collusion becomes rational for this validator
+          collusion_breakeven_tvl ← V.stake / max(risk_adjusted_cost_of_capital − annual_yield, 0.0001)
+          emit(PATH_D, bridge=B.name, chain=B.chain,
+               validator=V.address, entity=V.legal_entity,
+               stake=V.stake, stake_share=V.stake_share,
+               annual_yield=annual_yield,
+               cost_of_capital=risk_adjusted_cost_of_capital,
+               yield_gap=yield_gap,
+               collusion_breakeven_tvl=collusion_breakeven_tvl,
+               severity="medium",
+               guidance="Validator {V.address} ({V.legal_entity}) yield={annual_yield:.1%} "
+                        "below cost of capital ({risk_adjusted_cost_of_capital:.1%}). "
+                        "Yield gap: {yield_gap:.1%}. Validator's economic incentive to "
+                        "validate is weaker than the incentive to collude — breakeven "
+                        "collusion TVL: ${collusion_breakeven_tvl}.")
+
+    # PATH E — cross-bridge comparative economic-security ranking
+    bridge_security_scores ← []
+    for each bridge B in KNOWN_BRIDGES:
+      margin ← cryptoeconomic_security_margin(B)
+      bridge_security_scores.append({
+        bridge: B.name,
+        chain: B.chain,
+        security_margin: margin,
+        components: {
+          stake_TVL_ratio: B.stake_TVL_ratio,
+          slashing_enforceability: B.slashing_enforceability_score,
+          decentralization: 1 − gini(B.validator_stakes),
+          validator_sustainability: min(v.annualized_yield / cost_of_capital_benchmark
+                                       for v in B.validator_set) if B.validator_set else 0,
+        },
+        tvl: B.tvl,
+        validator_count: len(B.validator_set),
+        quorum: B.quorum,
+      })
+    ranked ← sorted(bridge_security_scores, by=security_margin)
+    # Emit per-bridge ranking with peers
+    for each score in ranked:
+      percentile ← percentile_rank(score.security_margin, [s.security_margin for s in ranked])
+      peer_worst ← ranked[0]
+      peer_best ← ranked[−1]
+      emit(PATH_E, bridge=score.bridge, chain=score.chain,
+           security_margin=score.security_margin,
+           percentile=percentile,
+           components=score.components,
+           tvl=score.tvl,
+           peer_best=(peer_best.bridge, peer_best.security_margin),
+           peer_worst=(peer_worst.bridge, peer_worst.security_margin),
+           severity="critical" if percentile < 10 else
+                    "high"     if percentile < 25 else
+                    "medium",
+           guidance="Bridge {score.bridge} economic-security margin: "
+                    "{score.security_margin:.3f} (percentile: {percentile:.0f}). "
+                    "Components: stake/TVL={score.components.stake_TVL_ratio:.2f}, "
+                    "slashing={score.components.slashing_enforceability:.2f}, "
+                    "decentralization={score.components.decentralization:.2f}. "
+                    "Peer range: [{peer_worst.bridge}: {peer_worst.security_margin:.3f}, "
+                    "{peer_best.bridge}: {peer_best.security_margin:.3f}].")
+
+parameters:
+  stake_tvl_ratio_warning:             { type: number,   default: 1.0 }
+  stake_tvl_ratio_critical:            { type: number,   default: 0.1 }
+  max_hhi_threshold:                   { type: number,   default: 0.25 }
+  stake_concentration_gini_threshold:  { type: number,   default: 0.65 }
+  concentration_n:                     { type: integer,  default: 5 }
+  min_threshold_entities:              { type: integer,  default: 5 }
+  cost_of_capital_benchmark:           { type: number,   default: 0.05 }     # 5% risk-free
+  min_unstake_delay:                   { type: duration, default: 7d }
+  min_governance_timelock:             { type: duration, default: 48h }
+  min_slashable_ratio:                 { type: number,   default: 0.01 }     # 1% of TVL
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               bridge, stake_tvl_ratio, effective_stake_tvl_ratio,
+               validator_concentration_hhi, gini_coefficient,
+               slashing_checks_failed, annual_yield_gap,
+               cryptoeconomic_security_margin, security_percentile,
+               single_entity_can_sign, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-03-ronin-bridge                                                     # Ronin Bridge — validator concentration: 5-of-9 with 1 entity controlling threshold
+    - 2022-02-wormhole-bridge                                                   # Wormhole Bridge — zero economic bonding for 19-member Guardian set (stake/TVL = 0)
+    - 2022-06-harmony-horizon-economic-incentive-gap                           # Harmony Horizon — zero at-risk stake, 2-of-5 threshold, no slashing
+  negative:
+    - "Bridge with stake/TVL ratio > 1.0 and diversified validator set with enforceable on-chain slashing — well-capitalized cryptoeconomic security"
+    - "Bridge whose security model does not claim slashing deterrence — the bridge relies on off-chain reputation/legal enforcement, not cryptoeconomic incentives"
+    - "Bridge with high validator count, low concentration (HHI < 0.1), enforceable slashing, and validator yield above cost of capital — healthy economic-security profile"
+
+false_positive_modes:
+  - Low stake/TVL ratio bridge whose validators are bonded by off-chain reputation, legal-entity liability, or jurisdictional constraints — PATH A reports the effective_ratio as a lower-bound estimate, not a security verdict; document off-chain assurances before downgrading the alert
+  - Bridge with high HHI but the concentrated validators are distinct legal entities with separate operational and jurisdictional profiles — PATH B performs entity-level attribution via legal_entity mapping; concentration that appears at the address level may resolve at the entity level
+  - Validator yield below cost-of-capital because the validator role has non-monetary benefits (ecosystem participation, governance rights, network effects) — PATH D captures only on-chain yield; the yield analysis is a lower-bound estimate of economic incentive
+  - Bridge that does not claim slashing-based security and whose security model explicitly relies on off-chain legal enforcement or reputation — PATH C gates on security_model_claims_slashing; bridges that do not claim slashing are not flagged
+  - Liquid-staked validator stake counted as non-slashable — PATH A computes both nominal_ratio (all stake) and effective_ratio (slashable stake only); dual-obligation staked assets may be partially slashable depending on the restaking protocol's slashing terms
+
+mitigations: [OAK-M02, OAK-M08, OAK-M09, OAK-M11, OAK-M20]
+
+reference_implementations:
+  - { target: l2beat,                 chain: cross-chain, url: "" }
+  - { target: gauntlet,               chain: cross-chain, url: "" }
+  - { target: chainalysis,            chain: cross-chain, url: "" }
+  - { target: chaos-labs,             chain: cross-chain, url: "" }
+  - { target: defillama,              chain: cross-chain, url: "" }

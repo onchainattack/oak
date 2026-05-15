@@ -1,0 +1,174 @@
+oak_techniques: [OAK-T11.006.001]
+spec_id: oak-detection-T11.006.001
+version: 0.2.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect seed-phrase exfiltration resulting from user-initiated storage of
+  BIP39 seed-phrase material in a third-party service — password-manager
+  Secure Notes, encrypted notes, cloud-synced text files, email drafts,
+  browser-saved passwords, or screenshot galleries — whose encryption is
+  bound to a master password with entropy (typically 20–40 bits) far below
+  the 128-bit security level of the seed phrase itself. The defining temporal
+  feature is the attack-vector time-shift: vault exfiltration (e.g., LastPass
+  December 2022) and realised on-chain drains are separated by weeks-to-years
+  because offline brute-force of weak master passwords proceeds at the
+  attacker's pace. Detection operates at the vault-breach-disclosure
+  correlation, per-victim process-of-elimination cohort analysis, user-side
+  storage-surface audit, and breach-triggered seed-phrase rotation verification
+  layers. Excludes: T11.006.002 (implicit cloud-custody via default-on cloud-
+  backup — opt-in by inaction, not user action); T11.007.003 (brand-trust-
+  leveraged active phishing — solicits the seed phrase directly, not via
+  offline brute-force of exfiltrated vaults).
+
+data_sources: [breach_disclosure_feed, tx_call_trace, domain_registration,
+               certificate_transparency_log]
+
+detection_logic:
+  description: |
+    Five orthogonal detection paths. PATH A (vault-breach-disclosure monitoring):
+    ingest breach disclosures from third-party storage services; estimate the
+    crypto-holding user fraction; correlate breach timelines with subsequent
+    time-shifted on-chain drain patterns. PATH B (per-victim process-of-
+    elimination cohort analysis): interview affected victims about non-storage
+    attack vectors; use exclusion-based cohort clustering to isolate storage-
+    service commonality. PATH C (user-side seed-phrase storage-surface audit):
+    enumerate digital surfaces where seed-phrase material may have been stored;
+    flag each surface as a standing T11.006.001 exposure. PATH D (breach-
+    triggered seed-phrase rotation verification): for users of a breached
+    service, verify that seed phrases stored in that service were rotated
+    after the breach date. PATH E (time-shifted drain-pattern correlation):
+    correlate vault-breach dates with subsequent drain events; flag drain
+    clusters whose temporal distribution matches the expected offline-brute-
+    force completion curve for the breached service's password-hashing scheme.
+  pseudocode: |
+    # Shared helpers
+    crypto_user_frac(S) := estimate_crypto_user_fraction(S.user_base_demographics,
+                             S.service_type)
+    seed_surfaces         := {password_manager_secure_notes, cloud_synced_text,
+                              email_drafts, browser_saved_password,
+                              screenshot_cloud_gallery, encrypted_notes_app,
+                              chat_self_message}
+
+    # PATH A — vault-breach-disclosure monitoring
+    for each breach B in BREACH_DISCLOSURE_FEED
+        where B.data_types ∩ {encrypted_vault, secure_notes, user_files} ≠ ∅:
+      cuf ← crypto_user_frac(B.service)
+      if cuf > min_crypto_user_fraction:
+        estimated_crypto_users ← round(B.affected_users × cuf)
+        emit(PATH_A, service=B.service, breach_date=B.date,
+             exfiltrated_data=B.data_types, total_users=B.affected_users,
+             estimated_crypto_users=estimated_crypto_users,
+             password_hash_scheme=B.password_hash_scheme,
+             brute_force_resistance=B.hash_iterations,
+             severity="critical",
+             guidance="If seed phrase was stored in {B.service}: rotate seed phrase "
+                      "immediately. Brute-force window is UNBOUNDED — {B.date} "
+                      "exfiltration means attackers have had {now − B.date} days "
+                      "of offline cracking time.")
+
+    # PATH B — per-victim process-of-elimination cohort analysis
+    # (ZachXBT / Taylor Monahan / TRM Labs methodology)
+    for each drain_victim_cluster VC in DRAIN_VICTIM_REGISTRY:
+      all_vectors ← {sim_swap, email_phishing, malware, onchain_phishing,
+                      cloud_backup, extension_compromise, physical_theft,
+                      storage_service_usage}
+      for each victim V in VC:
+        ruled_out ← interview_exclusion(V, all_vectors)
+        remaining ← all_vectors − ruled_out
+      common_remaining ← ∩_{V in VC} remaining_for(V)
+      if common_remaining == {storage_service_usage}:
+        service ← identify_common_service(VC)
+        emit(PATH_B, victim_cohort=VC.id, victim_count=len(VC),
+             excluded_vectors=all_vectors − common_remaining,
+             remaining_vector="storage_service_usage",
+             common_service=service,
+             total_drained_usd=VC.total_loss_usd,
+             drain_time_range=(min_drain_date(VC), max_drain_date(VC)),
+             methodology="process_of_elimination", severity="critical")
+
+    # PATH C — user-side seed-phrase storage-surface audit
+    for each wallet_user U:
+      exposed_surfaces ← []
+      for each surface S in seed_surfaces:
+        if U.has_stored_seed_in(S):
+          exposed_surfaces.append(S)
+      if exposed_surfaces ≠ ∅:
+        emit(PATH_C, user=U.id, exposed_surfaces=exposed_surfaces,
+             surface_count=len(exposed_surfaces),
+             severity="high",
+             guidance="Seed phrase stored in {exposed_surfaces}. Effective security "
+                      "is bounded by master-password entropy (~20-40 bits), not "
+                      "128-bit seed entropy. Remove from all digital surfaces and "
+                      "rotate seed phrase.")
+
+    # PATH D — breach-triggered seed-phrase rotation verification
+    for each breach B in BREACH_DISCLOSURE_FEED:
+      exposed_users ← [U for U in WALLET_USERS
+                       if U.has_account_on(B.service) and U.stored_seed_in(B.service)]
+      for each user U in exposed_users:
+        if not U.rotated_seed_after(B.date):
+          time_exposed ← now − B.date
+          emit(PATH_D, user=U.id, service=B.service, breach_date=B.date,
+               seed_stored=true, seed_rotated=false,
+               exposure_duration_days=time_exposed.days,
+               severity="critical",
+               guidance="Seed phrase exposed for {time_exposed.days} days. "
+                        "ROTATE NOW — attacker has had unbounded brute-force time.")
+
+    # PATH E — time-shifted drain-pattern correlation
+    for each breach B in BREACH_DISCLOSURE_FEED where B.service_type == "password_manager":
+      drain_events ← [D for D in ONCHAIN_DRAIN_EVENTS
+                      if D.date > B.date and D.date < now]
+      # Expected: drain rate follows password-cracking completion curve
+      hash_scheme ← B.password_hash_scheme   # PBKDF2-SHA256 with N iterations
+      expected_curve ← compute_brute_force_completion_curve(
+        hash_scheme, B.hash_iterations,
+        password_entropy_distribution=typical_user_password_entropy,
+        attacker_resources=commodity_gpu_cluster)
+      observed_curve ← cumulative_drain_curve(drain_events, B.date)
+      correlation ← pearson_r(expected_curve, observed_curve)
+      if correlation > time_shift_correlation_threshold:
+        emit(PATH_E, breach=B.service, breach_date=B.date,
+             expected_vs_observed_correlation=correlation,
+             total_drained_usd=sum(d.value for d in drain_events),
+             drain_event_count=len(drain_events),
+             time_span=(B.date, max_drain_date(drain_events)),
+             severity="critical")
+
+parameters:
+  min_crypto_user_fraction:            { type: number,   default: 0.001 }
+  time_shift_correlation_threshold:    { type: number,   default: 0.6 }
+  typical_user_password_entropy:       { type: number,   default: 25 }     # bits — NIST-based estimate
+  commodity_gpu_cluster_hashrate:      { type: number,   default: 1e10 }   # guesses/sec
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               service, breach_date, victim_cohort, exposed_surfaces,
+               seed_rotated, exposure_duration_days, time_shift_correlation,
+               drain_amount_usd, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-12-lastpass-vault-cohort                                                # LastPass vault exfiltration → 2023–2025 drain (~$35M+ across ~150+ victims; ~$150M Larsen heist)
+    - 2024-01-1password-encrypted-note-seed-storage-cohort                          # 1Password encrypted-note seed-storage (~$8.2M, ~45+ victims)
+    - 2023-2025-cloud-doc-email-seed-storage-compromise-cohort                      # Google Docs/OneNote/email-draft seed storage compromise
+  negative:
+    - "Seed phrase stored exclusively on physical media (paper, metal) with no digital copy in any third-party service — not T11.006.001"
+    - "Password-manager user who has never stored seed-phrase material in the password manager, even if the vault was exfiltrated"
+
+false_positive_modes:
+  - Password-manager-user drain victim whose actual compromise vector was SIM-swap or email-phishing rather than vault brute-force — cross-reference against storage-service breach timeline (PATH A) and per-victim attack-vector interview (PATH B); a drain within days of a SIM-swap with no vault-exfiltration timeline match is not T11.006.001
+  - Victim cohort with storage-service commonality but also shared exchange usage, shared DeFi protocol exposure, or shared token holding — the process-of-elimination must rule out ALL other vectors before attributing to T11.006.001
+  - User who rotated seed phrase post-breach and subsequently experienced a drain via a different vector — post-rotation drains are not attributable to the storage-service breach; verify rotation transaction timestamp vs. drain transaction timestamp
+  - PATH E false positive where the drain curve coincidentally matches the brute-force curve due to attacker operational pacing rather than actual cracking completion — require PATH B victim-interview corroboration for critical severity
+
+mitigations: [OAK-M22, OAK-M21]
+
+reference_implementations:
+  - { target: zachxbt-forensics,          chain: cross-chain, url: "" }
+  - { target: taylor-monahan-metamask,     chain: cross-chain, url: "" }
+  - { target: trm-labs-chain-based-intel,  chain: cross-chain, url: "" }
+  - { target: have-i-been-pwned-api,       chain: cross-chain, url: "" }
+  - { target: breach-disclosure-feeds,     chain: cross-chain, url: "" }

@@ -1,0 +1,104 @@
+oak_techniques: [OAK-T6.008]
+spec_id: oak-detection-T6.008
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect phishing UIs that bind to real, audited, verified smart contracts
+  at the wallet confirmation screen but route transactions through attacker-
+  owned helper contracts that extract value via routing logic invisible to
+  the user at sign-time. Detection operates at the wallet-side routing-path
+  transparency and swap-path comparison layers. Excludes: T4.002 (compromised
+  front-end — real platform's frontend, not attacker-operated UI); T4.008
+  (fake-DEX clone-frontend — drainer backend, not legitimate router);
+  T6.001 (source-verification mismatch — unverified bytecode, not verified
+  router with malicious routing path).
+
+data_sources: [tx_call_trace, dex_trades, contract_bytecode,
+               contract_events]
+
+detection_logic:
+  description: |
+    Four detection paths. PATH A (wallet-side routing-path transparency):
+    decode and surface the full routing path for router/aggregator
+    transactions; flag paths including unverified or recently-deployed
+    intermediate contracts. PATH B (swap-path comparison): compare the
+    constructed swap path against the legitimate protocol API's returned
+    path for the same input/output pair at the current block. PATH C
+    (intermediate-contract verification): flag routing paths containing
+    contracts not in the protocol's canonical pool/hop registry. PATH D
+    (domain-reputation + routing-path correlation): flag domains whose
+    swap-path construction includes unverified intermediate contracts.
+  pseudocode: |
+    CANONICAL_POOL_REGISTRY ← load_registry()   # Uniswap, 1inch, Jupiter canonical pools
+
+    # PATH A — wallet-side routing-path decoding
+    for each router_transaction T:
+      if T.to in KNOWN_ROUTER_CONTRACTS:
+        routing_path ← decode_swap_path(T.calldata)    # intermediate contracts, fees, output estimates
+        for each hop H in routing_path:
+          if H.contract is not verified or H.contract.age < min_contract_age:
+            emit(PATH_A, tx=T.hash, router=T.to, suspicious_hop=H.contract,
+                 hop_age=H.contract.age, routing_path, severity=high)
+
+    # PATH B — swap-path comparison against legitimate API
+    for each swap_transaction T from domain D:
+      if D not in PROTOCOL_CANONICAL_DOMAINS:
+        canonical_path ← get_canonical_route(T.input_token, T.output_token, T.input_amount, T.block)
+        actual_path    ← decode_swap_path(T.calldata)
+        if actual_path.intermediate_contracts ≠ canonical_path.intermediate_contracts:
+          extra_hops ← actual_path.intermediate_contracts − canonical_path.intermediate_contracts
+          emit(PATH_B, tx=T.hash, domain=D, router=T.to,
+               canonical_hops=canonical_path.intermediate_contracts,
+               extra_hops, severity=critical)
+
+    # PATH C — intermediate-contract verification against canonical registry
+    for each router_transaction T:
+      routing_path ← decode_swap_path(T.calldata)
+      for each hop H in routing_path:
+        if H.contract not in CANONICAL_POOL_REGISTRY
+           and not is_known_token(H.contract):
+          emit(PATH_C, tx=T.hash, router=T.to, unregistered_contract=H.contract,
+               hop_index=H.index, severity=high)
+
+    # PATH D — domain-reputation + routing-path correlation
+    for each domain D serving_swap_ui:
+      sample_paths ← [decode_swap_path(T.calldata) for T in D.recent_swap_txs]
+      suspicious_hops ← [H for path in sample_paths for H in path if H.contract not in CANONICAL_POOL_REGISTRY]
+      if len(suspicious_hops) / len(sample_paths) > suspicious_hop_ratio:
+        emit(PATH_D, domain=D, suspicious_hop_count=len(suspicious_hops),
+             total_paths=len(sample_paths), severity=critical)
+
+parameters:
+  known_router_contracts:            { type: list,     default: [] }
+  min_contract_age:                  { type: duration, default: 30d }
+  canonical_pool_registry:           { type: list,     default: [] }
+  suspicious_hop_ratio:              { type: number,   default: 0.5 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               tx, domain, router, suspicious_hop, canonical_path,
+               extra_hops, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-2025-swapkit-router-impersonator-phishing                     # SwapKit router impersonator cohort
+    - 2025-uniswap-routing-manipulation-frontend                        # Uniswap-alike intermediate-hop extraction
+    - 2024-2025-uniswap-permit2-phishing-cohort                         # Permit2 signature-authorisation extraction
+  negative:
+    - "Legitimate swap via canonical Uniswap frontend at app.uniswap.org with all intermediate hops in the canonical pool registry"
+    - "Router transaction with recently-deployed hop that is a newly-created Uniswap V3 pool — legitimate new pool, not T6.008"
+
+false_positive_modes:
+  - Newly-created legitimate liquidity pool appearing as an intermediate hop — PATH A must cross-reference against the protocol's pool-creation event log
+  - Cross-aggregator routing where the path differs from a single protocol's canonical path because multiple aggregators are chained — PATH B must account for multi-aggregator routing
+  - Wallet-side routing-path decoding errors for complex calldata structures — calibrate decoding coverage per router contract ABI
+
+mitigations: [OAK-M22]
+
+reference_implementations:
+  - { target: metamask,              chain: cross-chain, url: "" }
+  - { target: rabby,                 chain: cross-chain, url: "" }
+  - { target: phantom,               chain: cross-chain, url: "" }
+  - { target: scamsniffer,           chain: cross-chain, url: "" }

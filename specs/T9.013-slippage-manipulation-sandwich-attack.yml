@@ -1,0 +1,220 @@
+oak_techniques: [OAK-T9.013]
+spec_id: oak-detection-T9.013
+version: 0.2.0
+maturity: observed
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect slippage-manipulation sandwich attacks where the attacker exploits the
+  victim's slippage-tolerance parameter (amountOutMin) as the profit surface —
+  front-running the price to the exact boundary of the victim's authorized
+  slippage band, letting the victim's trade execute at the worst-acceptable
+  rate, and back-running to unwind. The defining structural feature is the
+  precision with which the victim's realized output matches amountOutMin: the
+  attacker extracts exactly the authorized slippage band, leaving no observable
+  over-slippage signal. Detection operates at the mempool-level slippage-
+  parameter monitoring, wallet-side pre-trade simulation, MEV-bundle analysis,
+  post-trade execution analysis, and cross-DEX slippage-arbitrage correlation
+  layers. Excludes: T5.004 (sandwich MEV — profits from the bid-ask spread,
+  not from the authorized slippage band); T9.012 (initial-liquidity sandwich —
+  exploits liquidity-addition sequencing, not the victim's slippage parameter).
+
+data_sources: [tx_call_trace, dex_trades, contract_events, contract_bytecode,
+               mempool_transaction, bundle_data, contract_storage,
+               mev_relay_feed]
+
+detection_logic:
+  description: |
+    Five orthogonal detection paths. PATH A (mempool-level slippage-parameter
+    monitoring): flag swap transactions with high slippage tolerance relative
+    to the pool's recent per-block price volatility; compute the maximum
+    extractable value authorized by the slippage band. PATH B (wallet-side
+    pre-trade simulation): simulate the swap against current pool depth and
+    compute the maximum extractable value at the user's chosen slippage
+    tolerance; surface a real-time warning before the user signs. PATH C
+    (MEV-bundle analysis): detect front-run-back-run pairs where the victim's
+    output rate equals amountOutMin exactly; compute the attacker's extraction
+    as a fraction of the authorized slippage band. PATH D (post-trade execution
+    analysis): compare the victim's realized output to the output at the
+    pre-front-run pool price; flag extractions that hit the slippage boundary
+    precisely. PATH E (cross-DEX slippage-arbitrage correlation): detect
+    attackers who sandwich the same victim's swap across multiple DEX venues
+    simultaneously — the attacker exploits the victim's multi-hop route's
+    aggregate slippage band.
+  pseudocode: |
+    # Shared helpers
+    slippage_extraction_ratio(S) :=
+      (S.expected_output_at_pre_trade_price − S.actual_output) /
+      max(S.expected_output_at_pre_trade_price − S.amount_out_min, 1)
+    band_hit_precision(S) := abs(S.actual_output − S.amount_out_min) / max(S.amount_out_min, 1)
+    recent_volatility(P, window) := stdev(log_returns(P.price_series[−window:]))
+    max_extractable_from_band(S) := S.amount_in × (S.slippage_tolerance / 10000) × S.price
+
+    # PATH A — mempool-level slippage-parameter monitoring
+    for each pending_swap S in mempool:
+      slippage_tolerance ← compute_slippage(S.amount_out_min, S.amount_in, pool_reserves)
+      recent_vol ← recent_volatility(S.pool, lookback_blocks=volatility_lookback_blocks)
+      if slippage_tolerance > recent_vol × max_slippage_volatility_ratio:
+        max_extractable ← max_extractable_from_band(S)
+        # Classify the swap's MEV attractiveness
+        mev_attractiveness ← max_extractable / estimate_gas_cost(S)
+        emit(PATH_A, tx=S.hash, pool=S.pool, slippage_tolerance=slippage_tolerance,
+             recent_volatility=recent_vol,
+             max_extractable_usd=max_extractable,
+             mev_attractiveness_ratio=mev_attractiveness,
+             from=S.from, token_in=S.token_in, token_out=S.token_out,
+             severity="high"     if mev_attractiveness > mev_attractiveness_threshold else
+                      "medium",
+             guidance="Pending swap with {slippage_tolerance:.2%} slippage — "
+                      "{max_slippage_volatility_ratio}x the recent volatility ({recent_vol:.2%}). "
+                      "Max extractable: ${max_extractable} ({mev_attractiveness:.1f}x gas cost). "
+                      "Consider reducing slippage or using a private relay.")
+
+    # PATH B — wallet-side pre-trade simulation
+    for each swap_confirmation_request R at wallet W:
+      pool_depth ← get_pool_depth(R.pool)
+      worst_output ← simulate_swap(R.pool, R.token_in, R.token_out, R.amount_in,
+                                   price_limit=R.amount_out_min)
+      best_output  ← simulate_swap_at_current_price(R.pool, R.token_in, R.token_out, R.amount_in)
+      extractable ← best_output − worst_output
+      extractable_pct ← extractable / max(best_output, 1)
+      if extractable_pct > slippage_warning_threshold:
+        # Compute the sandwich-specific risk
+        sandwich_probability ← estimate_mempool_sandwich_probability(R)
+        surface_warning("Slippage tolerance of {R.slippage_tolerance}% authorizes up to "
+                        "{extractable} {R.token_out} ({extractable_pct:.2%}) of sandwich "
+                        "extraction on this trade. Sandwich probability: {sandwich_probability:.1%}. "
+                        "Recommendation: reduce slippage to {recommended_slippage(R)}% "
+                        "or use Flashbots Protect.")
+        emit(PATH_B, wallet=W, pool=R.pool, token_pair=(R.token_in, R.token_out),
+             amount_in=R.amount_in, slippage_tolerance=R.slippage_tolerance,
+             max_extractable=extractable, extractable_pct=extractable_pct,
+             sandwich_probability=sandwich_probability,
+             recommended_slippage=recommended_slippage(R),
+             severity="high" if sandwich_probability > 0.5 else "medium")
+
+    # PATH C — MEV-bundle analysis
+    for each bundle B in MEV_relay_blocks:
+      sandwich_pairs ← find_sandwich_pairs(B)
+      for each pair (front, victim, back) in sandwich_pairs:
+        victim_output ← decode_swap_output(victim.receipt)
+        precision ← band_hit_precision({
+          actual_output: victim_output, amount_out_min: victim.amount_out_min
+        })
+        if precision < min_band_hit_precision:
+          front_price_move ← compute_price_move(front, victim.pool)
+          extraction ← estimate_slippage_band_extraction(front, victim, back)
+          extraction_ratio ← slippage_extraction_ratio({
+            expected_output_at_pre_trade_price: compute_output_at_price(victim.amount_in, pre_front_price(victim.pool, front)),
+            actual_output: victim_output,
+            amount_out_min: victim.amount_out_min
+          })
+          emit(PATH_C, block=B.block_number, victim_tx=victim.hash,
+               attacker=front.from, slippage_band_hit=true,
+               band_hit_precision=precision,
+               extraction_quote=extraction,
+               extraction_ratio=extraction_ratio,
+               front_run_tx=front.hash, back_run_tx=back.hash,
+               builder=B.builder_address,
+               relay=B.relay,
+               severity="critical",
+               guidance="Slippage-band sandwich: attacker {front.from} moved price "
+                        "{front_price_move:.2%} via {front.hash}, victim executed at exact "
+                        "amountOutMin (precision={precision:.6f}), extraction={extraction_ratio:.1%} "
+                        "of authorized band. Builder: {B.builder_address}, Relay: {B.relay}.")
+
+    # PATH D — post-trade execution analysis
+    for each executed_swap S:
+      pre_trade_price ← get_pool_price(S.pool, S.block_number, S.tx_index − 1)
+      expected_output ← compute_output_at_price(S.amount_in, pre_trade_price)
+      actual_output ← S.amount_out
+      extraction ← expected_output − actual_output
+      precision ← band_hit_precision({
+        actual_output: actual_output, amount_out_min: S.amount_out_min
+      })
+      if extraction > 0 and precision < min_band_hit_precision:
+        # The output landed within epsilon of amountOutMin — precise extraction
+        authorized_band ← compute_slippage_band(S)
+        extraction_pct ← extraction / max(expected_output, 1)
+        # Corroborate with mempool observation
+        front_run_observed ← check_mempool_front_run(S)
+        emit(PATH_D, tx=S.hash, victim=S.from, pool=S.pool,
+             expected_output=expected_output, actual_output=actual_output,
+             extraction_quote=extraction, extraction_pct=extraction_pct,
+             authorized_band=authorized_band, band_hit_precision=precision,
+             front_run_observed_in_mempool=front_run_observed,
+             severity="critical" if front_run_observed else "high",
+             guidance="Post-trade: realized output {actual_output} is within "
+                      "{precision:.6f} of amountOutMin ({S.amount_out_min}). "
+                      "Extraction: {extraction} ({extraction_pct:.2%} of expected). "
+                      + ("Front-run confirmed in mempool." if front_run_observed else
+                         "No mempool front-run observed — possible coincidental band hit."))
+
+    # PATH E — cross-DEX slippage-arbitrage correlation
+    for each victim_address A in VICTIM_TRADE_REGISTRY:
+      # Detect multi-hop swaps split across DEXes in the same block
+      swaps_in_block ← get_swaps_by(A, current_block=BLOCK)
+      if len(swaps_in_block) > 1:
+        # Check if any swap's output exactly hits amountOutMin
+        band_hits ← [S for S in swaps_in_block
+                     if band_hit_precision(S) < min_band_hit_precision]
+        if len(band_hits) > 1:
+          # Multiple band-hits in one block across different pools
+          pools ← {S.pool for S in band_hits}
+          if len(pools) > 1:
+            # Determine if these are legs of a single route or independent swaps
+            route_correlation ← correlate_swap_paths(band_hits)
+            emit(PATH_E, victim=A, block=BLOCK.number,
+                 band_hit_count=len(band_hits), pools=pools,
+                 route_correlation=route_correlation,
+                 total_extraction=sum(compute_extraction(S) for S in band_hits),
+                 attacker=find_common_attacker(band_hits),
+                 severity="critical",
+                 guidance="Multi-pool slippage-band extraction: {len(band_hits)} swaps "
+                          "across {len(pools)} pools hit amountOutMin exactly. "
+                          + ("Swaps form a multi-hop route — attacker exploited the "
+                             "aggregate slippage band." if route_correlation > 0.8 else
+                             "Swaps appear independent — verify for coincidental band hits."))
+
+parameters:
+  max_slippage_volatility_ratio:       { type: number,   default: 5.0 }
+  slippage_warning_threshold:          { type: number,   default: 0.005 }
+  min_band_hit_precision:              { type: number,   default: 0.001 }
+  volatility_lookback_blocks:          { type: integer,  default: 100 }
+  mev_attractiveness_threshold:        { type: number,   default: 3.0 }
+  max_slippage_tolerance_bps:          { type: integer,  default: 300 }    # 3%
+  mev_relay_registry:                  { type: list,     default: [] }
+  builder_watchlist:                   { type: list,     default: [] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               tx, victim, attacker, pool, slippage_tolerance,
+               band_hit_precision, extraction_quote, extraction_ratio,
+               front_run_observed, cross_dex_correlation,
+               builder, relay, evidence]
+
+test_fixtures:
+  positive:
+    - 2021-2025-slippage-manipulation-sandwich-cohort                        # Uniswap V2/V3 high-slippage swap sandwiching by MEV bots
+    - 2023-2024-squeeth-volatility-auction-slippage-sandwich                # Squeeth auction settlement slippage-band sandwich
+    - 2024-05-eigenlayer-withdrawal-sandwich                                # EigenLayer withdrawal event slippage sandwich
+  negative:
+    - "Swap executed via private transaction relay — the slippage parameter is not observable in the public mempool"
+    - "Swap with 0.1% slippage tolerance on a deep liquidity pair — the sandwich extraction at this band is below gas cost"
+    - "Swap whose actual output exceeds amountOutMin by a significant margin — the attacker did not extract the full slippage band"
+
+false_positive_modes:
+  - Victim's output equals amountOutMin coincidentally due to genuine market movement between submission and inclusion — PATH D cross-references against mempool observation: if no front-run was observed, the band-hit is coincidental; severity downgraded from critical to high
+  - Swap where the pool price moved independently of the attacker's front-run (e.g., another large swap landed in the same block) — PATH C correlates the front-run trade direction and magnitude with the price movement; independent price moves do not constitute sandwich extraction
+  - Legitimate limit order fill at the limit price — limit orders are structurally T9.013 surfaces only when a sandwich bundle causes the price to hit the limit; verify via PATH C's bundle analysis for the presence of a front-run/back-run pair
+  - Multi-hop swap where intermediate pool prices shift due to the first legs of the same swap — PATH E distinguishes via route_correlation: if the band-hit is self-inflicted (the victim's own earlier leg moved the price), the attacker is the natural arbitrage response, not a premeditated sandwich
+  - Private transaction that appears as a band-hit because the detector uses a stale pre-trade price — PATH D uses the price at (block_number, tx_index − 1), which is the settled state immediately before the swap
+
+mitigations: [OAK-M02, OAK-M09, OAK-M11, OAK-M20, OAK-M21]
+
+reference_implementations:
+  - { target: eigenphi,               chain: cross-chain, url: "" }
+  - { target: flashbots,              chain: cross-chain, url: "" }
+  - { target: metamask,               chain: cross-chain, url: "" }
+  - { target: rabby,                  chain: cross-chain, url: "" }
+  - { target: zeromev,                chain: cross-chain, url: "" }

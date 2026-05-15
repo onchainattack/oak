@@ -88,6 +88,7 @@ test_fixtures:
   negative:
     - "Bridge with high threshold (≥7-of-N) and routine signing pattern, normal volumes"
     - "Custody-rotation event by a multisig+timelock-gated governance flow"
+    - 2026-05-thorchain-router-exploit      # NOT T10.001: TSS not compromised; vault-churn address resolution poisoned (→ T10.008)
 
 false_positive_modes:
   - planned validator-set rotations (new composition is documented operator practice) — calibrate composition_window from operator's published cadence

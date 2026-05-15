@@ -1,0 +1,141 @@
+oak_techniques: [OAK-T7.009]
+spec_id: oak-detection-T7.009
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect cryptocurrency transactions involving addresses associated
+  with sanctioned entities, terrorism-financing networks, or CSAM
+  (child sexual abuse material) commercial operations. Detection is
+  purpose-based rather than method-based: the signal is in the
+  destination-address labelling maintained by blockchain-intelligence
+  providers and regulatory designation lists, not in any specific
+  on-chain laundering pattern. The laundering methods used (mixers,
+  CEX layering, cross-chain bridges, privacy chains) are structurally
+  identical to T7.001–T7.008; T7.009 detection operates at the
+  address-attribution layer. Excludes: T7.001–T7.008 (laundering
+  method techniques — T7.009 composes with any of them at the
+  purpose layer); purely economically-motivated laundering flows
+  without a designated-entity or illicit-purpose destination.
+
+data_sources: [ofac_sdn_feed, eu_sanctions_list, un_sanctions_list,
+               chainalysis_illicit_category_labels,
+               trm_illicit_category_labels,
+               elliptic_illicit_category_labels,
+               cex_kyc_data, sar_filing_workflow,
+               iwf_csam_referral_feed, icmec_referral_feed]
+
+detection_logic:
+  description: |
+    Three detection layers in descending precision order. LAYER 1
+    (regulatory screening — highest precision): screen all inbound
+    and outbound transactions against OFAC SDN, EU Consolidated,
+    and UN Security Council sanctions lists. A positive match is a
+    definitive T7.009 signal regardless of laundering method.
+    LAYER 2 (blockchain-intelligence labelling — secondary): screen
+    against Chainalysis, TRM Labs, and Elliptic illicit-category
+    labelling feeds (CSAM, terrorism-financing, sanctions-evasion).
+    LAYER 3 (behavioural pattern — tertiary, lower precision):
+    flag recurring small-value payments to low-reuse addresses
+    (CSAM pay-per-view pattern) and fundraising-campaign address
+    patterns (terrorism-financing fundraising).
+  pseudocode: |
+    # LAYER 1 — regulatory designation-list screening
+    on tx T where T.from or T.to in ofac_sdn_feed
+                  or T.from or T.to in eu_sanctions_list
+                  or T.from or T.to in un_sanctions_list:
+      matched_list ← which_list(T)
+      matched_addr ← T.from if T.from in matched_list else T.to
+      direction ← "outbound" if T.from in matched_list else "inbound"
+      usd_value ← usd_at_block(T.value, T.token, T.block)
+      emit(LAYER_1, tx=T.hash, matched_list, matched_addr,
+           direction, usd_value, severity=critical)
+
+    # LAYER 2 — blockchain-intelligence illicit-category labelling
+    for each addr in {T.from, T.to}:
+      labels ← chainalysis_labels(addr) ∪ trm_labels(addr) ∪ elliptic_labels(addr)
+      illicit ← labels ∩ {csam, terrorism_financing, sanctions_evasion}
+      if illicit ≠ ∅:
+        usd_value ← usd_at_block(T.value, T.token, T.block)
+        emit(LAYER_2, tx=T.hash, labelled_address=addr,
+             illicit_categories=illicit, labelling_providers=origin(labels),
+             usd_value, severity=critical)
+
+    # LAYER 3 — behavioural-pattern screening (CSAM payment model)
+    for each addr A observed in recent_blocks:
+      inflows ← small_value_inflows(A, lookback = pattern_window,
+                                     max_value = csam_payment_max)
+      if len(inflows) > min_recurring_count:
+        reuse ← address_reuse_rate(A, inflows)
+        if reuse > high_reuse_threshold:
+          emit(LAYER_3_CSAM, address=A, inflow_count=len(inflows),
+               avg_value=mean(inflows.value), reuse_rate=reuse,
+               severity=high)
+
+    # LAYER 3 — behavioural-pattern screening (fundraising campaign)
+    for each addr F in recent_blocks:
+      inflows ← all_inflows(F, lookback = fundraising_window)
+      if len(inflows) > min_donor_count:
+        dispersion ← geographic_dispersion(inflows.from)
+        consolidation ← single_outflow_fraction(F, lookback = consolidation_window)
+        if dispersion > donor_dispersion_floor
+           and consolidation > consolidation_floor:
+          emit(LAYER_3_FUNDRAISING, address=F,
+               donor_count=len(inflows), dispersion_score=dispersion,
+               consolidation_fraction=consolidation, severity=high)
+
+    # SAR filing workflow trigger — for any LAYER_1 or LAYER_2 alert
+    on LAYER_1 or LAYER_2 alert:
+      if T.involves_cex:
+        trigger_sar_filing(T, matched_list_or_category=alert.context,
+                           jurisdiction=cex_jurisdiction(T.cex))
+
+parameters:
+  pattern_window:                    { type: duration, default: 90d }
+  csam_payment_max:                  { type: number,   default: 100 }
+  min_recurring_count:               { type: integer,  default: 20 }
+  high_reuse_threshold:              { type: number,   default: 0.7 }
+  fundraising_window:                { type: duration, default: 30d }
+  min_donor_count:                   { type: integer,  default: 50 }
+  donor_dispersion_floor:            { type: number,   default: 0.5 }
+  consolidation_window:              { type: duration, default: 90d }
+  consolidation_floor:               { type: number,   default: 0.8 }
+  ofac_sdn_feed:                     { type: list,     default: [] }
+  eu_sanctions_list:                 { type: list,     default: [] }
+  un_sanctions_list:                 { type: list,     default: [] }
+  chainalysis_illicit_category_labels: { type: list,   default: [] }
+  trm_illicit_category_labels:       { type: list,     default: [] }
+  elliptic_illicit_category_labels:  { type: list,     default: [] }
+
+output_alert: [oak_technique, detection_layer, severity, chain,
+               tx, matched_list, labelled_address,
+               illicit_categories, usd_value, sar_triggered,
+               evidence]
+
+test_fixtures:
+  positive:
+    - 2022-08-tornado-cash-ofac-sanctions                    # OFAC SDN designation — LAYER_1
+    - 2013-2025-illicit-purpose-designated-entity-financing-cohort  # OFAC SDN → Binance $4.3B
+    - 2024-2025-us-treasury-ofac-blockchain-analytics-tooling-cohort  # LAYER_2 institutional
+  negative:
+    - "Transaction between two KYC-verified regulated VASP addresses with no designation-list match"
+    - "Legitimate privacy-service usage by an individual without illicit-cluster attribution"
+
+false_positive_modes:
+  - SDN list staleness — OFAC designation lists must be live-updated; a frozen snapshot will miss new designations and retain expired ones
+  - Blockchain-intelligence labelling false positives where an address is mislabelled due to clustering error — require corroboration from ≥2 independent labelling providers before LAYER_2 escalation
+  - CSAM behavioural-pattern false positives where a legitimate micropayment service (e.g. content creator tipping) exhibits similar recurring-small-value + high-reuse patterns — calibrate via service allowlist
+  - Fundraising-campaign false positives where a legitimate charity or crowdfunding campaign matches the donor-dispersion + consolidation pattern — cross-reference against known-legitimate-fundraiser registries
+  - Jurisdictional mismatch where a transaction is sanctions-compliant in the originator's jurisdiction but triggered by a third-country designation list — require jurisdiction-aware screening configuration
+
+mitigations: [OAK-M26, OAK-M27]
+
+reference_implementations:
+  - { target: chainalysis-reactor,    chain: cross-chain, url: "" }
+  - { target: trm-forensics,          chain: cross-chain, url: "" }
+  - { target: elliptic-investigator,  chain: cross-chain, url: "" }
+  - { target: ofac-sdn-feed,          chain: cross-chain, url: "" }
+  - { target: chainalysis-kyt,        chain: cross-chain, url: "" }
+  - { target: trm-wallet-screening,   chain: cross-chain, url: "" }
