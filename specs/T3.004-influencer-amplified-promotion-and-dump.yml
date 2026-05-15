@@ -94,6 +94,7 @@ test_fixtures:
   positive:
     - 2021-2026-influencer-amplified-non-memecoin-rug-cohort
                 # CryptoZoo / KIDS / DADDY / JENNER / MOTHER / DJT cohort
+    - 2026-05-labtrade-insider-manipulation        # multi-vector insider extraction: OTC/loans/vesting/MM/CEX dump, $6B FDV
   negative:
     - "Disclosed promotional post by an influencer with FTC compliance and no pre-promotion insider cluster"
     - "Celebrity mention without subsequent demand surge or cluster-outflow"

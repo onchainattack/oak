@@ -84,6 +84,8 @@ output_alert: [oak_technique, detection_path, severity,
 test_fixtures:
   positive:
     - 2025-11-polymarket-comment-section-phishing   # canonical T4.007 anchor (~$500k+)
+    - 2024-08-genesis-creditor-social-engineering   # multi-stage impersonation: Google→Gemini Support spoof → $243M
+    - 2026-01-hardware-wallet-social-engineering      # hardware wallet recovery social engineering → $282M
   negative:
     - "Pinned comment by genuine market analyst with directional position and no phishing URL"
     - "High-volume market with diverse community comments and no symmetric-position commenter at top"

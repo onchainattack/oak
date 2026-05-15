@@ -105,6 +105,7 @@ test_fixtures:
     - 2024-10-operation-token-mirrors-nexfundai  # FBI sting, market-maker cohort
     - 2023-11-safemoon-charges                   # SEC + DOJ, celebrity-shill sub-pattern
     - 2022-01-wonderland-sifu-patryn             # reserve-currency-coordination + operator-identity concealment
+    - 2025-07-crypto-beast-alt-insider-dump       # 45+ insider wallets, $190M→$3M, influencer denial pattern
   negative:
     - "Organic launch with rising holder count alongside volume spike, no cluster outflow at peak"
     - "Sustained mover with diverse holder distribution and no external-signal correlation"
