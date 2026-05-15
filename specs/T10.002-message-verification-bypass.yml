@@ -102,7 +102,7 @@ false_positive_modes:
   - chain-reorg-induced temporary lock/release skew that resolves within the invariant window — re-evaluate on confirmation
   - oracle / sentinel storage values legitimately set to 0 during initialisation phase (PATH A should compare against post-upgrade-finalised state, not mid-init)
 
-mitigations: [OAK-M02, OAK-M16, OAK-M17, OAK-M01]
+mitigations: [OAK-M01, OAK-M02, OAK-M11, OAK-M12, OAK-M16, OAK-M17, OAK-M32, OAK-M33, OAK-M34, OAK-M35, OAK-M39]
 
 reference_implementations:
   - { target: forta-bot,             chain: evm, url: "" }

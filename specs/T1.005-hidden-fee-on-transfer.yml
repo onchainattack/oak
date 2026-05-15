@@ -96,7 +96,7 @@ false_positive_modes:
   - protocol fee tokens where fee differential reflects intentional pool / treasury routing — annotate market_maker_allowlist with known protocol routers
   - rebase / yield-bearing tokens whose effective fee surface emerges from supply-scalar mutation rather than per-transfer fee — out of scope (handle as separate Technique)
 
-mitigations: [OAK-M01, OAK-M02, OAK-M03, OAK-M16, OAK-M25]
+mitigations: [OAK-M01, OAK-M02, OAK-M03, OAK-M16, OAK-M25, OAK-M32]
 
 reference_implementations:
   - { target: honeypot-is,       chain: evm,    url: "" }

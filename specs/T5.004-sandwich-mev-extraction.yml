@@ -91,7 +91,7 @@ false_positive_modes:
   - aggregator-routed multi-hop arbitrage where the "victim" is the same actor at a different intermediate hop
   - block-builder reordering of independent swaps that incidentally form a triplet without funder-cluster overlap
 
-mitigations: [OAK-M11, OAK-M12, OAK-M16]
+mitigations: [OAK-M06, OAK-M11, OAK-M12, OAK-M16]
 
 reference_implementations:
   - { target: dune,            chain: evm,    url: "" }

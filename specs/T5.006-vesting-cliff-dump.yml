@@ -103,7 +103,7 @@ false_positive_modes:
   - OTC pre-placement that disclosed publicly results in low on-chain concentration (PATH A returns under threshold; not a false positive)
   - PATH D requires non-empty stated_intent — projects with no disposal-intent statement should not flag PATH D
 
-mitigations: [OAK-M02, OAK-M11, OAK-M17, OAK-M25]
+mitigations: [OAK-M02, OAK-M11, OAK-M17, OAK-M25, OAK-M28]
 
 reference_implementations:
   - { target: tokenunlocks-tokenomist, chain: cross-chain, url: "" }

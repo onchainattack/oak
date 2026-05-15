@@ -92,7 +92,7 @@ false_positive_modes:
   - PATH A false positives where the app is a legitimate community client built on an open SDK (require brand-impersonation fingerprints, not just non-registry)
   - PATH C inherits T4.001 / T4.004 / T4.005 false-positive surfaces — see those specs
 
-mitigations: [OAK-M30, OAK-M31, OAK-M40]
+mitigations: [OAK-M08, OAK-M18, OAK-M30, OAK-M31, OAK-M40]
 
 reference_implementations:
   - { target: trust-wallet,      chain: cross-chain, url: "" }

@@ -88,7 +88,7 @@ false_positive_modes:
   - PATH B false positives during planned proxy upgrades with documented governance announcement (correlate with governance event)
   - CREATE2 patterns used legitimately for deterministic deployment without selfdestruct + redeploy (PATH C requires multiple creations at the same address)
 
-mitigations: [OAK-M01, OAK-M03]
+mitigations: [OAK-M01, OAK-M02, OAK-M03, OAK-M16, OAK-M23, OAK-M25, OAK-M32]
 
 reference_implementations:
   - { target: sourcify,            chain: evm, url: "" }

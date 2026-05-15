@@ -96,7 +96,7 @@ false_positive_modes:
   - bridge migration / pool sunset with announced timeline (annotate via planned_migration_allowlist)
   - NFT projects with disclosed roadmap-funded sweep to operational vendors (require downstream ∩ {mixer, cex_deposit} ≠ ∅ as escalator)
 
-mitigations: [OAK-M02, OAK-M04, OAK-M05, OAK-M11, OAK-M25]
+mitigations: [OAK-M02, OAK-M04, OAK-M05, OAK-M11, OAK-M25, OAK-M38]
 
 reference_implementations:
   - { target: dune,             chain: cross-chain, url: "" }

@@ -95,7 +95,7 @@ false_positive_modes:
   - protocol-disclosed gradual LP migration to a successor pool (annotate via planned_migration_allowlist)
   - PATH C false positives where social-media inactivity is unrelated to extraction (correlate with on-chain decline before flagging)
 
-mitigations: [OAK-M04, OAK-M11, OAK-M17, OAK-M25]
+mitigations: [OAK-M04, OAK-M11, OAK-M17, OAK-M25, OAK-M38]
 
 reference_implementations:
   - { target: dune,            chain: cross-chain, url: "" }

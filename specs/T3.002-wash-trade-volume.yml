@@ -65,7 +65,7 @@ false_positive_modes:
   - low-liquidity organic pair where small clusters dominate by chance
   - aggregator-routed arbitrage cycles (same address on both sides via multi-hop route)
 
-mitigations: [OAK-M11, OAK-M12]
+mitigations: [OAK-M04, OAK-M11, OAK-M12, OAK-M26]
 
 reference_implementations:
   - { target: dune, chain: evm, url: "" }

@@ -90,7 +90,7 @@ false_positive_modes:
   - PATH B false positives during legitimate signer rotation where the new predicate temporarily admits both old and new signers (require absence of rotation-window annotation)
   - PATH C false positives for legitimate post-modification treasury rebalancing across chains (require G01-strength cluster match on bridge destination)
 
-mitigations: [OAK-M03, OAK-M16, OAK-M17, OAK-M34, OAK-M39]
+mitigations: [OAK-M03, OAK-M05, OAK-M15, OAK-M16, OAK-M17, OAK-M18, OAK-M19, OAK-M22, OAK-M33, OAK-M34, OAK-M35, OAK-M36, OAK-M37, OAK-M38, OAK-M39]
 
 reference_implementations:
   - { target: forta-bot,             chain: evm, url: "" }

@@ -71,7 +71,7 @@ false_positive_modes:
   - private / NDA'd audits that are not in the public registry (require firm's cooperation to verify)
   - PATH C false positives for legitimate firm certificates that share visual templates — require non-trivial template-match score
 
-mitigations: [OAK-M02, OAK-M16, OAK-M25]
+mitigations: [OAK-M02, OAK-M16, OAK-M23, OAK-M24, OAK-M25, OAK-M32]
 
 reference_implementations:
   - { target: certik-skynet,       chain: cross-chain, url: "" }

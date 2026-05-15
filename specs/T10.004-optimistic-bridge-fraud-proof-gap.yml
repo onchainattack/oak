@@ -106,7 +106,7 @@ false_positive_modes:
   - fraud-proof systems with successful drills but no production challenges (the drill counts as evidence; require successful_challenges OR drill_artifact)
   - bridges where the operator publishes inclusion-fairness commitments enforced by a separate force-inclusion path (annotate force_inclusion_allowlist)
 
-mitigations: [OAK-M11, OAK-M16, OAK-M17]
+mitigations: [OAK-M11, OAK-M13, OAK-M16, OAK-M17, OAK-M32, OAK-M33, OAK-M34, OAK-M35, OAK-M39]
 
 reference_implementations:
   - { target: l2beat-stage-classification, chain: evm, url: "" }

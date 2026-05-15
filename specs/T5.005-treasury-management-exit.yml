@@ -109,7 +109,7 @@ false_positive_modes:
   - PATH A false positives where the budget is informal / approximate — require published budget non-empty
   - PATH C false positives for early-stage protocols pre-DAO — annotate via stage_pre_dao allowlist with deployment_grace_window
 
-mitigations: [OAK-M02, OAK-M04, OAK-M05, OAK-M17, OAK-M25]
+mitigations: [OAK-M02, OAK-M04, OAK-M05, OAK-M17, OAK-M25, OAK-M38]
 
 reference_implementations:
   - { target: tally-analytics,     chain: evm, url: "" }

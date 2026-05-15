@@ -85,7 +85,7 @@ false_positive_modes:
   - canonical-payload collisions on truly distinct semantic content (PATH C should compare full content, not just hash of low-entropy fields)
   - per-instance binding present in a non-obvious field (off-chain salt, EIP-712 domain separator) — PATH A's decode_or_infer_fields must include domain-separator fields
 
-mitigations: [OAK-M02, OAK-M16]
+mitigations: [OAK-M02, OAK-M12, OAK-M16, OAK-M32, OAK-M33, OAK-M34, OAK-M35, OAK-M39]
 
 reference_implementations:
   - { target: trail-of-bits,         chain: evm, url: "" }

@@ -105,7 +105,7 @@ false_positive_modes:
   - PATH C false positives for builders genuinely dominant on a single relay due to integration latency advantages — calibrate leak_factor + cross-check fair_share via independent bid-stream
   - validator equivocation caused by anti-slashing-database failure (operator-procedural; route to T14.001 PATH A instead) — distinguish via consensus-layer slashing presence
 
-mitigations: [OAK-M02, OAK-M11, OAK-M16]
+mitigations: [OAK-M02, OAK-M06, OAK-M11, OAK-M16]
 
 reference_implementations:
   - { target: flashbots-relay,         chain: ethereum, url: "" }

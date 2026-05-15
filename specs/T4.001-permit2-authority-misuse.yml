@@ -91,7 +91,7 @@ false_positive_modes:
   - permit consumed during user-initiated DEX swap with on-chain history of legitimate use of the spender — cluster-membership filter reduces noise
   - PATH B false positives for active multi-protocol users — combine with cluster_match before escalating
 
-mitigations: [OAK-M08, OAK-M19, OAK-M30, OAK-M31]
+mitigations: [OAK-M08, OAK-M18, OAK-M19, OAK-M30, OAK-M31, OAK-M40]
 
 reference_implementations:
   - { target: rabby,             chain: evm,         url: "" }

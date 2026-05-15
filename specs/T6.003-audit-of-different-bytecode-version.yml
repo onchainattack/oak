@@ -104,7 +104,7 @@ false_positive_modes:
   - PATH C false positives where the out-of-scope contracts are non-load-bearing (require holds_upgrade_or_treasury filter)
   - PATH E false positives for documented fork modifications with separate fork-specific audit (require absence of fork-audit attestation)
 
-mitigations: [OAK-M01, OAK-M16, OAK-M25]
+mitigations: [OAK-M01, OAK-M03, OAK-M16, OAK-M23, OAK-M25, OAK-M32]
 
 reference_implementations:
   - { target: certik-skynet,       chain: cross-chain, url: "" }

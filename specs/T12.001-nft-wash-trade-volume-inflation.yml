@@ -105,7 +105,7 @@ false_positive_modes:
   - genuinely concentrated collector cohort (long-term holders trading among themselves at organic prices) — PATH C's floor-resilience metric should not flag if pricing tracks reality
   - marketplace-incentive-driven wash where the goal is reward farming, not real-buyer exit — PATH D returns empty; route to incentive-wash sub-class instead
 
-mitigations: [OAK-M04, OAK-M11, OAK-M25]
+mitigations: [OAK-M04, OAK-M11, OAK-M25, OAK-M26]
 
 reference_implementations:
   - { target: dune,                chain: evm,    url: "" }

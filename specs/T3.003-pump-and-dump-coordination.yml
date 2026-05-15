@@ -100,7 +100,7 @@ output_alert: [oak_technique, detection_path, severity, chain,
 
 test_fixtures:
   positive:
-    - 2018-big-pump-signal-telegram-cohort       # academic anchor — Telegram-coordinated cohort
+    - 2017-01-big-pump-signal-telegram-cohort    # academic anchor — Telegram-coordinated cohort
     - 2021-03-mcafee-cftc-pump-dump              # Twitter-amplified, CFTC + DOJ enforcement
     - 2024-10-operation-token-mirrors-nexfundai  # FBI sting, market-maker cohort
     - 2023-11-safemoon-charges                   # SEC + DOJ, celebrity-shill sub-pattern

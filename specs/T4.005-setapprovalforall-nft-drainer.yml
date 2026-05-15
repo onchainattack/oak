@@ -114,7 +114,7 @@ false_positive_modes:
   - cross-collection user activity touching multiple operators legitimately (PATH B's victim count must be > 1 with cluster match)
   - audited gaming / utility NFT operator with public deployment record (allowlist before flagging)
 
-mitigations: [OAK-M06, OAK-M08, OAK-M19, OAK-M30, OAK-M31]
+mitigations: [OAK-M06, OAK-M08, OAK-M18, OAK-M19, OAK-M30, OAK-M31, OAK-M40]
 
 reference_implementations:
   - { target: rabby,             chain: evm,    url: "" }

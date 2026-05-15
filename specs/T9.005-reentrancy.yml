@@ -93,7 +93,7 @@ false_positive_modes:
   - inline assembly / Yul raw call ops invisible to AST analysis
   - compiler-level reentrancy (Curve July 2023 Vyper) bypasses AST — PATH C required
 
-mitigations: [OAK-M02, OAK-M03, OAK-M05, OAK-M16]
+mitigations: [OAK-M02, OAK-M03, OAK-M05, OAK-M10, OAK-M16, OAK-M32, OAK-M33, OAK-M34, OAK-M35, OAK-M38, OAK-M39]
 
 reference_implementations:
   - { target: slither-plugin, chain: evm, url: "" }

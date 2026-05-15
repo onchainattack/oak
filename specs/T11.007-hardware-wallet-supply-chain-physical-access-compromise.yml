@@ -86,7 +86,7 @@ output_alert: [oak_technique, detection_path, severity, chain,
 
 test_fixtures:
   positive:
-    - 2025-counterfeit-ledger-nano-s-plus-cohort     # canonical T11.007.001 deployed-attack anchor
+    - 2025-01-counterfeit-ledger-nano-s-plus-cohort  # canonical T11.007.001 deployed-attack anchor
     - 2020-01-trezor-kraken-rdp-downgrade            # canonical T11.007.002 capability anchor
     - 2023-2026-fake-firmware-update-phishing-cohort # canonical T11.007.003 active-phishing anchor
   negative:

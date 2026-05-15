@@ -96,7 +96,7 @@ false_positive_modes:
   - emergency-pause + planned migration to new bridge (whole-TVL movement) — annotate via planned_migration_allowlist
   - off-chain CTI noise / unrelated phishing campaigns against personnel (calibrate by requiring multi-source CTI corroboration)
 
-mitigations: [OAK-M02, OAK-M05, OAK-M16, OAK-M17, OAK-M22]
+mitigations: [OAK-M02, OAK-M05, OAK-M11, OAK-M15, OAK-M16, OAK-M17, OAK-M22, OAK-M32, OAK-M33, OAK-M34, OAK-M35, OAK-M37, OAK-M38, OAK-M39]
 
 reference_implementations:
   - { target: forta-bot,             chain: evm, url: "" }

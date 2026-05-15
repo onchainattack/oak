@@ -79,7 +79,7 @@ false_positive_modes:
   - emergency-pause guardian (binary pause, not fee mutation)
   - rebase tokens — modify global supply scalar, not per-transfer multiplier
 
-mitigations: [OAK-M01, OAK-M02, OAK-M03, OAK-M05, OAK-M16, OAK-M17, OAK-M25]
+mitigations: [OAK-M01, OAK-M02, OAK-M03, OAK-M04, OAK-M05, OAK-M16, OAK-M17, OAK-M23, OAK-M25, OAK-M32]
 
 reference_implementations:
   - { target: slither-plugin, chain: evm, url: "" }

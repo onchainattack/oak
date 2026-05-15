@@ -108,7 +108,7 @@ false_positive_modes:
   - pull-oracle disputed-and-corrected reports (dispute fired before consumption) — suppress when dispute resolution observed inside window
   - protocol's own keeper-driven oracle update from a known operator (allowlist trusted submitters)
 
-mitigations: [OAK-M09, OAK-M10, OAK-M11, OAK-M16, OAK-M17]
+mitigations: [OAK-M09, OAK-M10, OAK-M11, OAK-M16, OAK-M17, OAK-M32, OAK-M33, OAK-M34, OAK-M35, OAK-M38, OAK-M39]
 
 reference_implementations:
   - { target: forta-bot,           chain: evm,    url: "" }

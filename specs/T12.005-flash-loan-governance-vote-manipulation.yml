@@ -95,8 +95,8 @@ output_alert: [oak_technique, detection_path, severity, chain,
 test_fixtures:
   positive:
     - 2022-04-beanstalk                                                 # ~$182M — largest T12.005 by notional
-    - 2022-05-fortress-protocol                                        # Canonical same-transaction flash-loan governance acquisition
-    - 2022-04-elephant-money                                           # Two-hop acquisition (flash-loaned BNB → governance tokens)
+    - 2022-05-fortress-protocol-flash-loan-governance-attack           # Canonical same-transaction flash-loan governance acquisition
+    - 2022-04-elephant-money-flash-loan-governance-attack              # Two-hop acquisition (flash-loaned BNB → governance tokens)
   negative:
     - "Legitimate governance proposal created by a long-term token holder with no same-block flash-loan event"
     - "Flash-loan for atomic arbitrage on a DEX pair — no governance-event correlation"

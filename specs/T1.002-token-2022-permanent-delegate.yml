@@ -91,7 +91,7 @@ false_positive_modes:
   - PD authority transferred to a multisig-timelock treasury (allowlist the multisig as canonical authority)
   - cohort-level false positives where the deployer cluster has only one PD mint and no prior burn signature — flag as elevated-risk, not confirmed-malicious
 
-mitigations: [OAK-M02, OAK-M03, OAK-M05, OAK-M25]
+mitigations: [OAK-M02, OAK-M03, OAK-M05, OAK-M25, OAK-M32]
 
 reference_implementations:
   - { target: rugcheck,           chain: solana, url: "" }

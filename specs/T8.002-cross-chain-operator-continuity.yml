@@ -109,7 +109,7 @@ false_positive_modes:
   - fingerprint matches across chains that reflect a shared open-source template (factories, OpenZeppelin canonical contracts) — exclude well-known templates
   - laundering-destination convergence where the destination is a major CEX hot wallet (definitionally many sources) — restrict to non-canonical off-ramps
 
-mitigations: [OAK-M04, OAK-M07, OAK-M25, OAK-M43]
+mitigations: [OAK-M04, OAK-M07, OAK-M25, OAK-M39, OAK-M43]
 
 reference_implementations:
   - { target: chainalysis-reactor, chain: evm,    url: "" }

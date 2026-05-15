@@ -107,7 +107,7 @@ false_positive_modes:
   - governance-token large transfers reflecting treasury operations or vesting unlocks (not vote acquisition) — PATH A's vote_or_exec gate filters
   - high-participation proposals where top voter is a known long-term delegate above the threshold — historical-envelope check should reflect this; calibrate spot_accum_multiplier per governor
 
-mitigations: [OAK-M02, OAK-M11, OAK-M16, OAK-M17]
+mitigations: [OAK-M02, OAK-M05, OAK-M11, OAK-M16, OAK-M17, OAK-M32, OAK-M33, OAK-M34, OAK-M35, OAK-M39]
 
 reference_implementations:
   - { target: forta-bot,             chain: evm, url: "" }

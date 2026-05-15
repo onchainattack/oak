@@ -92,7 +92,7 @@ output_alert: [oak_technique, detection_path, severity, chain,
 test_fixtures:
   positive:
     - 2024-2025-pump-fun-bonding-curve-rug-cohort       # Rug Republic 12-cluster cohort
-    - 2025-Q1-hayden-davis-kelsier-cluster              # Davis / Kelsier across LIBRA / MELANIA / M3M3 / WOLF
+    - 2025-01-hayden-davis-kelsier-cluster              # Davis / Kelsier across LIBRA / MELANIA / M3M3 / WOLF
     - 2024-07-neiro-solana-bundled-launch-rug           # bundled-launch concentration
     - 2024-10-sharpei-solana-funnel-collapse-rug        # 60% concentration + funnel
   negative:

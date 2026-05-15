@@ -90,7 +90,7 @@ false_positive_modes:
   - PATH C false positives where the timeline slip is documented and explained publicly (annotate via timeline_slip_allowlist)
   - missing engagement_ack due to feed-coverage gaps rather than absent engagement (cross-reference with firm's API where available)
 
-mitigations: [OAK-M02, OAK-M16, OAK-M25]
+mitigations: [OAK-M02, OAK-M16, OAK-M23, OAK-M24, OAK-M25, OAK-M32]
 
 reference_implementations:
   - { target: certik-skynet,            chain: cross-chain, url: "" }

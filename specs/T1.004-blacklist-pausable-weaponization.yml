@@ -103,7 +103,7 @@ false_positive_modes:
   - launch-day fair-launch sniper protection (transient blacklist of known-snipers, removed within calibrated launch window) — calibrate via window-after-deployment
   - per-pair AMM-only gates that are part of a documented anti-bot launch (ephemeral) — escalate only on persistence past launch window
 
-mitigations: [OAK-M01, OAK-M02, OAK-M03, OAK-M05, OAK-M16, OAK-M17, OAK-M25]
+mitigations: [OAK-M01, OAK-M02, OAK-M03, OAK-M05, OAK-M16, OAK-M17, OAK-M25, OAK-M32]
 
 reference_implementations:
   - { target: slither-plugin,    chain: evm, url: "" }

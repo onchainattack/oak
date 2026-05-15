@@ -113,7 +113,7 @@ false_positive_modes:
   - benign re-approval after revoke for legitimate router (PATH C's owner-count threshold filters single-owner cycles)
   - audited but freshly-deployed router with verified bytecode + canonical-team origin (annotate via short fresh_spender_window or extended canonical_router_allowlist)
 
-mitigations: [OAK-M06, OAK-M08, OAK-M19, OAK-M30, OAK-M31]
+mitigations: [OAK-M06, OAK-M08, OAK-M18, OAK-M19, OAK-M30, OAK-M31]
 
 reference_implementations:
   - { target: rabby,             chain: evm,    url: "" }

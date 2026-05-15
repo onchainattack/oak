@@ -109,7 +109,7 @@ false_positive_modes:
   - V3 position NFTs held by the deployer during a vesting / disclosed window with documented marketed band — distinguish via range_inconsistent gate
   - per-pool fee-collector roles for legitimate fee-routing without withdrawal effect — restrict NON_BURN_WITHDRAW_ROLES to roles with documented LP-equivalent effect
 
-mitigations: [OAK-M02, OAK-M04, OAK-M05, OAK-M16, OAK-M25]
+mitigations: [OAK-M01, OAK-M02, OAK-M03, OAK-M04, OAK-M05, OAK-M16, OAK-M25]
 
 reference_implementations:
   - { target: dune,             chain: evm,    url: "" }

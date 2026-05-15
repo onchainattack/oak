@@ -97,7 +97,7 @@ false_positive_modes:
   - multisig-held DEFAULT_ADMIN_ROLE that is itself the renouncement target (operational lag)
   - beacon proxy where the beacon owner is a canonical, allowlisted governance contract
 
-mitigations: [OAK-M01, OAK-M02, OAK-M03, OAK-M05, OAK-M16, OAK-M17, OAK-M25]
+mitigations: [OAK-M01, OAK-M02, OAK-M03, OAK-M05, OAK-M16, OAK-M17, OAK-M22, OAK-M25, OAK-M32, OAK-M40]
 
 reference_implementations:
   - { target: slither-plugin,    chain: evm, url: "" }
