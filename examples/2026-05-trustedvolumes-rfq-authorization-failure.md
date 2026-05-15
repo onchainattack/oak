@@ -1,10 +1,13 @@
 # TrustedVolumes RFQ Authorization-Boundary Failure — Ethereum — 2026-05-07
 
-**Tags:** OAK-T9.004
+**OAK Techniques observed:** OAK-T9.004
 
+**Attribution:** **unattributed** (aggregate cohort).
 **Loss:** ~$5.87M in a single transaction across four assets: 1,291 WETH, 206,282 USDT, 16.939 WBTC, and 1,268,771 USDC. Funds drained from TrustedVolumes' own inventory via pre-existing unlimited ERC-20 approvals to the vulnerable RFQ proxy contract.
 
 **Key teaching point:** TrustedVolumes is the canonical 2026 case for **authorisation-without-authentication in a DeFi RFQ/solver infrastructure** — the contract verified *who signed* an order but never checked whether the signer had any right to spend the funds being moved. Three bugs chained together in a custom RFQ swap proxy the team built and controlled: (1) a permissionless `registerAllowedOrderSigner()` function that let anyone register as a valid signer, (2) a `fillOrder()` path that checked the signer against the attacker-controlled receiver rather than the inventory owner, and (3) a broken replay guard that read and wrote different storage slots. The contract was unverified on Etherscan, the team had not posted publicly in over a year, and no audit had ever been disclosed. banteg reproduced the full exploit in Foundry within hours — the barrier to entry was 4 wei USDC and fifteen minutes.
+
+## Summary
 
 ## Timeline
 
@@ -16,7 +19,7 @@
 | 2026-05-07 (same tx) | Replay protection (`saltStatus`) writes to a different storage key than it reads — all four drain calls pass the replay check without friction; 1,291 WETH + 206,282 USDT + 16.939 WBTC + 1,268,771 USDC transferred to attacker | **T9.004** (broken invariant — replay guard with non-matching storage slots) |
 | 2026-05-07 (post-drain) | Attacker unwraps WETH, forwards all tokens to attacker EOA, converts to ETH; stolen funds consolidated before TrustedVolumes confirms the exploit | (exit) |
 | 2026-05-07 | CertiK first to post: "The attacker registers as an AllowedOrderSigner through a public function, then executes the order to transfer from the victim." Blockaid follows within 60 seconds. SlowMist posts root cause breakdown. | (third-party detection — ~2.5 hours before TrustedVolumes' first public statement) |
-| 2026-05-07 (+2.5h) | TrustedVolumes confirms the exploit — first public post in over a year; offers bug bounty email (tvbugbounty@proton.me) and "constructive communication" | (operator response — delayed, measured) |
+| 2026-05-07 (+2.5h) | TrustedVolumes confirms the exploit — first public post in over a year; offers bug bounty email (<tvbugbounty@proton.me>) and "constructive communication" | (operator response — delayed, measured) |
 | 2026-05-08 | banteg publishes full Foundry reproduction (reconstructed Solidity, D2 flow diagram) confirming every step against a fork of block 25039669 | (independent verification — exploit barrier: 4 wei USDC + 15 min) |
 
 ## Realised extraction
@@ -28,7 +31,7 @@
 - [rekt.news — TrustedVolumes — Rekt](https://rekt.news/trustedvolumes-rekt) — primary forensic narrative.
 - [CertiK Alert](https://x.com/CertiK) — first responder: permissionless signer registration + victim transfer.
 - [Blockaid Alert](https://x.com/blockaid_) — victim contract, exploiter address, attack transaction, running damage tally.
-- [SlowMist root cause breakdown](https://x.com/SlowMist_Team) — "Signature validation checks _allowedSigners[msg.sender][signer] using caller (taker) instead of order's maker as key."
+- [SlowMist root cause breakdown](https://x.com/SlowMist_Team) — "Signature validation checks _allowedSigners`[msg.sender][signer]` using caller (taker) instead of order's maker as key."
 - [banteg Foundry reproduction](https://x.com/bantg) — full exploit reproduced against a fork of block 25039669; reconstructed Solidity + D2 flow diagram.
 - Cross-reference: T9.004 at `techniques/T9.004-access-control-misconfiguration.md`.
 

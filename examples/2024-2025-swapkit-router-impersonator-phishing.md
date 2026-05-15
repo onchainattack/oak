@@ -2,7 +2,7 @@
 
 **Loss:** aggregate losses forming across the cohort at v0.1; individual victims typically lost mid-four-to-five-figure USD-equivalent per incident. The attacker's frontend constructed transactions addressed to the legitimate Uniswap Universal Router — the user's wallet confirmation screen showed a verified, audited contract address — while the swap path embedded in the calldata routed through attacker-owned intermediate contracts that extracted fees or redirected output tokens.
 **OAK Techniques observed:** **OAK-T6.008** (Verified-but-Malicious Frontend Routing) — primary; the canonical T6.008 anchor. The evasion surface is in the routing path, not in the contract address the user inspects: the transaction `to` address is the legitimate Uniswap router, but the calldata embeds a swap path through attacker-owned intermediate contracts. **OAK-T4.008** (Fake-DEX Clone-Frontend Phishing) — secondary; the frontend was presented as a Uniswap-alike swap interface, sometimes branded as "powered by SwapKit" to explain the intermediate routing path.
-**Attribution:** **pseudonymous (no public attribution)**. Per-victim reporting via ZachXBT, ScamSniffer, and SEAL Threat Intel. Operator-cluster attribution partial at v0.1.
+**Attribution:** **pseudonymous**. Per-victim reporting via ZachXBT, ScamSniffer, and SEAL Threat Intel. Operator-cluster attribution partial at v0.1.
 **Key teaching point:** **The SwapKit router impersonator cohort is the canonical T6.008 worked example — wallet confirmation screens that display only the `to` address and value are structurally inadequate for router/aggregator transactions.** The user verified the contract address and saw "Uniswap Universal Router" — the extraction occurred in the calldata the wallet UI did not surface.
 
 ## Summary
@@ -32,7 +32,7 @@ The attacker's frontend was typically reached via typosquat domains, search-engi
 
 Aggregate losses forming at v0.1; per-incident anchors typically in the mid-four-to-five-figure USD-equivalent range. The structural significance is the evasion technique (routing-path extraction) rather than the per-incident dollar total.
 
-## References
+## Public references
 
 - ScamSniffer routing-path phishing reports (2024–2025)
 - ZachXBT per-victim incident threads

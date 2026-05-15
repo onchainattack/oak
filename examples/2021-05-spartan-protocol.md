@@ -2,7 +2,7 @@
 
 **Loss:** approximately $30M from Spartan Protocol's SPARTA-WBNB AMM pool.
 **OAK Techniques observed:** **OAK-T9.001** (Oracle Price Manipulation — LP-share-pricing virtual-price subclass) + **OAK-T9.002** (Flash-Loan-Enabled Exploit — flash-loan precondition acquired via PancakeSwap).
-**Attribution:** **pseudonymous-unattributed**; no recovery; the protocol continued operating in a substantially-reduced-capital state and was not subsequently re-launched at scale.
+**Attribution:** **pseudonymous**; no recovery; the protocol continued operating in a substantially-reduced-capital state and was not subsequently re-launched at scale.
 **Key teaching point:** **AMM LP-share pricing computed from real-time pool reserves is a flash-loan-vulnerable pricing input** — the same underlying class as the canonical Saddle Finance April 2022 (`examples/2022-04-saddle-finance.md`) and the Curve-fork virtual-price family. Spartan Protocol is the foundational early-2021 BSC DeFi worked example for the LP-share-virtual-price-as-implicit-oracle subclass and is canonical for the proposition that **early-DeFi forks of Uniswap-style AMM mathematics did not bind LP-share pricing against flash-loan-driven imbalance** by default.
 
 ## Summary

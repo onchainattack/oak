@@ -4,7 +4,7 @@
 
 **OAK Techniques observed:** **OAK-T3.004** (Influencer-Amplified Promotion-and-Dump — primary; the project's marketing leveraged Micah "Bware" Johnson / Akutar's creator persona and the Aku Dreams NFT ecosystem's artistic brand to drive mint demand). **OAK-T5.005** (Treasury-Management Exit — structurally adjacent; the treasury was locked in a refund-eligible contract, which constrained the exit shape but did not prevent secondary-market loss). **OAK-T12** (NFT-Specific — structurally adjacent).
 
-**Attribution:** **confirmed at the project-creator level — Micah "Bware" Johnson (Akutar / Aku Dreams creator).** No federal indictment or SEC action at v0.1. The attribution is `confirmed` at the creator-identity level (Micah Johnson is a publicly-known former MLB player turned NFT artist) but `unattributed` at the criminal-fraud level (no federal charges filed; the project's failure was publicly attributed to "poor execution" rather than fraud).
+**Attribution:** **confirmed** No federal indictment or SEC action at v0.1. The attribution is `confirmed` at the creator-identity level (Micah Johnson is a publicly-known former MLB player turned NFT artist) but `unattributed` at the criminal-fraud level (no federal charges filed; the project's failure was publicly attributed to "poor execution" rather than fraud).
 
 **Key teaching point:** **Influencer-backed NFT projects that raise treasury funds from mints but fail to deliver the promised roadmap convert secondary-market buyer confidence into unrealised treasury-investment — the treasury is present but inaccessible to minters, and the secondary-market buyer absorbs the loss.** The Akutar case is structurally distinct from a conventional rug pull (the treasury existed, the refund mechanism functioned, the creator was publicly known and did not disappear) but the economic outcome for secondary-market buyers was the same.
 
@@ -17,6 +17,7 @@ In February 2022, Johnson launched the Akutar NFT collection — a profile-pictu
 The project's treasury was held in a contract with a refund mechanism: minters could claim a refund of their mint price (0.2 ETH per Akutar Pass, 3.5 ETH per Akutar) for a specified refund window. The mechanism was functional — approximately \$25.7M (~7,500 ETH) of the \$34M raised was refunded to minters who claimed the refund.
 
 However:
+
 - The promised Akutar metaverse, game, and token ecosystem roadmap was not delivered at v0.1 cutoff (2026-05).
 - The Akutar NFT secondary market collapsed post-refund-window as the roadmap failed to materialise.
 - Secondary-market buyers who purchased Akutar NFTs at prices above the refund value absorbed the residual loss (~\$8.3M in unrealised losses across the non-refunded mint proceeds and the secondary-market premium).

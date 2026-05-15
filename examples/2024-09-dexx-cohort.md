@@ -2,7 +2,7 @@
 
 **Loss:** approximately $2.5M+ across many user accounts (cohort-level aggregate; per-user losses ranged from $100s to ~$50,000+).
 **OAK Techniques observed:** **OAK-T4.001** (Private Key / Seed Phrase Compromise — primary; the operator's server-side raw-private-key storage architecture meant a single database compromise exfiltrated signing keys for all active users without per-user interaction) + **OAK-T15.003** (Operator Endpoint / Infrastructure Compromise — the proximate entry vector was intrusion into DEXX's operator-side database infrastructure). The case is also referenceable under **OAK-T11** (Custody and Signing Infrastructure) at the Tactic level; the architectural anti-pattern — server-side storage of raw user private keys — is the structural failure that converted an operator-infrastructure intrusion into a mass-user-asset-loss event.
-**Attribution:** **pseudonymous-unattributed**. Industry forensic analysis (SlowMist, ZachXBT, PeckShield) did not at v0.1 cutoff reach `inferred-strong` cohort-attribution to any of the OAK-G entries.
+**Attribution:** **pseudonymous**. Industry forensic analysis (SlowMist, ZachXBT, PeckShield) did not at v0.1 cutoff reach `inferred-strong` cohort-attribution to any of the OAK-G entries.
 **Key teaching point:** **Trading-bot platforms that hold users' raw private keys server-side are an architectural anti-pattern** that produces canonical OAK-T11 outcomes regardless of the platform operator's intent. The DEXX September-November 2024 incident is the canonical 2024 worked example for the proposition; defenders advising users on trading-bot platform selection should treat raw-private-key-holding as a hard-no-go architectural class.
 
 ## Summary

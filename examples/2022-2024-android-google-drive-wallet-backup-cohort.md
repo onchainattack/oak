@@ -10,6 +10,7 @@
 Android's auto-backup system backs up app data to Google Drive by default for apps targeting Android 6.0 (API 23) and above. The backup includes the app's internal storage — which, for wallet apps, contains the encrypted wallet vault (the keystore file or equivalent). The backup is encrypted at rest on Google's servers but is accessible to anyone with the user's Google account credentials.
 
 The compromise path mirrors the iOS/iCloud T11.006.002 surface:
+
 1. User installs a wallet app on Android. The app does not set `allowBackup=false` in its manifest.
 2. Android's auto-backup backs up the app's data — including the encrypted wallet vault — to Google Drive.
 3. The user's Google account is compromised via SIM-swap (SMS-based 2FA), phishing, credential-stuffing, or Google Support social-engineering.

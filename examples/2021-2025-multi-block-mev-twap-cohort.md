@@ -31,7 +31,7 @@ The technique composes (does not replace) T9.001 and T17.004: the oracle manipul
 
 No single incident attributed solely to T17.005 at v0.1; composable with T17.004 (Inverse Finance 2022-04). The class is documented at the MEV-research layer.
 
-## References
+## Public references
 
 - Flashbots multi-block MEV research (2021-2023)
 - Zhou et al., "SoK: Decentralized Finance (DeFi) Attacks" (2023) — academic taxonomy including multi-block MEV surface

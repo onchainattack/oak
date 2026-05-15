@@ -2,7 +2,7 @@
 
 **Loss:** cohort-level phishing losses across users of attacker-operated "Uniswap interface" frontends that constructed swap paths through attacker-deployed intermediate liquidity pools. Per-victim losses ranging from low four-figures to mid five-figures USD equivalent; aggregate across the cohort not consolidated in a single public loss figure at v0.1.
 **OAK Techniques observed:** **OAK-T6.008** (Verified-but-Malicious Frontend Routing — primary; the attacker-operated frontends presented a Uniswap-alike swap interface that constructed transactions addressed to the legitimate Uniswap Universal Router — a verified, audited contract — but the swap path embedded in the calldata routed through attacker-deployed intermediate liquidity pools that extracted fees or spreads before forwarding the swap to legitimate Uniswap V3 pools). **OAK-T4.008** (Fake-DEX Clone-Frontend Phishing — secondary; the frontend UIs were typosquat-domain-hosted clones of the legitimate Uniswap interface, and the user-acquisition surface followed the same distribution-channel pattern as the broader T4.008 fake-DEX-frontend cohort).
-**Attribution:** **pseudonymous (at cohort scale)** — no individual operator attribution at v0.1. The routing-path extraction pattern was observed across multiple independently-operated frontends, suggesting a shared playbook rather than a single operator cluster.
+**Attribution:** **pseudonymous** — no individual operator attribution at v0.1. The routing-path extraction pattern was observed across multiple independently-operated frontends, suggesting a shared playbook rather than a single operator cluster.
 **Key teaching point:** **The Uniswap routing-manipulation frontend cohort is the operational demonstration that wallet confirmation screens that display only the `to` address (the verified Uniswap Universal Router) are insufficient for router/aggregator transactions — the user's security model of "verify the contract address" is defeated because the contract address is correct; the extraction occurs in the routing path embedded in calldata that wallet UIs do not surface.** The incident is the practical validation of the T6.008 detection surface at the wallet-side routing-path-transparency layer.
 
 ## Summary
@@ -38,7 +38,7 @@ T6.008 (Verified-but-Malicious Frontend Routing) is the primary classification b
 
 T4.008 (Fake-DEX Clone-Frontend Phishing) is the secondary classification because the frontend UIs were typosquat-domain-hosted clones of the legitimate Uniswap interface, and the user-acquisition surface followed the same distribution-channel pattern as the broader T4.008 fake-DEX-frontend cohort. The T4.008→T6.008 chain (fake-frontend distribution → routing-path extraction) is a canonical composition pattern for this class.
 
-## References
+## Public references
 
 - Uniswap Universal Router on-chain transaction analysis (swap-path reconstruction from calldata, intermediate-hop-address identification)
 - ScamSniffer routing-path phishing reports (Uniswap-branded routing-manipulation domains)

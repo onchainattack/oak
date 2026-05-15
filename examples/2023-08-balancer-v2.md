@@ -2,7 +2,7 @@
 
 **Loss:** approximately $2.1M extracted across multiple Balancer V2 Boosted Pools deployments after a pre-disclosure-public-warning + insufficient-mitigation-window operating-failure pattern.
 **OAK Techniques observed:** **OAK-T9.005** (Reentrancy / arithmetic precision-loss class, Balancer-Boosted-Pools-rate-providing-flow subclass) + **OAK-T9.002** (flash-loan precondition).
-**Attribution:** **pseudonymous-unattributed**; no recovery; the realised loss was a small fraction of total Boosted-Pools TVL because the pre-disclosure-public-warning gave the majority of LPs an opportunity to withdraw before the exploitation window closed.
+**Attribution:** **pseudonymous**; no recovery; the realised loss was a small fraction of total Boosted-Pools TVL because the pre-disclosure-public-warning gave the majority of LPs an opportunity to withdraw before the exploitation window closed.
 **Key teaching point:** **Pre-disclosure-public-warning followed by insufficient-mitigation-window is a structural recurring pattern**. Balancer Labs disclosed the Boosted-Pools vulnerability publicly on August 22, 2023 along with explicit "withdraw your funds" guidance; an attacker exploited the cohort of LPs who did not withdraw within the disclosure-window. The pattern recurs across Wintermute Sep 2022 (`examples/2022-09-wintermute.md`) — Profanity disclosure 5 days before the headline incident — and across the broader "publicly-known-vulnerability-not-fully-mitigated" cohort. Balancer V2 August 2023 is the canonical 2023 worked example for the cohort-of-LPs-who-did-not-act-on-warning failure mode.
 
 ## Summary

@@ -2,7 +2,7 @@
 
 **Loss:** approximately \$7.3M extracted from Exactly Protocol's Optimism deployment via a cross-contract reinitialization attack on the DebtManager contract.
 **OAK Techniques observed:** **OAK-T9.009** (Cross-Contract Reinitialization Attack — primary; the attacker exploited a missing reinitialization guard on the DebtManager contract via a cross-contract callback pattern during the initialisation flow, allowing the attacker to reinitialize the contract with attacker-controlled parameters). **OAK-T9.004** (Access-Control Misconfiguration — secondary; the reinitialization succeeded because the DebtManager's initialisation function lacked proper access-control gating for the cross-contract callback path; the `initializer` modifier's guard flag had not yet been set at the point of the external call, allowing the callback to re-enter the initialisation path with attacker-supplied parameters).
-**Attribution:** **pseudonymous (unattributed)** — no public named-individual or state-actor attribution at OAK v0.1 cutoff.
+**Attribution:** **pseudonymous** — no public named-individual or state-actor attribution at OAK v0.1 cutoff.
 **Key teaching point:** **The Exactly Protocol reinitialization exploit is the 2023 operational anchor for the cross-contract reinitialization class (T9.009) — the DebtManager's initialisation path made an external call before the reinitialization guard flag was committed, creating a callback window that allowed the attacker to reinitialize the contract with malicious parameters.** The incident demonstrates the structural parallel between T9.009 (reinitialization) and T9.005 (reentrancy): in T9.005, the defence is checks-effects-interactions; in T9.009, the defence is initialise-then-interact — performing all external calls after the initialisation state flag has been set.
 
 ## Summary
@@ -32,7 +32,7 @@ T9.009 (Cross-Contract Reinitialization Attack) is the primary classification be
 
 T9.004 (Access-Control Misconfiguration) is the secondary classification because the reinitialization succeeded in setting privileged roles that the protocol's access-control design did not intend to be settable via a reinitialization path. The T9.009→T9.004 chain (reinitialisation creates the privilege; missing access-control check permits its subsequent use) is a canonical composition pattern for this class.
 
-## References
+## Public references
 
 - PeckShield on-chain analysis of the Exactly Protocol exploit transaction traces
 - BlockSec function-level walkthrough of the reinitialization callback path

@@ -1,10 +1,13 @@
 # Seed-Phrase At-Rest Exfiltration Cohort — 2022–2025
 
-**Tags:** OAK-T11.006, OAK-T11.006.002
+**OAK Techniques observed:** OAK-T11.006, OAK-T11.006.002
 
+**Attribution:** **unattributed** (aggregate cohort).
 **Loss:** T11.006.001 ~$185M+ aggregated (LastPass encrypted-vault exfiltration → 2023–2025 multi-year crypto-drain cohort, ~$35M+ across ~150+ victims plus ~$150M Larsen heist — federal-record-attested via March 2025 NDCA forfeiture filing); T11.006.002 ~$650K+ confirmed (Iacovone iCloud-MetaMask case, April 2022) plus broader 2022–2024 iCloud-backup cohort.
 
 **Key teaching point:** Both sub-Techniques share the structural feature of seed-phrase material at rest in a third-party storage substrate whose security posture is independent of the wallet vendor and the user's on-chain hygiene. The user-side mental model "I'm self-custodial because I hold my own keys" collapses when the seed-phrase material is held by a third-party service. The exfiltration-to-drain time window is *unbounded* — once the encrypted material is in attacker hands, offline brute-force proceeds at the attacker's pace, and no credential rotation closes the window.
+
+## Summary
 
 ## Timeline
 
@@ -26,7 +29,7 @@ Canonical case: **iCloud-backup MetaMask seed-phrase cohort — 2022-04.** Domin
 
 The structural distinction: T11.006.002 is opt-in by inaction — neither the user nor the wallet vendor opted out of the OS-level default. The user did nothing to create this custody surface; the wallet app's default behaviour created it.
 
-## References
+## Public references
 
 - `[lastpass2022breach]` — LastPass December 2022 breach disclosure
 - `[ndca2025larsen]` — NDCA forfeiture filing March 2025 (Larsen ~$150M heist)

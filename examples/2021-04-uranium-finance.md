@@ -2,7 +2,7 @@
 
 **Loss:** approximately \$50M across multiple token pairs bridged or deployed on BSC (BUSD, WBNB, ETH, and others held in Uranium V2 liquidity pools). Funds were not recovered or returned.
 **OAK Techniques observed:** **OAK-T9.004** (Access-Control Misconfiguration — broadly construed; the V2 pair contract was deployed with a swap-amount calculation that contained a multiplication-by-1000-where-multiplication-by-10000-was-coded arithmetic error, creating a path for any caller to extract 10x the correct swap output from affected pools; no access-control guard validated that the swap-output amount was consistent with the pool's reserve ratio). **OAK-T9.011** (Precision-Loss / Rounding Attack — the arithmetic error was structurally a precision-loss error: the contract multiplied the input amount by an incorrect constant (1000 vs. 10000 in the integer-math amplification step), causing the output calculation to systematically over-credit the swapper).
-**Attribution:** **pseudonymous (no public attribution)**. The attacker's address was identified on BSC scan; no wallet-cluster attribution to a known actor was published by on-chain analytics providers. The rapid discovery — within hours of the V2 deployment — suggests that MEV searchers or opportunistic actors monitoring new BSC contract deployments were the likely exploiters.
+**Attribution:** **pseudonymous**. The attacker's address was identified on BSC scan; no wallet-cluster attribution to a known actor was published by on-chain analytics providers. The rapid discovery — within hours of the V2 deployment — suggests that MEV searchers or opportunistic actors monitoring new BSC contract deployments were the likely exploiters.
 **Key teaching point:** **Uranium Finance is the canonical worked example of an arithmetic-error drain introduced during a protocol-migration contract deployment — the single most expensive integer-math bug in DeFi history at the time of the exploit.** The incident demonstrates that a V1-to-V2 migration, even when the V2 code is a fork of audited, battle-tested code (Uniswap v2), reintroduces the risk of a one-line arithmetic typo in the migration-specific contract — effectively the contract-deployment equivalent of a production-configuration error — and that the absence of a migration-delay / grace period or community-review window between V2 deployment and V2 activation is the structural T12.004 pre-condition that converts a one-line bug into a \$50M drain.
 
 ## Summary
@@ -35,7 +35,7 @@ The Uranium Finance exploit is the canonical anchor for OAK-T9.011 (Precision-Lo
 
 The distinction between T9.011 (precision-loss) and T9.004 (access-control) in the Uranium case is that the arithmetic error is the **technical mechanism** (T9.011), while the absence of an output-amount validation that would have rejected the output as inconsistent with the pool's invariant is the **access-control / validation gap** (T9.004). A correct Uniswap v2 implementation validates the output through the constant-product invariant check at the end of the swap; the Uranium V2 check was either missing or also used the wrong constant, meaning the invariant-validation guard that would have caught the arithmetic error was itself flawed. This dual failure — wrong arithmetic constant + no validating invariant check — is the forensic signature of the Uranium exploit class.
 
-## References
+## Public references
 
 - Uranium Finance, "Uranium Finance Exploit Post-Mortem," April 28, 2021 (via Medium)
 - PeckShield, "Uranium Finance Root Cause Analysis," April 28, 2021

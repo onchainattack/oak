@@ -1,10 +1,13 @@
 # Embedded-Wallet and Trader-Tooling Supply-Chain Compromise Cohort — 2024–2026
 
-**Tags:** OAK-T11.008, OAK-T11.009
+**OAK Techniques observed:** OAK-T11.008, OAK-T11.009
 
+**Attribution:** **unattributed** (aggregate cohort).
 **Loss:** T11.008 ~$XXX million (Polymarket Magic-Labs takeover, September 2024, exact extraction undocumented at class level; Polymarket comment-section phishing campaign exploiting Magic Labs auth path, November 2025); T11.009 aggregate undocumented at class level (multiple npm/PyPI supply-chain campaigns targeting Polymarket bot builders, 2025-12 to 2026-01; overlap with DPRK-attributed BeaverTail/InvisibleFerret npm campaigns).
 
 **Key teaching point:** Both Techniques target the **developer/trader tooling ecosystem** rather than end-user wallets. T11.008's victims are end-users of embedded-wallet platforms (Magic Labs, Privy, Web3Auth) whose wallet access is mediated through a third-party auth provider; T11.009's victims are bot builders and quant developers who maintain plaintext private keys in `.env` files for automated signing. In both cases, the user's mental model of non-custodial control collapses at a third-party service layer — the auth provider for T11.008, the package registry for T11.009.
+
+## Summary
 
 ## Timeline
 
@@ -29,13 +32,14 @@ Compromise of trader-tooling distribution channels (npm, PyPI, GitHub repositori
 Canonical case: **Polymarket trader-tooling npm supply-chain compromise — 2025-12 to 2026-01.** Trojanised npm packages (`polymarket-clob`, `polymarket-copytrading-bot-*`, `sha256-validation`, `sha256-validator-pro`, `solana-utils-sdk`, `synced-plus-agent`) exfiltrated `.env` files and private-key material to attacker-controlled infrastructure. The `dev-protocol` GitHub organisation was hijacked to host polished but trojanised repositories with artificially-inflated star counts. C2 endpoint overlap with DPRK-attributed Vidar Stealer / BeaverTail / InvisibleFerret campaigns.
 
 Infrastructure fingerprints:
+
 - Package names targeting a specific platform's tooling ecosystem with download-count manipulation for social proof
 - GitHub organisations under hijacked credentials with polished READMEs and inflated star counts
 - Code reading `.env`, `wallet.txt`, `wallets.json`, `keys/*.json`, `~/.config/solana/id.json`, `~/.aws/credentials` at install/build/first-run time
 - Exfiltration via HTTPS POST to attacker-controlled IP/domain
 - Secondary backdoor capabilities (port-22 SSH backdoors, IP fingerprinting, reverse shells)
 
-## References
+## Public references
 
 - `[magiclabs2024takeover]` — Polymarket Magic Labs takeover (September 2024)
 - `[polymarketphishing2025]` — Polymarket comment-section phishing campaign (November 2025)

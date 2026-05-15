@@ -2,7 +2,7 @@
 
 **Loss:** approximately $1.7M extracted from Paraluni's masterChef contract via a price-calculation manipulation attack funded by flash loans.
 **OAK Techniques observed:** OAK-T9.001 (Oracle Price Manipulation — primary; the attacker exploited a price-calculation bug in Paraluni's masterChef contract, manipulating the liquidity-addition pricing through flash-loan-funded pool-state distortion). OAK-T9.002 (Flash-Loan-Funded Attack — structurally co-occurring; the attacker used flash loans to fund the capital base for the price-manipulation cycle).
-**Attribution:** pseudonymous; the attacker has not been publicly identified. No portion of the funds was returned.
+**Attribution:** **unattributed** pseudonymous; the attacker has not been publicly identified. No portion of the funds was returned.
 **Key teaching point:** A masterChef-style yield-farming contract that computes liquidity-addition prices from live pool state without TWAP smoothing or deviation breakers is a standing T9.001 surface — the masterChef pattern, widely deployed across BSC yield farms in the 2021-2022 period, inherits the same pool-state-as-oracle vulnerability that the lending-market oracle class (bZx, Harvest, Cream) made canonical on Ethereum.
 
 ## Summary

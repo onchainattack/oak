@@ -2,7 +2,7 @@
 
 **Loss:** cohort-level MEV extraction across thousands of newly created tokens on pump.fun and Raydium pools. Individual sandwich/snipe extractions range from sub-SOL to hundreds of SOL-equivalent per launch; aggregate extraction across the cohort estimated in the tens of millions of USD-equivalent across 2024–2025.
 **OAK Techniques observed:** **OAK-T9.012** (Initial Liquidity Sandwich Attack — primary; MEV searchers targeting newly created tokens on pump.fun and Raydium pools execute initial-liquidity sandwich and sniping strategies: the searcher observes the token creation and initial liquidity addition, front-runs the first trades at extreme pre-liquidity prices, and back-runs the post-liquidity price discovery with a dump of acquired tokens). **OAK-T5.004** (Sandwich MEV Extraction — secondary; the broader MEV-sandwich infrastructure on Solana that supports the initial-liquidity-sandwich pattern, including private-mempool-access, bundle-construction, and block-leader-collaboration primitives).
-**Attribution:** **pseudonymous (at cohort scale)** — MEV searcher bot addresses are on-chain attributable; the individual operator identities behind the principal sniper bots are pseudonymous. Multiple independent searcher entities operate in this cohort.
+**Attribution:** **pseudonymous** — MEV searcher bot addresses are on-chain attributable; the individual operator identities behind the principal sniper bots are pseudonymous. Multiple independent searcher entities operate in this cohort.
 **Key teaching point:** **The pump.fun / Solana token-launch MEV sniping cohort is the 2024–2025 operational anchor for T9.012 on a non-EVM chain — Solana's low-latency block times, transparent mempool (pre-scheduler-upgrade), and high token-launch velocity on pump.fun created a structurally distinct but functionally equivalent initial-liquidity-sandwich surface to the Uniswap V2/V3 and PancakeSwap patterns documented on EVM chains.** The incident demonstrates that T9.012 is chain-agnostic: any AMM-based token-deployment pattern with a public mempool or observable transaction stream and atomic/semi-atomic execution capability supports the sandwich-at-addLiquidity pattern.
 
 ## Summary
@@ -10,6 +10,7 @@
 Pump.fun is a Solana-based token-launch platform that allows users to create new tokens and establish initial liquidity pools via a bonding-curve mechanism. Tokens that graduate from the pump.fun bonding curve to Raydium (Solana's primary AMM) undergo a liquidity-addition transaction that establishes the token's first Raydium pool.
 
 The token-launch mechanics create the structural preconditions for T9.012:
+
 1. The token creation and bonding-curve graduation are publicly observable on-chain.
 2. The initial Raydium liquidity addition is a discrete transaction whose timing and parameters are predictable from on-chain state.
 3. The first trade after liquidity addition occurs at a price determined by the constant-product formula with the initial reserves — which may differ dramatically from the post-liquidity equilibrium price.
@@ -40,7 +41,7 @@ T9.012 (Initial Liquidity Sandwich Attack) is the primary classification because
 
 T5.004 (Sandwich MEV Extraction) is the secondary classification because the broader MEV-sandwich infrastructure on Solana (sniper bots, bundle-construction primitives, private-mempool-access arrangements) supported the initial-liquidity-sandwich pattern. T9.012 is a specific sub-class of the broader T5.004 sandwich surface — T5.004 sandwiches regular swap transactions in established pools; T9.012 sandwiches the liquidity-addition transaction that creates the pool.
 
-## References
+## Public references
 
 - Pump.fun bonding-curve and Raydium graduation mechanics documentation
 - Solana MEV searcher bot-address profiling (pump.fun/Raydium sniper bot clusters)

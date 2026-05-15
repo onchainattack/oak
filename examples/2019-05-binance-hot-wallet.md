@@ -2,7 +2,7 @@
 
 **Loss:** approximately \$40M (7,074 BTC at the BTC/USD rate of the time) extracted from Binance's Bitcoin hot wallet via a coordinated multi-technique attack combining phishing, credential harvesting, and 2FA bypass to gain access to Binance's hot-wallet signing infrastructure.
 **OAK Techniques observed:** **OAK-T11.001** (Third-Party Signing Vendor Compromise — the attack compromised Binance's internal hot-wallet signing infrastructure via phishing and credential theft; Binance was the custodian, and the custodian's operational security was the failure surface). **OAK-T15.003** (Operator Endpoint / Infrastructure Compromise — the entry vector involved phishing Binance employees for credentials and API keys, plus a 2FA bypass that allowed transaction authorization from the compromised accounts). **OAK-T7.001** (Mixer-Routed Hop — the attacker split the stolen BTC across multiple wallets and began routing through mixers; on-chain clustering identified the primary outflow addresses but recovery was minimal).
-**Attribution:** **inferred-strong (DPRK — Lazarus Group per UN Panel of Experts and US Treasury).** The attack methodology (phishing + credential harvesting + 2FA bypass + exchange hot-wallet target), the laundering pattern (multi-hop BTC splitting into coinjoin services), and the timing overlapped with the broader 2017-2020 DPRK exchange-vendor compromise campaign (TraderTraitor cohort). The UN Panel of Experts on DPRK sanctions subsequently attributed the Binance 2019 hack to DPRK cyber-operations in their 2020 annual report. No named individuals were charged.
+**Attribution:** **inferred-strong** The attack methodology (phishing + credential harvesting + 2FA bypass + exchange hot-wallet target), the laundering pattern (multi-hop BTC splitting into coinjoin services), and the timing overlapped with the broader 2017-2020 DPRK exchange-vendor compromise campaign (TraderTraitor cohort). The UN Panel of Experts on DPRK sanctions subsequently attributed the Binance 2019 hack to DPRK cyber-operations in their 2020 annual report. No named individuals were charged.
 **Key teaching point:** **The Binance 2019 hack is the canonical pre-Bybit exchange-sized hot-wallet compromise that established the DPRK exchange-vendor compromise pattern: phishing → credential harvesting → 2FA bypass → API-key / signing-key extraction → hot-wallet drain.** The entire campaign class (Binance 2019 → KuCoin 2020 → Liquid 2021 → Crypto.com 2022 → Poloniex 2023 → DMM Bitcoin 2024 → WazirX 2024 → BingX 2024 → Phemex 2025 → Bybit 2025) follows the same structural template, with the 2019 Binance case as the early scaled precedent. Binance absorbed the loss through its SAFU (Secure Asset Fund for Users) insurance fund — the first large-scale invocation of an exchange-operated user-protection fund — setting the operational precedent for subsequent exchange-loss-absorption mechanisms.
 
 ## Summary
@@ -38,7 +38,7 @@ The UN Panel of Experts on DPRK sanctions subsequently attributed the attack to 
 
 Approximately \$40M (7,074 BTC). Binance covered the full loss through SAFU. Recovery was minimal; the stolen BTC was laundered through mixer services and never recovered.
 
-## References
+## Public references
 
 - Binance, "Binance Security Breach Update," May 7, 2019 (official blog post)
 - Changpeng Zhao (@cz_binance), Twitter thread, May 7, 2019

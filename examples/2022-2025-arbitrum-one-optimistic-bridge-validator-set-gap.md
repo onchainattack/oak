@@ -4,7 +4,7 @@
 
 **OAK Techniques observed:** **OAK-T10.004** (Optimistic-Bridge Fraud-Proof Gap) — primary; the Arbitrum One bridge relies on an optimistic rollup verification model where state-root proposals are accepted after a ~7-day challenge window unless a validator submits a fraud proof. The 1-of-N honest-validator assumption reduces to 0-of-N or 1-of-N (operator-only) when no independent third-party validators operate. Sub-case (a) "absent challenger network" at deployment; sub-case (d) "censorship / liveness defeat" given the sequencer's ability to potentially exclude fraud-proof transactions.
 
-**Attribution:** **unattributed (architecture-review class — no single threat-actor cluster applies).** The gap is documented in rollup-security literature (L2BEAT stage classifications, academic dispute-game analyses) and in Arbitrum's own documentation of the validator-set assumptions.
+**Attribution:** **unattributed** The gap is documented in rollup-security literature (L2BEAT stage classifications, academic dispute-game analyses) and in Arbitrum's own documentation of the validator-set assumptions.
 
 **Key teaching point:** **The Arbitrum One bridge demonstrates that optimistic-rollup fraud-proof security is only as strong as the validator set it names — and a validator set of one is structurally identical to an absent validator set from the defender's risk-modelling perspective.** The gap between the architectural assumption (any honest party can challenge) and the deployed reality (only the rollup operator runs validators) is the T10.004 surface, and it persists as a standing risk even when the fraud-proof contracts are correctly implemented.
 

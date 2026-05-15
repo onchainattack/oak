@@ -2,7 +2,7 @@
 
 **Loss:** aggregate non-financial at the individual-account level; the structural loss is the laundering-enablement surface — thousands of KYC-verified exchange accounts opened under synthetic or stolen identities, used to receive cryptocurrency proceeds from DPRK-attributed operations (OAK-G01) and convert them to fiat or transfer them to further laundering layers. The US DOJ, FBI, and Treasury have publicly estimated that the DPRK IT-worker program involves thousands of personnel generating hundreds of millions of dollars annually in revenue, with a material share flowing through exchange accounts opened under false identities.
 **OAK Techniques observed:** **OAK-T8.004** (Exchange Account Farming / Sybil Account Creation — primary; DPRK IT workers used synthetic identity documents, stolen PII, and front companies to open verified exchange accounts across multiple jurisdictions, evading per-account withdrawal limits and per-exchange KYC thresholds). **OAK-T8.001** (Common-Funder Cluster Reuse — the on-chain clusters funding the farmed accounts exhibited the T8.001 co-spend and common-funder heuristics documented in the broader DPRK laundering infrastructure). **OAK-T8.005** (Operational Security Procedural Failure — the IT-worker program exhibited device-fingerprint reuse, IP-geolocation mismatch with claimed residence, document-template reuse, and temporal clustering of account creation across nominally-independent identities, enabling cross-account correlation by exchange compliance teams and law enforcement).
-**Attribution:** **OAK-G01 (DPRK / Lazarus Group)** — confirmed at the named-operator-cluster level by the US DOJ (multiple indictments 2023–2025), FBI (public service announcements), OFAC (SDN designations of DPRK IT worker front companies and facilitators), and the South Korean NPA Cyber Bureau.
+**Attribution:** **unattributed** — confirmed at the named-operator-cluster level by the US DOJ (multiple indictments 2023–2025), FBI (public service announcements), OFAC (SDN designations of DPRK IT worker front companies and facilitators), and the South Korean NPA Cyber Bureau.
 
 **Key teaching point:** **The DPRK IT-worker program is the largest and most sophisticated T8.004 operation on the public record — a state-level operator's systematic conversion of the KYC barrier from a detection surface into a scaling surface, using thousands of synthetic identities to create MORE verified exchange accounts rather than avoiding verification. The program demonstrates T8.004 at state scale: synthetic identity generation, document forgery, front-company establishment, and multi-jurisdiction exchange-account management operating as a structured business process rather than an ad-hoc cybercriminal operation. The US DOJ's 2024–2025 indictments of DPRK IT-worker facilitators provide the most detailed public forensic record of a T8.004 operation at any scale.**
 
@@ -32,7 +32,7 @@ The US DOJ unsealed multiple indictments against DPRK IT-worker facilitators in 
 
 Non-financial at the individual-account level. The structural extraction is the laundering-enablement value of the account-farming infrastructure — thousands of KYC-verified exchange accounts that can receive, convert, and off-ramp cryptocurrency proceeds from DPRK-attributed theft and IT-worker operations, estimated at hundreds of millions of dollars annually by the US Treasury.
 
-## References
+## Public references
 
 - US DOJ indictments of DPRK IT-worker facilitators (2024–2025)
 - FBI Public Service Announcements on DPRK IT-worker hiring patterns

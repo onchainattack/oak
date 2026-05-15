@@ -4,7 +4,7 @@
 
 **OAK Techniques observed:** **OAK-T12.005** (Flash-Loan Governance Vote Manipulation — the attacker acquires governance voting power via uncollateralized flash-loan borrowing rather than through market purchase, delegation, or long-term accumulation. The attacker borrows a controlling quantity of governance tokens from DEX liquidity pools, uses the temporary voting power to create, vote on, and execute a malicious governance proposal, and repays the flash loan within the same transaction.) **OAK-T12.004** (Timelock-Free Protocol Upgrade Execution — the governance design anti-pattern in which the protocol's upgrade authority can execute a protocol upgrade without a mandatory timelock delay between governance approval and on-chain execution. The absence of a timelock eliminates the user-exit window and converts a governance-compromise event into an immediate full-protocol extraction.) **OAK-T9.002** (Flash-Loan-Enabled Exploit — the parent-class Technique for any exploit whose capital base is provided by a flash loan. The T9.002 surface is the capital-availability precondition; the T12.005 surface is the governance-design vulnerability that makes that capital politically consequential.)
 
-**Attribution:** **multi-actor** — Beanstalk attacker operated independently; Fortress Protocol and Elephant Money attackers operated independently. No cross-protocol pattern-of-conduct linking the three major cases has been established in the public forensic record. The smaller 2023–2024 flash-loan governance attacks are typically unattributed or attributed to opportunistic single-actor operations.
+**Attribution:** **unattributed** — Beanstalk attacker operated independently; Fortress Protocol and Elephant Money attackers operated independently. No cross-protocol pattern-of-conduct linking the three major cases has been established in the public forensic record. The smaller 2023–2024 flash-loan governance attacks are typically unattributed or attributed to opportunistic single-actor operations.
 
 **Key teaching point:** **The flash-loan governance attack is the canonical illustration of why governance-voting-power measurement design is a security-critical decision, not a governance-process convenience.** A governance contract that measures voting power at the block height of proposal execution (or proposal creation, but at the same block height at which tokens can be flash-loaned) is structurally vulnerable to T12.005 regardless of any other governance security property — regardless of quorum thresholds, proposal-review processes, or multisig hardening. The fix is a single design decision: measure voting power at a prior snapshot block that precedes the proposal-creation block by a window longer than the flash-loan duration. The fix is simple but load-bearing — and the six-week window in April–May 2022 during which Beanstalk, Fortress Protocol, and Elephant Money were all exploited via flash-loan governance attacks demonstrates that the vulnerability class was both well-understood and systematically unmitigated across the DeFi governance ecosystem at that time.
 
@@ -20,6 +20,7 @@ The attack primitive exploits two properties of DeFi governance design:
 2. **Voting power is measured at the current block.** Many governance contracts compute voting power as `balanceOf(tokenHolder)` at the block of proposal execution, rather than at a prior snapshot block. If governance tokens can be acquired at block N and voting power is measured at block N, flash-loan-acquired tokens confer legitimate voting power.
 
 The attacker's transaction is atomically structured:
+
 - Borrow governance tokens from DEX liquidity pools via flash loan
 - Create and vote on a malicious governance proposal using the borrowed tokens as voting power
 - Execute the proposal (treasury drain, mint-authority grant, or contract upgrade)
@@ -45,6 +46,7 @@ All three canonical cases (Beanstalk, Elephant Money, Fortress Protocol) exploit
 ### The Post-2022 Mitigation Response
 
 The six-week window of April–May 2022 drove a systematic governance-design response across the DeFi ecosystem:
+
 - **Snapshot-based voting power:** governance contracts migrated from current-block `balanceOf` to prior-block `getPriorVotes` (or equivalent snapshot mechanisms), measuring voting power at a block that precedes the proposal-creation block.
 - **Minimum holding periods:** some protocols enforced a minimum governance-token holding period (N blocks) before tokens confer voting power — a stronger guarantee than snapshot-block alone.
 - **Timelock-gated execution:** mandatory timelocks between proposal approval and execution became standard, eliminating same-block flash-loan-vote-and-execute atomicity.

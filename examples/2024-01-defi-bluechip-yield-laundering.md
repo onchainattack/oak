@@ -25,6 +25,7 @@ The laundering pattern in blue-chip DeFi protocols followed a consistent structu
 The cover-crowd density advantage was the load-bearing structural feature. Aave's USDC lending market processes orders of magnitude more daily deposit/withdraw volume than any mixer ever did. A single $500,000 deposit into Aave USDC is submerged in the legitimate deposit flow; the same amount deposited into Tornado Cash was a high-visibility event. The laundering operator leveraged this asymmetry to move from a high-signal cover-crowd staging layer (Tornado Cash, detected at deposit time) to a low-signal cover-crowd staging layer (blue-chip DeFi, detected only through per-position behavioural analysis).
 
 The detection challenge is the per-position behavioural analysis requirement. Distinguishing a laundering position from a legitimate yield-user position requires:
+
 - Per-position duration distribution analysis (laundering positions cluster at shorter durations).
 - Yield-claim-rate analysis (laundering positions claim yield at below-baseline rates).
 - Deposit-source/withdrawal-recipient divergence analysis (where the protocol permits).

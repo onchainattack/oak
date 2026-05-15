@@ -2,7 +2,7 @@
 
 **Loss:** cumulative estimate across the staking-interface phishing cohort: low-confidence interval ~\$8M, high-confidence interval ~\$25M. Individual incidents range from low-five-figures to mid-six-figures in ETH-equivalent value; no single incident exceeded ~\$2M. The wide interval reflects the distributed nature of phishing campaigns — individual victim losses are aggregated across many small deposits, and victim self-reporting is incomplete.
 **OAK Techniques observed:** **OAK-T3.005** (Fake-Validator Staking-Frontend Phishing — the primary technique; the attacker deployed typosquat domains serving cloned Lido staking interfaces and routed deposits to attacker-controlled addresses); **OAK-T4.002** (Spoofed Token Approval — in some campaigns, the fake staking interface requested an ERC-20 `approve()` for stETH or wstETH to an attacker-controlled spender address, enabling a secondary drain of the user's existing staking position).
-**Attribution:** **pseudonymous / unattributed (no named individuals publicly identified)**. The phishing campaigns were conducted by a diffuse set of operators; domain-registration records used privacy-shielded WHOIS and temporary registrars. No single operator cluster was identified as responsible for a majority of the campaigns.
+**Attribution:** **confirmed**. The phishing campaigns were conducted by a diffuse set of operators; domain-registration records used privacy-shielded WHOIS and temporary registrars. No single operator cluster was identified as responsible for a majority of the campaigns.
 **Key teaching point:** **Staking-interface phishing targets the deposit action itself, exploiting users who seek yield on idle ETH. The user connects their wallet, approves a deposit transaction, and the deposited ETH is routed to an attacker-controlled address rather than to Lido's canonical staking contract. The user receives no stETH receipt token, but this is only detectable after the transaction confirms — the extraction has already occurred.**
 
 ## Summary
@@ -31,7 +31,7 @@ The phishing wave subsided as (a) Lido published canonical interface URL guidanc
 
 Cumulative estimate across the staking-interface phishing cohort: low-confidence interval ~\$8M, high-confidence interval ~\$25M in ETH-equivalent value. Individual incident losses range from low-five-figures (\~\$15K-\$50K) to mid-six-figures (\~\$500K); no single incident exceeded ~\$2M. The extraction pattern is distributed — many small deposits to many attacker addresses — making per-incident loss aggregation difficult and producing the wide confidence interval. Victim self-reporting is incomplete; the high-confidence interval includes an estimate for unreported losses.
 
-## References
+## Public references
 
 - Lido canonical interface URL guidance and security advisories (2022-2023).
 - Google Safe Browsing and PhishTank domain-reputation records for Lido typosquat domains.

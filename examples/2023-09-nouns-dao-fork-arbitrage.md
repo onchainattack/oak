@@ -4,7 +4,7 @@
 
 **OAK Techniques observed:** **OAK-T16.002** (Hostile Vote / Treasury Drain — primary; the fork mechanism was the governance-primitive that enabled the treasury extraction, exercised via a governance vote by the rage-quit cohort). **OAK-T5.005** (Treasury-Management Exit — structurally adjacent; the fork extraction was a governance-exit rather than a rug-pull exit). **OAK-T9.003** (Governance Attack — structurally adjacent; the fork mechanism's governance-arbitrage surface was the load-bearing primitive).
 
-**Attribution:** **unattributed (governance-design class — no threat-actor cluster applies).** The fork was executed by a collective of Nouns DAO NFT holders exercising a governance mechanism that was deliberately designed into the DAO's governance contracts. The participants operated through their Nouns NFT holdings and voted with their tokens — structurally indistinguishable from legitimate governance participation.
+**Attribution:** **unattributed** The fork was executed by a collective of Nouns DAO NFT holders exercising a governance mechanism that was deliberately designed into the DAO's governance contracts. The participants operated through their Nouns NFT holdings and voted with their tokens — structurally indistinguishable from legitimate governance participation.
 
 **Key teaching point:** **A rage-quit / fork mechanism that distributes pro-rata treasury value is structurally a governance-arbitrage primitive — any tokenholder can at any moment convert their governance share into their pro-rata treasury claim, and when the treasury-per-token ratio exceeds the secondary-market token price, the fork mechanism becomes an economically-rational exit path independent of governance-disagreement motivation.** The Nouns DAO fork was the canonical exercise of this primitive at scale: the fork mechanism was intended to protect a minority from governance capture, but the same mechanism can be exercised by a plurality for pure economic arbitrage.
 
@@ -13,6 +13,7 @@
 Nouns DAO is a generative-art NFT-governed DAO on Ethereum. One Noun NFT is auctioned daily; the auction proceeds flow to the Nouns DAO treasury. Noun holders govern the treasury's deployment — funding public-goods projects, charitable donations, and community initiatives. The DAO's governance contract included a **rage-quit / fork mechanism** from inception, designed as a minority-protection device: if a proposal passed that a minority of Noun holders opposed, the dissenting minority could rage-quit the DAO, taking their pro-rata share of the treasury and deploying a forked Nouns DAO (a separate governance instance with its own treasury and its own Noun NFTs).
 
 The fork mechanism's economics worked as follows:
+
 - Any Noun holder could signal their intent to fork.
 - If holders of >= 20% of Nouns signalled, a fork could be executed.
 - Forking Noun holders would send their original Nouns to a burn address and receive pro-rata treasury ETH plus new "forked Nouns" NFTs in the fork DAO.

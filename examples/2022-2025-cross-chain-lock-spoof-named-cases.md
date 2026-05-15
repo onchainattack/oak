@@ -4,7 +4,7 @@
 
 **OAK Techniques observed:** **OAK-T2.003** (Cross-Chain Locked-Liquidity Spoof — primary; the lock receipt on Chain A is structurally decoupled from the LP pool on Chain B, making the verification semantically empty while technically "confirmed" at the Chain A block-explorer layer). **OAK-T2.002** (Locked-Liquidity Spoof — structurally adjacent; the underlying lock-claim misrepresentation is T2.002 on each chain; T2.003 is the cross-chain variant where the chain-hop is the additional obfuscation layer). **OAK-T6** (Defense Evasion — the cross-chain lock claim exploits the absence of unified cross-chain locker-registry verification infrastructure).
 
-**Attribution:** **pseudonymous-cohort** (individual deployer clusters are identifiable through locker-contract address correlation and cross-chain funder-graph analysis; per-cluster named attribution is sparse at v0.1).
+**Attribution:** **pseudonymous** (individual deployer clusters are identifiable through locker-contract address correlation and cross-chain funder-graph analysis; per-cluster named attribution is sparse at v0.1).
 
 **Key teaching point:** **A lock receipt on Chain A for an LP pool on Chain B is a T2.003 surface by construction — the verification is semantically empty regardless of whether the Chain A receipt is otherwise well-formed.** The cross-chain architecture defeats per-chain locker verification because no canonical cross-chain locker registry exists at v0.1, and the per-chain block-explorer UX surfaces lock entries without surfacing the chain-of-origin of the LP token the lock references.
 

@@ -2,7 +2,7 @@
 
 **Loss:** approximately $45M (~697,000 BUNNY tokens minted-and-dumped).
 **OAK Techniques observed:** **OAK-T9.001** (Oracle Price Manipulation — yield-aggregator-mint-pricing subclass) + **OAK-T9.002** (Flash-Loan-Enabled Exploit) + **OAK-T5.001** (Hard LP Drain — downstream BUNNY-to-WBNB liquidity dump).
-**Attribution:** **pseudonymous-unattributed**; no recovery; the BUNNY token never recovered to pre-event pricing.
+**Attribution:** **pseudonymous**; no recovery; the BUNNY token never recovered to pre-event pricing.
 **Key teaching point:** **Yield-aggregator mint-reward pricing computed from real-time pool reserves is a flash-loan-vulnerable pricing surface** — the user-incentive function (BUNNY-mint-rate proportional to user-deposit-value-in-pool) becomes an extraction surface when the value-in-pool computation uses post-trade reserves rather than TWAP. PancakeBunny is the canonical foundational worked example for the yield-aggregator-mint-pricing subclass and pairs with Spartan Protocol May 2, 2021 (LP-share-virtual-price subclass) to give the May-2021 BSC DeFi cohort articulated subclass coverage.
 
 ## Summary

@@ -2,7 +2,7 @@
 
 **Loss:** approximately 24,000 BTC (~$250,000 at May 2012 prices) stolen from Bitfloor's Bitcoin hot wallet via a compromise of the exchange's wallet-server infrastructure. The attacker gained access to an unencrypted backup of Bitfloor's wallet keys, extracted the hot-wallet signing keys, and drained the hot wallet in a single transaction.
 **OAK Techniques observed:** **OAK-T11.001** (Third-Party Signing Vendor Compromise — primary; the exchange's wallet-server infrastructure was the signing surface; Bitfloor was the custodian, and the custodial hot-wallet operational security was the failure surface — unencrypted backup of wallet keys on a server accessible to the attacker). **OAK-T15.003** (Operator Endpoint / Infrastructure Compromise — the attacker gained access to Bitfloor's wallet-server infrastructure via an unsecured server hosting the unencrypted key backup).
-**Attribution:** **pseudonymous (no public attribution)**. Bitfloor founder Roman Shtylman disclosed the incident publicly on the Bitcoin Talk forum; the attacker's identity was never determined.
+**Attribution:** **pseudonymous**. Bitfloor founder Roman Shtylman disclosed the incident publicly on the Bitcoin Talk forum; the attacker's identity was never determined.
 **Key teaching point:** **Bitfloor is the earliest documented US-based Bitcoin exchange hot-wallet compromise and the canonical 2012 worked example of T8.001 — an unencrypted key backup on an insecure server produced the full hot-wallet drain.** The case established the operational security pattern (unencrypted key backup → server compromise → hot-wallet drain) that would recur across the 2013-2016 exchange-hack era (Bitstamp 2015, Bter 2015, Bitfinex 2016) until cold-storage and hardware-security-module (HSM) architectures became standard.
 
 ## Summary
@@ -31,7 +31,7 @@ The incident is the earliest-documented US-exchange hot-wallet compromise involv
 
 Approximately 24,000 BTC (~$250,000 at May 2012 prices; ~$500M-$1B at 2024-2025 Bitcoin prices). Recovery was zero at the on-chain layer; Shtylman committed to off-chain repayment to affected users from personal/exchange resources.
 
-## References
+## Public references
 
 - Roman Shtylman, Bitfloor incident disclosure on Bitcoin Talk forum, May 2012
 - Bitcoin Talk community forensic analysis of the 24,000 BTC draining transaction

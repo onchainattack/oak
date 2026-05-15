@@ -2,7 +2,7 @@
 
 **Loss:** ~$900,000 in market positions held by Polymarket bettors who would have profited from a YES resolution. The "loss" here is bettor-stake forfeiture in a correctly-resolved market — not theft. The economically operative event is the **threats issued against the journalist whose reporting the market relied on**, which constitute the first publicly documented case of physical coercion of an off-chain resolution source as an oracle attack vector in a crypto-prediction-market context.
 **OAK Techniques observed:** **OAK-T9.006.003** — Off-chain Resolution-Source Coercion. The canonical worked-example anchor for the sub-Technique. Parent Technique: OAK-T9.006 (Subjective-Oracle Resolution Manipulation).
-**Attribution:** **confirmed at the action level** (Times of Israel correspondent Emanuel Fabian published a first-person account; Washington Post, Haaretz independently corroborated the threats). Specific bettor identification was not pursued by Polymarket or law enforcement at v0.1; the Washington Post account documents threats from multiple distinct anonymous accounts, consistent with a small bettor cohort acting individually rather than a coordinated operator.
+**Attribution:** **confirmed** (Times of Israel correspondent Emanuel Fabian published a first-person account; Washington Post, Haaretz independently corroborated the threats). Specific bettor identification was not pursued by Polymarket or law enforcement at v0.1; the Washington Post account documents threats from multiple distinct anonymous accounts, consistent with a small bettor cohort acting individually rather than a coordinated operator.
 
 ## Timeline (UTC unless noted)
 

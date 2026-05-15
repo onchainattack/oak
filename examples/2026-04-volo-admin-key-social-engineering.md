@@ -1,10 +1,13 @@
 # Volo Admin-Key Social-Engineering Compromise — Sui — 2026-04-21
 
-**Tags:** OAK-T11.001, OAK-T9.004
+**OAK Techniques observed:** OAK-T11.001, OAK-T9.004
 
+**Attribution:** **unattributed** (aggregate cohort).
 **Loss:** ~$3.5M drained across three vaults (WBTC, XAUm, USDC); ~$3.44M recovered via rapid ecosystem coordination (WBTC intercept on LayerZero bridge, XAUm return via Sui Foundation, 90% of stolen funds recovered in ETH and converted back to stablecoins); **net loss ~$60K**, covered from Volo's treasury with zero passed to users.
 
 **Key teaching point:** Volo is the canonical 2026 case for **admin-key compromise in a protocol where the key was the entire security model** — three audits, a bug bounty program, and two and a half years of clean operation were all bypassed because a single admin key was the sole authorisation predicate, and that key was social-engineered out of the team's custody. The incident demonstrates that key-management hygiene is not an operational footnote — it is the load-bearing security control. Volo's response (self-disclosure before any third party detected the breach, ecosystem coordination within hours, and 98% recovery) is the benchmark for incident response in the admin-key-compromise class.
+
+## Summary
 
 ## Timeline
 

@@ -18,6 +18,7 @@ MEV searchers monitor the public mempool for `addLiquidity` transactions directe
 All three transactions are typically bundled atomically via MEV-Boost / Flashbots-style relays, eliminating inventory risk for the searcher.
 
 The structural victims:
+
 - **The deployer** receives fewer LP tokens for the same deposited quote-asset amount because the front-run purchase dilutes the deployer's LP share.
 - **Early buyers** who trade in the blocks immediately following the pool creation may purchase at the inflated post-sandwich price.
 
@@ -37,7 +38,7 @@ The pattern has been operational since the Uniswap V2 token-deployment wave of 2
 
 No single headline loss; individual sandwich extraction typically tens to low hundreds of ETH-equivalent per launch. The aggregate extraction across thousands of token launches since 2020 is material but distributed — the pattern's significance lies in its prevalence rather than in any single extracted amount.
 
-## References
+## Public references
 
 - Daian et al., "Flash Boys 2.0" (2019) — foundational MEV characterisation
 - Zhou et al., "SoK: Decentralized Finance (DeFi) Attacks" (2023) — academic taxonomy including AMM-deployment-layer surface

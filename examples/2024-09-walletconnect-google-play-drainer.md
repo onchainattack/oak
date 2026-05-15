@@ -13,6 +13,7 @@
 In approximately March or April 2024, a malicious Android app was published on Google Play under the developer name "UNS LIS." The app used multiple display names — "Mestox Calculator," "WalletConnect - DeFi & NFTs," and "WalletConnect - Airdrop Wallet" — to appear in search results for users looking for WalletConnect, the widely-used Web3 wallet-connection protocol. WalletConnect itself had no official mobile app at the time; the attacker exploited this gap by publishing an unofficial app that users searching Google Play for "WalletConnect" would find and install.
 
 The app employed a two-stage evasion mechanism to bypass Google Play's review process:
+
 1. **IP/User-Agent redirection:** After installation, the app checked the device's IP address and User-Agent string. Matching targets (mobile devices in target geographies) were redirected to a backend simulating the Web3Inbox service. Non-matching targets (desktop browsers, security-scanner IP ranges) were redirected to a legitimate website, making the app appear benign during automated review.
 2. **Anti-analysis protections:** The app included code to prevent debugging and static analysis, further frustrating automated review.
 

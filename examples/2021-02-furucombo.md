@@ -2,7 +2,7 @@
 
 **Loss:** approximately \$14M in various ERC-20 tokens (ETH, USDC, WBTC, DAI, USDT, and others held in user wallets that had approved the Furucombo proxy contract for token spending). Funds were not recovered or returned.
 **OAK Techniques observed:** **OAK-T9.004** (Access-Control Misconfiguration — the Furucombo proxy contract's function-signature whitelist contained a path that allowed an attacker to call arbitrary external contracts through the proxy with the proxy's accumulated user-approval authority). **OAK-T12.004** (Timelock-Free Protocol Upgrade Execution — broadly construed; while the exploit did not require a malicious upgrade per se, the proxy contract's architecture — an upgradeable proxy controlled by a single operator address without a timelock — meant that the full user-base approval surface was concentrated in a single contract with no governance delay, a structural T12.004 pre-condition).
-**Attribution:** **pseudonymous (no public attribution)**. The attacker deployed a custom exploit contract and executed the drain in a small number of transactions; no wallet-cluster attribution to a known group was published.
+**Attribution:** **pseudonymous**. The attacker deployed a custom exploit contract and executed the drain in a small number of transactions; no wallet-cluster attribution to a known group was published.
 **Key teaching point:** **Furucombo is the canonical DeFi worked example of an "approval-aggregation proxy" risk — a single contract address that users approve for token spending, where that contract's authority can be abused to drain any approved token across the entire user base.** The incident demonstrates that the security model of an all-in-one proxy contract is bounded by the weakest trusted-callee in its approval graph: a single pre-authorized integration (Aave v2, in this case) that the proxy can delegate-call into can become the vector through which the proxy's full approval authority is repurposed.
 
 ## Summary
@@ -37,7 +37,7 @@ The Furucombo exploit is a canonical OAK-T9.004 (Access-Control Misconfiguration
 
 The Furucombo proxy contract was an upgradeable proxy controlled by a single operator address without a governance timelock. While the exploit did not use the upgrade path (it exploited the proxy's existing trusted-callee surface rather than deploying a malicious upgrade), the structural pre-condition — a single-owner proxy without a mandatory delay between upgrade-proposal and execution — matches the T12.004 (Timelock-Free Protocol Upgrade Execution) pattern. The classification is cross-classification (broadly construed): the proxy-authority model, combined with the absence of a timelock, meant that any vulnerability in the proxy's access-control logic was inherently unconstrained by a community-review delay. The Furucombo case — alongside the 2020-2021 DeFi timelock-free-upgrade cohort — contributed to the 2022-2023 DeFi norm-shift toward mandatory governance timelocks for upgradeable proxies.
 
-## References
+## Public references
 
 - Furucombo, "Exploit Post-Mortem," February 28, 2021
 - PeckShield, "Furucombo Incident: Root Cause Analysis," February 27, 2021

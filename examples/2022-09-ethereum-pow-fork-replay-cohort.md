@@ -29,6 +29,7 @@ The replay surface:
 4. **The reverse replay is equally possible:** a user transacting on the PoW fork can have their transaction replayed on Ethereum mainnet, potentially draining mainnet assets the user intended to preserve.
 
 The replay surface was partially mitigated by:
+
 - **ETHPoW's chain-ID migration to 10001** — once the PoW fork adopted a distinct chain ID, EIP-155 signature verification rejected mainnet-signed transactions (chain ID 1) on the PoW fork (chain ID 10001), and vice versa.
 - **User-side replay protection** — some users sent zero-value "replay-protection" transactions on one chain to increment their nonce beyond the nonce of any pending transaction on the other chain, creating a nonce-mismatch barrier.
 - **Protocol-level replay protection** — protocols (stablecoin issuers, bridges, DEXes) deployed chain-ID-aware contracts on the PoW fork that rejected transactions with the wrong chain ID.

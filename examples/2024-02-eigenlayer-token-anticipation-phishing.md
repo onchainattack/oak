@@ -2,7 +2,7 @@
 
 **Loss:** cohort-level phishing losses across EigenLayer restakers targeted during the pre-launch window before the EIGEN token deployment (May 2024). Per-victim losses ranging from low four-figures to mid six-figures USD equivalent; aggregate across the cohort not consolidated in a single public loss figure at v0.1.
 **OAK Techniques observed:** **OAK-T4.009** (Pre-Token Brand-Anticipation Phishing — primary; attackers exploited the structural information gap created by EigenLayer's own public signalling about a future token launch — EigenLayer had publicly signalled an intention to launch a governance token, and during the pre-launch window before EIGEN's on-chain deployment, the attacker supplied fake "EigenLayer airdrop claim" portals that restakers connected to, authorising drainer contracts). **OAK-T4.008** (Fake-DEX Clone-Frontend Phishing — secondary; the phishing UIs presented a look-alike of the legitimate EigenLayer dApp interface, and the drainer-backend extraction substrate followed the Inferno / Angel drainer-kit pattern observed across the broader T4.008 distribution cohort).
-**Attribution:** **pseudonymous (at cohort scale)** — drainer-kit-backend attribution to Inferno / Angel / AngelFerno descendant operator-clusters; no individual operator attribution at v0.1.
+**Attribution:** **pseudonymous** — drainer-kit-backend attribution to Inferno / Angel / AngelFerno descendant operator-clusters; no individual operator attribution at v0.1.
 **Key teaching point:** **EigenLayer's pre-token anticipation phishing cohort is the calibration anchor for the T4.009 pattern at scale — the platform's own public signalling that a token will exist created the structural information gap the attacker exploited.** The EigenLayer case is structurally significant because it was the first major protocol where the phishing surface at material scale *preceded* the token's existence: restakers who had deposited into EigenLayer's protocol were targeted with "EigenLayer airdrop claim" phishing sites during the pre-launch window before EIGEN's official deployment, and the structural ambiguity ("you deposited → you're entitled to an airdrop → here's the claim portal") was credible enough that EigenLayer restakers — a technically sophisticated cohort — were successfully targeted.
 
 ## Summary
@@ -36,7 +36,7 @@ T4.009 (Pre-Token Brand-Anticipation Phishing) is the primary classification bec
 
 T4.008 (Fake-DEX Clone-Frontend Phishing) is the secondary classification because the phishing UIs presented a look-alike of the legitimate EigenLayer dApp interface, and the drainer-backend extraction substrate followed the Inferno / Angel drainer-kit pattern observed across the broader T4.008 distribution cohort. The T4.009→T4.008 chain (pre-token-anticipation lure → drainer-kit extraction) is a canonical composition pattern for this class.
 
-## References
+## Public references
 
 - EigenLayer public communications (blog posts, community calls, roadmap references) signalling future token plans pre-May 2024
 - ScamSniffer pre-token-anticipation phishing domain reports (EigenLayer typosquat domain cluster)

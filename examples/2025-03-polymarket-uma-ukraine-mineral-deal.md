@@ -2,7 +2,7 @@
 
 **Loss:** ~$7M in market volume resolved against the underlying real-world outcome. No funds drained; aggrieved YES-side bettors lost their stakes to a coordinated UMA-tokenholder vote that overrode the market's stated resolution criteria.
 **OAK Techniques observed:** **OAK-T9.006.001** — DVM Vote Capture by Economically-Interested Holder. The canonical worked-example anchor for the sub-Technique. Parent Technique: OAK-T9.006 (Subjective-Oracle Resolution Manipulation).
-**Attribution:** **confirmed at the structural level** (Polymarket itself publicly described this as an "unprecedented governance attack"); **inferred-strong at the operator level** — a single UMA whale cast ~5M UMA tokens via 3 wallets representing ~25% of the resolution vote.
+**Attribution:** **confirmed** (Polymarket itself publicly described this as an "unprecedented governance attack"); **inferred-strong at the operator level** — a single UMA whale cast ~5M UMA tokens via 3 wallets representing ~25% of the resolution vote.
 
 ## Timeline (UTC unless noted)
 

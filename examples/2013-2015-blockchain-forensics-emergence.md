@@ -2,7 +2,7 @@
 
 **Loss:** n/a (defender tooling). The emergence of on-chain transaction graph de-anonymization as a forensic discipline — Chainalysis (founded 2014), Elliptic (founded 2013), and CipherTrace (founded 2015) — created the forensic substrate that enabled law enforcement to trace Bitcoin flows from Silk Road, Mt. Gox, and subsequent major incidents. The technique (UTXO clustering, co-spend heuristics, change-address detection, exchange-deposit address clustering) transitioned from academic research to operational law-enforcement tooling during this period.
 **OAK Techniques observed:** **OAK-T8.003** (On-Chain Transaction Graph De-Anonymization) — primary; the canonical anchor for the technique as a forensic discipline. The academic foundations (Meiklejohn et al. 2013 "A Fistful of Bitcoins"; Ron and Shamir 2013) provided the clustering heuristics; the Chainalysis/Elliptic/CipherTrace founding era operationalised them. **OAK-T7.001** (Mixer-Routed Hop — broadly construed at the forensic-tracing layer; the transaction-graph de-anonymization technique is the primary defender countermeasure against T7.001 mixer-routed laundering).
-**Attribution:** **n/a (defender tooling / forensic industry emergence).** Academic attribution to Meiklejohn et al. (UC San Diego, 2013), Ron and Shamir (Weizmann Institute, 2013). Commercial attribution to Chainalysis (founded by Michael Gronager, Jan Møller, Jonathan Levin, 2014), Elliptic (founded by James Smith, Tom Robinson, 2013), CipherTrace (founded by David Jevans, 2015).
+**Attribution:** **unattributed** Academic attribution to Meiklejohn et al. (UC San Diego, 2013), Ron and Shamir (Weizmann Institute, 2013). Commercial attribution to Chainalysis (founded by Michael Gronager, Jan Møller, Jonathan Levin, 2014), Elliptic (founded by James Smith, Tom Robinson, 2013), CipherTrace (founded by David Jevans, 2015).
 **Key teaching point:** **On-chain transaction graph de-anonymization is the structural defender countermeasure to T11.001 / T7.001 / T8.001-class operational security failures.** Every Bitcoin address that transacts leaves a permanent, public, graph-traceable record. The clustering heuristics published in 2013-2015 remain load-bearing forensic primitives in every major exchange-hack and darknet-market investigation.
 
 ## Summary
@@ -33,7 +33,7 @@ The technique has since been extended across chains (Ethereum account graph, Sol
 
 n/a (defender tooling). The technique is the primary on-chain forensic countermeasure against T11.001 / T7.001 / T8.001-class operational security failures.
 
-## References
+## Public references
 
 - Meiklejohn et al., "A Fistful of Bitcoins: Characterizing Payments Among Men with No Names" (ACM IMC 2013)
 - Ron and Shamir, "Quantitative Analysis of the Full Bitcoin Transaction Graph" (FC 2013)

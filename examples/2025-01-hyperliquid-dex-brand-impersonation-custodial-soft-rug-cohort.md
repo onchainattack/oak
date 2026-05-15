@@ -2,7 +2,7 @@
 
 **Loss:** cohort-level custodial-deposit losses across users of multiple Telegram-distributed copy-trading bots that branded themselves with the Hyperliquid (and adjacent DEX) name without official affiliation. Individual incident losses range from tens of thousands to mid six-figures USD equivalent; aggregate across the cohort not consolidated in a single public loss figure at v0.1.
 **OAK Techniques observed:** **OAK-T5.007** (Third-Party Brand-Impersonation Custodial Soft-Rug — primary; the operators deployed off-platform services branded in Hyperliquid's name without contractual basis, accumulated user deposits in operator-controlled custody, operated the service through a period of apparent-functioning, and exited citing an unverifiable "hack" or "security breach" followed by communication blackout).
-**Attribution:** **pseudonymous (at cohort scale)** — individual operator identities not publicly resolved at v0.1. The "hack"-announcement-followed-by-communication-blackout pattern is consistent with an exit-scam rather than a third-party intrusion; the on-chain outflow patterns in documented cases surface single coordinated transfers (operator-exit fingerprint) rather than the dispersion pattern characteristic of external attacker exfiltration.
+**Attribution:** **pseudonymous** — individual operator identities not publicly resolved at v0.1. The "hack"-announcement-followed-by-communication-blackout pattern is consistent with an exit-scam rather than a third-party intrusion; the on-chain outflow patterns in documented cases surface single coordinated transfers (operator-exit fingerprint) rather than the dispersion pattern characteristic of external attacker exfiltration.
 **Key teaching point:** **The Hyperliquid / DEX brand-impersonation custodial soft-rug cohort demonstrates that the T5.007 surface is not confined to Polymarket — any high-trust platform with a material off-platform tooling ecosystem (copy-trading bots, analytics tools, trading agents) has the same brand-impersonation custodial-deposit surface.** The structural invariant is: users deposit funds into an operator-controlled wallet on the assumption of platform-affiliation that does not exist; the operator exploits the legitimate platform's brand-trust to accumulate deposits; the exit-as-hack pattern provides plausible deniability; and the post-announcement communication blackout is the operator-disappearance fingerprint.
 
 ## Summary
@@ -10,6 +10,7 @@
 Hyperliquid is a high-throughput perpetuals DEX on Arbitrum (and its own L1) that developed a significant off-platform tooling ecosystem in 2024–2025, including copy-trading bots, automated trading agents, signal services, and portfolio-management tools. Many of these services operated via Telegram, accepted user deposits into operator-controlled wallets (custodial rather than self-custody), and branded themselves with the Hyperliquid name — "Hyperliquid Copy Vault," "Hyperliquid Trading Bot," "Hyperliquid Signal Auto-Trader" — implying an official affiliation with the Hyperliquid platform.
 
 Several of these services followed a structurally identical soft-rug pattern:
+
 1. **Brand-impersonation deployment.** The operator deployed a Telegram bot or mini-dApp branded with the Hyperliquid name and visual identity. The service was not listed in any official Hyperliquid authorised-third-party registry.
 2. **Custodial deposit accumulation.** Users deposited USDC (or USDC.e on Arbitrum) into an operator-controlled wallet. The deposit flow was custodial — users sent funds to the operator's address, not to a smart-contract integration with self-custody guarantees.
 3. **Apparent-functioning window.** The service operated through a period of weeks to months, with the operator providing regular updates, purported performance reports, and withdrawal processing (at least initially) to build trust and attract additional deposits.
@@ -41,7 +42,7 @@ T5.007 (Third-Party Brand-Impersonation Custodial Soft-Rug) is the sole classifi
 
 The case does not classify under T5.001/T5.002 (token-level LP drain — no token, no LP, no AMM pool), T5.005 (treasury-management exit — the operator was never contractually associated with Hyperliquid), T4 (phishing — users deposited willingly, not via a permission-grant transaction), T11.001 (signing-vendor compromise — the operator was the custodian, not a compromised vendor), or T11.005 (fake-platform fraud — the operator branded itself in Hyperliquid's existing name rather than constructing an apparently-original platform brand).
 
-## References
+## Public references
 
 - Hyperliquid official communications clarifying no affiliation with impersonating copy-trading bot services
 - KuCoin Learn and Cryptorank secondary coverage (custodial-soft-rug cohort framing)

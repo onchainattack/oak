@@ -2,7 +2,7 @@
 
 **Loss:** approximately \$23M from ~10,000+ users across Ethereum and BNB Chain. The attacker exploited a vulnerability in Transit Swap's swap-contract approval logic to drain tokens that users had previously approved for trading via the aggregator.
 **OAK Techniques observed:** **OAK-T9.004** (Access-Control Misconfiguration — the swap-contract approval logic lacked proper authorisation validation, permitting the attacker to exercise transfer authority over user-approved tokens without a legitimate swap intent). **OAK-T4.002** (Compromised Front-End Permit Solicitation — broadly construed; the swap contract's approval logic was the exploit surface through which user-approved allowances were drained, structurally analogous to a frontend compromise in that the legitimate platform's approval infrastructure became the extraction vector).
-**Attribution:** **pseudonymous (no public attribution to a named group).** The attacker engaged in white-hat negotiation post-extraction; approximately \$16M (~70% of the stolen assets) was recovered through negotiation and voluntary return within days.
+**Attribution:** **confirmed** The attacker engaged in white-hat negotiation post-extraction; approximately \$16M (~70% of the stolen assets) was recovered through negotiation and voluntary return within days.
 **Key teaching point:** **Transit Swap is the canonical 2022 DEX-aggregator "approved-token drain" case: the vulnerability was not in individual users' wallets but in the aggregator's own swap-contract approval logic, which effectively turned the aggregator's legitimate allowance-authority surface into an extraction vector.** The ~70% recovery rate via white-hat negotiation — combined with the ~10,000-victim scale — makes this case a reference for aggregator-contract audit scope (the approval-logic attack surface must be treated as critical infrastructure, not UI plumbing) and for multi-victim incident response coordination.
 
 ## Summary
@@ -30,7 +30,7 @@ Approximately \$23M initially drained; ~\$16M recovered via white-hat negotiatio
 
 The Transit Swap case is classified under T4.002 as a "frontend-as-exploit-surface" case where the legitimate platform's approval infrastructure — not a phished or DNS-hijacked frontend — served as the extraction vector. The structural analogy is that the swap contract's flawed approval logic effectively "compromised" the legitimate platform's authority surface: users had granted allowances to a trusted aggregator, but the aggregator's own contract logic failed to restrict the use of those allowances to legitimate swap operations only. This is the boundary case between T9.004 (access-control misconfiguration in the contract logic itself) and T4.002 (exploitation of the platform's approval surface as the entry vector).
 
-## References
+## Public references
 
 - Transit Swap post-mortem and community announcement, October 2022
 - SlowMist, PeckShield, and BlockSec forensic analyses of the Transit Swap exploit, October 2022

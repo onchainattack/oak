@@ -2,13 +2,14 @@
 
 **Loss:** structural / regulatory-compliance cost — the SEC enforcement actions forced Kraken to shut down its US staking-as-a-service program (February 2023, $30M settlement) and targeted Coinbase's staking product (June 2023 lawsuit, ongoing at v0.1). The direct dollar cost was the settlement and legal fees; the validator-set impact was the forced exit of thousands of validators operated through Kraken's staking service, with their staked ETH unstaked and returned to customers, reducing validator-set diversity and concentrating staking among non-US-regulated operators.
 **OAK Techniques observed:** **OAK-T14.005** (Builder/Relay Collusion / Censorship for MEV Extraction — broadly construed at the regulatory layer; the SEC's enforcement action coerced the shutdown of a staking service, effectively censoring a class of validator operators from the US market. The regulatory-action-as-censorship surface is structurally adjacent to the builder-level and relay-level censorship surfaces covered by T14.005's OFAC-compliance cases.) **OAK-T14.001** (Slashing Condition Exploit — structurally adjacent at the validator-exit layer; forced validator exits from Kraken's shutdown affected the validator set composition but did not involve slashing.)
-**Attribution:** **regulatory** — US Securities and Exchange Commission (SEC). Kraken settled without admitting or denying the SEC's allegations; Coinbase's staking product litigation was ongoing at v0.1.
+**Attribution:** **unattributed** — US Securities and Exchange Commission (SEC). Kraken settled without admitting or denying the SEC's allegations; Coinbase's staking product litigation was ongoing at v0.1.
 
 **Key teaching point:** **Regulatory enforcement that coerces staking-service shutdowns is a T14.005-class validator-set disruption surface operating at the legal/policy layer rather than at the protocol/economic layer.** The SEC's theory — that staking-as-a-service constitutes an unregistered securities offering — forces US-facing staking services to either register with the SEC (which the SEC has not provided a compliant path for) or shut down their staking programs. The result is a regulatory-censorship surface: compliant US entities cannot operate staking validators as a service, reducing validator-set diversity, concentrating staking among non-US and DeFi-native operators, and creating a two-tier validator ecosystem (US-regulatory-compliant vs. non-US). The structural T14.005 lesson is that **censorship surfaces are not limited to the protocol/economic layer — regulatory action can coerce validator exits and validator-set reconfiguration at a scale comparable to a protocol-level attack.**
 
 ## Summary
 
 In February 2023, the SEC announced a settlement with Kraken over its US staking-as-a-service program. The SEC alleged that Kraken's staking program constituted an unregistered offer and sale of securities. Kraken agreed to:
+
 - Shut down its US staking-as-a-service program immediately.
 - Pay $30 million in disgorgement, prejudgment interest, and civil penalties.
 - Unstake all customer ETH staked through the program and return it to customers.

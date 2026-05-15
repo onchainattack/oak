@@ -2,7 +2,7 @@
 
 **Loss:** ~$5M (~9,640 BTC at late-2013 BTC price of ~$520). Global Bond Limited (GBL) was marketed as a Bitcoin exchange and mining-contract platform; it was in fact a Ponzi scheme that collapsed in December 2013 when the operator ceased withdrawals and deleted the platform's web presence.
 **OAK Techniques observed:** **OAK-T11.005.001** (Fake-CEX / Pig-Butchering Platform — the GBL platform was a fake exchange with no real trading backend; balance displays were operator-controlled fictions). **OAK-T6.001** (Source-Verification Mismatch — GBL's claimed corporate registration in Hong Kong was either fabricated or unverifiable). **OAK-T5.001** (Hard LP Drain — the operator swept deposited BTC in a single-event exit when the scheme collapsed). **OAK-T8.005** (Operational-Security Procedural Failure — the operator's registration / hosting / identity trail was insufficiently verified by depositors).
-**Attribution:** **pseudonymous-to-unidentified** — the GBL operator(s) were not publicly identified or prosecuted. The platform's claimed operator identity and Hong Kong corporate registration could not be independently verified. The case remains unsolved.
+**Attribution:** **pseudonymous** — the GBL operator(s) were not publicly identified or prosecuted. The platform's claimed operator identity and Hong Kong corporate registration could not be independently verified. The case remains unsolved.
 **Key teaching point:** **GBL is the canonical early-Bitcoin-era fake-exchange Ponzi — the structural predecessor to the T11.005.001 pig-butchering class. The template — fake platform UI, fictitious trading returns, unverifiable corporate registration, single-event exit — was established at GBL in 2013 and has since scaled to the $5.8B+ annual-loss pig-butchering industry documented by the FBI IC3 in 2024. The GBL case also established the jurisdictional-investigation gap that persists in fake-exchange fraud: operators register in permissive jurisdictions (Hong Kong, Panama, Seychelles) and victims' local law enforcement cannot obtain the operator identity from the claimed registration jurisdiction.**
 
 ## Summary
@@ -10,6 +10,7 @@
 Global Bond Limited (GBL) launched in 2013, marketing itself as a Bitcoin exchange and cloud-mining investment platform. The platform claimed a Hong Kong corporate registration and offered guaranteed returns on Bitcoin deposits through "Bitcoin trading" and "mining contract" products. Depositors were shown a web-based dashboard displaying fictitious balance growth and trading profits.
 
 GBL employed the classic Ponzi feeder mechanics:
+
 - **Guaranteed returns:** ~1-2% daily returns claimed from "Bitcoin arbitrage trading" — a structurally impossible return profile that should have been flagged by any depositor performing basic verification.
 - **Affiliate/referral programme:** Existing depositors were incentivised to recruit new depositors through a multi-level referral commission structure — the standard Ponzi fuel-injection mechanism.
 - **Fictitious dashboard:** The platform's balance display was a database fiction; no real exchange backend or mining infrastructure existed.

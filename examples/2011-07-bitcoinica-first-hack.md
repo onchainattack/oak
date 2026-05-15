@@ -12,6 +12,7 @@ Bitcoinica launched in 2011 as one of the first Bitcoin margin-trading exchanges
 On July 29, 2011, an attacker gained access to Bitcoinica's production server and extracted hot-wallet private keys. The attacker swept approximately 43,000 BTC (~$500K at contemporaneous prices) from the exchange's hot wallet in a single extraction event. The breach was detected when customer withdrawal requests could not be fulfilled — the hot wallet had been drained.
 
 Key structural failures:
+
 - **No cold-storage segregation:** Customer deposits were held in exchange hot wallets accessible from the production server. There was no air-gapped cold-storage layer that would have confined the attacker to the portion of funds needed for daily withdrawal processing.
 - **Production-server access = custody access:** The exchange's architecture collapsed the operational access surface (production-server administration) and the custody access surface (private-key access) into a single point of failure.
 - **No withdrawal velocity limits:** The attacker's single-transaction sweep of ~43,000 BTC was not rate-limited. Per-block withdrawal velocity caps would have converted the extraction from a single-event drain to a multi-block event detectable before completion.

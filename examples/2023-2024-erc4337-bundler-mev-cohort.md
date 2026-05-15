@@ -4,7 +4,7 @@
 
 **OAK Techniques observed:** **OAK-T13.002** (Bundler MEV) — primary; the bundler — the off-chain agent expected to neutrally aggregate UserOperations into `handleOps` calls on the EntryPoint contract — exploits its privileged read of pre-confirmation UserOps or its position in the bundle-construction pipeline to extract value from the operations it is supposed to process. Sub-patterns observed: (a) UserOp front-running, (b) UserOp sandwiching, (c) UserOp censorship, and (d) bundler–paymaster collusion. **OAK-T5.004** (Sandwich / MEV Extraction) — structurally adjacent; the economic primitive (front-run + back-run around a victim swap) is the same, but the actor role (bundler vs. generic mempool searcher), observation surface (alt-mempool vs. public mempool), and mitigation surface (bundler allowlists and MEV-protected bundler endpoints vs. Flashbots Protect) differ.
 
-**Attribution:** **unattributed (cohort-level — no single named operator).** Bundler-vendor research (Etherspot, FastLane, BlockPI) and AA supply-chain analytics (EigenPhi) document the class at the cohort level. No individual bundler operator has been publicly named in the manner of `jaredfromsubway.eth`. The cohort framing reflects the present state of public disclosure at v0.1.
+**Attribution:** **confirmed** Bundler-vendor research (Etherspot, FastLane, BlockPI) and AA supply-chain analytics (EigenPhi) document the class at the cohort level. No individual bundler operator has been publicly named in the manner of `jaredfromsubway.eth`. The cohort framing reflects the present state of public disclosure at v0.1.
 
 **Key teaching point:** **ERC-4337 bundler MEV is structurally distinct from conventional mempool MEV (T5.004) because the alt-mempool propagates UserOps to bundlers the user did not choose — the natural mitigation surface is at the bundler layer (allowlists, reputation systems, pre-bundler encryption), not at the trader layer (Flashbots Protect-style private mempool routing).** The bundler's role definition explicitly assumes neutral aggregation; bundler MEV is a violation of role, not merely opportunistic ordering.
 
@@ -25,6 +25,7 @@ However, the bundler's privileged position — it reads UserOps before they are 
 4. **Bundler–paymaster collusion (sub-pattern d).** A bundler and a paymaster operator coordinate: the paymaster sponsors UserOps that the bundler then extracts value from, splitting the proceeds. This is particularly acute for sponsored-gas flows where the user perceives the transaction as "free" and therefore tolerates worse execution quality.
 
 Public reporting establishes the class through 2023–2025:
+
 - Bundler-vendor research (Etherspot Skandha, FastLane, BlockPI) documents that any UserOp in the canonical alt-mempool is observable by every listening bundler, and that competing bundlers will copy profitable UserOps into their own `handleOps`.
 - Empirical AA-adoption analyses report that ~99% of mainnet UserOperations are paymaster-sponsored and that bundler activity is concentrated in a small set of operators (Coinbase, Alchemy, Pimlico, Biconomy, Particle).
 - EigenPhi extends its sandwich/arbitrage/liquidation MEV taxonomy to AA flows, providing per-bundle attribution of MEV against bundler addresses.

@@ -15,6 +15,7 @@ dYdX, a leading decentralised perpetuals exchange, launched the DYDX governance 
 On February 1, 2024, approximately 150 million DYDX tokens — representing the investor allocation cliff tranche plus portions of the team allocation — transitioned from locked to liquid. The tokens had a market value of approximately $430 million at the pre-unlock price of $2.87 per DYDX.
 
 The on-chain outflow signature showed:
+
 1. **Immediate post-cliff exchange deposits.** Within the first 72 hours of the unlock, significant volumes of DYDX from known investor-allocation wallets arrived at Binance, Coinbase, OKX, and Kraken deposit addresses. The deposit volume spiked at the cliff date and remained elevated through the first post-cliff week.
 2. **Sustained sell-pressure through February.** DYDX declined from ~$2.87 (pre-unlock) to ~$2.20 by February 14, 2024 — a ~23% decline coinciding with the cliff-window exchange-deposit pattern.
 3. **Continued decline through Q1 2024.** DYDX continued declining to ~$1.50 by April 2024, a ~48% decline from the pre-cliff price. Broader market conditions (BTC and ETH were rising through Q1 2024) make the DYDX-specific factor load-bearing.

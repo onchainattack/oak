@@ -80,6 +80,7 @@ The case is OAK's earliest well-documented T4.004 anchor: it predates the 2021�
 UniCats is the canonical 2020 anchor for the **standing-approval-backdoor sub-pattern** of T4.004 and the earliest well-documented case in the OAK corpus where a yield-farming contract exploited an unlimited ERC-20 approval via a deliberately planted backdoor function. The case demonstrates the structural property that **an ERC-20 approval is a persistent grant, not a session-bound permission**: the approval survived the user's withdrawal from the farm, and the `setGovernance` backdoor provided the invocation pathway for the `transferFrom` drain.
 
 The case is structurally distinct from the two later T4.004 cohort categories:
+
 - **Drainer-as-a-service (2021–2023):** industrial-scale operations with templated contracts, affiliate programs, and Telegram-based operator networks. UniCats predates this by at least a year and represents the hand-crafted, single-operator precursor.
 - **Phishing-approval (2022–2024):** users are tricked into approving a malicious spender through a fake frontend or social-engineering attack. UniCats involved a *legitimate-seeming* deposit flow — the user intended to interact with the contract they approved; the backdoor was hidden inside it.
 

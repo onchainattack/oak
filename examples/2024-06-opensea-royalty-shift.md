@@ -4,7 +4,7 @@
 
 **OAK Techniques observed:** **OAK-T6.007** (Trust-substrate Shift / Vendor-side Promise Revocation — primary; OpenSea's retirement of the Operator Filter Registry revoked the marketplace-level royalty-enforcement promise that had been a load-bearing trust-substrate claim for NFT creators since the platform's royalty-standard adoption in 2021-2022). **OAK-T13** (Platform Policy Shift — structurally adjacent; the retirement of operator-enforced royalties is a platform-policy decision that reshapes the marketplace's economic substrate, distinct from a security-model revocation but with equivalent defender/creator-side trust-model invalidation effect).
 
-**Attribution:** **confirmed at the vendor-corporate-decision layer** — OpenSea (Ozone Networks, Inc.) publicly announced the phased retirement of the Operator Filter Registry on June 19, 2024, and completed the sunset on January 2, 2025. The decision is documented in OpenSea's official blog, Devin Finzer's (CEO) public statements, and contemporaneous industry-press coverage (The Block, Decrypt, CoinDesk).
+**Attribution:** **confirmed** — OpenSea (Ozone Networks, Inc.) publicly announced the phased retirement of the Operator Filter Registry on June 19, 2024, and completed the sunset on January 2, 2025. The decision is documented in OpenSea's official blog, Devin Finzer's (CEO) public statements, and contemporaneous industry-press coverage (The Block, Decrypt, CoinDesk).
 
 **Key teaching point:** The OpenSea royalty-enforcement sunset is the canonical T6.007 illustration of the **platform-policy-change-as-trust-substrate-revocation** sub-pattern distinct from the hardware-wallet vendor-policy case (Ledger Recover). The structural parallel is exact: a vendor-side policy decision revokes a load-bearing trust-substrate claim that had informed user-side (creator-side) threat-model construction for years, without any adversarial action, and the realised loss is non-financial but structurally significant — the creator-side revenue model built on marketplace-enforced royalties is invalidated, and the downstream effect is a cohort-level shift in the NFT ecosystem's economic substrate.
 
@@ -13,6 +13,7 @@
 Following the 2021-2022 NFT boom, creator royalties — typically 2.5-10% of secondary-sale price, paid to the original creator on each resale — became a load-bearing economic expectation in the Ethereum NFT ecosystem. OpenSea, as the dominant NFT marketplace (~80-90% of Ethereum NFT volume through 2022), implemented on-chain royalty enforcement through the Operator Filter Registry, a tool that allowed creators to block their collections from being listed on marketplaces that did not honour royalties. The Operator Filter Registry was the enforcement mechanism behind the marketplace-level promise that "creators will receive royalties on every secondary sale on OpenSea and on any marketplace that honours the filter."
 
 The royalty-enforcement landscape shifted through 2023-2024 as competing marketplaces (Blur, LooksRare, X2Y2, Sudoswap) adopted optional-royalty or zero-royalty models to attract volume. OpenSea initially maintained its royalty-enforcement stance but faced declining market share as volume migrated to zero-royalty venues. On June 19, 2024, OpenSea announced a phased retirement of the Operator Filter Registry:
+
 - **Phase 1 (August 31, 2024):** New collections could no longer enrol in the Operator Filter Registry; existing enrolled collections retained enforcement.
 - **Phase 2 (January 2, 2025):** The Operator Filter Registry was fully decommissioned; all royalty enforcement moved to an optional-tip model where buyers could choose to pay a "creator earnings" amount at their discretion.
 
@@ -37,6 +38,7 @@ For OAK's purposes, the case is the cleanest T6.007 worked example distinct from
 ## Realised extraction
 
 Zero on-chain loss. The realised effect is non-financial but structurally significant:
+
 - Marketplace-enforced royalties for NFT creators on OpenSea are fully deprecated in favour of an optional-tip model.
 - The creator-side revenue model built on the assumption of enforceable marketplace-level royalties is invalidated.
 - The ecosystem has shifted toward contract-level royalty enforcement, relocating the trust-substrate from marketplace-policy to smart-contract-code.

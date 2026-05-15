@@ -15,6 +15,7 @@ The Internet Computer Protocol (ICP) token launched on May 10, 2021, after DFINI
 The ICP token's vesting schedule created monthly unlock windows for early contributors and insiders. Arkham Intelligence's forensic analysis, published in 2022, documented that insider-controlled addresses systematically deposited ICP tokens to exchange deposit addresses at each monthly unlock window from May through December 2021. These deposits converted illiquid insider allocations into liquid sell-side pressure, coinciding with sustained downward price action.
 
 Key on-chain patterns documented by Arkham:
+
 - Insider addresses received ICP from known DFINITY-associated distribution contracts
 - Exchange deposit volumes spiked at or near each monthly vesting-unlock date
 - The deposit pattern was systematic across multiple insider-controlled clusters

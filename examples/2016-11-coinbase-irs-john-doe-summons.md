@@ -2,7 +2,7 @@
 
 **Loss:** No direct victim loss. The IRS John Doe summons to Coinbase was a regulatory-information-gathering action: the IRS sought records on all U.S. Coinbase customers who transacted in cryptocurrency between 2013 and 2015, arguing that cryptocurrency users were systematically underreporting capital gains.
 **OAK Techniques observed:** **OAK-T6.007** (Trust-Substrate Shift / Vendor-Promise Revocation — the regulatory pressure on Coinbase to surrender customer records represented a trust-substrate shift: the exchange's user-facing promise of financial privacy was in tension with the exchange's legal obligation to comply with IRS information demands). **OAK-T14.005** (Regulatory / Legal-Action Targeting Crypto Infrastructure — the John Doe summons was an early milestone in the regulatory targeting of crypto on/off-ramp infrastructure). **OAK-T8.005** (Operational-Security Procedural Failure — the John Doe summons revealed that U.S. taxpayers who used Coinbase under the assumption that crypto transactions were not visible to tax authorities had fundamentally misunderstood the on-chain traceability and exchange-KYC intersection).
-**Attribution:** **institutional** — the IRS as the regulatory actor; Coinbase as the compelled information custodian. No individual crypto-user attribution was at issue; the summons targeted the exchange's customer base as a class.
+**Attribution:** **unattributed** — the IRS as the regulatory actor; Coinbase as the compelled information custodian. No individual crypto-user attribution was at issue; the summons targeted the exchange's customer base as a class.
 **Key teaching point:** **The 2016 IRS Coinbase John Doe summons is the canonical U.S. regulatory milestone marking the transition from crypto's "tax-free" perception era to the KYC/AML reporting era. The summons established the legal precedent that cryptocurrency exchanges operating in the U.S. are financial-institution-equivalent information custodians subject to broad IRS information demands — a structural shift that would later be reinforced by FinCEN's 2019 Travel Rule application to VASPs and the 2021 Infrastructure Bill's broker reporting requirements. For OAK, the case is the earliest T6.007 instance in the crypto-regulatory era: the trust substrate shifted from "Coinbase protects your financial privacy" to "Coinbase complies with IRS information demands."**
 
 ## Summary
@@ -12,11 +12,13 @@ On November 30, 2016, the U.S. Department of Justice, on behalf of the Internal 
 The IRS's argument: cryptocurrency users were systematically underreporting capital gains on cryptocurrency transactions. The IRS cited a dramatic gap between the number of Coinbase users (~5.9 million at the time) and the number of taxpayers reporting cryptocurrency gains on their tax returns (~800 to 900 individuals per year in 2013–2015). The summons was a "John Doe" summons — meaning it targeted an unidentified class of taxpayers rather than named individuals — under Internal Revenue Code Section 7609(f).
 
 Coinbase initially resisted the summons, arguing that the IRS's request was overly broad and that it violated customer privacy. After a legal back-and-forth:
+
 - **November 2017:** A federal court in California ordered Coinbase to produce records for customers with transactions exceeding $20,000 in any single year between 2013 and 2015 — a narrower set than the IRS's original request.
 - **February 2018:** Coinbase notified ~13,000 affected customers that their records would be produced to the IRS.
 - **2018–2020:** The IRS used the Coinbase data to issue warning letters (Letter 6173, 6174, 6174-A) to over 10,000 taxpayers identified through the Coinbase records, and initiated audits and criminal investigations against the most material non-reporters.
 
 The John Doe summons is the canonical U.S. regulatory milestone marking the transition from crypto's "tax-free" public-perception era to the KYC/AML reporting era. It established that:
+
 1. Cryptocurrency exchanges are financial-institution-equivalent information custodians subject to broad IRS information demands.
 2. On-chain transactions are not "invisible" to tax authorities — the exchange on/off-ramp is a standing information chokepoint.
 3. The exchange-user trust relationship includes tax-compliance reporting obligations that the user may not have anticipated at account-opening time.

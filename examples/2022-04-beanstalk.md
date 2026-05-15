@@ -36,7 +36,7 @@ Beanstalk Farms paused protocol operations, conducted a post-mortem, and subsequ
 
 $182M gross treasury drain. ~$76M net profit to the attacker after flash-loan repayment (~$106M in loan principal + Aave origination fee + Curve pool slippage + gas costs). The largest flash-loan-enabled governance attack on the public record measured by both gross extraction and net attacker profit. All net proceeds routed through Tornado Cash within ~6 hours of the attack.
 
-## References
+## Public references
 
 - Beanstalk Farms official post-mortem (April 2022)
 - Peckshield / BlockSec on-chain transaction analysis and tracing reports

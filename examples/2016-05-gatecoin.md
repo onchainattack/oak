@@ -2,7 +2,7 @@
 
 **Loss:** approximately $2M (250 BTC and 185,000 ETH at then-prevailing exchange rates) stolen from Hong Kong-based exchange Gatecoin's hot wallets. The attacker compromised Gatecoin's hot-wallet server infrastructure and gained access to the exchange's hot-wallet signing keys across both Bitcoin and Ethereum hot wallets.
 **OAK Techniques observed:** **OAK-T11.001** (Third-Party Signing Vendor Compromise — primary; the exchange's hot-wallet server infrastructure was the signing surface; Gatecoin was the custodian, and the custodial hot-wallet operational security was the failure surface — multi-asset signing keys co-located on a single server). **OAK-T15.003** (Operator Endpoint / Infrastructure Compromise — the entry vector involved a compromised server hosting the hot-wallet signing keys for both Bitcoin and Ethereum).
-**Attribution:** **pseudonymous (no public attribution)**. Gatecoin disclosed the incident as an external server compromise; no named individual or group was publicly identified. The incident shares structural methodology with the broader 2014-2016 exchange-hack cohort (Bitstamp 2015, Bter 2015, Bitfinex 2016) but predates the 2017-2020 DPRK exchange-compromise campaign.
+**Attribution:** **pseudonymous**. Gatecoin disclosed the incident as an external server compromise; no named individual or group was publicly identified. The incident shares structural methodology with the broader 2014-2016 exchange-hack cohort (Bitstamp 2015, Bter 2015, Bitfinex 2016) but predates the 2017-2020 DPRK exchange-compromise campaign.
 **Key teaching point:** **Gatecoin 2016 is the canonical worked example of a multi-asset exchange hot-wallet compromise in the pre-DPRK-campaign era — the attacker compromised one server and drained both Bitcoin and Ethereum hot wallets because the signing keys for both chains were co-located on the same infrastructure.** The co-location of multi-asset signing keys on a single server is the structural operational-security anti-pattern that the 2014-2016 exchange-hack cohort repeatedly demonstrates.
 
 ## Summary
@@ -29,7 +29,7 @@ Gatecoin survived the incident and continued operations for several more years, 
 
 Approximately $2M (250 BTC + 185,000 ETH at May 2016 prices). No recovery reported.
 
-## References
+## Public references
 
 - Gatecoin incident disclosure, May 2016
 - CoinDesk / CoinTelegraph coverage (May 2016)

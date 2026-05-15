@@ -2,7 +2,7 @@
 
 **Loss:** approximately $20M drained from Pickle Finance's DAI PickleJar (pJar 0.99d). The attacker deployed a malicious "Evil Jar" strategy contract, swapped PickleJar funds into the malicious contract, and extracted the DAI.
 **OAK Techniques observed:** OAK-T9.004 (Access-Control Misconfiguration — primary; the attacker was able to swap PickleJar's strategy contract to an attacker-controlled "Evil Jar" without timelock or multi-sig governance delay, converting the strategy-contract-pointer authority into a full treasury-extraction surface). OAK-T5.001 (Hard LP / Treasury Drain — structurally co-occurring; the replaced strategy contract allowed direct extraction of the PickleJar's deposited DAI).
-**Attribution:** pseudonymous; the attacker has not been publicly identified. Partial funds were tracked through Tornado Cash. Pickle Finance recovered via a token-migration-based compensation plan (CORNICHON → DILL token migration).
+**Attribution:** **unattributed** pseudonymous; the attacker has not been publicly identified. Partial funds were tracked through Tornado Cash. Pickle Finance recovered via a token-migration-based compensation plan (CORNICHON → DILL token migration).
 **Key teaching point:** A yield-aggregator strategy-contract pointer that can be swapped without timelock, multi-sig, or governance delay is a single-transaction treasury-extraction surface. The "Evil Jar" pattern — deploy a malicious strategy contract, swap the live vault's strategy pointer to the malicious contract, drain the vault — requires only the strategy-swap authority, not the vault's direct asset-transfer authority, making it a stealthier access-control misconfiguration than a direct upgrade-proxy compromise.
 
 ## Summary

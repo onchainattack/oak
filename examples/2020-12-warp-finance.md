@@ -2,7 +2,7 @@
 
 **Loss:** approximately $8M in DAI and USDC drained from Warp Finance's lending market. The attacker used flash loans to manipulate Uniswap V3 LP token prices used as collateral reference by Warp Finance's oracle.
 **OAK Techniques observed:** OAK-T9.001 (Oracle Price Manipulation — primary; LP-token valuation sub-class: the attacker manipulated Uniswap LP token prices that Warp Finance used as the collateral valuation reference for lending-market deposits). OAK-T9.002 (Flash-Loan-Funded Attack — structurally co-occurring; flash loans provided the capital base for the LP-token price manipulation).
-**Attribution:** pseudonymous; the attacker has not been publicly identified. Warp Finance recovered approximately $5.8M (approximately 75%) of user funds via negotiations with the attacker.
+**Attribution:** **unattributed** pseudonymous; the attacker has not been publicly identified. Warp Finance recovered approximately $5.8M (approximately 75%) of user funds via negotiations with the attacker.
 **Key teaching point:** Using Uniswap LP tokens as collateral without a secondary price validation layer creates a manipulable collateral-valuation surface — the attacker can flash-loan funds, trade sharply in the Uniswap pool to inflate the LP token's price, deposit the now-inflated LP token as collateral, borrow against the inflated valuation, and exit well ahead of the loan position, leaving the protocol with under-collateralised debt.
 
 ## Summary

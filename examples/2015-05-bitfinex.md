@@ -2,7 +2,7 @@
 
 **Loss:** approximately 1,500 BTC (~\$330K at 2015-05 BTC price).
 **OAK Techniques observed:** **OAK-T11.001** (Third-Party Signing-Vendor UI / Signing-Flow Compromise — broadly construed; the exchange's internal hot-wallet signing infrastructure was the compromise surface, and the signing-flow access enabled the unauthorised transfer). **OAK-T15.003** (Operator-Endpoint Compromise — the attacker gained access to an employee's wallet-server credentials, constituting an operator-endpoint state that enabled the hot-wallet drain).
-**Attribution:** **pseudonymous (no public attribution to a named group).** Bitfinex disclosed the breach but did not publicly attribute the attacker.
+**Attribution:** **confirmed** Bitfinex disclosed the breach but did not publicly attribute the attacker.
 **Key teaching point:** **The May 2015 Bitfinex hot-wallet compromise is the immediate structural forebear of the August 2016 Bitfinex multi-signature theft and demonstrates the "recurrence pattern" that is common in CEX-targeted intrusions: a smaller hot-wallet breach tests the exchange's security perimeter; a larger follow-on breach later exploits a different surface.** This incident is distinct from the August 2016 Bitfinex hack (~119,756 BTC, ~$72M at time) which exploited the BitGo multisig architecture and is documented separately at `examples/2016-08-bitfinex.md`.
 
 ## Summary
@@ -29,7 +29,7 @@ Approximately 1,500 BTC (~\$330K at 2015-05 prices); no confirmed recovery repor
 
 The August 2016 Bitfinex incident (~119,756 BTC, ~$72M) exploited the BitGo multisig integration and is a structurally different incident from this May 2015 event. The 2016 incident is documented at `examples/2016-08-bitfinex.md`. The May 2015 incident is included in the OAK taxonomy as the earlier, non-multisig hot-wallet breach that established the T11.001 + T15.003 chain for the Bitfinex operator surface.
 
-## References
+## Public references
 
 - Bitfinex breach disclosure and community discussions, May 2015
 - Bitfinex corporate history and security-incident chronology

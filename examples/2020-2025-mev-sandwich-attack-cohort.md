@@ -1,10 +1,13 @@
 # MEV Sandwich Attack Cohort — 2020–2025
 
-**Tags:** OAK-T9.012, OAK-T9.013, OAK-T17.005
+**OAK Techniques observed:** OAK-T9.012, OAK-T9.013, OAK-T17.005
 
+**Attribution:** **unattributed** (aggregate cohort).
 **Loss:** T9.012 aggregate undocumented at class level (per-launch extraction typically in the tens-to-hundreds of thousands, distributed across thousands of token launches); T9.013 aggregate embedded in the broader MEV sandwich extraction volume (MEV sandwich extraction estimated in the hundreds of millions to low billions across Ethereum since 2020); T17.005 aggregate undocumented at class level (requires multi-block proposer control, which has been demonstrated in research settings and flagged in audit literature but confirmed large-scale exploitation is sparser than single-block MEV).
 
 **Key teaching point:** These three Techniques represent the evolution of MEV extraction from simple single-block sandwiching (T5.004) to more sophisticated forms: sandwiching the liquidity addition itself (T9.012), exploiting the victim's slippage-tolerance parameter as the profit surface (T9.013), and extending manipulation across multiple blocks via proposer control (T17.005). Each represents a structural refinement of the MEV attacker's capability relative to the baseline sandwich.
+
+## Summary
 
 ## Timeline
 
@@ -32,7 +35,7 @@ The composition chain: (1) attacker secures proposer control for N consecutive b
 
 Detection: multi-block proposer concentration monitoring — alert when a single builder/validator proposes more than N blocks in a configurable window.
 
-## References
+## Public references
 
 - `[flashbots2022mev]` — Flashbots MEV research (multi-block MEV characterisation)
 - `[eigenphi2023mev]` — EigenPhi MEV dashboard and sandwich-attack metrics

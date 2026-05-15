@@ -88,6 +88,7 @@ Compounder Finance is the canonical 2020 anchor for the **Timelock-abuse strateg
 The CP3R token's owner-only `mint()` function and the StrategyController's mutable reward parameters (`setRewards()`) are the **T1.001/T5.003 standing surface** that enabled the extraction: the audit flagged these centralisation risks, but flagging did not neutralise them. The SourceHat audit's explicit "ensure trust in the contract deployer" advisory is the canonical example of audit-firm centralisation-risk disclosure that went unheeded by users.
 
 The case is structurally distinct from the two other canonical 2020 T5.001 anchors:
+
 - **SushiSwap Chef Nomi** (2020-09): direct dev-fund monetisation against own pools; no Timelock or strategy-swap; funds returned via public pressure.
 - **Cover Protocol Blacksmith** (2020-12): smart-contract bug in reward-accounting path producing hidden-mint dilution (T5.003); no operator-side strategy-swap.
 

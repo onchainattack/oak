@@ -2,7 +2,7 @@
 
 **Loss:** approximately \$31M in various cryptocurrencies from South Korea's largest exchange by volume. The attacker drained hot wallets across multiple assets in a coordinated single-event extraction.
 **OAK Techniques observed:** **OAK-T11.001** (Third-Party Signing-Vendor UI / Signing-Flow Compromise — broadly construed; the exchange's internal hot-wallet signing infrastructure was the compromise surface, enabling the multi-asset drain). **OAK-T7.001** (Mixer-Routed Laundering — the extracted assets were subsequently routed through mixing and exchange-based laundering infrastructure characteristic of the DPRK OAK-G01 tradecraft at the time).
-**Attribution:** **inferred-strong (DPRK Lazarus Group per UN Panel of Experts).** The UN Panel of Experts and South Korean authorities attributed the June 2018 Bithumb breach to the DPRK's Lazarus Group as part of the sustained DPRK campaign targeting South Korean and Asian cryptocurrency exchanges throughout 2017-2019.
+**Attribution:** **inferred-strong** The UN Panel of Experts and South Korean authorities attributed the June 2018 Bithumb breach to the DPRK's Lazarus Group as part of the sustained DPRK campaign targeting South Korean and Asian cryptocurrency exchanges throughout 2017-2019.
 **Key teaching point:** **The June 2018 Bithumb hack is the largest single DPRK-attributed exchange theft of the 2017-2018 wave and is the structural bridge between the pre-2018 small-exchange targets (Yapizon, Coincheck) and the post-2019 large-exchange multi-chain extraction pattern (Upbit, KuCoin, CoinEx).** Bithumb's survival — unlike Yapizon, which collapsed after two DPRK hacks — demonstrates the capitalisation threshold for surviving a state-aligned persistent threat actor: Bithumb's larger balance sheet and market position allowed it to absorb the \$31M loss without bankruptcy, a structural precondition for the multi-year Lazarus exchange-targeting campaign that followed.
 
 ## Summary
@@ -30,7 +30,7 @@ Approximately \$31M initially drained; ~\$14M recovered via exchange coordinatio
 
 The June 2017 Bithumb incident (documented at `examples/2017-06-bithumb.md`) was a customer-data exfiltration from an employee laptop that enabled second-stage phishing against Bithumb users — a T15.003 employee-endpoint case without direct on-chain extraction by the initial attacker. The June 2018 incident is a direct hot-wallet financial extraction via signing-infrastructure compromise (T11.001 + T7.001). The two incidents are structurally distinct and should not be conflated.
 
-## References
+## Public references
 
 - Bithumb official breach disclosure and security announcements, June 2018
 - UN Panel of Experts report on DPRK cyber operations and cryptocurrency exchange targeting, 2019

@@ -1,10 +1,13 @@
 # Hardware-Wallet Physical Compromise Cohort — 2017–2025
 
-**Tags:** OAK-T11.007, OAK-T11.007.001, OAK-T11.007.002
+**OAK Techniques observed:** OAK-T11.007, OAK-T11.007.001, OAK-T11.007.002
 
+**Attribution:** **unattributed** (aggregate cohort).
 **Loss:** T11.007.001 ~$9.5M+ (2025 counterfeit Ledger Nano S Plus cohort, ~50+ victims, 20+ blockchain ecosystems); T11.007.002 aggregate undocumented at class level (physical-access seed extraction requires device theft or seizure, so per-incident extraction is bounded by the device holder's balance; class-level loss is small relative to remote-attack classes but the capability is structural and the per-device extraction can be catastrophic for the individual victim).
 
 **Key teaching point:** Both sub-Techniques exploit the hardware wallet's physical-attack surface, but through fundamentally different paths. T11.007.001 substitutes the *device itself* at purchase time — the user receives a structurally-compromised counterfeit. T11.007.002 attacks a *legitimate device* through physical access — the device is genuine but the microcontroller has a structural vulnerability that physical access exploits. The binding constraint for T11.007.001 is the purchase channel; for T11.007.002, it is physical possession of the device.
+
+## Summary
 
 ## Timeline
 
@@ -15,6 +18,7 @@ T11.007.001 from 2017 (early Ledger Nano S inserts) through 2025 (counterfeit Le
 Counterfeit hardware-wallet devices distributed through informal retail channels (AliExpress, Taobao, Telegram resellers, in-person counterfeit markets, second-hand without packaging) that brand-impersonate legitimate products.
 
 Two device-compromise primitives:
+
 - **Pre-seeded recovery phrase.** The device ships with a pre-printed recovery card whose seed the operator already knows.
 - **Secure-element substitution.** The legitimate secure element is replaced with an attacker-controlled microcontroller (ESP32-S3 or similar) storing seeds in plaintext flash with embedded Wi-Fi/BLE radio for exfiltration — defeating the air-gap that the legitimate device provides.
 
@@ -34,7 +38,7 @@ The BIP39 passphrase is the defender-side mitigation primitive: an attacker who 
 
 Ledger Nano series uses a dedicated secure element and is not vulnerable to the STM32-class voltage-glitch attack.
 
-## References
+## Public references
 
 - `[kraken2020trezor]` — Kraken Security Labs Trezor RDP-downgrade disclosure (January 31, 2020)
 - `[trezor2020response]` — Trezor response to Kraken disclosure

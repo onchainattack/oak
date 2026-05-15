@@ -2,7 +2,7 @@
 
 **Loss:** approximately \$16M+ across multiple chains (Bitcoin, Ethereum, and ERC-20 tokens; the exact total is uncertain because the attacker also manipulated internal trading pairs to extreme prices, complicating asset-valuation reconciliation). Livecoin permanently ceased operations after the incident.
 **OAK Techniques observed:** **OAK-T15.003** (Operator-Endpoint Compromise — the attacker gained administrative control of Livecoin's live production infrastructure, including the hot-wallet servers, trading engine, and web frontend, representing a full compromise of the operator's endpoint surface). **OAK-T15.004** (Operator-Credential Compromise — the initial access vector almost certainly involved compromised operator credentials, either administrative login credentials or infrastructure-provider account access, that allowed the attacker to seize control of the exchange's servers and hosting surface).
-**Attribution:** **pseudonymous (no public attribution)**. The attacker's ransom message was in Russian, and Livecoin was a Russian-registered exchange, but no named individual or group was publicly identified by law enforcement. Russian authorities launched an investigation but did not publish findings.
+**Attribution:** **pseudonymous**. The attacker's ransom message was in Russian, and Livecoin was a Russian-registered exchange, but no named individual or group was publicly identified by law enforcement. Russian authorities launched an investigation but did not publish findings.
 **Key teaching point:** **Livecoin is the canonical worked example of a full infrastructure-takeover exchange compromise — the attacker did not merely drain hot wallets through a stealthy transfer but seized control of the exchange's entire live production surface (website, trading engine, withdrawal system) and weaponised the exchange's own price-oracle and trading infrastructure to maximise damage.** The post-compromise manipulation of internal trading pairs (BTC/USD set to \$450K, effectively nullifying the exchange's own valuation metrics) illustrates the structural risk of an attacker with admin-level access to a centralised exchange's trading engine — beyond simple wallet-draining — that is underexplored in exchange-threat-modelling frameworks.
 
 ## Summary
@@ -40,7 +40,7 @@ The Livecoin case also demonstrates the **defender-signal-failure mode** of a fu
 
 The Livecoin initial-access vector is classified under OAK-T15.004 (Operator-Credential Compromise) because the attacker's ability to seize the exchange's web servers, frontend, trading engine, and Twitter account indicates that the entry point was administrative-credential compromise — either at the hosting-provider / infrastructure-provider layer or at the exchange's internal admin-console layer. The full-seizure capability (frontend replacement, trading-pair manipulation, Twitter-takeover) is the operational fingerprint of privileged-credential access rather than a narrower single-wallet signing-key exfiltration.
 
-## References
+## Public references
 
 - Livecoin, Twitter (@Livecoin_net), December 24, 2020 — incident warning and closure announcement
 - Livecoin, Twitter (@Livecoin_net), January 15, 2021 — final closure confirmation

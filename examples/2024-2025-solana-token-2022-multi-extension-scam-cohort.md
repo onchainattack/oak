@@ -4,7 +4,7 @@
 
 **OAK Techniques observed:** **OAK-T1.002** (Token-2022 Permanent Delegate Authority — the SPL Token-2022 mint is deployed with the `PermanentDelegate` extension granting a designated address standing authority to move or burn any holder's balance without holder consent. The presence of the extension alone is the signal; detection is a binary check on mint metadata. Industrial-scale exploitation since Q3 2024 in the form of "burn-on-buy" rug-pulls.) **OAK-T1.007** (Token-2022 Transfer-Hook Abuse — the SPL Token-2022 mint is configured with the `TransferHook` extension invoking an attacker-controlled program on every `transfer_checked` invocation. Reintroduces the callback-based vulnerability class — reentrancy, mid-transfer state mutation, attacker-controlled CPI — into Solana's runtime. The hook program is specified by the token creator and can be upgraded post-deployment via `BPFLoaderUpgradeable`.) **OAK-T1.005** (Hidden Fee-on-Transfer — the token contract embeds a conditionally-triggered fee in its transfer logic. On Solana, the Token-2022 `TransferFee` extension provides the standard fee primitive; hidden or asymmetric fee configurations at the extension level constitute the T1.005 Solana-side sub-pattern, distinct from EVM-side conditional-fee-branch implementations.)
 
-**Attribution:** **multi-actor, industrial-scale** — The Token-2022 extension-abuse surface is exploited at industrial scale by independent operators launching scam tokens on Solana. No single operator dominates; the PermanentDelegate sub-cohort alone constitutes a significant fraction of new Solana Token-2022 launches per RugCheck.xyz reporting. The Jupiter/RugCheck community-mitigation response (swap-UI PD flag integration within ~48h of the Slorg/RED disclosure in September 2024) is the canonical venue-side defence model.
+**Attribution:** **unattributed** — The Token-2022 extension-abuse surface is exploited at industrial scale by independent operators launching scam tokens on Solana. No single operator dominates; the PermanentDelegate sub-cohort alone constitutes a significant fraction of new Solana Token-2022 launches per RugCheck.xyz reporting. The Jupiter/RugCheck community-mitigation response (swap-UI PD flag integration within ~48h of the Slorg/RED disclosure in September 2024) is the canonical venue-side defence model.
 
 **Key teaching point:** **Solana Token-2022 extensions are a composable attack surface — a single mint can combine multiple extensions (PermanentDelegate + TransferHook + TransferFee + MintCloseAuthority + unrenounced freeze authority) to produce a token whose holder-facing behaviour is indistinguishable from a legitimate SPL token at the wallet UI layer but whose authority structure grants the deployer a comprehensive set of holder-extraction primitives.** The defender's detection surface is structurally different for each extension class: PermanentDelegate and TransferFee are binary-detectable at the mint-config layer (extension TLV parsing yields a deterministic boolean); TransferHook requires program-level static analysis or simulation to determine whether the hook program's behaviour is malicious. The asymmetry between binary-detectable extensions (T1.002, T1.005 Solana-side) and behaviour-requiring extensions (T1.007) is the binding constraint on detection-tool maturity at v0.1.
 
@@ -27,6 +27,7 @@ The PermanentDelegate sub-cohort is the highest-volume T1.002 surface at v0.1, w
 The `TransferHook` extension configures a mint to invoke an attacker-controlled program on every `transfer_checked` invocation. This reintroduces the callback-based vulnerability class — reentrancy, mid-transfer state mutation, attacker-controlled CPI — into Solana's runtime, which had previously precluded callback-based attack surfaces by design.
 
 Three properties make T1.007 structurally significant:
+
 1. The hook program is specified by the token creator, not the caller — the caller has no say in which program is invoked.
 2. The hook program can perform arbitrary CPI calls of its own and can return execution to the Token-2022 program in a state mutated by the hook's actions.
 3. The hook program is upgradable via `BPFLoaderUpgradeable` — a benign hook at deployment can be upgraded to a malicious hook post-deployment.
@@ -40,6 +41,7 @@ On Solana, the Token-2022 `TransferFee` extension provides the standard fee prim
 ### Multi-Extension Stacking: The Compound Surface
 
 The most dangerous scam tokens combine multiple extensions. A mint deployed with PermanentDelegate + TransferHook + TransferFee + MintCloseAuthority + unrenounced freeze authority grants the deployer:
+
 - Standing authority to burn any holder's tokens (PermanentDelegate)
 - A callback program invoked on every transfer that can perform arbitrary state mutation (TransferHook)
 - A fee structure that may be asymmetric or hidden (TransferFee)

@@ -1,10 +1,13 @@
 # Stablecoin Issuer Freeze-Asymmetry and Optimistic Bridge Fraud-Proof Gap Cohort — 2022–2025
 
-**Tags:** OAK-T7.008, OAK-T10.004
+**OAK Techniques observed:** OAK-T7.008, OAK-T10.004
 
+**Attribution:** **unattributed** (aggregate cohort).
 **Loss:** T7.008 aggregate undocumented at class level (the technique is a routing preference rather than an extraction event; loss is embedded in the downstream laundering chains that select USDT over USDC for pre-off-ramp holding); T10.004 aggregate undocumented at class level (the Nomad bridge exploit, August 2022, ~$190M, is the closest large-scale optimistic-verification failure, but it exploited a verification-predicate gap rather than a fraud-proof gap per se; smaller-scale fraud-proof-gap incidents are distributed across lesser-known optimistic bridges).
 
 **Key teaching point:** Both Techniques exploit a gap between a **design assumption** and **operational reality** — but in fundamentally different domains. T7.008 exploits the gap between the assumption of uniform stablecoin-freeze policy and the operational reality of issuer-specific compliance postures (Circle froze Tornado Cash addresses August 2022; Tether did not, or did so on a materially different timeline). T10.004 exploits the gap between the 1-of-N honest-verifier assumption and the operational reality of absent, censored, or under-incentivised challengers. The structural parallel is that in both cases, the on-chain code behaves as designed — the freeze function exists and is exercised per the issuer's compliance posture (T7.008), and the bridge accepts messages because no valid challenge arrived (T10.004). The failure is at the *mechanism-design layer*, not the code-correctness layer.
+
+## Summary
 
 ## Timeline
 
@@ -35,7 +38,7 @@ See `examples/2022-2025-optimistic-bridge-fraud-proof-cohort.md` for full cohort
 
 Detection requires pre-deployment architecture review: verify that at least one independent challenger operator is funded and live; verify challenge-window duration via written response-time-budget analysis; require the operator to demonstrate a successful fraud-proof exercise on testnet.
 
-## References
+## Public references
 
 - `[ofac2022tornado]` — OFAC Tornado Cash SDN listing (August 8, 2022)
 - `[circle2022freeze]` — Circle USDC Tornado Cash freeze action

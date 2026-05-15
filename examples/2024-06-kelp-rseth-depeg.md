@@ -2,7 +2,7 @@
 
 **Loss:** cohort-level depeg loss across rsETH holders and rsETH-collateralised lending positions. The Kelp rsETH LRT traded at a discount to net-asset-value (NAV) following changes in EigenLayer restaking rewards allocation that affected rsETH's underlying asset composition, with the NAV-update cadence lagging the market's price discovery on DEX venues.
 **OAK Techniques observed:** **OAK-T14.004** (Liquid Restaking Token Pricing Manipulation — primary; the structural surface was the LRT's DEX-price-to-NAV divergence during the EigenLayer reward-allocation adjustment window, where the rsETH NAV oracle updated on a cadence that lagged the DEX spot price, creating the stale-NAV window that holders and lending-market borrowers were exposed to). **OAK-T14.003.001** (LST/LRT Depeg Cascade — Constrained Primitive — secondary; the depeg propagated through rsETH-collateralised lending positions where the DEX spot price, rather than the redemption-rate-adjusted NAV, determined margin-of-solvency for leveraged borrowers).
-**Attribution:** **non-adversarial** — no external attacker. The depeg was a market response to EigenLayer restaking-reward allocation changes that affected rsETH's underlying asset composition; the price divergence was driven by holders rebalancing their LRT exposure in response to the composition change, not by a manipulation event.
+**Attribution:** **unattributed** — no external attacker. The depeg was a market response to EigenLayer restaking-reward allocation changes that affected rsETH's underlying asset composition; the price divergence was driven by holders rebalancing their LRT exposure in response to the composition change, not by a manipulation event.
 **Key teaching point:** **An LRT's NAV-to-DEX-price divergence during restaking-reward allocation changes is a T14.004 surface — the LRT's pricing infrastructure (issuer-reported NAV, DEX spot price, withdrawal-queue redemption rate, and lending-market oracle) updates on four different cadences, and any event that changes the underlying asset composition creates an arbitrage-and-depeg window across those cadences.** The Kelp rsETH depeg demonstrates that T14.004 is not limited to AVS slashing-event foreknowledge or withdrawal-queue gaming — the composition-change-depeg sub-primitive surfaces whenever the LRT's collateral basket changes and the NAV oracle lags the DEX market in reflecting that change.
 
 ## Summary
@@ -33,7 +33,7 @@ T14.004 is the primary classification because the load-bearing surface was the L
 
 T14.003.001 (LST/LRT Depeg Cascade — Constrained Primitive) is the secondary classification because the depeg propagated through rsETH-collateralised lending positions where the DEX spot price, rather than the redemption-rate-adjusted NAV, determined margin-of-solvency for leveraged borrowers. This is the canonical T14.003 sub-case (b) propagation surface — the cascade-amplification through dependent lending venues.
 
-## References
+## Public references
 
 - Kelp DAO rsETH documentation (NAV calculation methodology, oracle update cadence, underlying asset composition)
 - EigenLayer restaking rewards allocation parameter documentation (the allocation-change event that triggered the composition shift)

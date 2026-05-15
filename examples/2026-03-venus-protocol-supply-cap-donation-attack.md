@@ -1,10 +1,13 @@
 # Venus Protocol Supply-Cap Donation-Attack Exploit — BNB Chain — 2026-03-15
 
-**Tags:** OAK-T9.011, OAK-T17.001
+**OAK Techniques observed:** OAK-T9.011, OAK-T17.001
 
+**Attribution:** **unattributed** (aggregate cohort).
 **Loss:** $3.7M in extracted borrowed assets; $2.15M in unrecoverable bad debt (1.18M CAKE + 1.84M THE that no liquidation proceeds could cover); $5.07M gross extracted against ~$16.29M in attacker-funded accumulation capital (7,447 ETH via Tornado Cash + $9.92M borrowed from Aave). The attacker's on-chain P&L appears negative or break-even; the working hypothesis (per Venus's risk manager Allez Labs) is that the on-chain loss was offset by a short perpetual position on THE at a CEX.
 
 **Key teaching point:** The Venus Protocol Rekt IV case is the canonical **dismissed-audit-finding exploitation** worked example for OAK. Code4rena flagged the donation-attack supply-cap bypass in May 2023 with a working proof of concept; Venus assessed it as "supported behavior with no negative side effects" and did not remediate. The same vector was exploited on Venus's ZKSync deployment in February 2025 ($717K net bad debt). Venus still did not patch the BNB Chain Core Pool. On March 15, 2026, an attacker who spent nine months accumulating 84% of the THE supply cap executed the exact attack described in the 2023 audit finding. The sequence — auditors flag, team dismisses, attacker exploits, team absorbs loss, attacker exploits again — is the definitive reference case for why audit-finding dismissal is itself a standing security surface.
+
+## Summary
 
 ## Timeline
 

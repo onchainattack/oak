@@ -2,7 +2,7 @@
 
 **Loss:** approximately $140M across the PYR token market-cap impact and 148 affected NFT collector wallets. The attacker extracted 96 Venly-hosted wallet private keys from Vulcan Forged's centralised wallet server and drained the corresponding wallets of PYR tokens and Vulcan Forged NFT assets.
 **OAK Techniques observed:** OAK-T11.001 (Third-Party Signing Vendor Compromise) — primary; the attacker breached Vulcan Forged's centralised wallet server, extracting 96 Venly-hosted wallet private keys. OAK-T5.001 (Hard LP / Treasury Drain) — structurally co-occurring; the extracted keys allowed direct transfer of PYR tokens and NFTs from the 148 affected wallets.
-**Attribution:** pseudonymous; the attacker has not been publicly identified. Vulcan Forged refunded the affected users approximately $140M from its treasury within days of the incident.
+**Attribution:** **unattributed** pseudonymous; the attacker has not been publicly identified. Vulcan Forged refunded the affected users approximately $140M from its treasury within days of the incident.
 **Key teaching point:** Centralised wallet-server architectures where the protocol operator stores user wallet private keys in a single server-side database create a concentrated extraction surface — the compromise of a single server yields access to the full set of stored private keys, and the resulting extraction surfaces (wallet-held tokens, NFTs, staked positions) are uniformly drained in a single incident window. The Venly-as-custodian topology adds a shared-responsibility dimension: the Venly wallet infrastructure was not breached, but Venly-hosted private keys stored on Vulcan Forged's own server were the extraction target.
 
 ## Summary

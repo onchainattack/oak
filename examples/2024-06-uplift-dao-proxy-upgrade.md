@@ -17,6 +17,7 @@ The audited treasury implementation, however, was deployed behind a proxy whose 
 On June 18, 2024, the deployer EOA executed a `upgradeTo()` transaction on the treasury proxy, pointing to a new implementation contract that had been deployed minutes earlier. The new implementation contained a single `drainTreasury()` function — no access-control modifiers, no multisig requirement, no timelock — that transferred all treasury assets to an externally-controlled address. The upgrade and the drain occurred in the same block.
 
 The Uplift DAO team's remaining members (those who were not the key holder) claimed in Discord that the deployer key had been compromised, but provided no forensic evidence of how the compromise occurred. Peckshield's post-incident analysis noted structural features inconsistent with an external-attacker scenario:
+
 - The upgrade transaction used the exact gas parameters and nonce expected from the deployer's typical transaction pattern.
 - The drain transaction in the same block used a fresh EOA with no prior transaction history, inconsistent with a key-compromise scenario (an external attacker extracting a compromised key would typically drain to an address with existing infrastructure).
 - The deployer EOA did not interact with any known phishing or compromise surfaces in the preceding 30 days.

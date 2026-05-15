@@ -2,7 +2,7 @@
 
 **Loss:** approximately \$10K equivalent in BTC effect from irregular VIA/BTC trades; all anomalous trades reversed by Binance's risk engine; no net customer loss after trade reversal.
 **OAK Techniques observed:** **OAK-T4.008** (Fake-DEX / Fake-CEX Clone Frontend Phishing — attackers created a convincing clone of the Binance web frontend to harvest user API keys and login credentials). **OAK-T15.003** (Operator-Endpoint Compromise — broadly construed; the harvested API keys granted the attacker trade-execution authority on the compromised accounts, making each phished account a compromised "endpoint" from which the exchange-facing trading action was launched).
-**Attribution:** **pseudonymous (no public attribution)**. Binance did not publicly name an individual or group. The sophistication of the coordinated VIA/BTC pump — multi-account orchestration with pre-positioned sell-side inventory — suggested an organised actor with exchange-trading expertise.
+**Attribution:** **pseudonymous**. Binance did not publicly name an individual or group. The sophistication of the coordinated VIA/BTC pump — multi-account orchestration with pre-positioned sell-side inventory — suggested an organised actor with exchange-trading expertise.
 **Key teaching point:** **The Binance March 2018 API phishing incident is the canonical worked example of CEX clone-frontend phishing chained with API-key abuse for market manipulation.** The attack did not seek to drain user accounts directly (the withdrawal function was disabled for API-only keys at Binance) but instead weaponised the trading authority of the phished API keys to create an artificial price dislocation on an illiquid trading pair, profiting from pre-positioned opposite-side positions. The incident drove Binance's SAFU (Secure Asset Fund for Users) creation and remains the reference case for exchange-side API-key scoping and the structural risk of API-trading keys held by exchange users without IP-whitelisting or trade-size limits.
 
 ## Summary
@@ -34,7 +34,7 @@ Effectively zero. The sell-side BTC proceeds from the attacker's own VIA sell or
 
 The phishing infrastructure — a near-perfect clone of the Binance login and API-key management UI served from a typosquatted domain — is the canonical early-exchange instance of OAK-T4.008 (Fake-DEX / Fake-CEX Clone Frontend). The 2018 Binance API case anchors the CEX branch of T4.008 in the OAK taxonomy: the clone frontend did not drain wallets directly (the DeFi variant, T4.002 / T4.004) but harvested exchange-side API credentials that were then used to execute unauthorised trades on the centralised order book, creating the extraction profit at the exchange layer rather than at the wallet layer.
 
-## References
+## Public references
 
 - Binance, "Summary of the Phishing and Attempted Theft Incident," March 7, 2018
 - CZ (Changpeng Zhao), Twitter thread (@cz_binance), March 7, 2018 — incident notice and SAFU announcement

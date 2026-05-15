@@ -2,7 +2,7 @@
 
 **Loss:** approximately \$31M (13.96M BUSD + 73,635 BNB drained from the Meerkat vault contract by the deployer address itself, one day after protocol launch). No funds were recovered or returned. The Meerkat team deleted all social channels immediately after the drain.
 **OAK Techniques observed:** **OAK-T5.005** (Treasury-Management Exit — the project deployer retained an admin-key-controlled function that allowed the vault's entire deposited balance to be transferred to an address under the deployer's control; the drain was executed by the deployer wallet, not by an external attacker). **OAK-T5.001** (Hard LP Drain — the vault's deposited BUSD and BNB liquidity-provider funds were drained in a single, large transaction from the vault to the deployer's exit address, constituting the "hard" (single-transaction, total-drain) LP-extraction pattern).
-**Attribution:** **pseudonymous (project team / developers).** The Meerkat Finance team was anonymous. After the drain, the project's Telegram group, Twitter account, and website were deleted. No named individual was publicly identified, and no law-enforcement action was publicly reported. The fund flow after the drain was tracked by on-chain analysts; the BNB was subsequently bridged and laundered through multiple intermediary wallets.
+**Attribution:** **pseudonymous** The Meerkat Finance team was anonymous. After the drain, the project's Telegram group, Twitter account, and website were deleted. No named individual was publicly identified, and no law-enforcement action was publicly reported. The fund flow after the drain was tracked by on-chain analysts; the BNB was subsequently bridged and laundered through multiple intermediary wallets.
 **Key teaching point:** **Meerkat Finance is the canonical BSC early-era exit-scam worked example: the project launched, raised \$31M in LP deposits in under 24 hours by offering extreme APY yield-farming incentives, and then the deployer used the vault's admin-key backdoor to drain every deposited token in a single transaction — all while the team's social channels were actively posting "we were hacked" to buy time.** The incident solidified the on-chain forensic distinction between an external exploit (transaction pattern shows an attacker interacting with a contract using a novel exploit path) and an exit scam (the deployer wallet, which is the sole admin-key holder, transfers the vault balance to its own address), a distinction that BSC yield-farm auditors and community defenders (PeckShield, CertiK, RugDoc) began systematically documenting and publicising after Meerkat.
 
 ## Summary
@@ -41,7 +41,7 @@ The T5.005 classification at v0.1 extends to any case where a protocol's treasur
 
 The single-transaction vault drain — transferring the entire deposited balance (not a gradual trickle, not a series of smaller withdrawals) — matches the OAK-T5.001 (Hard LP Drain) pattern: a single, large outflow that extracts effectively the entire LP or vault balance in one action. The T5.001 classification is the extraction-velocity dimension; T5.005 is the authority dimension (who drained it). The two are complementary: a T5.005 exit can exhibit either a hard-drain (T5.001, single-transaction, as at Meerkat) or a slow-drain (T5.002, multi-transaction over time, as at QuadrigaCX or a prolonged operator-compromise).
 
-## References
+## Public references
 
 - PeckShield, "Meerkat Finance — Deployer Drain Confirmation," Twitter (@PeckShieldAlert), March 4, 2021
 - CertiK, "Meerkat Finance Exit Scam Analysis," March 4, 2021

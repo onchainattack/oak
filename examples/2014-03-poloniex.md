@@ -2,7 +2,7 @@
 
 **Loss:** approximately \$50K in BTC (~12.3% of exchange reserves at the time of the incident, per operator disclosure).
 **OAK Techniques observed:** **OAK-T11.001** (Third-Party Signing-Vendor UI / Signing-Flow Compromise — broadly construed; the exchange as custodian to its users held signing authority over the hot wallet, and the compromise of that signing infrastructure is structurally T11.001). **OAK-T15.003** (Operator-Endpoint Compromise — the attacker gained access to the exchange's hot-wallet server infrastructure, constituting an operator-endpoint state that enabled the signing-flow manipulation, though the exact entry vector was not publicly detailed at forensic granularity).
-**Attribution:** **pseudonymous (unattributed to any named group).** Operator (Tristan D'Agosta) publicly disclosed the breach on the Bitcointalk forum and committed to repaying affected users from personal funds and exchange revenue over time.
+**Attribution:** **confirmed** Operator (Tristan D'Agosta) publicly disclosed the breach on the Bitcointalk forum and committed to repaying affected users from personal funds and exchange revenue over time.
 **Key teaching point:** **The Poloniex March 2014 incident is the canonical early-exchange hot-wallet compromise in the pre-Lazarus era.** The operator's decision to publicly disclose within hours and commit to full user reimbursement from personal funds — rather than declare bankruptcy — became the reference standard for exchange-breach response in the 2014-2016 period and is frequently contrasted with the Mt. Gox collapse of the preceding month (February 2014) in discussions of exchange custodial risk and operator integrity.
 
 ## Summary
@@ -26,7 +26,7 @@ The entry vector was described by D'Agosta as a compromise of the exchange's hot
 
 Approximately \$50K in BTC at 2014-03 prices; no confirmed recovery reported.
 
-## References
+## Public references
 
 - Tristan D'Agosta, Poloniex breach disclosure thread, Bitcointalk, March 2014
 - Poloniex exchange forum and community archives, March 2014

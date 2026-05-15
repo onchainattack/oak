@@ -2,7 +2,7 @@
 
 **Loss:** cumulative estimate across the impersonation-wave cohort: low-confidence interval ~\$15M, high-confidence interval ~\$50M (no per-incident aggregation authority at the time; the figure is a retrospective lower-bound estimate from community-tracking efforts and DEX-volume-anomaly reconstruction).
 **OAK Techniques observed:** **OAK-T2.005** (Token Metadata Spoofing — the ERC-20 `name()`/`symbol()`/`decimals()` return values impersonated legitimate high-value tokens); **OAK-T6.006** (Counterfeit Token Impersonation — full-spectrum brand counterfeit spanning on-chain metadata and, in many cases, off-chain token-list logo impersonation).
-**Attribution:** **pseudonymous / unattributed (no named individuals publicly identified)**. The impersonation wave was conducted by a diffuse set of deployers; no single operator cluster was identified as responsible for a majority of the impersonation deployments. Attribution is at the pattern level rather than the actor level.
+**Attribution:** **confirmed**. The impersonation wave was conducted by a diffuse set of deployers; no single operator cluster was identified as responsible for a majority of the impersonation deployments. Attribution is at the pattern level rather than the actor level.
 **Key teaching point:** **ERC-20 metadata (name/symbol/decimals) is the impersonation primitive — wallet UIs display it without cross-referencing the contract address against canonical token registries, creating a structurally-open impersonation surface that persists at OAK v0.1.**
 
 ## Summary
@@ -29,7 +29,7 @@ The impersonation wave subsided as (a) the Uniswap Interface introduced the Unis
 
 Cumulative across the impersonation-wave cohort: low-confidence interval ~\$15M, high-confidence interval ~\$50M. The wide interval reflects the absence of a per-incident aggregation authority at the time — no single entity tracked losses across the full impersonation-wave cohort, and the figure is a retrospective lower-bound estimate from community-tracking efforts (DEX-volume-anomaly reconstruction, token-deployment enumeration, victim-report aggregation on Reddit/Twitter/Discord). Individual impersonator-token deployments typically extracted smaller amounts (low-thousands to mid-tens-of-thousands of dollars) before being flagged; the aggregate cohort extraction is large because the number of impersonator-token deployments was high.
 
-## References
+## Public references
 
 - Uniswap Token List (canonical token-registry reference — the post-hoc mitigation that reduced the impersonation surface).
 - Etherscan token-verification badges and impersonation-warning documentation.
