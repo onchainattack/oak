@@ -107,7 +107,7 @@ false_positive_modes:
   - hop-intermediary patterns from privacy-conscious individual users (require upstream watchlist hit)
   - cohort signups during airdrop / launch windows produce time-correlated KYC events without illicit attribution (require shared_cluster watchlist match)
 
-mitigations: [OAK-M07, OAK-M22, OAK-M27]
+mitigations: [OAK-M07, OAK-M22, OAK-M27, OAK-M41, OAK-M42, OAK-M43]
 
 reference_implementations:
   - { target: chainalysis-reactor,    chain: cross-chain, url: "" }

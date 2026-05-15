@@ -116,7 +116,7 @@ false_positive_modes:
   - PATH D false positives from professional yield aggregators (require zero yield-claim events as discriminator)
   - AGGREGATE false positives where in/out matching is coincidental at lower volumes (calibrate min_aggregate_usd)
 
-mitigations: [OAK-M07, OAK-M22, OAK-M27]
+mitigations: [OAK-M07, OAK-M22, OAK-M27, OAK-M41, OAK-M43]
 
 reference_implementations:
   - { target: chainalysis-reactor,    chain: cross-chain, url: "" }

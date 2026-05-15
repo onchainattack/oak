@@ -118,7 +118,7 @@ false_positive_modes:
   - PATH B false positives where the destination address's laundering behaviour is coincidental rather than extortive — require downstream laundering classification confidence above floor
   - RaaS affiliate-split detection false positives where a legitimate payment is split across operational wallets — the affiliate_split window and share thresholds must be calibrated per RaaS strain
 
-mitigations: [OAK-M26, OAK-M27]
+mitigations: [OAK-M26, OAK-M27, OAK-M41, OAK-M42]
 
 reference_implementations:
   - { target: chainalysis-reactor,    chain: cross-chain, url: "" }

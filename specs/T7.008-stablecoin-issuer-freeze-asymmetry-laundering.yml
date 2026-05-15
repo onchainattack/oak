@@ -100,7 +100,7 @@ false_positive_modes:
   - Regulatory-driven stablecoin-mix shifts applying uniformly across all market participants — distinguish by restricting to watchlisted-source-cluster attribution
   - USDC/USDT conversion for legitimate rate arbitrage during depeg events — distinguish via profitability analysis (arbitrageurs profit; launderers accept the spread)
 
-mitigations: [OAK-M23, OAK-M24]
+mitigations: [OAK-M23, OAK-M24, OAK-M41, OAK-M43]
 
 reference_implementations:
   - { target: chainalysis-reactor,    chain: cross-chain, url: "" }

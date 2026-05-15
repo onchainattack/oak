@@ -99,7 +99,7 @@ false_positive_modes:
   - PATH C false positives where the operator's fingerprint is generic (deployer-funding patterns shared across many actors) — combine with PATH A or B for confirmation
   - SDN list staleness — mixer_deposit_addresses_sdn must be live-updated against OFAC, not frozen at a 2022 snapshot
 
-mitigations: [OAK-M07, OAK-M22, OAK-M27]
+mitigations: [OAK-M07, OAK-M22, OAK-M27, OAK-M42, OAK-M43]
 
 reference_implementations:
   - { target: chainalysis-reactor,    chain: cross-chain, url: "" }

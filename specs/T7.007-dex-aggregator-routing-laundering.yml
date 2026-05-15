@@ -106,7 +106,7 @@ false_positive_modes:
   - Split-route execution from the aggregator's routing algorithm, not operator configuration — the operator may not control split-route fractions; solver-based aggregators (CowSwap, Uniswap X) select routes independently
   - Per-aggregator per-asset-pair baselines are not publicly available at v0.1 — PATH A is dependent on forensic-provider internal baselines
 
-mitigations: [OAK-M23, OAK-M24]
+mitigations: [OAK-M23, OAK-M24, OAK-M41, OAK-M43]
 
 reference_implementations:
   - { target: chainalysis-reactor,    chain: cross-chain, url: "" }

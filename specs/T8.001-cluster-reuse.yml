@@ -106,7 +106,7 @@ false_positive_modes:
   - launchpad / bundler infrastructure that touches many tokens by design — allowlist by infrastructure address
   - rotation events from organic operators (project hand-over, team migration) — corroborate via off-chain evidence before flagging PATH C
 
-mitigations: [OAK-M04, OAK-M07, OAK-M25]
+mitigations: [OAK-M04, OAK-M07, OAK-M25, OAK-M43]
 
 reference_implementations:
   - { target: chainalysis-reactor, chain: evm,    url: "" }

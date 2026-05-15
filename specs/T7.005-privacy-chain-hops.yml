@@ -105,7 +105,7 @@ false_positive_modes:
   - PATH C false positives from coincidental amount-class match across unrelated operators (require continuity_score above floor)
   - venue-side legitimate non-illicit-pattern flows (require source-cluster watchlist hit, not just venue support)
 
-mitigations: [OAK-M07, OAK-M22, OAK-M27]
+mitigations: [OAK-M07, OAK-M22, OAK-M27, OAK-M42]
 
 reference_implementations:
   - { target: chainalysis-reactor,    chain: cross-chain, url: "" }

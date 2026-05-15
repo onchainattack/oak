@@ -103,7 +103,7 @@ false_positive_modes:
   - PATH C false positives from professional rebalancing services that legitimately traverse chains (require flagged source attribution)
   - PATH D false positives during high-volume launches that legitimately accrue protocol fees (require illicit_ratio > floor, not absolute fees alone)
 
-mitigations: [OAK-M07, OAK-M22, OAK-M27, OAK-M39]
+mitigations: [OAK-M07, OAK-M22, OAK-M27, OAK-M39, OAK-M41, OAK-M42, OAK-M43]
 
 reference_implementations:
   - { target: chainalysis-reactor,    chain: cross-chain, url: "" }
