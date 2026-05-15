@@ -208,7 +208,7 @@ test_fixtures:
     - "Protocol that reads a view function for event emission or logging only — the read result does not influence value transfer"
 
 false_positive_modes:
-  - Legitimate cross-protocol composability where a DEX aggregator reads pool reserves to compute an optimal route mid-transaction — PATH B distinguishes via is_consumed_for_value_transfer: aggregator route computation does not trigger an economic action against the stale read
+  - "Legitimate cross-protocol composability where a DEX aggregator reads pool reserves to compute an optimal route mid-transaction — PATH B distinguishes via is_consumed_for_value_transfer: aggregator route computation does not trigger an economic action against the stale read"
   - View-function read from a target that is mid-execution but the read result is used only for event emission or logging — PATH B classify_economic_action returns null for non-economic consumers; no alert emitted
   - Target contract whose reentrancy guard also covers staticcall paths — PATH A and PATH D verify reentrancy_surface_score specifically checks lacks_staticcall_reentrancy_guard; contracts with comprehensive guards score lower
   - Multi-hop DeFi transaction where the apparent divergence is an artifact of the call-trace frame ordering rather than actual stale-state consumption — PATH B simulates the staticcall at the settled block state to ground-truth the divergence

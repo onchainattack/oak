@@ -152,7 +152,7 @@ test_fixtures:
 false_positive_modes:
   - Second-hand hardware wallet from a verified individual with intact tamper-evident packaging and blank recovery card — second-hand is a risk elevation (PATH A flags it), not a definitive counterfeit; execute PATH B genuineness check and PATH C packaging inspection before concluding
   - Device that fails genuineness check due to vendor-side server outage or SDK version mismatch — retry with updated vendor software before concluding counterfeit; the failure_detail in PATH B distinguishes cryptographic attestation failure from connectivity failure
-  - Packaging with cosmetic damage from shipping that mimics tampering — PATH C distinguishes via seal integrity: a broken seal is definitive; scuffed packaging with intact seal is cosmetic
+  - "Packaging with cosmetic damage from shipping that mimics tampering — PATH C distinguishes via seal integrity: a broken seal is definitive; scuffed packaging with intact seal is cosmetic"
   - PATH C PCB mismatch due to a legitimate hardware revision, not a counterfeit — cross-reference against vendor-published revision history; flag only when PCB layout differs from ALL known legitimate revisions
 
 mitigations: [OAK-M22, OAK-M21]

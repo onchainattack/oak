@@ -116,7 +116,7 @@ false_positive_modes:
   - legitimate liquidation participation during a market-wide drop without cohort-level multi-position positioning — PATH A's pre-eligible + cluster filter handles
   - cascade events on assets whose redemption-rate ≡ spot price (no depeg surface) — PATH B should suppress
   - high eligibility-band density during expected volatility (post-funding-rate, post-airdrop) without thin-window — calibrate thin_window_window
-  - pre-deployment capital that is genuinely market-making (provides liquidity rather than harvests cascade) — discriminator: harvester is consistently on the receiving side of cascades, not just present at threshold
+  - "pre-deployment capital that is genuinely market-making (provides liquidity rather than harvests cascade) — discriminator: harvester is consistently on the receiving side of cascades, not just present at threshold"
 
 mitigations: [OAK-M09, OAK-M11, OAK-M16, OAK-M17]
 

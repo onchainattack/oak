@@ -183,8 +183,8 @@ test_fixtures:
     - "User who downloads the companion app from the vendor's official GitHub releases page and verifies the published checksum — legitimate installation"
 
 false_positive_modes:
-  - Legitimate vendor communication that mentions seed-phrase security in an advisory context — PATH D distinguishes via solicitation_score: advisories use negative framing ("never share"), phishing uses positive framing ("enter your seed phrase to verify")
-  - Domain with coincidental typosquat distance to a vendor domain that is a legitimate unrelated business — PATH B's content_signal analysis filters: only flag if the domain serves seed-solicitation UI or impersonates vendor branding
+  - "Legitimate vendor communication that mentions seed-phrase security in an advisory context — PATH D distinguishes via solicitation_score: advisories use negative framing (\"never share\"), phishing uses positive framing (\"enter your seed phrase to verify\")"
+  - "Domain with coincidental typosquat distance to a vendor domain that is a legitimate unrelated business — PATH B's content_signal analysis filters: only flag if the domain serves seed-solicitation UI or impersonates vendor branding"
   - Third-party wallet app that legitimately imports a seed phrase for wallet recovery (e.g., importing a MetaMask seed into Rabby) — the legitimate-vendor-never-asks invariant applies to vendor-branded communications, not to third-party wallet import flows; distinguish via app publisher identity vs. claimed vendor identity
   - Browser extension with wallet-like functionality that requests seed import as its core feature — distinguish via the extension's store listing publisher vs. the impersonated vendor; a legitimate third-party wallet that supports seed import is not T11.007.003
 

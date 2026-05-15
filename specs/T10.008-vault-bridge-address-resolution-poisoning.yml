@@ -264,10 +264,10 @@ test_fixtures:
     - "Individual dust transactions to a user address without subsequent vault allowance receipt — user-level address poisoning (T4.003), not T10.008"
 
 false_positive_modes:
-  - Legitimate vault migration to a newly-generated address (e.g., post-TSS-key-rotation) — PATH A distinguishes via TSS pubkey derivation: even a brand-new vault address must be derivable from the TSS pubkey; if the derivation check passes, the address is legitimate regardless of history
+  - "Legitimate vault migration to a newly-generated address (e.g., post-TSS-key-rotation) — PATH A distinguishes via TSS pubkey derivation: even a brand-new vault address must be derivable from the TSS pubkey; if the derivation check passes, the address is legitimate regardless of history"
   - Dust transactions from unrelated MEV bots or airdrop spammers that happen to use addresses with similar byte suffixes — PATH B requires the dust recipient to subsequently receive a transferAllowance; dust alone without allowance receipt is not T10.008
-  - Vault address that holds ERC20 allowances idle because the protocol has low swap volume on those assets, not because the vault is attacker-controlled — PATH C distinguishes via the eventual drain event: a legitimate vault will eventually process ERC20 outbounds at normal volume; an attacker drains in a single burst block
-  - Cross-chain address mismatch caused by legitimate TSS key rotation where one chain's router has not yet been updated — PATH D cross-references against the migration event timestamp: if the mismatch coincides with a documented TSS key rotation, the alert is downgraded
+  - "Vault address that holds ERC20 allowances idle because the protocol has low swap volume on those assets, not because the vault is attacker-controlled — PATH C distinguishes via the eventual drain event: a legitimate vault will eventually process ERC20 outbounds at normal volume; an attacker drains in a single burst block"
+  - "Cross-chain address mismatch caused by legitimate TSS key rotation where one chain's router has not yet been updated — PATH D cross-references against the migration event timestamp: if the mismatch coincides with a documented TSS key rotation, the alert is downgraded"
   - Bifrost relayer resolution latency where the resolved address temporarily differs from the expected address due to block reorgs or L1→L2 finality delay — PATH E uses a grace period of N blocks before emitting
 
 mitigations: [OAK-M02, OAK-M08, OAK-M09, OAK-M11, OAK-M20]

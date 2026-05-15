@@ -204,10 +204,10 @@ test_fixtures:
     - "Swap whose actual output exceeds amountOutMin by a significant margin — the attacker did not extract the full slippage band"
 
 false_positive_modes:
-  - Victim's output equals amountOutMin coincidentally due to genuine market movement between submission and inclusion — PATH D cross-references against mempool observation: if no front-run was observed, the band-hit is coincidental; severity downgraded from critical to high
+  - "Victim's output equals amountOutMin coincidentally due to genuine market movement between submission and inclusion — PATH D cross-references against mempool observation: if no front-run was observed, the band-hit is coincidental; severity downgraded from critical to high"
   - Swap where the pool price moved independently of the attacker's front-run (e.g., another large swap landed in the same block) — PATH C correlates the front-run trade direction and magnitude with the price movement; independent price moves do not constitute sandwich extraction
   - Legitimate limit order fill at the limit price — limit orders are structurally T9.013 surfaces only when a sandwich bundle causes the price to hit the limit; verify via PATH C's bundle analysis for the presence of a front-run/back-run pair
-  - Multi-hop swap where intermediate pool prices shift due to the first legs of the same swap — PATH E distinguishes via route_correlation: if the band-hit is self-inflicted (the victim's own earlier leg moved the price), the attacker is the natural arbitrage response, not a premeditated sandwich
+  - "Multi-hop swap where intermediate pool prices shift due to the first legs of the same swap — PATH E distinguishes via route_correlation: if the band-hit is self-inflicted (the victim's own earlier leg moved the price), the attacker is the natural arbitrage response, not a premeditated sandwich"
   - Private transaction that appears as a band-hit because the detector uses a stale pre-trade price — PATH D uses the price at (block_number, tx_index − 1), which is the settled state immediately before the swap
 
 mitigations: [OAK-M02, OAK-M09, OAK-M11, OAK-M20, OAK-M21]

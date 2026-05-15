@@ -208,10 +208,10 @@ test_fixtures:
     - "AddLiquidity transaction where no buy precedes and no sell follows in the same block — no sandwich pattern present"
 
 false_positive_modes:
-  - Legitimate arbitrageur trading in the first blocks after pool creation without front-running the addLiquidity itself — PATH A distinguishes via bundle-level ordering: the buy must precede the addLiquidity, not follow it; verify tx position ordering within the block
+  - "Legitimate arbitrageur trading in the first blocks after pool creation without front-running the addLiquidity itself — PATH A distinguishes via bundle-level ordering: the buy must precede the addLiquidity, not follow it; verify tx position ordering within the block"
   - Deployer intentionally creating a pool with a low initial LP share to distribute tokens to early participants (e.g., fair-launch tokenomics) — verify via deployer's known address, tokenomics documentation, and cross-reference against the deployer's prior launch history in PATH D
   - MEV bot that buys post-addLiquidity and sells later without sandwiching the addLiquidity — the sandwich specifically requires front-run buy + back-run sell straddling the addLiquidity; PATH A checks tx_index ordering
-  - Sniper address that is a legitimate early community member who received an allocation — PATH C distinguishes via sniper_attribution_score: known Tornado Cash deposits, CEX funding sources, and repeat-offense patterns indicate MEV extraction, not community participation
+  - "Sniper address that is a legitimate early community member who received an allocation — PATH C distinguishes via sniper_attribution_score: known Tornado Cash deposits, CEX funding sources, and repeat-offense patterns indicate MEV extraction, not community participation"
   - Bundle that appears sandwiched but is actually three independent traders operating coincidentally — PATH A classify_bundle distinguishes atomic bundles (Flashbots/MEV-relay) from mempool snipes from coincidental ordering
 
 mitigations: [OAK-M02, OAK-M09, OAK-M11, OAK-M20, OAK-M21]

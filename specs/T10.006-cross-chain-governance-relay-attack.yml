@@ -221,7 +221,7 @@ test_fixtures:
     - "Governance relay with end-to-end latency exceeding the target chain's expected governance delay — users have adequate reaction time"
 
 false_positive_modes:
-  - Legitimate governance message delivered via a different relay path than expected (e.g., backup relayer protocol) — PATH A distinguishes via source-chain governance event verification: if the proposal exists and parameters match, the relay path change is operational, not an attack
+  - "Legitimate governance message delivered via a different relay path than expected (e.g., backup relayer protocol) — PATH A distinguishes via source-chain governance event verification: if the proposal exists and parameters match, the relay path change is operational, not an attack"
   - Governance message delivered by a relayer added through a legitimate governance proposal that was not indexed in the detector's relayer-change history — PATH B cross-references each relayer addition against source-chain governance events; calibrate history ingestion to cover the full governance timeline
   - Replay detection false positive when a governance proposal legitimately executes on multiple target chains with the same source proposal ID — PATH C scopes the replay registry per (sourceChain, sourceProposalId, targetChain) tuple; multi-chain execution of the same proposal is expected behavior
   - Parameter divergence caused by a legitimate amendment to the proposal during the governance process (the executed params differ from the originally proposed params because governance amended them) — PATH A compares against canonical_params(source_proposal), which represents the final approved version, not the initial proposal

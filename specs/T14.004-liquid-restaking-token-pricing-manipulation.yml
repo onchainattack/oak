@@ -256,9 +256,9 @@ test_fixtures:
     - "LRT depeg where cross-LRT correlation > 0.7 and no AVS events in the depeg window — systemic stress (T14.003), not idiosyncratic manipulation"
 
 false_positive_modes:
-  - Market-wide LRT depeg during systemic stress (e.g., broad crypto sell-off) — PATH E distinguishes via cross-LRT correlation: if multiple LRTs from different issuers depeg simultaneously with r > 0.5, the cause is systemic (T14.003), not T14.004
+  - "Market-wide LRT depeg during systemic stress (e.g., broad crypto sell-off) — PATH E distinguishes via cross-LRT correlation: if multiple LRTs from different issuers depeg simultaneously with r > 0.5, the cause is systemic (T14.003), not T14.004"
   - LRT discount driven by airdrop-expectation adjustment (e.g., Renzo ezETH April 2024) rather than AVS-event exploitation — PATH A cross-references against AVS event feed; airdrop-driven depegs should have low AVS-event correlation
-  - Withdrawal-queue deposit/cancellation activity from legitimate arbitrageurs capturing DEX-vs-redemption spread — PATH D distinguishes via AVS-event correlation: T14.004 activity is precisely timed against AVS events; passive spread-capture shows no event correlation
+  - "Withdrawal-queue deposit/cancellation activity from legitimate arbitrageurs capturing DEX-vs-redemption spread — PATH D distinguishes via AVS-event correlation: T14.004 activity is precisely timed against AVS events; passive spread-capture shows no event correlation"
   - LRT NAV update lag causing apparent divergence that resolves at the next oracle update — PATH A compares against the issuer's oracle cadence (PATH E in original); divergence within one oracle update period may be a cadence artifact
   - Individual LRT depeg caused by issuer-specific operational issues (e.g., strategy composition change) — PATH E discriminates via the combination of market_wide_correlation and AVS_event_correlation; operational issues show low AVS correlation but may also show low market correlation
 

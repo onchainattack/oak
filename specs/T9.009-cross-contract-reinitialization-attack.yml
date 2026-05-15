@@ -210,7 +210,7 @@ false_positive_modes:
   - Initialize function selector collision where a non-initialize function shares the selector — verify the function signature matches the expected initialize pattern; PATH B cross-references init_calls[1].caller against outer_init.external_call_target
   - Proxy deployed via factory with a one-time initialization in the constructor — the deployment and initialization are atomic, no cross-contract callback window exists; PATH D verifies is_atomic_deploy_and_init
   - Cross-chain proxy where each chain's initialization includes the chain_id in the domain separator — PATH E verifies cross_chain_init_replayable by comparing raw initialization calldata; chain_id-aware init functions produce distinct calldata per chain
-  - Upgradeable contract whose initializer is intentionally callable by users for version migration (e.g., reinitializer pattern with version gating) — distinguish via the version parameter: legitimate reinitializers require a specific version number that monotonically increases
+  - "Upgradeable contract whose initializer is intentionally callable by users for version migration (e.g., reinitializer pattern with version gating) — distinguish via the version parameter: legitimate reinitializers require a specific version number that monotonically increases"
 
 mitigations: [OAK-M01, OAK-M02, OAK-M08, OAK-M09, OAK-M20]
 

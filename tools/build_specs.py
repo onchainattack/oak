@@ -122,6 +122,21 @@ def main() -> int:
         if not isinstance(ds, list) or not all(isinstance(x, str) for x in ds):
             errors.append(f"{rel}: data_sources must be list[str]")
 
+        # Validate false_positive_modes: must be list[str] — YAML can silently
+        # parse "text: more text" as a mapping instead of a string scalar.
+        fp_modes = data.get("false_positive_modes")
+        if fp_modes is not None:
+            if not isinstance(fp_modes, list):
+                errors.append(f"{rel}: false_positive_modes must be a list")
+            else:
+                for i, item in enumerate(fp_modes):
+                    if not isinstance(item, str):
+                        errors.append(
+                            f"{rel}: false_positive_modes[{i}] is {type(item).__name__}, "
+                            f"not str — quote the value if it contains ': ' to prevent "
+                            f"YAML from parsing it as a mapping"
+                        )
+
         dl = data["detection_logic"]
         if not isinstance(dl, dict):
             errors.append(f"{rel}: detection_logic must be a mapping")

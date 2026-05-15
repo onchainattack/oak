@@ -272,8 +272,8 @@ test_fixtures:
     - "Vault with totalSupply > virtual_shares_minimum and totalAssets > min_vault_tvl — donation required to cause zero-share mint exceeds practical attacker capital"
 
 false_positive_modes:
-  - Legitimate vault yield accrual (reward harvest, fee sweep) producing gradual share-price increase across many blocks — PATH A distinguishes via jump_ratio: sustained yield shows gradual increase, donation attacks show sudden step-function jumps within a single block
-  - User error: direct ERC-20 transfer to vault address without intent to donate — PATH B distinguishes by absence of follow-on victim deposit from a different address within the window; isolated transfers without follow-on deposits are user error
+  - "Legitimate vault yield accrual (reward harvest, fee sweep) producing gradual share-price increase across many blocks — PATH A distinguishes via jump_ratio: sustained yield shows gradual increase, donation attacks show sudden step-function jumps within a single block"
+  - "User error: direct ERC-20 transfer to vault address without intent to donate — PATH B distinguishes by absence of follow-on victim deposit from a different address within the window; isolated transfers without follow-on deposits are user error"
   - Vaults with meaningful totalAssets (above min_vault_tvl) are practically unexploitable — the donation magnitude required to skew the share ratio exceeds what the attacker can recover from victim deposits; PATH A calibrates severity via front_runnable flag and vault_tvl
   - Legitimate first-deposit into a freshly deployed vault before dead-shares mint — PATH D is a pre-deployment audit flag, not a runtime alert; PATH A and PATH C suppress alerts for the canonical deployer address making the first deposit
   - Vault share-price jump caused by a legitimate large withdrawal that burns shares and increases per-share value — PATH A cross-references against withdrawal events in the same window; share-price increases from withdrawals are economically legitimate
