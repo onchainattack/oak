@@ -1,8 +1,10 @@
 # OAK Taxonomy Audit — 2026-05
 
+> **Resolution status (2026-05-15): all 10 findings resolved across schema 0.5 and 0.6.** This audit is retained for historical reference and to document the reasoning behind each resolution. The VERSIONING.md changelog (0.5, 0.6) records the specific schema changes.
+
 After two Tactic introductions (T15, T16) and ~20 sub-Technique promotions across the recent v0.x cycle, the taxonomy has accumulated drift, overlap, and naming inconsistencies. This document is a structural review identifying classification mistakes and proposing remap actions.
 
-**Scope of audit:** 16 Tactics, 93 sub-Techniques, ~220 worked examples.
+**Scope of audit (original):** 16 Tactics, 93 sub-Techniques, ~220 worked examples. **Current (post-resolution):** 17 Tactics, 136 Techniques, 577 worked examples.
 
 **Author:** maintainer audit, not agent-generated. Judgment calls flagged explicitly.
 
