@@ -1,0 +1,254 @@
+oak_techniques: [OAK-T10.008]
+spec_id: oak-detection-T10.008
+version: 0.2.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect attacks where a bridge observer/relayer's signing function
+  (`GetSignablePayload()` or equivalent) covers only the inner transaction
+  data while semantically-meaningful wrapper fields — direction flags,
+  destination addresses, chain identifiers, migration slots — sit outside
+  the signed boundary. A malicious proposer modifies these unsigned wrapper
+  fields to forge observations that carry valid signatures but represent
+  semantically different operations. Detection operates at five layers:
+  protocol-level payload coverage audit, wrapper-vs-inner transaction
+  inconsistency detection, proposer metadata divergence across observers,
+  destination address cryptographic binding verification during vault churn,
+  and post-upgrade signature scope regression monitoring.
+  Excludes: T10.001 (validator-signer key compromise — no key material is
+  compromised; the attacker uses validly-signed observations and modifies
+  only unsigned wrapper metadata); T10.002 (message verification bypass —
+  the verification logic itself is correct for what it covers; the flaw is
+  that it does not cover enough; signatures verify, the unsigned bytes are
+  the attack surface).
+
+data_sources: [observer_protocol_source, observer_signatures,
+               committed_observations, wrapped_transactions,
+               bridge_contract_events, validator_set_attestation,
+               contract_storage, tx_call_trace]
+
+detection_logic:
+  description: |
+    Five orthogonal detection paths. PATH A (payload coverage audit):
+    enumerate the fields returned by `GetSignablePayload()` versus the
+    full `ObservedTx` struct fields that influence execution. Flag every
+    semantically-meaningful field outside the signature boundary. PATH B
+    (wrapper-vs-inner inconsistency): for each committed observation,
+    compare wrapper metadata (direction, destination, chain, asset) against
+    what the inner signed `Tx` describes — an outbound direction flag paired
+    with inner deposit transaction data is a signal. PATH C (proposer
+    metadata divergence): compare one proposer's committed wrapper fields
+    against other observers' wrapper fields for the same event — divergence
+    on unsigned fields from a single proposer indicates forgery. PATH D
+    (during-churn destination validation): during vault churn/migration,
+    verify the destination address is cryptographically derivable from the
+    bridge's TSS pubkey — defense-in-depth that catches forged observations
+    even if the signing scope flaw is undiscovered. PATH E (post-upgrade
+    signature scope regression): after any observer protocol upgrade, verify
+    no newly-added wrapper field was left outside `GetSignablePayload()`
+    coverage.
+  pseudocode: |
+    # Shared helpers
+    get_signed_payload_fields(protocol) :=
+      # Returns the set of field names covered by GetSignablePayload() output.
+      # Derivable from protocol source or by replaying observer signing logic.
+      fields ← extract_fields_from_struct(protocol.observer.GetSignablePayload())
+      return fields
+
+    get_full_observation_fields(protocol) :=
+      # Returns the set of field names in the full ObservedTx/observation struct
+      # that influence execution (direction, destination, asset, memo, chain, slot).
+      return protocol.observed_tx_struct.execution_relevant_fields
+
+    unsigned_execution_fields(protocol) :=
+      return get_full_observation_fields(protocol) − get_signed_payload_fields(protocol)
+
+    inner_tx_describes_deposit(inner_tx) :=
+      # Check whether the inner signed transaction data describes an inbound deposit.
+      return inner_tx.type ∈ {Deposit, TransferIn, Lock}
+
+    destination_derivable_from_tss(address, tss_pubkey, chain) :=
+      derived ← derive_chain_address(tss_pubkey, chain)
+      return address == derived
+
+    # PATH A — payload coverage audit
+    for each bridge_protocol P in MONITORED_BRIDGES:
+      unsigned ← unsigned_execution_fields(P)
+      if unsigned ≠ ∅:
+        emit(PATH_A, protocol=P.name, version=P.observer_version,
+             signed_fields=get_signed_payload_fields(P),
+             execution_fields=get_full_observation_fields(P),
+             unsigned_fields=unsigned,
+             severity="critical",
+             guidance="Protocol {P.name} v{P.observer_version}: "
+                      "{len(unsigned)} execution-relevant field(s) outside "
+                      "GetSignablePayload() signature boundary: {unsigned}. "
+                      "Any proposer can modify these fields without invalidating "
+                      "observer signatures. T10.008 observer signature scope "
+                      "truncation surface confirmed. Patch: expand signed payload "
+                      "to cover the full ObservedTx struct.")
+
+    # PATH B — wrapper-vs-inner inconsistency
+    for each committed_observation O on bridge B:
+      wrapper ← O.observed_tx_wrapper
+      inner ← O.inner_signed_tx
+      # Direction flag inconsistency: outbound wrapper + deposit inner tx
+      if wrapper.direction == OUTBOUND and inner_tx_describes_deposit(inner):
+        expected_direction ← "inbound"
+        emit(PATH_B, bridge=B.name, chain=O.chain,
+             observation_id=O.id,
+             proposer=O.proposer,
+             wrapper_direction=wrapper.direction,
+             inner_tx_type=inner.type,
+             expected_direction=expected_direction,
+             destination=wrapper.destination,
+             migration_slot=wrapper.migration_slot,
+             inner_tx_sender=inner.sender,
+             inner_tx_recipient=inner.recipient,
+             inner_tx_amount=inner.amount,
+             observer_sig_count=count_valid_signatures(O),
+             severity="critical",
+             guidance="Wrapper-vs-inner inconsistency: observation {O.id} "
+                      "committed by proposer {O.proposer} has wrapper.direction="
+                      "OUTBOUND but inner tx type={inner.type} describes a "
+                      "deposit from {inner.sender}. Expected direction=inbound. "
+                      "The direction flag was flipped outside the signed payload. "
+                      "T10.008 observation forgery via unsigned direction flag.")
+
+      # Destination-vs-inner inconsistency
+      if wrapper.destination ≠ inner.recipient:
+        emit(PATH_B, bridge=B.name, chain=O.chain,
+             observation_id=O.id,
+             proposer=O.proposer,
+             wrapper_destination=wrapper.destination,
+             inner_recipient=inner.recipient,
+             severity="critical",
+             guidance="Wrapper destination {wrapper.destination} does not match "
+                      "inner tx recipient {inner.recipient}. Destination field "
+                      "is unsigned and was modified by proposer {O.proposer}.")
+
+    # PATH C — proposer metadata divergence
+    for each observed_event E on bridge B:
+      observer_wrappers ← {}
+      for each observer_sig S in E.signatures:
+        # Each observer signed a specific wrapper state
+        observer_wrappers[S.observer] ← S.observed_wrapper
+      committed ← E.committed_observation.wrapper
+      # Compare committed wrapper against each observer's witnessed wrapper
+      diverged_observers ← []
+      for each (observer, witnessed) in observer_wrappers:
+        if witnessed.direction ≠ committed.direction:
+          diverged_observers.append((observer, "direction",
+                                     witnessed.direction, committed.direction))
+        if witnessed.destination ≠ committed.destination:
+          diverged_observers.append((observer, "destination",
+                                     witnessed.destination, committed.destination))
+      if len(diverged_observers) > 0:
+        emit(PATH_C, bridge=B.name, event_id=E.id,
+             proposer=E.proposer,
+             diverged_fields=diverged_observers,
+             committed_wrapper=committed,
+             consensus_observer_count=len(observer_wrappers),
+             diverged_observer_count=len(diverged_observers),
+             severity="critical",
+             guidance="Proposer metadata divergence: {E.proposer} committed "
+                      "wrapper fields that differ from what {len(diverged_observers)} "
+                      "other observers witnessed: {diverged_observers}. "
+                      "The committed wrapper was forged on unsigned fields. "
+                      "T10.008 proposer observation forgery confirmed.")
+
+    # PATH D — during-churn destination cryptographic validation
+    for each migration_event M on bridge B
+        where M.type ∈ {transferAllowance, migrate, churn}:
+      destination ← M.new_vault  # or equivalent destination address
+      tss_pubkey ← B.tss_pubkey
+      chain ← M.chain
+      if not destination_derivable_from_tss(destination, tss_pubkey, chain):
+        emit(PATH_D, bridge=B.name, chain=chain,
+             destination=destination,
+             tss_derived=derive_chain_address(tss_pubkey, chain),
+             migration_tx=M.tx, migration_block=M.block,
+             migration_memo=M.memo,
+             severity="critical",
+             guidance="During-churn destination validation FAILED: "
+                      "{destination} is NOT derivable from bridge TSS pubkey. "
+                      "TSS-derived address is {derive_chain_address(tss_pubkey, chain)}. "
+                      "The migration observation destination was forged — "
+                      "T10.008 confirmed. migration_tx={M.tx}, memo={M.memo}.")
+
+    # PATH E — post-upgrade signature scope regression
+    for each protocol_upgrade U on bridge B:
+      unsigned_before ← unsigned_execution_fields(B.protocol_before_upgrade)
+      unsigned_after ← unsigned_execution_fields(B.protocol_after_upgrade)
+      newly_unsigned ← unsigned_after − unsigned_before
+      if newly_unsigned ≠ ∅:
+        emit(PATH_E, bridge=B.name,
+             upgrade_id=U.id, upgrade_block=U.block,
+             previously_signed=(unsigned_before == ∅),
+             newly_unsigned_fields=newly_unsigned,
+             severity="critical" if unsigned_before == ∅ else "high",
+             guidance="Post-upgrade signature scope regression: upgrade {U.id} "
+                      "introduced {len(newly_unsigned)} new execution-relevant "
+                      "field(s) outside GetSignablePayload() coverage: "
+                      "{newly_unsigned}. "
+                      + ("Protocol previously had full coverage; upgrade broke it. "
+                         if unsigned_before == ∅ else
+                         "Protocol already had {len(unsigned_before)} unsigned "
+                         "fields; upgrade added {len(newly_unsigned)} more. ")
+                      + "T10.008 signature scope regression detected.")
+
+parameters:
+  known_bridge_protocols:
+    type: list
+    default: []
+    description: bridge protocol identifiers to monitor
+  tss_pubkey_registry:
+    type: object
+    default: {}
+    description: bridge to TSS pubkey mapping
+  proposer_history_window_blocks:
+    type: integer
+    default: 21600
+    description: ~3 days on Ethereum
+  min_observer_consensus_count:
+    type: integer
+    default: 3
+  cross_observer_divergence_threshold:
+    type: integer
+    default: 1
+    description: how many diverged observers trigger alert
+  enable_post_upgrade_regression_check:
+    type: boolean
+    default: true
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               bridge, protocol_version, proposer, observation_id,
+               unsigned_fields, wrapper_direction, inner_tx_type,
+               destination, tss_derived, diverged_observers,
+               newly_unsigned_fields, evidence]
+
+test_fixtures:
+  positive:
+    - 2026-05-thorchain-router-exploit                               # Bifrost GetSignablePayload() truncated to inner Tx only; unsigned direction flag flipped inbound→outbound; proposer forged migration observation → $7.4M drained
+  negative:
+    - "Bridge observer protocol where GetSignablePayload() covers the full ObservedTx struct including direction, destination, chain, and memo fields"
+    - "Legitimate vault migration where the destination address is cryptographically derivable from the bridge TSS pubkey"
+    - "Wrapper metadata mismatch caused by observer software version skew where the committed wrapper matches the supermajority and the single diverging observer is running an outdated version — not T10.008"
+    - "Individual dust transactions to a user address without subsequent forged observation commitment — user-level address poisoning (T4.003), not T10.008"
+
+false_positive_modes:
+  - "Observer software version skew where one observer runs an outdated wrapper schema and produces metadata that differs from the supermajority — PATH C distinguishes by requiring divergence on the committed wrapper vs observer supermajority, not on a single outdated observer vs all others"
+  - "Post-upgrade payload coverage gap that is documented and accepted as transitional (e.g., phased rollout of new signing scope) — PATH E distinguishes by checking upgrade block against documented acceptance window"
+  - "Destination address not derivable from TSS pubkey due to legitimate TSS key rotation where the pubkey registry has not yet been updated — PATH D cross-references the migration timestamp against the TSS key rotation log; if the pubkey changed within the rotation window, the alert is downgraded"
+  - "Inner transaction that describes a deposit but the wrapper direction is correctly OUTBOUND because the observation is for a swap output leg, not the deposit itself — PATH B distinguishes by checking the full event context (swap vs deposit vs migration)"
+  - "Multi-chain bridge where different chains use different address derivation schemes and the TSS pubkey registry maps per-chain — PATH D verifies per-chain derivation, not cross-chain equivalence"
+
+mitigations: [OAK-M02, OAK-M08, OAK-M09, OAK-M11, OAK-M20]
+
+reference_implementations:
+  - { target: foundry,                chain: evm,    url: "" }
+  - { target: metasleuth,             chain: evm,    url: "" }
+  - { target: phalcon-blocksec,       chain: evm,    url: "" }
+  - { target: manual_review,          chain: cross-chain, url: "" }
