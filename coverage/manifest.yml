@@ -145,6 +145,8 @@ vendors:
     coverage: gap
   - id: OAK-T7.008
     coverage: gap
+  - id: OAK-T7.010
+    coverage: gap
   - id: OAK-T8.001
     coverage: full
     detector_id: D08
@@ -402,7 +404,7 @@ vendors:
   - id: OAK-T3.001
     coverage: partial
   - id: OAK-T5.001
-    coverage: documented
+    coverage: partial
   - id: OAK-T5.003
     coverage: gap
   - id: OAK-T6.001
@@ -452,7 +454,7 @@ vendors:
   - id: OAK-T1.006
     coverage: full
   - id: OAK-T2.002
-    coverage: documented
+    coverage: partial
   - id: OAK-T2.004
     coverage: partial
   - id: OAK-T2.005
@@ -554,7 +556,7 @@ vendors:
   - id: OAK-T9.001
     coverage: documented
   - id: OAK-T9.004
-    coverage: documented
+    coverage: partial
   - id: OAK-T9.005
     coverage: documented
   - id: OAK-T10.002
@@ -634,7 +636,7 @@ vendors:
   - id: OAK-T9.003
     coverage: documented
   - id: OAK-T9.004
-    coverage: documented
+    coverage: partial
   - id: OAK-T9.005
     coverage: documented
   - id: OAK-T9.010
@@ -673,7 +675,7 @@ vendors:
   - id: OAK-T9.002
     coverage: documented
   - id: OAK-T9.004
-    coverage: documented
+    coverage: partial
   - id: OAK-T9.005
     coverage: documented
   - id: OAK-T9.010
@@ -708,7 +710,7 @@ vendors:
   - id: OAK-T9.002
     coverage: documented
   - id: OAK-T9.004
-    coverage: documented
+    coverage: partial
   - id: OAK-T9.005
     coverage: documented
   - id: OAK-T9.007
@@ -772,7 +774,7 @@ vendors:
   - id: OAK-T9.003
     coverage: documented
   - id: OAK-T9.004
-    coverage: documented
+    coverage: partial
   - id: OAK-T9.005
     coverage: documented
   - id: OAK-T9.009
@@ -831,7 +833,7 @@ vendors:
   - id: OAK-T9.003
     coverage: documented
   - id: OAK-T9.004
-    coverage: documented
+    coverage: partial
   - id: OAK-T9.005
     coverage: documented
   - id: OAK-T9.009
@@ -881,7 +883,7 @@ vendors:
   - id: OAK-T1.003
     coverage: documented
   - id: OAK-T1.007
-    coverage: documented
+    coverage: partial
   - id: OAK-T6.001
     coverage: documented
   - id: OAK-T6.002
@@ -895,7 +897,7 @@ vendors:
   - id: OAK-T9.003
     coverage: documented
   - id: OAK-T9.004
-    coverage: documented
+    coverage: partial
   - id: OAK-T9.005
     coverage: documented
   - id: OAK-T10.002
@@ -938,7 +940,7 @@ vendors:
   - id: OAK-T9.003
     coverage: documented
   - id: OAK-T9.004
-    coverage: documented
+    coverage: partial
   - id: OAK-T9.005
     coverage: documented
   - id: OAK-T12.004
@@ -983,7 +985,7 @@ vendors:
   description: Audits with Solana-specialist practice.
   techniques:
   - id: OAK-T1.007
-    coverage: documented
+    coverage: partial
   - id: OAK-T13.001
     coverage: documented
   - id: OAK-T13.001.001
@@ -1084,6 +1086,8 @@ vendors:
     coverage: documented
   - id: OAK-T7.009
     coverage: documented
+  - id: OAK-T7.010
+    coverage: documented
   - id: OAK-T8.001
     coverage: documented
   - id: OAK-T8.002
@@ -1158,6 +1162,8 @@ vendors:
     coverage: documented
   - id: OAK-T7.009
     coverage: documented
+  - id: OAK-T7.010
+    coverage: documented
   - id: OAK-T8.001
     coverage: documented
   - id: OAK-T8.002
@@ -1229,6 +1235,8 @@ vendors:
   - id: OAK-T7.008
     coverage: documented
   - id: OAK-T7.009
+    coverage: documented
+  - id: OAK-T7.010
     coverage: documented
   - id: OAK-T8.001
     coverage: documented

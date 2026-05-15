@@ -1,0 +1,182 @@
+oak_techniques: [OAK-T7.010]
+spec_id: oak-detection-T7.010
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect cryptocurrency transaction patterns consistent with Travel Rule
+  evasion (FATF Recommendation 16). Detection operates at the VASP-
+  compliance-data layer and the cross-VASP behavioural-pattern layer:
+  sub-threshold structuring, VASP-avoidant routing chains, unhosted-wallet
+  interposition, jurisdictional threshold arbitrage, and privacy-coin
+  re-entry from non-VASP instant exchanges. Detection is inferential rather
+  than definitive — the Travel Rule data layer (originator/beneficiary PII
+  exchanged between VASPs) is not directly accessible to external detectors
+  — and relies on aggregate-per-cluster behavioural pattern analysis rather
+  than per-transaction thresholding. Excludes: T7.002 (CEX KYC layering —
+  the onboarding gap, not the transaction-reporting gap); T7.005 (privacy-
+  chain hops — T7.010 composes with T7.005 at the privacy-coin re-entry leg
+  but names a distinct compliance-avoidance method).
+
+data_sources:
+  [vasp_deposit_address_labels, chainalysis_cluster_attribution,
+   trm_cluster_attribution, elliptic_cluster_attribution,
+   vasp_jurisdiction_registry, fatf_travel_rule_implementation_status,
+   cex_deposit_volume_feed, cross_chain_attribution_graph]
+
+detection_logic:
+  description: |
+    Five detection paths in descending confidence order.
+
+    PATH A (sub-threshold structuring) is the highest-precision signal:
+    per-VASP per-cluster analysis of transaction-amount distribution for
+    anomalous spikes just below the applicable Travel Rule threshold,
+    combined with temporal proximity and aggregate-volume analysis.
+
+    PATH B (VASP-avoidant routing) detects laundering chains where all
+    intermediate hops between VASP entry and exit occur on non-VASP
+    infrastructure (DeFi, DEX aggregators, cross-chain bridges,
+    non-custodial swap services).
+
+    PATH C (unhosted-wallet interposition) detects systematic insertion
+    of self-custodied wallet legs between VASP transfer pairs, converting
+    VASP-to-VASP transfers into VASP-to-unhosted and unhosted-to-VASP
+    transfers that fall outside Travel Rule scope in many jurisdictions.
+
+    PATH D (jurisdictional routing anomaly) flags VASP legs routed
+    through non-FATF-implementing or weakly-enforcing jurisdictions.
+
+    PATH E (privacy-coin re-entry) detects the pattern: VASP withdrawal
+    → instant exchange → XMR/ZEC → instant exchange → VASP deposit,
+    where the receiving VASP has no originator information.
+
+  pseudocode: |
+    # PATH A — sub-threshold structuring detection
+    window ← 24h (configurable)
+    threshold ← jurisdiction_travel_rule_threshold(vasp_jurisdiction)
+    margin ← threshold * 0.05  # 5% below threshold
+    for each (cluster, vasp) pair over window:
+      txns ← all inbound txns from cluster to vasp
+      sub_threshold_txns ← filter txns where
+        amount ∈ [threshold - margin, threshold)
+      aggregate_sub ← sum(amount for txn in sub_threshold_txns)
+      unique_txns ← count(distinct tx_hash in sub_threshold_txns)
+      if unique_txns >= structuring_floor
+         and aggregate_sub >= materiality_threshold:
+        alert PATH_A structuring
+          cluster, vasp, unique_txns, aggregate_sub, window
+
+    # PATH B — VASP-avoidant routing chain
+    for each chain where chain.start.vasp and chain.end.vasp:
+      vasp_to_vasp_hops ← count(hop where hop.from.is_vasp
+                                 and hop.to.is_vasp in chain)
+      total_hops ← len(chain)
+      if vasp_to_vasp_hops == 0 and total_hops > 2:
+        alert PATH_B vasp_avoidant_routing
+          chain_id, vasp_entry, vasp_exit, total_hops,
+          intermediate_protocols
+
+    # PATH C — unhosted-wallet interposition rate
+    for each cluster over window 7d:
+      vasp_pairs ← set of (vasp_from, vasp_to) for cluster
+      interposed_pairs ← 0
+      for each (vasp_a, vasp_b) in vasp_pairs:
+        if exists path: vasp_a → unhosted_wallet → vasp_b
+           within 24h and amounts match within slippage:
+          interposed_pairs += 1
+      if len(vasp_pairs) >= pair_floor
+         and interposed_pairs / len(vasp_pairs) >= interposition_rate:
+        alert PATH_C unhosted_interposition
+          cluster, interposed_pairs, total_pairs, window
+
+    # PATH D — jurisdictional routing anomaly
+    for each chain containing vasp_legs:
+      for each vasp in chain.vasp_legs:
+        jurisdiction ← vasp_jurisdiction(vasp)
+        impl_status ← fatf_implementation_status(jurisdiction)
+        if impl_status in {non_implementing, weakly_enforcing}:
+          if vasp not in cluster_historical_vasps(cluster):
+            alert PATH_D jurisdictional_anomaly
+              cluster, vasp, jurisdiction, impl_status
+
+    # PATH E — privacy-coin re-entry with VASP origin/destination
+    for each cluster over window 7d:
+      withdrawals ← vasp_withdrawals(cluster)
+      deposits ← vasp_deposits(cluster)
+      for each (withdrawal, deposit) pair where
+          withdrawal.time < deposit.time
+          and withdrawal.time within 72h of deposit.time:
+        hops ← trace_intermediate_hops(withdrawal, deposit)
+        if any(hop.protocol is instant_exchange
+               and hop.output_asset in {XMR, ZEC} in hops):
+          alert PATH_E privacy_coin_reentry
+            cluster, withdrawal_vasp, deposit_vasp,
+            withdrawal_amount, deposit_amount, hops
+
+parameters:
+  structuring_floor:
+    type: integer
+    default: 10
+    description: Minimum number of sub-threshold transactions per cluster per VASP per window
+
+  materiality_threshold:
+    type: integer
+    default: 10000
+    description: Minimum aggregate USD value of sub-threshold transactions per window
+
+  window_hours:
+    type: integer
+    default: 24
+    description: Structuring detection window in hours
+
+  margin_pct:
+    type: float
+    default: 0.05
+    description: Percentage below threshold defining the sub-threshold band
+
+  pair_floor:
+    type: integer
+    default: 3
+    description: Minimum number of VASP pairs per cluster to trigger PATH C
+
+  interposition_rate:
+    type: float
+    default: 0.5
+    description: Minimum fraction of VASP pairs with unhosted-wallet interposition
+
+  reentry_window_hours:
+    type: integer
+    default: 72
+    description: Maximum time between VASP withdrawal and re-deposit for PATH E
+
+false_positive_modes:
+  - "PATH A false positives for legitimate exchange-users who withdraw small amounts for gas fees or DEX interaction across multiple transactions — distinguish by requiring aggregate materiality and cluster-level structuring pattern rather than single-user behaviour"
+  - "PATH A false positives for exchanges with withdrawal minimums that happen to fall just below Travel Rule threshold — calibrate threshold margin per VASP based on published withdrawal minimums"
+  - "PATH B false positives for DeFi-native protocols that legitimately use non-VASP infrastructure for operational treasury management (e.g., DAO treasury → multisig via Safe, not CEX) — distinguish by requiring cluster attribution to a known illicit cluster for PATH B escalation"
+  - "PATH C false positives for privacy-conscious users who legitimately interpose a self-custodied wallet between exchange accounts for operational-security rather than laundering purposes — require cluster-level systematicity and temporal compression, not single-pair interposition"
+  - "PATH D false positives for users in non-FATF jurisdictions who legitimately use their local VASP — cross-reference cluster attribution before escalating"
+  - "PATH E false positives for legitimate privacy-coin users re-entering the VASP system — require cluster-level systematicity and correlation with upstream illicit-cluster attribution"
+
+mitigations: [OAK-M27, OAK-M07, OAK-M11, OAK-M04]
+
+output_alert:
+  [oak_technique, detection_path, severity, cluster, vasp,
+   unique_txns, aggregate_usd, window_hours, threshold,
+   interposition_rate, jurisdiction, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-04-3520-btc-instant-exchange-xmr-laundering         # PATH B VASP-avoidant routing via instant exchanges
+    - 2024-08-4064-btc-multi-hop-cross-chain-laundering        # PATH B multi-hop cross-chain without CEX
+    - 2022-2025-travel-rule-gap-exploitation                   # PATH A sub-threshold structuring cohort
+  negative:
+    - "Legitimate exchange user withdrawing sub-threshold amounts for DeFi gas across multiple transactions"
+    - "DAO treasury management using non-VASP multisig infrastructure for routine operational transfers"
+    - "Privacy-conscious individual using self-custodied wallet between exchange accounts without illicit-cluster attribution"
+
+reference_implementations:
+  - { target: chainalysis-reactor, chain: cross-chain, url: "" }
+  - { target: trm-forensics,       chain: cross-chain, url: "" }
+  - { target: elliptic,            chain: cross-chain, url: "" }
