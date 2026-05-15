@@ -42,13 +42,14 @@ providers:
 **51 specs** — the single most-used data source across OAK. Every T1-T5, T7-T8,
 and T15 spec depends on it.
 
-```
+```text
 Cross-address funding-relationship graph. Maps every address to its funding sources
 (CEX withdrawal, mixer withdrawal, peer transfer, smart-contract disbursement)
 and recipients, with attributed entity clustering.
 ```
 
 Schema (per address):
+
 ```json
 {
   "address": "0x...",
@@ -81,6 +82,7 @@ Schema (per address):
 ```
 
 Ingestion:
+
 - **pattern:** subscription (incremental updates) + on_demand (cluster expansion)
 - **cadence:** per-block for new addresses; daily re-clustering
 - **latency:** near-real-time (seconds) for funding links; hours for entity attribution
@@ -98,6 +100,7 @@ Ingestion:
 exploit) and T10 (bridge) detection.
 
 Schema (per transaction):
+
 ```json
 {
   "tx_hash": "0x...",
@@ -133,6 +136,7 @@ Schema (per transaction):
 ```
 
 Ingestion:
+
 - **pattern:** subscription (per-block streaming)
 - **cadence:** per-block
 - **latency:** real-time (seconds after block finalization)
@@ -153,6 +157,7 @@ Arbitrum, Optimism, Base). Solana traces use `solana_tx_call_trace` (see §3.4).
 T1, T6, T9, T10, T13.
 
 Schema (per contract):
+
 ```json
 {
   "address": "0x...",
@@ -188,6 +193,7 @@ Schema (per contract):
 ```
 
 Ingestion:
+
 - **pattern:** on_demand (lazy fetch) + subscription (new deployments)
 - **cadence:** per-deployment for new contracts; cached with revalidation on upgrade
 - **latency:** seconds (RPC eth_getCode)
@@ -205,6 +211,7 @@ Ingestion:
 T9 (oracle/price manipulation), T14 (LRT pricing), T17 (market manipulation).
 
 Schema (per trade):
+
 ```json
 {
   "tx_hash": "0x...",
@@ -237,6 +244,7 @@ Schema (per trade):
 ```
 
 Ingestion:
+
 - **pattern:** subscription (per-block), batch (historical backfill)
 - **cadence:** per-block
 - **latency:** near-real-time (seconds)
@@ -255,6 +263,7 @@ Ingestion:
 detection across all Tactic families.
 
 Schema (per event log):
+
 ```json
 {
   "address": "0x...",
@@ -279,6 +288,7 @@ Schema (per event log):
 ```
 
 Ingestion:
+
 - **pattern:** subscription (eth_getLogs polling or WebSocket)
 - **cadence:** per-block polling; WebSocket subscription for low-latency
 - **latency:** real-time (WebSocket), seconds (polling)
@@ -296,6 +306,7 @@ Ingestion:
 (bridge TVL, vault NAV, proxy admin slots, validator stakes).
 
 Schema (per storage read):
+
 ```json
 {
   "contract_address": "0x...",
@@ -309,6 +320,7 @@ Schema (per storage read):
 ```
 
 Ingestion:
+
 - **pattern:** on_demand (eth_getStorageAt) + batch (eth_getProof for Merkle-verified reads)
 - **cadence:** per-detection-cycle (driven by PATH schedule)
 - **latency:** real-time (RPC call)
@@ -325,6 +337,7 @@ Ingestion:
 Used by T9.003, T10.006, T16.
 
 Schema (per governance event):
+
 ```json
 {
   "governance_contract": "0x...",
@@ -356,6 +369,7 @@ Schema (per governance event):
 ```
 
 Ingestion:
+
 - **pattern:** subscription (per-block event polling)
 - **cadence:** per-block
 - **latency:** near-real-time (seconds)
@@ -373,6 +387,7 @@ Ingestion:
 and T9 (pre-deployment audit) specs.
 
 Schema (per verified contract):
+
 ```json
 {
   "address": "0x...",
@@ -406,6 +421,7 @@ Schema (per verified contract):
 ```
 
 Ingestion:
+
 - **pattern:** on_demand (contract address → verified source)
 - **cadence:** at detection cycle; cached
 - **latency:** seconds (API fetch)
@@ -422,6 +438,7 @@ Ingestion:
 (phishing domain detection, typosquat surveillance).
 
 Schema (per CT entry):
+
 ```json
 {
   "log": "google-argon2024" | "cloudflare-nimbus2024" | ...,
@@ -441,6 +458,7 @@ Schema (per CT entry):
 ```
 
 Ingestion:
+
 - **pattern:** subscription (CT log streaming)
 - **cadence:** continuous (near-real-time as logs are published)
 - **latency:** minutes to hours (CT log inclusion delay)
@@ -457,6 +475,7 @@ Ingestion:
 that test worst-case scenarios (setFee(MAX), process invalid message).
 
 Schema (execution result):
+
 ```json
 {
   "fork_block": 18500000,
@@ -486,6 +505,7 @@ Schema (execution result):
 ```
 
 Ingestion:
+
 - **pattern:** on_demand (one simulation per detection cycle)
 - **cadence:** per-detection-cycle
 - **latency:** seconds (RPC fork + execution)
@@ -502,6 +522,7 @@ Ingestion:
 and T11 (typosquat surveillance).
 
 Schema (per registration):
+
 ```json
 {
   "domain": "ledger-live.com",
@@ -526,6 +547,7 @@ Schema (per registration):
 ```
 
 Ingestion:
+
 - **pattern:** subscription (zone file access or commercial feed)
 - **cadence:** daily for full zone; near-real-time for commercial
 - **latency:** minutes to hours
@@ -544,6 +566,7 @@ This is the least-mature structured data source in OAK — no provider offers th
 as a machine-readable feed today.
 
 Schema (per disclosure):
+
 ```json
 {
   "service": "LastPass" | "Ledger" | "Trezor" | "1Password" | ...,
@@ -564,6 +587,7 @@ Schema (per disclosure):
 ```
 
 Ingestion:
+
 - **pattern:** on_demand (manual curation + automated scraping)
 - **cadence:** on-disclosure (ad-hoc)
 - **latency:** hours to days (manual)
@@ -583,6 +607,7 @@ See `T11-DATA-GAP.md` (to be created) for the proposed structured feed design.
 T5 (value extraction), T7 (laundering).
 
 Schema (per transfer):
+
 ```json
 {
   "tx_hash": "0x...",
@@ -610,6 +635,7 @@ Schema (per transfer):
 ```
 
 Ingestion:
+
 - **pattern:** subscription (eth_getLogs per-block)
 - **cadence:** per-block
 - **latency:** real-time (WebSocket), seconds (polling)
@@ -626,6 +652,7 @@ Ingestion:
 (oracle deviation), T9.011 (vault share price baseline), T14 (LRT NAV benchmark).
 
 Schema (per price point):
+
 ```json
 {
   "asset": "ETH",
@@ -662,6 +689,7 @@ Schema (per price point):
 ```
 
 Ingestion:
+
 - **pattern:** polling (REST API)
 - **cadence:** per-minute for CEX; per-block for DEX TWAP
 - **latency:** seconds
@@ -680,6 +708,7 @@ which is per-asset reference pricing — `token_prices` is the broader per-token
 for any token.
 
 Schema (per price point):
+
 ```json
 {
   "token_address": "0x...",
@@ -696,6 +725,7 @@ Schema (per price point):
 ```
 
 Ingestion:
+
 - **pattern:** polling (REST API)
 - **cadence:** per-minute to per-5-minutes
 - **latency:** seconds to minutes
@@ -711,6 +741,7 @@ Ingestion:
 **Used by T5.004 (sandwich), T9.013 (slippage-manipulation sandwich).**
 
 Schema (per relayed block/bundle):
+
 ```json
 {
   "block_number": 18500000,
@@ -741,6 +772,7 @@ Schema (per relayed block/bundle):
 ```
 
 Ingestion:
+
 - **pattern:** subscription (relay data API)
 - **cadence:** per-slot (12 seconds on Ethereum)
 - **latency:** seconds after block proposal
@@ -757,6 +789,7 @@ Ingestion:
 **Used by T5.004, T9.012, T9.013 (MEV/sandwich detection).**
 
 Schema (per pending transaction):
+
 ```json
 {
   "tx_hash": "0x...",
@@ -787,6 +820,7 @@ Schema (per pending transaction):
 ```
 
 Ingestion:
+
 - **pattern:** subscription (txpool WebSocket)
 - **cadence:** continuous (each pending transaction)
 - **latency:** real-time (milliseconds before inclusion)
@@ -814,6 +848,7 @@ Distinct from `reference_price_feed` — this is the oracle's own reported price
 not the "true" reference price.
 
 Schema (per oracle update):
+
 ```json
 {
   "oracle_address": "0x...",
@@ -831,6 +866,7 @@ Schema (per oracle update):
 ```
 
 Ingestion:
+
 - **pattern:** subscription (Oracle contract events)
 - **cadence:** per-oracle-update (heartbeat-based)
 - **latency:** real-time (contract event emission)
@@ -852,6 +888,7 @@ Already covered.
 **Used by T10.002, T10.006, T10.007.** Cross-chain message sent/received events.
 
 Schema (per message):
+
 ```json
 {
   "protocol": "layerzero" | "wormhole" | "chainlink-ccip" | "hyperlane" | "axelar",
@@ -874,6 +911,7 @@ Schema (per message):
 ```
 
 Ingestion:
+
 - **pattern:** subscription (bridge contract events)
 - **cadence:** per-message
 - **latency:** near-real-time (seconds)
@@ -890,6 +928,7 @@ Ingestion:
 **Used by T6 (defense evasion), T9 (post-audit facet detection).**
 
 Schema (per deployment):
+
 ```json
 {
   "address": "0x...",
@@ -905,6 +944,7 @@ Schema (per deployment):
 ```
 
 Ingestion:
+
 - **pattern:** subscription (new contract creation)
 - **cadence:** per-block for CREATE/CREATE2 operations
 - **latency:** near-real-time
@@ -920,6 +960,7 @@ Ingestion:
 **Used by T6.002, T6.003, T6.004, T9.008 (audit verification).**
 
 Schema (per audit report):
+
 ```json
 {
   "audit_firm": "trail-of-bits" | "openzeppelin" | "halborn" | "solidity-finance" | ...,
@@ -948,6 +989,7 @@ Schema (per audit report):
 ```
 
 Ingestion:
+
 - **pattern:** on_demand (firm website scraping + API)
 - **cadence:** per-publication
 - **latency:** hours to days (post-publication)
@@ -968,6 +1010,7 @@ surface. An OAK audit-attestation registry is proposed for v0.3.
 focused on contract-level authority (proxy admins, multisig signers, governance contracts).
 
 Schema (per authority edge):
+
 ```json
 {
   "subject_contract": "0x...",
@@ -985,6 +1028,7 @@ Schema (per authority edge):
 ```
 
 Ingestion:
+
 - **pattern:** on_demand (storage slot analysis)
 - **cadence:** per-contract (cached)
 - **latency:** real-time (RPC calls)
@@ -1000,6 +1044,7 @@ Ingestion:
 **Used by T9.010 (read-only reentrancy), T14 (LRT pricing).**
 
 Schema (per liquidation):
+
 ```json
 {
   "protocol": "aave" | "compound" | "euler" | "maker" | ...,
@@ -1021,6 +1066,7 @@ Schema (per liquidation):
 ```
 
 Ingestion:
+
 - **pattern:** subscription (protocol contract events)
 - **cadence:** per-event
 - **latency:** real-time
@@ -1179,7 +1225,7 @@ implemented (coverage gap).
 
 ### 6.1 Per-block polling (the dominant pattern)
 
-```
+```text
 for each finalized block:
     batch_fetch: eth_getLogs + trace_block + eth_getStorageAt
     for each spec with subscription cadence:
@@ -1188,21 +1234,21 @@ for each finalized block:
 
 ### 6.2 WebSocket subscription (low-latency)
 
-```
+```text
 subscribe: eth_subscribe("newHeads") → per-block trigger
 subscribe: eth_subscribe("logs", {topics: [...]}) → per-event trigger
 ```
 
 ### 6.3 On-demand (ad-hoc PATH execution)
 
-```
+```text
 trigger: user request | scheduled audit | post-upgrade hook
 execute: spec PATHs against the current or historical state
 ```
 
 ### 6.4 Off-chain polling (CTI, news, vendor feeds)
 
-```
+```text
 schedule: hourly | daily crawl
 fetch: RSS/Atom feeds, API endpoints, HTML scraping
 normalize: into structured event format

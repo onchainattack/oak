@@ -17,8 +17,10 @@ the spec corpus MUST be parseable against this grammar.
 2. **Compilable.** The grammar is unambiguous and mechanically translatable to Python, Rust, TypeScript.
 3. **Data-source abstract.** The language references data sources by logical name; binding to a specific
    blockchain RPC, indexer API, or off-chain feed is the implementation layer's responsibility.
+
 4. **PATH-compositional.** Every spec emits alerts via `emit(PATH_X, ...)`. PATHs are independent
    detection paths within a spec; cross-spec correlation is a higher-order concern.
+
 5. **Deterministic.** Given the same data-source state at the same block height, the same spec
    MUST produce the same alerts.
 
@@ -28,7 +30,7 @@ the spec corpus MUST be parseable against this grammar.
 
 ### 2.1 Tokens
 
-```
+```text
 IDENTIFIER    := [a-zA-Z_][a-zA-Z0-9_]*
 INTEGER       := [0-9]+
 FLOAT         := [0-9]+ '.' [0-9]+
@@ -56,7 +58,7 @@ PATH_LABEL    := 'PATH_' [A-E]
 
 ### 2.3 Keywords (reserved)
 
-```
+```text
 for  each  in  where  if  elif  else  and  or  not
 on  event  matching  with  as  continue  break
 return  emit  None  True  False  null
@@ -64,7 +66,7 @@ return  emit  None  True  False  null
 
 ### 2.4 String interpolation
 
-```
+```text
 "text {expression} more text {expression}"
 ```
 
@@ -120,7 +122,7 @@ Implementations map them to concrete schemas.
 
 ### 3.4 Generics in built-in signatures
 
-```
+```text
 list<T>.map(fn: T → U): list<U>
 list<T>.filter(fn: T → boolean): list<T>
 list<T>.group_by(fn: T → K): map<K, list<T>>
@@ -132,7 +134,7 @@ list<T>.group_by(fn: T → K): map<K, list<T>>
 
 ### 4.1 `for each` — primary iteration
 
-```
+```text
 for each <variable> in <iterable>:
     <body>
 
@@ -148,7 +150,7 @@ the first body statement.
 
 ### 4.2 `if` / `elif` / `else`
 
-```
+```text
 if <condition>:
     <body>
 elif <condition>:
@@ -159,7 +161,7 @@ else:
 
 ### 4.3 Ternary expression (inline conditional)
 
-```
+```text
 <value_if_true> if <condition> else <value_if_false>
 
 # Multi-branch
@@ -170,7 +172,7 @@ value3
 
 ### 4.4 `on event` — reactive trigger
 
-```
+```text
 on event <variable> ∈ <event_source> matching <selector_set>:
     <body>
 ```
@@ -181,7 +183,7 @@ continuous-monitoring construct. Inside the body, `E.block`, `E.tx`, `E.from`,
 
 ### 4.5 `with chain_fork(<block>)` — sandboxed simulation
 
-```
+```text
 with chain_fork(<block>):
     <body>
 ```
@@ -192,7 +194,7 @@ simulate "what if" scenarios (e.g., setFee(MAX), process invalid message).
 
 ### 4.6 `with chain_fork():` — default to current block
 
-```
+```text
 with chain_fork():
     <body>
 ```
@@ -201,7 +203,7 @@ Forks at the current detection block.
 
 ### 4.7 `as(<role>)` — identity switch inside fork
 
-```
+```text
 with chain_fork():
     as(owner): call setFee(MAX)
 ```
@@ -215,7 +217,7 @@ duration of the call.
 
 ### 5.1 Comprehension forms
 
-```
+```text
 # List comprehension
 [<expr> for <var> in <iterable>]
 [<expr> for <var> in <iterable> if <condition>]
@@ -231,7 +233,7 @@ duration of the call.
 
 ### 5.2 Set operations
 
-```
+```text
 A ∩ B    # intersection
 A ∪ B    # union
 A − B    # difference
@@ -243,7 +245,7 @@ len(A)   # cardinality
 
 ### 5.3 Aggregation expressions
 
-```
+```text
 sum(<expr> for <var> in <iterable>)
 sum(<expr> for <var> in <iterable> where <condition>)
 len(<iterable>)
@@ -256,7 +258,7 @@ round(<number>)
 
 ### 5.4 Lambda-like key arguments
 
-```
+```text
 sorted(<iterable>, by=<expr>)
 sorted(<iterable>, by=<expr>, descending)
 group_by(<iterable>, key=<expr>)
@@ -266,14 +268,14 @@ min(<iterable>, key=<expr>)
 
 ### 5.5 Range
 
-```
+```text
 0..N           # inclusive range: 0, 1, ..., N
 0..min_blocks  # variable endpoint
 ```
 
 ### 5.6 Slice notation
 
-```
+```text
 list[start:end]       # Python-style slice
 list[−window:]        # last `window` elements (negative index from end)
 list[:n]              # first n elements
@@ -281,14 +283,14 @@ list[:n]              # first n elements
 
 ### 5.7 Optional chaining
 
-```
+```text
 obj?.field            # null if obj is null, otherwise obj.field
 obj?.method(args)     # null if obj is null
 ```
 
 ### 5.8 Generator expressions (lazy)
 
-```
+```text
 # In aggregation calls:
 sum(v.stake for v in B.validator_set)
 any(condition for x in collection)
@@ -301,13 +303,13 @@ all(condition for x in collection)
 
 ### 6.1 Scalar helper
 
-```
+```text
 func_name(param1, param2, ..., paramN) := <expression>
 ```
 
 ### 6.2 Conditional helper (multi-branch)
 
-```
+```text
 func_name(p) :=
     value1 if condition1 else
     value2 if condition2 else
@@ -316,7 +318,7 @@ func_name(p) :=
 
 ### 6.3 Block helper (multi-statement)
 
-```
+```text
 func_name(p) :=
     stmt1
     stmt2
@@ -338,7 +340,7 @@ func_name(p) :=
 
 ### 7.1 Signature
 
-```
+```text
 emit(PATH_X, <keyword_args>...)
 ```
 
@@ -366,8 +368,10 @@ field MUST appear in at least one `emit()` call.
 - Each `emit()` produces exactly one alert.
 - PATHs are independent: PATH_A and PATH_B firing on the same transaction produce
   two alerts with distinct `detection_path` values.
+
 - `severity` is per-emit, not per-spec. The same PATH may emit at different severities
   depending on parameter thresholds.
+
 - `guidance` strings use f-string-style interpolation. Variables in `{...}` are
   evaluated in the current scope.
 
@@ -444,7 +448,7 @@ multi-signal convergence, not a single-signal detection.
 
 The pseudocode naming convention for this pattern:
 
-```
+```text
 PATH_A_ALERTS   # the accumulated alerts from PATH_A over a window
 PATH_B_ALERTS   # same for PATH_B
 ...
@@ -558,7 +562,7 @@ return type, and the data source(s) it depends on.
 
 ### 11.1 Blockchain state — point queries
 
-```
+```text
 eth_call(address, selector, block?) → any
   Data sources: contract_storage
   Performs an eth_call (read-only) against the contract at the given block.
@@ -582,7 +586,7 @@ get_contract_deployment_block(address) → block_number
 
 ### 11.2 Blockchain state — trace analysis
 
-```
+```text
 get_call_trace(tx_hash) → tx_trace
   Data sources: tx_call_trace
   Returns the full internal call trace for a transaction.
@@ -610,7 +614,7 @@ classify_economic_action(frame) → string | null
 
 ### 11.3 Blockchain state — event queries
 
-```
+```text
 query_governance_events(chain, proposal_id) → proposal | null
   Data sources: governance_events
   Returns the governance proposal data (params, proposer, vote counts) or null.
@@ -630,7 +634,7 @@ find_corresponding_governance_proposal(change_event) → proposal | null
 
 ### 11.4 Blockchain state — iterative access
 
-```
+```text
 get_avs_events(avs, lookback_blocks) → list<event>
   Data sources: avs_event_feed
   Returns AVS-related events (yield_distribution, slashing, operator_set_change,
@@ -659,7 +663,7 @@ get_deployer_history(deployer, platform) → object
 
 ### 11.5 DEX and price
 
-```
+```text
 reference_price(asset, block, venues) → number
   Data sources: reference_price_feed
   Returns the reference (CEX mid-market or multi-venue TWAP) price of an asset.
@@ -707,7 +711,7 @@ compute_recent_volatility(pool, lookback_blocks) → number
 
 ### 11.6 Simulation
 
-```
+```text
 simulate_call(contract, function_signature, args) → call_result
   Data sources: simulation_environment
   Executes a call against a forked chain state. Returns {succeeded: boolean, return_data: any}.
@@ -731,7 +735,7 @@ chain_fork(block) → context_manager
 
 ### 11.7 Static analysis (bytecode/source)
 
-```
+```text
 find_external_calls_before_guard_write(bytecode) → list<call_site>
   Data sources: contract_bytecode
   Returns all CALL/DELEGATECALL/STATICCALL sites reachable before the
@@ -770,7 +774,7 @@ resolve_authority_addresses(gate) → list<address>
 
 ### 11.8 Address and entity attribution
 
-```
+```text
 address_cluster_distance(address_a, address_b) → number (0.0–1.0)
   Data sources: funder_graph
   Returns the clustering distance between two addresses (0=identical entity, 1=unrelated).
@@ -796,7 +800,7 @@ count_stake_controlled_by_entity(entity, validator_set) → number
 
 ### 11.9 Amount extraction and estimation
 
-```
+```text
 estimate_max_extractable_value(swap, slippage_tolerance) → number
   Pure function: amount_in × slippage × price.
 
@@ -816,7 +820,7 @@ compute_loss_from_stale_read(read, stale_value, settled_value) → number
 
 ### 11.10 Classification and detection
 
-```
+```text
 is_token_buy(tx, token) → boolean
   Data sources: dex_trades, tx_call_trace
 
@@ -879,7 +883,7 @@ canonical_form(args) → hash
 
 ### 11.11 Bridge and cross-chain
 
-```
+```text
 query_louper(diamond_address) → set<facet>
   Data sources: contract_bytecode, contract_storage
   Enumerates all facets and their function selectors via IDiamondLoupe.
@@ -930,7 +934,7 @@ get_dex_spot_price(pool, quote_asset) → number
 
 ### 11.12 Statistical
 
-```
+```text
 stdev(series) → number
   Population standard deviation.
 
@@ -946,7 +950,7 @@ mean(values) → number
 
 ### 11.13 Cryptographic
 
-```
+```text
 keccak256(bytes...) → hash
   Keccak-256 hash of the concatenated inputs.
 ```
@@ -956,7 +960,7 @@ keccak256(bytes...) → hash
 These functions reference data sources that do not yet exist as structured feeds.
 They are formally specified so that implementors can build the feeds.
 
-```
+```text
 detect_seed_solicitation_patterns(binary, patterns) → boolean
   Data sources: contract_bytecode (companion app binary analysis)
   Scans a binary for UI strings matching seed-phrase solicitation patterns.
@@ -1099,7 +1103,7 @@ The three artefacts an LLM needs for accurate translation:
 
 ### 15.2 Translation prompt template
 
-```
+```text
 You are an expert detection engineer translating an OAK detection spec into
 production code. You have three documents for context:
 
@@ -1172,6 +1176,7 @@ equivalent. This table provides the canonical mapping.
 Built-in functions fall into three implementation classes:
 
 **Class P — Pure functions** (implement directly):
+
 ```python
 # Pseudocode: stdev(series) → number
 def stdev(series: list[float]) -> float:
@@ -1187,6 +1192,7 @@ def gini(values: list[float]) -> float:
 ```
 
 **Class D — Data-source dependent** (generate interface + provider binding):
+
 ```python
 # Pseudocode: get_call_trace(tx_hash) → tx_trace
 # DSR schema: tx_call_trace (see DSR.md §2.2)
@@ -1204,6 +1210,7 @@ class ErigonTraceProvider(TxTraceProvider):
 ```
 
 **Class S — Simulation** (forked environment, heavyweight):
+
 ```python
 # Pseudocode: with chain_fork(block):
 # Implementation: Tenderly VirtualNet or Anvil fork
@@ -1284,7 +1291,7 @@ The `guidance` field in `emit()` uses f-string-style interpolation with
 variables from the current scope. The LLM translates this to the target
 language's native string formatting:
 
-```
+```text
 # Pseudocode:
 #   guidance="Oracle {O} deviation {dev(O,b):.2%} exceeds threshold."
 
@@ -1306,23 +1313,23 @@ and parameter config but do not share mutable state:
 ```python
 class T9001_OraclePriceManipulation:
     """OAK-T9.001: Oracle Price Manipulation detection."""
-    
+
     def __init__(self, params: OracleParams, providers: OracleProviders):
         self.params = params
         self.providers = providers
-    
+
     def path_a_deviation(self, oracle: Oracle, block: int) -> list[OracleDeviationAlert]:
         """PATH A — oracle vs reference deviation, sustained."""
         ...
-    
+
     def path_b_cross_action(self, tx: Transaction) -> list[CrossActionAlert]:
         """PATH B — same-tx input-move + price-consume by one cluster."""
         ...
-    
+
     def path_c_vault_share(self, vault: Vault, block: int) -> list[VaultShareAlert]:
         """PATH C — vault-share invariant (donation-driven pricePerShare)."""
         ...
-    
+
     def path_d_dispute_window(self, event: OracleEvent) -> list[DisputeWindowAlert]:
         """PATH D — pull-oracle dispute-window respect."""
         ...
@@ -1331,7 +1338,8 @@ class T9001_OraclePriceManipulation:
 ### 15.9 Complete worked example: T9.001 PATH A
 
 **Input pseudocode (from spec):**
-```
+
+```text
 dev(O, b) := |O.price(b) − reference_price(O.asset, b, reference_venues)|
               / reference_price(O.asset, b, reference_venues)
 
@@ -1342,6 +1350,7 @@ for each oracle O consumed by protocol P at block b:
 ```
 
 **LLM output (Python):**
+
 ```python
 from dataclasses import dataclass
 from typing import Protocol, Iterable
@@ -1409,9 +1418,9 @@ def path_a_oracle_deviation(
 ) -> list[OracleDeviationAlert]:
     """PATH A — oracle vs reference deviation, sustained."""
     alerts: list[OracleDeviationAlert] = []
-    
+
     oracles = protocol_index.get_consumed_oracles(protocol_address)
-    
+
     for oracle_address, asset in oracles:
         # Check sustained deviation across min_blocks
         sustained = all(
@@ -1420,7 +1429,7 @@ def path_a_oracle_deviation(
             > params.deviation_threshold
             for i in range(params.min_blocks)
         )
-        
+
         if sustained:
             current_deviation = dev(
                 oracle_address, current_block, asset,
@@ -1433,11 +1442,12 @@ def path_a_oracle_deviation(
                 deviation=current_deviation,
                 reference_sources=params.reference_venues,
             ))
-    
+
     return alerts
 ```
 
 **LLM output (TypeScript):**
+
 ```typescript
 // --- Parameters ---
 interface T9001Params {

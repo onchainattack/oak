@@ -28,8 +28,10 @@ Three things make default parameters insufficient:
 1. **Chain differences.** A 10-block window means ~120 seconds on Ethereum,
    ~4 seconds on Solana, and ~30 seconds on BSC. The same numeric default
    encodes different economic realities.
+
 2. **Volume/TVL scaling.** A $10,000 extraction threshold is noise on
    Ethereum mainnet but is the entire TVL of a new Arbitrum protocol.
+
 3. **Noise-floor variation.** Each chain, protocol, and asset class has its
    own background noise distribution — what's anomalous on one venue is
    routine on another.
@@ -75,7 +77,7 @@ typically complete within ~2 minutes on Ethereum mainnet.
 
 **Step 1: Convert blocks to wall-clock time per chain.**
 
-```
+```text
 effective_seconds = parameter_blocks × chain_block_time
 
 Chain block times (empirical average, 2024-2025):
@@ -107,9 +109,11 @@ window size. Choose the knee of the detection-rate curve — the smallest
 window that achieves ≥90% of the asymptotic detection rate.
 
 **Common mistakes.**
+
 - Using the same block count across chains without time-normalization
 - Setting windows too wide for real-time alerting (adds latency without
   improving precision)
+
 - Setting windows too narrow for low-activity protocols (no events in
   window → detector is blind)
 
@@ -129,10 +133,11 @@ T3.003 notes "30-60% canonical" based on observed pump-and-dump patterns.
 
 **Method A: Percentile-from-baseline (recommended for most specs).**
 
-```
+```text
 1. Collect N days of benign data (no known attacks) for the target protocol/chain.
 2. Compute the detection metric (e.g., deviation, divergence, shortfall_ratio)
    for every observation in the benign dataset.
+
 3. Set the threshold at the P99.9 or P99.99 percentile of the benign distribution.
    - P99.9: expect 1 FP per 1,000 observations (higher recall, moderate precision)
    - P99.99: expect 1 FP per 10,000 observations (higher precision, lower recall)
@@ -142,7 +147,7 @@ T3.003 notes "30-60% canonical" based on observed pump-and-dump patterns.
 
 **Method B: Z-score from rolling mean (for volatile/trending metrics).**
 
-```
+```text
 1. Compute rolling μ and σ of the metric over a trailing window (≥30 days).
 2. Set threshold at μ + k×σ where k ∈ [3, 6].
    - k=3: ~0.27% FP rate under normality (assumes normality — verify)
@@ -154,10 +159,11 @@ T3.003 notes "30-60% canonical" based on observed pump-and-dump patterns.
 
 **Method C: MAD-based (for skewed/heavy-tailed metrics).**
 
-```
+```text
 MAD = median(|X_i − median(X)|)
 
 Set threshold at median(X) + k × MAD where k ∈ [5, 10].
+
 - k=5: roughly equivalent to 3σ for normal data, robust to outliers
 - k=10: catches only extreme deviations
 ```
@@ -172,9 +178,11 @@ Set threshold at median(X) + k × MAD where k ∈ [5, 10].
 | Bounded [0,1] | A (percentile) | Normality assumption violated |
 
 **Common mistakes.**
+
 - Using Method B without verifying normality (fat tails → FP explosion)
 - Setting thresholds from attack magnitudes alone (optimizes for known
   attacks, misses unknown variants)
+
 - Using the same threshold for protocols of vastly different size (a 2%
   deviation on a $100M pool ≠ 2% on a $10K pool)
 
@@ -189,12 +197,13 @@ The purpose of a minimum is to suppress alerts on activity below the
 economic significance threshold. A flash loan of $100 is not an attack; a
 flash loan of $10M might be.
 
-```
+```text
 Method — Cost-of-attack floor:
 
   1. Estimate the minimum profitable attack size for the target protocol:
        min_profit = gas_cost × gas_price + MEV_bribe + contract_deployment_cost
        min_attack_size = min_profit / protocol_exploit_margin
+
   2. Set min_ parameter to 2-3× min_attack_size (safety margin).
   3. Alternative for low-information contexts: set at the 95th percentile
      of benign transaction values — suppresses the bottom 95% of routine
@@ -208,13 +217,14 @@ artifacts. For example, `max_nav_divergence: 0.05` (T14.004) prevents
 alerting on the ~100% divergence that occurs when a DEX pool has zero
 liquidity.
 
-```
+```text
 Method — Distribution-tail cap:
 
   1. Plot the metric distribution from benign data.
   2. Identify the point where values become physically implausible
      (e.g., divergence > 1.0 implies negative price, which is impossible
      without a data error).
+
   3. Set max_ at the 99.999th percentile OR at the physical implausibility
      boundary, whichever is lower.
 ```
@@ -232,19 +242,23 @@ rational-attacker breakeven condition.
 
 **Calibration method — empirical ratio distribution.**
 
-```
+```text
 1. Collect the ratio for a reference population (e.g., all bridges, all
    validators, all vaults) at regular intervals over ≥30 days.
+
 2. Fit a Beta distribution if the ratio is bounded [0,1] (most OAK ratios
    are). If unbounded [0,∞), fit a log-normal.
+
 3. Set the threshold at the α-quantile of the fitted distribution where
    α is chosen based on the alert budget for that detection path.
+
 4. Per-chain adjustment: repeat steps 1-3 per chain. Ratios that are
    "normal" on Ethereum (many validators, deep liquidity) may be
    "extreme" on a smaller chain.
 ```
 
 **Common mistakes.**
+
 - Assuming ratios are chain-portable without verification
 - Not accounting for ratio volatility at low denominators (a vault with
   totalSupply=100 has much noisier share-price ratios than one with 10^6)
@@ -261,13 +275,15 @@ FP. Higher → lower recall, lower FP.
 
 **Calibration method — sensitivity analysis.**
 
-```
+```text
 1. Choose a base value from economic first principles (e.g., the risk-free
    rate spread that an arbitrageur would capture).
+
 2. Run the detector at multiplier values [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0].
 3. For each value, record: TP count, FP count, detection latency.
 4. Choose the multiplier that maximizes F_beta score for the deployment's
    beta preference:
+
      - beta=1: equal weight to precision and recall (balanced)
      - beta=0.5: precision matters 2× more than recall (conservative)
      - beta=2: recall matters 2× more than precision (aggressive)
@@ -284,10 +300,11 @@ FP. Higher → lower recall, lower FP.
 
 **Calibration method — Poisson significance.**
 
-```
+```text
 1. Measure the base rate λ of the event in benign data (events per unit time).
 2. Choose min_count such that P(X ≥ min_count | λ, window) < α
    where α is the acceptable false-positive probability per observation window.
+
 3. Under Poisson: P(X ≥ k) = 1 − Σ_{i=0}^{k−1} (λt)^i × e^{−λt} / i!
 4. α selection:
      - α = 0.01: 1% chance of FP per window (higher recall)
@@ -296,8 +313,10 @@ FP. Higher → lower recall, lower FP.
 ```
 
 **Common mistakes.**
+
 - Not accounting for multiple testing: if you test 100 independent windows
   per day at α=0.01, expect ~1 FP/day from this path alone
+
 - Using the same λ across chains with different activity levels
 
 ### 3.7 Rates
@@ -310,13 +329,14 @@ approximates the US Treasury yield + crypto risk premium.
 
 **Calibration method — rate anchoring.**
 
-```
+```text
 1. Set risk_free_rate to the current DeFi risk-free rate:
      - Ethereum: stETH yield (~3-4% annual, 2024-2025 range)
      - Solana: native staking yield (~5-7%)
      - Cross-chain: use the US 3-month T-bill rate as the risk-free floor
 2. Set cost_of_capital_benchmark to risk_free_rate + protocol_risk_premium
    where protocol_risk_premium is:
+
      - 2-5% for established protocols (Aave, Lido, Uniswap)
      - 5-15% for mid-tier protocols
      - 15-50% for new/experimental protocols
@@ -334,7 +354,7 @@ spec functions correctly without registry data but with reduced precision
 
 **Calibration method — authoritative-source binding.**
 
-```
+```text
 For each registry/allowlist parameter:
 
 1. Identify the authoritative source:
@@ -345,6 +365,7 @@ For each registry/allowlist parameter:
      - Audit reports: solodit.xyz, code4rena, sherlock, immunefi
 2. Measure coverage: what fraction of known-bad addresses does this source
    capture? What fraction of flagged addresses are false matches?
+
 3. Set refresh cadence:
      - Sanctions lists: daily (regulatory changes)
      - Token registries: weekly (new deployments)
@@ -355,8 +376,10 @@ For each registry/allowlist parameter:
 ```
 
 **Common mistakes.**
+
 - Using a single CEX as the sole source of "reference price" (downtime →
   all detection paths blind)
+
 - Not refreshing sanction lists (new designations missed)
 - Including the protocol's own contracts in allowlists without verifying
   they are not attacker-controlled proxies
@@ -386,17 +409,20 @@ finality; 12 blocks is a lighter "safe" threshold).
 
 **Calibration method — per-chain measurement.**
 
-```
+```text
 1. For each chain in the deployment scope:
    a. Measure the empirical chain property (block time, finality depth,
       gas cost, TVL) from recent data (last 30 days).
    b. Do NOT copy-paste chain parameters from documentation — measure them.
       Documented block times are targets; empirical block times drift.
+
 2. Normalize temporal parameters:
      chain_blocks = ceiling(default_wall_clock_seconds / chain_block_time)
+
 3. Normalize economic parameters:
      chain_threshold_usd = default_threshold_usd × (chain_tvl / reference_chain_tvl)
    where reference_chain_tvl is typically Ethereum mainnet TVL.
+
 4. For chains without empirical data, use the most similar chain's values
    and mark the calibration as "inherited, unvalidated."
 ```
@@ -410,7 +436,7 @@ finality; 12 blocks is a lighter "safe" threshold).
 Any parameter suffixed `_blocks` or documented as "blocks" must be converted
 to wall-clock time for cross-chain consistency.
 
-```
+```text
 # Per-chain effective time for a 10-block window:
 ethereum:  10 × 12.0s  = 120s
 solana:    10 × 0.4s   =   4s   ← 30× shorter!
@@ -430,7 +456,7 @@ batch is finalized (~64 L1 blocks = ~12.8 minutes).
 USD-denominated parameters (`min_vault_tvl`, `min_extracted_usd`,
 `min_flashloan_usd`) must be scaled to the chain's economic magnitude.
 
-```
+```text
 Scale factor = chain_TVL / ethereum_mainnet_TVL
 
 Example (2025-03 approximate):
@@ -453,7 +479,7 @@ not be worth the investigation cost regardless of TVL. Set a **global floor**
 
 Calibrate parameters in this order — each step depends on the previous:
 
-```
+```text
 1. Registries & allowlists (§3.8)      — populate first; everything depends on classification
 2. Temporal windows (§3.1)             — define the observation window
 3. Per-chain objects (§3.9)            — normalize for deployment chains
@@ -485,7 +511,7 @@ severity boundaries:
 
 Most specs compute severity in the pseudocode with conditions like:
 
-```
+```text
 severity="critical" if (is_front_runnable and divergence > 0.5) else
          "high"     if divergence > share_price_divergence_threshold * 3 else
          "medium"
@@ -497,16 +523,18 @@ threshold**, not absolute values. When you calibrate the base threshold
 
 **Calibration method — severity boundary validation.**
 
-```
+```text
 1. Calibrate the base threshold to the P99.9 of benign data (§3.2 Method A).
 2. Set severity boundaries as multiples of the calibrated threshold:
      critical_multiple × calibrated_threshold
      high_multiple     × calibrated_threshold
    where the multiples are spec-defined (e.g., 3× for high, 0.5 for the
    front-runnable + high-divergence conjunction → critical).
+
 3. Validate: collect all known positive incidents. Plot their maximum metric
    value against severity. All critical incidents should produce ≥ critical
    severity. Adjust multiples if not.
+
 4. Validate FP severity: collect all FPs from benign data. None should be
    critical. If any are, increase the critical multiple.
 ```
@@ -519,6 +547,7 @@ that:
 
 - A single PATH firing at "high" is not escalated to "critical" by a
   second PATH firing at "low"
+
 - PATH E (cross-correlation) should only upgrade severity, never downgrade
 - Cross-spec correlation (T14.004 PATH E discriminating from T14.003) uses
   severity downgrade: "this depeg is systemic, not idiosyncratic → medium"
@@ -537,7 +566,7 @@ that:
 
 ### 6.2 Benign baseline collection
 
-```
+```text
 For each protocol/chain/asset combination in deployment scope:
 
 1. Select a recent 30+ day period with NO known attacks on the target.
@@ -547,6 +576,7 @@ For each protocol/chain/asset combination in deployment scope:
    b. Record every computed metric value + metadata (block, timestamp, TVL,
       volume context).
    c. Store as (timestamp, metric_name, value, context_json).
+
 3. Tag the dataset with:
      - Chain
      - Protocol name and address
@@ -559,11 +589,12 @@ For each protocol/chain/asset combination in deployment scope:
 
 ### 6.3 Known-positive collection
 
-```
+```text
 For each positive fixture listed in the spec's test_fixtures section:
 
 1. Retrieve the post-mortem report (Rekt, BlockSec, Phalcon, Peckshield,
    official protocol report).
+
 2. Extract:
      - Attack transaction hash(es)
      - Block range
@@ -581,11 +612,12 @@ For each positive fixture listed in the spec's test_fixtures section:
 
 Do NOT calibrate on the same data used for validation. Split known positives:
 
-```
+```text
 - Calibration set: 70% of known positives (randomly selected)
 - Holdout set: 30% of known positives (used only for final validation)
 
 Plus:
+
 - A "future" holdout: the most recent 3 positive incidents by date,
   regardless of count. These test whether calibration generalizes forward
   in time.
@@ -597,7 +629,7 @@ Plus:
 
 ### 7.1 Backtesting protocol
 
-```
+```text
 For each deployable spec, before production:
 
 1. Load the calibrated parameters.
@@ -627,7 +659,7 @@ The FP rate must be measured in context — alerts per (protocol × day) not
 alerts per observation. A 0.1% FP rate per observation block equals ~86
 FPs/day if the detector runs every block on Ethereum (7,200 blocks/day).
 
-```
+```text
 FP_rate_per_day = FP_rate_per_observation × observations_per_day
 
 Example:
@@ -646,15 +678,17 @@ High-frequency paths need tighter thresholds (P99.99 or P99.999).
 
 ### 7.3 Detection latency measurement
 
-```
+```text
 Detection latency = (first_alert_block − attack_initiation_block) × block_time
 
 Measure across all holdout positives:
+
   - P50 latency (median): the typical case
   - P95 latency: worst-case within normal operation
   - Maximum latency: detection miss if > attack duration
 
 If P95 latency exceeds the operational SLA for the severity tier:
+
   - Widen the observation window (reduces latency for batch detectors)
   - Increase the observation cadence (more frequent checks)
   - Lower the threshold (may increase FP rate — check the tradeoff)
@@ -696,7 +730,7 @@ Recalibrate when any of these events occur:
 
 Instrument the deployed detector with:
 
-```
+```text
 Metrics to emit per PATH per protocol per chain:
 
   observation_count{path, protocol, chain}          — total observations
@@ -708,6 +742,7 @@ Metrics to emit per PATH per protocol per chain:
   detection_latency_blocks{path, protocol, chain}   — histogram
 
 Dashboards:
+
   1. Alert rate per PATH per day (sparkline, 90-day view)
   2. FP rate per PATH per week (bar chart, with severity stack)
   3. Metric value distribution vs threshold (overlaid histogram + vertical line)
@@ -716,14 +751,16 @@ Dashboards:
 
 ### 8.3 A/B testing calibration changes
 
-```
+```text
 When proposing a parameter change:
 
 1. Run current calibration (A) and proposed calibration (B) in parallel
    on the same data stream for ≥7 days.
+
 2. Compare:
      - Alert counts per severity tier (B should not produce >20% more alerts
        unless they are true positives)
+
      - FP rate (B should not increase FP rate)
      - Detection latency (B should not increase latency)
 3. If B improves recall without degrading precision, promote B to production.
@@ -743,8 +780,9 @@ curve. Apply one of these profiles to the calibrated baseline:
 **Use when:** alert fatigue is the primary concern; SOC team is small; false
 positives erode trust in the detector.
 
-```
+```text
 Adjustments from calibrated baseline:
+
   - Thresholds: baseline × 1.5 (wider margin)
   - Minimums: baseline × 2.0 (higher noise floor)
   - Multipliers: baseline × 1.5 (stronger signal required)
@@ -758,8 +796,9 @@ Expected: ~50% reduction in FP rate; ~10-20% reduction in recall.
 **Use when:** missing an attack is costlier than investigating false leads;
 SOC team has capacity to triage; the protocol is a high-value target.
 
-```
+```text
 Adjustments from calibrated baseline:
+
   - Thresholds: baseline × 0.7 (tighter margin)
   - Minimums: baseline × 0.5 (lower noise floor)
   - Multipliers: baseline × 0.8 (weaker signal accepted)
@@ -772,7 +811,7 @@ Expected: ~10-20% improvement in recall; ~2-3× increase in FP rate.
 
 **Use when:** deploying for the first time; no strong reason to skew.
 
-```
+```text
 No adjustments from calibrated baseline.
 Use the empirical percentile thresholds directly.
 Re-assess after 30 days of production data.
@@ -793,7 +832,7 @@ Re-assess after 30 days of production data.
 
 ### 10.2 Benign baseline collection
 
-```
+```text
 Period: 2025-03-01 to 2025-04-01 (31 days)
 Oracle: 0xA338e0492B2F01bA2A5d4E5E5a2d8b5B2E75D79F (Chainlink USDC/ETH)
 Reference: Binance USDC/ETH mid-price (via Kaiko)
@@ -805,7 +844,7 @@ Metric: deviation = abs(oracle_price − reference_price) / max(reference_price,
 
 ### 10.3 Benign distribution
 
-```
+```text
 Percentile    Deviation
 P50           0.0008
 P90           0.0031
@@ -818,7 +857,7 @@ Max           0.0312 (during a single CEX flash crash, lasted 2 blocks)
 
 ### 10.4 Threshold selection
 
-```
+```text
 Default threshold: 0.02 (2%)
 
 The default falls between P99.9 (0.0187) and P99.99 (0.0241).
@@ -837,10 +876,13 @@ Option C — aggressive: threshold = P99 = 0.012
   Catches: subtle manipulations down to 1.2%
 
 Validate against known positives:
+
   - 2022-10 Mango Markets: MNGOperp oracle deviation reached 0.35
     → All options catch this.
+
   - 2021-10 Cream Finance: yUSD oracle deviation reached 0.18
     → All options catch this.
+
   - 2023-02 BonqDAO: WALBT oracle deviation reached 0.96
     → All options catch this.
 
@@ -854,8 +896,9 @@ Re-assess after 30 days of production.
 The spec defines `deviation > deviation_threshold × 3` as "high" (non-critical
 without additional factors). This is spec-internal logic, not a separate parameter.
 
-```
+```text
 At threshold=0.019:
+
   - deviation ≥ 0.019 → medium (above threshold)
   - deviation ≥ 0.057 → high (3× threshold)
   - deviation ≥ 0.50 + front_runnable → critical (conjunction with vault condition)
@@ -908,10 +951,13 @@ A calibrator needs:
 
 1. **Data lake** with historical event/state data for the deployment chain(s)
    at the spec's observation cadence (DSR §6 defines ingestion patterns).
+
 2. **Replay harness** that runs the spec's PATHs against historical state
    and records metric values + alert decisions.
+
 3. **Labeled incident database** with attack block ranges, addresses, and
    classifications (at minimum, the spec's `test_fixtures.positive` entries).
+
 4. **Calibration notebook** (Python/Jupyter) that loads the replay output,
    computes percentiles, fits distributions, sweeps thresholds, and produces
    the calibration record in the format shown in §10.6.
@@ -920,7 +966,7 @@ A calibrator needs:
 
 The calibration process (§3-7) can be semi-automated:
 
-```
+```text
 For each spec, for each deployment chain:
 
 1. [AUTO] Run benign baseline collection for 30+ days.
