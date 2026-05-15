@@ -36,7 +36,7 @@ Estimated mid-six-figure ETH equivalent across multiple withdrawal transactions.
 
 - Cross-reference: T9.013 at `techniques/T9.013-slippage-manipulation-sandwich-attack.md`.
 - Cross-reference: 2021-2025-slippage-manipulation-sandwich-cohort at `examples/2021-2025-slippage-manipulation-sandwich-cohort.md` (broader EVM/multi-chain T9.013 anchor).
-- Cross-reference: 2023-2024-squeeth-volatility-auction-slippage at `examples/2023-2024-squeeth-volatility-squeeth-auction-slippage-sandwich.md` (Squeeth auction variant of T9.013).
+- Cross-reference: 2023-2024-squeeth-volatility-auction-slippage at `examples/2023-2024-squeeth-volatility-auction-slippage-sandwich.md` (Squeeth auction variant of T9.013).
 
 ## Public References
 
