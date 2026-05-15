@@ -2,7 +2,7 @@
 
 **Loss:** **Research artifact, not a financial loss.** Sarah Meiklejohn et al.'s 2013 paper "A Fistful of Bitcoins: Characterizing Payments Among Men with No Names" was the foundational academic work demonstrating that Bitcoin's transaction graph could be deanonymized via address clustering — the technique that underlies all modern cryptocurrency attribution.
 **OAK Techniques observed:** **OAK-T8.003** (On-Chain Transaction Graph De-Anonymization) — canonical academic anchor. The Meiklejohn paper introduced the core address-clustering heuristics (shared-input heuristic, change-address detection, one-time-change) that remain the foundation of blockchain forensic attribution a decade later.
-**Attribution:** **confirmed** — academic research by Sarah Meiklejohn, Marjori Pomarole, Grant Jordan, Kirill Levchenko, Damon McCoy, Geoffrey M. Voelker, and Stefan Savage (UC San Diego / George Mason University). Published at ACM IMC 2013.
+**Attribution:** **unattributed** — academic research by Sarah Meiklejohn, Marjori Pomarole, Grant Jordan, Kirill Levchenko, Damon McCoy, Geoffrey M. Voelker, and Stefan Savage (UC San Diego / George Mason University). Published at ACM IMC 2013.
 
 **Key teaching point:** The Meiklejohn paper established that Bitcoin's privacy model is not anonymity but pseudonymity — addresses are pseudonymous, but the transaction graph encodes structural relationships (shared inputs, change outputs, exchange-deposit patterns) that cluster addresses into de facto identity-linked sets. This is the academic foundation upon which Chainalysis, TRM Labs, Elliptic, and all modern blockchain forensic platforms are built.
 

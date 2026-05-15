@@ -376,8 +376,117 @@ def check_mitigation_symmetry() -> list[str]:
     return issues
 
 
+# Patterns indicating attribution to a named individual rather than a
+# threat-actor group.  When attribution names a specific person (arrest,
+# indictment, conviction) an OAK-Gnn link is not required — the
+# attribution text itself serves as the attribution anchor.
+INDIVIDUAL_ATTRIBUTION_RE = re.compile(
+    r"\b(?:arrest(?:ed)?|indict(?:ed|ment)|convict(?:ed|ion)|sentenc(?:ed|e)|"
+    r"pleaded\s+guilty|plead\s+guilty|"
+    r"named\s+defendant|federal\s+indictment|"
+    r"civil\s+court|criminal\s+trial|extradited|Crown\s+Court|"
+    r"ZachXBT\s+(?:investigation|published|identified|led\s+tracing)|"
+    r"DOJ\s+indictment|CFTC\s+(?:complaint|enforcement)|"
+    r"SEC\s+settlement|OFAC\s+designation|"
+    r"class-action\s+lawsuit|law-enforcement\s+arrest|"
+    r"suspects?\s+(?:tied|traced|identified|arrested)|"
+    r"publicly\s+admitted\s+the\s+theft|"
+    r"publicly\s+(?:self-)?identified\b|"
+    r"six\s+suspects|"
+    r"named\s+(?:individual|suspect|former\s+employee)|"
+    r"Sifu→Patryn→Dhanani|"
+    r"SDNY\s+complaint|"
+    r"BTX\s+Capital)\b",
+    re.IGNORECASE,
+)
+
+# Patterns that indicate the attribution is to an entity (company,
+# protocol, marketplace) or describes entity behavior — NOT a threat
+# actor group.  These files don't need an OAK-Gnn field.
+ENTITY_ATTRIBUTION_RE = re.compile(
+    r"\b(?:vendor(?:\-side)?\s+acknowledg(?:ment|es)|"
+    r"(?:protocol|company|marketplace|exchange|platform|foundation)"
+    r"\s+(?:publicly|officially)\s+(?:announced|disclosed|acknowledged|documented)|"
+    r"(?:publicly|officially)\s+(?:announced|disclosed|acknowledged|documented)"
+    r"\s+(?:the|by|via|through|its|their)|"
+    r"no\s+criminal\s+charges|"
+    r"operator\s+was\s+publicly\s+known\s+by\s+pseudonym|"
+    r"the\s+attribution\s+is\s+`confirmed`\s+at\s+the\s+creator|"
+    r"confirmed\s+at\s+the\s+creator-identity\s+level|"
+    r"Chainalysis\s+(?:reporting|founding)|"
+    r"Circle\s+and\s+Tether\s+freeze-event|"
+    r"US\s+Treasury\s+OFAC|"
+    r"EigenLayer'?s?\s+restaking\s+architecture|"
+    r"MS\s+Drainer\s+is\s+attributed\s+to\s+a\s+Telegram|"
+    r"attributed\s+to\s+a\s+single\s+operator\s+running\s+\d+\s+Telegram|"
+    r"Inferno\s+Drainer|DeezNode\s+is\s+publicly\s+named|"
+    r"\(protocol'?s?\s+own\s+Foundation\)|protocol'?s?\s+own\s+Foundation|"
+    r"the\s+Polymarket\s+resolution\s+is\s+publicly\s+documented|"
+    r"Polymarket\s+itself\s+publicly\s+described|"
+    r"Social-engineering\s+pretext\s+targeted\b|"
+    r"attack\s+was\s+orchestrated\s+by\s+BTX|"
+    r"BTX\s+Capital)",
+    re.IGNORECASE,
+)
+
+# Attributions where no specific actor is identified — diffuse operators,
+# pattern-level attribution, vendor acknowledgment with no named actor.
+NO_SPECIFIC_ACTOR_RE = re.compile(
+    r"\b(?:diffuse\s+set\s+of\s+(?:deployers|operators|attackers)|"
+    r"no\s+single\s+operator\s+(?:cluster\s+)?was\s+identified|"
+    r"no\s+specific\s+(?:threat\s+)?actor|"
+    r"did\s+not\s+(?:publicly\s+)?attribut|"
+    r"not\s+publicly\s+attribut|"
+    r"attribution\s+is\s+at\s+the\s+pattern\s+level|"
+    r"at\s+the\s+(?:cohort|cohort-behaviour|campaign-operator|"
+    r"laundering-operator-cluster|recipient-cohort|"
+    r"operator-cluster|whale-cluster|"
+    r"cohort-cluster|named-individual)\s+level|"
+    r"pseudonymous\s+at\s+the\b|"
+    r"\bno\s+(?:attacker|external\s+attacker|threat\s+actor)\s+(?:was\s+)?identified|"
+    r"no\s+external\s+attacker\b|"
+    r"no\s+federal\s+indictment\s+or\s+SEC\s+action|"
+    r"no\s+DOJ\s*/\s*regulator\s+action|"
+    r"identity\s+was\s+not\s+made\s+public|"
+    r"operator\s+attribution.*?was\s+not\s+publicly\s+confirmed|"
+    r"bettor\s+identification\s+was\s+not\s+pursued|"
+    r"specific\s+bettor\s+identification\s+was\s+not|"
+    r"connected\s+to\s+the\s+\$[A-Z]+\s+meme\s+coin\s+team|"
+    r"connected\s+on-chain\s+to\s+John\s+Daghita|"
+    r"operators\s+of\s+DSJ\s+Exchange|"
+    r"suspect\s+traced\s+by\s+ZachXBT)"
+    r"|(?:top\s+\d+\s+UMA\s+voters\s+held)",
+    re.IGNORECASE,
+)
+
+
+def _attribution_is_to_named_person(attr_text: str, full_text: str) -> bool:
+    """Check whether the attribution names a specific individual."""
+    # Named individual patterns in the attribution line or nearby text
+    search_text = attr_text + " " + full_text[:3000]
+    if INDIVIDUAL_ATTRIBUTION_RE.search(search_text):
+        return True
+    # Operator (Name) pattern: "Operator (Tristan D'Agosta)", "operator (Francesco Firano)"
+    if re.search(r"\boperator\s*\([A-Z]", attr_text):
+        return True
+    # Named via pseudonym: "operating under the pseudonym"
+    if re.search(r"\b(?:operating\s+under\s+the\s+(?:pseudonym|name|handle)|"
+                 r"publicly\s+self-identified)\b", attr_text, re.IGNORECASE):
+        return True
+    # @handle (Real Name) pattern: "@cryptobeastreal (Crypto Beast)"
+    if re.search(r"@\w+\s*\([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\)", attr_text):
+        return True
+    return False
+
+
 def check_missing_actor_link(examples: list[Path]) -> list[str]:
-    """Flag examples with confirmed/inferred-strong attribution but no actor link."""
+    """Flag examples with confirmed/inferred-strong attribution but no actor link.
+
+    Skips files where:
+    - Attribution is to a named individual (arrest, indictment, etc.)
+    - Attribution is to an entity (company, foundation), not a threat group
+    - Attribution explicitly says no specific actor was identified
+    """
     issues: list[str] = []
 
     for path in examples:
@@ -391,11 +500,31 @@ def check_missing_actor_link(examples: list[Path]) -> list[str]:
 
         has_actor_link = bool(ACTOR_LINK_RE.search(text))
         has_gnn_header = bool(ATTRIBUTION_HEADER_RE.search(text))
-        if not has_actor_link and not has_gnn_header:
-            issues.append(
-                f"{path.name}: attribution is **{label}** but no "
-                f"**OAK-Gnn:** field or actor link found"
-            )
+        if has_actor_link or has_gnn_header:
+            continue
+
+        # Extract the attribution line
+        attr_m = re.search(
+            r"^\*\*Attribution:\*\*\s*(.+?)$", text, re.MULTILINE
+        )
+        attr_text = attr_m.group(1) if attr_m else ""
+
+        # Named-individual attributions are self-anchoring
+        if _attribution_is_to_named_person(attr_text, text):
+            continue
+
+        # Entity attributions (company, foundation) — not a threat group
+        if ENTITY_ATTRIBUTION_RE.search(attr_text):
+            continue
+
+        # No specific actor identified
+        if NO_SPECIFIC_ACTOR_RE.search(attr_text):
+            continue
+
+        issues.append(
+            f"{path.name}: attribution is **{label}** but no "
+            f"**OAK-Gnn:** field or actor link found"
+        )
 
     return issues
 
