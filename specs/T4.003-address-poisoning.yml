@@ -99,6 +99,7 @@ test_fixtures:
     - "Inbound transfer from a known address-book counterparty (not lookalike)"
     - "Legitimate dust airdrop from a registered token contract"
     - "Inbound transfer from a CEX hot wallet that incidentally matches prefix"
+    - 2026-05-thorchain-router-exploit      # NOT T4.003: dust from lookalike addresses was side effect — root cause was unsigned wrapper metadata (→ T10.008)
 
 false_positive_modes:
   - CEX hot wallet rotation producing inbound transfers from previously-unseen addresses (calibrate via popular_symbol_set + dust_threshold)

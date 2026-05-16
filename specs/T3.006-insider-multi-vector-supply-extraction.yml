@@ -1,0 +1,130 @@
+oak_techniques: [OAK-T3.006]
+spec_id: oak-detection-T3.006
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect coordinated multi-vector insider extraction where a project team
+  deploys four or more simultaneous extraction mechanisms — private OTC/loan
+  deals, unilateral vesting changes, market maker coordination, CEX deposit
+  dumping, buyback-wallet commingling — that individually appear benign but
+  collectively form a retail extraction architecture. The structural signal is
+  cross-vector correlation: no single vector triggers individually, but the
+  correlation across vectors is the detection signal. Covers the canonical
+  LABtrade May 2026 case.
+
+data_sources: [dex_trades, token_transfer_events, holder_count_log,
+               off_chain_governance_events, cex_deposit_flows,
+               supply_aggregator_data, security_disclosure_feed]
+
+detection_logic:
+  description: |
+    Cross-reference four independent extraction vectors. PATH A detects
+    borrower-buyback wallet commingling. PATH B detects CEX deposit
+    dormancy + social-amplified withdrawal + dump pattern. PATH C detects
+    supply-aggregator divergence (opacity signal). PATH D detects
+    unilateral governance changes without community process. Individual
+    paths produce medium-severity signals; when three or more paths fire
+    for the same token simultaneously, the combined signal is critical.
+  pseudocode: |
+    # PATH A — borrower-buyback wallet identity check
+    for each token T:
+      treasury_wallets ← get_treasury_wallets(T)
+      buyback_wallets  ← detect_buyback_wallets(T)  # addresses sending market-buy txs
+      otc_recipients   ← detect_otc_loan_recipients(T, treasury_wallets)
+
+      for each addr in otc_recipients:
+        if addr in buyback_wallets:
+          emit(PATH_A, token=T, wallet=addr,
+               treasury_inflow=sum_inflow_from_treasury(addr, T),
+               buyback_volume=sum_buyback_volume(addr, T),
+               severity=high,
+               detail="borrower wallet = buyback wallet — treasury and insider flows commingled")
+
+    # PATH B — CEX deposit dormancy + withdrawal + social amplification → dump
+    for each token T:
+      insider_wallets ← get_insider_linked_wallets(T)
+      for each cex_deposit D from insider_wallets:
+        deposit_time ← D.timestamp
+        dormant_period ← now() - deposit_time
+        if dormant_period > dormancy_threshold:
+          withdrawals ← get_withdrawals_from_cex(D.cex, token=T, after=deposit_time)
+          for each withdrawal W in withdrawals:
+            social_amplification ← check_social_media_amplification(W, window=amplification_window)
+            remaining_deposit_dumped ← check_dump_after_withdrawal(D.cex, T, W.timestamp)
+            if social_amplification and remaining_deposit_dumped:
+              emit(PATH_B, token=T, cex=D.cex, deposit_amount=D.amount,
+                   dormant_period, withdrawal_amount=W.amount,
+                   severity=high,
+                   detail="CEX deposit dormancy → social-amplified withdrawal → dump")
+
+    # PATH C — supply-aggregator divergence (opacity signal)
+    for each token T:
+      supply_reports ← {
+        coingecko: get_coingecko_supply(T),
+        coinmarketcap: get_coinmarketcap_supply(T),
+        rootdata: get_rootdata_supply(T)
+      }
+      max_divergence ← max(supply_reports.values()) - min(supply_reports.values())
+      supply_control ← estimate_team_supply_control(T)
+      if max_divergence > supply_divergence_threshold and supply_control > team_supply_threshold:
+        emit(PATH_C, token=T, supply_reports=supply_reports,
+             divergence_pct=max_divergence / avg(supply_reports.values()),
+             team_supply_pct=supply_control,
+             severity=medium,
+             detail="supply figures diverge across aggregators + >95% team control — opacity signal")
+
+    # PATH D — unilateral governance change without community process
+    for each token T:
+      governance_events ← get_governance_changes(T)
+      for each event E in governance_events:
+        if E.change_type in [vesting_schedule, token_allocation, insider_loan]:
+          community_process ← check_governance_vote(E) or check_public_disclosure(E)
+          if not community_process:
+            emit(PATH_D, token=T, change_type=E.change_type,
+                 change_detail=E.description, severity=medium,
+                 detail="unilateral governance change without community process")
+
+    # Cross-vector correlation — combined signal
+    for each token T:
+      fired_paths ← {P for P in [PATH_A, PATH_B, PATH_C, PATH_D] if has_emit(T, P)}
+      if len(fired_paths) >= min_correlated_paths:
+        emit(COMBINED, token=T, fired_paths=fired_paths,
+             severity=critical,
+             detail="multi-vector insider extraction — {0} of 4 vectors firing simultaneously".format(len(fired_paths)))
+
+parameters:
+  dormancy_threshold:              { type: duration, default: 14d }
+  amplification_window:            { type: duration, default: 48h }
+  supply_divergence_threshold:     { type: number,  default: 0.20 }       # >20% divergence
+  team_supply_threshold:           { type: number,  default: 0.95 }       # >95% team control
+  min_correlated_paths:            { type: integer, default: 3 }          # 3+ paths firing = critical
+
+output_alert: [oak_technique, detection_path, severity, token,
+               wallet_commingling, cex_deposit_pattern, supply_divergence,
+               governance_changes, fired_paths, evidence]
+
+test_fixtures:
+  positive:
+    - 2026-05-labtrade-insider-manipulation                        # Canonical anchor — 4-vector insider extraction, $6B FDV
+  negative:
+    - "Token with legitimate OTC deals, disclosed vesting schedules, and transparent supply reporting — individual vectors without correlation"
+    - "Single-vector extraction (e.g., treasury drain only) without OTC/vesting/CEX coordination — covered by T5.005, not T3.006"
+    - "CEX deposit and withdrawal for legitimate market-making activity with publicly disclosed MM agreement"
+
+false_positive_modes:
+  - Legitimate OTC deals with disclosed terms and community governance approval — PATH A's borrower-buyback identity check distinguishes commingled from separated wallets
+  - Routine CEX deposit/withdrawal cycles for exchange-liquidity management with disclosed MM agreement — PATH B's dormancy + social-amplification check filters
+  - Supply figure disagreements due to data-aggregator methodological differences (e.g., circulating vs. total supply) rather than team opacity — PATH C requires material divergence (>20%) across multiple aggregators
+  - Governance changes with legitimate community vote and advance public disclosure — PATH D checks for absence of community process
+
+mitigations: [OAK-M04, OAK-M11, OAK-M25]
+
+reference_implementations:
+  - { target: zachxbt-disclosures, chain: cross-chain, url: "" }
+  - { target: bubblemaps,         chain: cross-chain, url: "" }
+  - { target: arkham-intelligence, chain: cross-chain, url: "" }
+  - { target: lookonchain,        chain: cross-chain, url: "" }
+  - { target: dune,               chain: cross-chain, url: "" }
