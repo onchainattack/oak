@@ -1,0 +1,94 @@
+oak_techniques: [OAK-T9.014]
+spec_id: oak-detection-T9.014
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect vulnerabilities in the reference-client implementation (C++, Rust,
+  Go codebase) whose execution determines blockchain consensus — integer
+  overflow/underflow, input-validation bypass, and unchecked arithmetic in
+  consensus-critical paths (transaction validation, block validation, supply
+  accounting, fee calculation). The structural signal is: consensus-code
+  arithmetic without overflow checks → transaction/block bypasses validation
+  → exploit block accepted by network. Covers the canonical Bitcoin 2010
+  value overflow bug (CVE-2010-5139) and the general class of protocol-client
+  arithmetic/validation bugs in any reference-client implementation.
+
+data_sources: [onchain_block, onchain_transaction, node_client_version,
+               security_disclosure_feed, contract_bytecode]
+
+detection_logic:
+  description: |
+    Two detection paths. PATH A (pre-exploit — consensus-code safe-arithmetic
+    audit): audit consensus-critical arithmetic paths in the reference-client
+    codebase for unchecked integer overflow/underflow. Produce a safe-arithmetic
+    coverage map and flag paths where validation depends on bare integer
+    arithmetic. PATH B (post-exploit — client-version adoption monitoring):
+    after an emergency client release, monitor the network's client-version
+    distribution to verify that a supermajority of validators/miners have
+    adopted the patched client. Nodes still running the vulnerable client
+    remain exploitable.
+  pseudocode: |
+    # PATH A — consensus-code safe-arithmetic audit (pre-exploit)
+    # Operates on reference-client source code, not on-chain data
+    consensus_paths ← identify_consensus_critical_arithmetic_paths(client_source)
+
+    for each path in consensus_paths:
+      arithmetic_ops ← extract_integer_arithmetic_ops(path)
+      for each op in arithmetic_ops:
+        if not has_overflow_check(op) and not is_safe_math_wrapper(op):
+          emit(PATH_A, client=client_source.name, version=client_source.version,
+               file=path.file, function=path.function, line=op.line,
+               operation=op.kind, operand_types=op.types,
+               severity=critical,
+               detail="unchecked integer arithmetic in consensus-critical path")
+
+    # PATH B — client-version adoption monitoring (post-exploit)
+    on emergency_client_release R for vulnerability V:
+      patched_version ← R.patched_client_version
+      vulnerable_versions ← R.vulnerable_version_set
+
+      for each validator v in network.current_validators:
+        if v.client_version in vulnerable_versions:
+          emit(PATH_B, validator=v.address, client=v.client_implementation,
+               version=v.client_version, vulnerability=V,
+               exploit_block=R.exploit_block,
+               severity=critical,
+               detail="validator running vulnerable client version post-patch")
+
+      adoption_rate ← count(validators with patched_version) / count(all validators)
+      if adoption_rate < supermajority_threshold:
+        emit(PATH_B, severity=critical,
+             detail="patched client adoption below supermajority threshold")
+
+parameters:
+  supermajority_threshold:             { type: float,    default: 0.90 }   # 90% of validators must upgrade
+  safe_arithmetic_wrappers:            { type: list,     default: ["checked_add", "checked_sub", "checked_mul", "saturating_add", "SafeMath", "overflow_checks"] }  # known safe-math wrappers
+  consensus_critical_functions:        { type: list,     default: ["CheckTransaction", "CheckBlock", "ConnectBlock", "AcceptToMemoryPool", "VerifySignature", "CalculateSupply"] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               client_implementation, client_version, vulnerability_id,
+               file, function, validator_address, evidence]
+
+test_fixtures:
+  positive:
+    - 2010-08-bitcoin-value-overflow-bug                                    # Canonical anchor — C++ integer overflow in CheckTransaction()
+  negative:
+    - "Transaction with large output values that are correctly rejected by overflow-checked validation — safe-math wrappers present, should not alert"
+    - "Reference client where all consensus-critical arithmetic paths use checked/saturating arithmetic — no bare integer ops, should not alert"
+    - "Client-version upgrade that reaches 95% supermajority adoption within 24 hours of emergency release — compliant, should not alert"
+
+false_positive_modes:
+  - Arithmetic in non-consensus-critical code paths (RPC handlers, UI/CLI formatting, wallet code) flagged as consensus-critical — require function-level consensus-criticality annotation before escalation
+  - Client-version reporting lag where validators have upgraded but the monitoring infrastructure still reports the old version — check block-production timestamps against client-version-announcement timestamps
+  - Multi-client networks where a minority client has a divergent but benign arithmetic behaviour (e.g., different rounding direction that doesn't affect consensus) — require consensus-impact confirmation before escalation
+  - Emergency client release for a non-consensus-bug vulnerability (DoS, memory corruption, RPC crash) — verify the vulnerability class is consensus-level (economic rules bypass), not operational-level
+
+mitigations: []
+
+reference_implementations:
+  - { target: trail-of-bits-consensus-audit,    chain: cross-chain, url: "" }
+  - { target: differential-fuzzing-afl,          chain: cross-chain, url: "" }
+  - { target: ethereum-client-diversity-monitor, chain: evm,    url: "" }

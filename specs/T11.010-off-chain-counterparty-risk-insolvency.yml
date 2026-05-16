@@ -1,0 +1,103 @@
+oak_techniques: [OAK-T11.010]
+spec_id: oak-detection-T11.010
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect the structural pattern where a custodial yield platform extends
+  unsecured or under-collateralised credit to a small, concentrated set of
+  offshore counterparties, re-lending customer-deposited assets to fund the
+  platform's yield product. When the counterparty defaults, the operator
+  absorbs the default as a customer-facing solvency event. Detection operates
+  at the counterparty-concentration analysis, yield-rate sustainability
+  cross-reference, and bankruptcy-docket monitoring layers. The structural
+  signal is: concentrated re-lending flow → counterparty default → withdrawal
+  suspension → Chapter 11 filing. Covers the canonical Cred Inc. case and the
+  2022–2023 CeFi yield-platform collapse wave (Celsius, Voyager, BlockFi,
+  Genesis, FTX).
+
+data_sources: [onchain_transaction, dex_trades, security_disclosure_feed,
+               tx_call_trace]
+
+detection_logic:
+  description: |
+    Two detection paths. PATH A (counterparty-concentration analysis —
+    highest leverage pre-default signal): map on-chain flow from customer-
+    deposit addresses to re-lending destination addresses; compute the
+    Herfindahl-Hirschman Index (HHI) of re-lending destination concentration.
+    PATH B (yield-rate sustainability cross-reference): compare the platform's
+    advertised yield rate against contemporaneous DeFi benchmark rates; flag
+    sustained premiums >200 bps above the highest DeFi benchmark without a
+    disclosed and independently verifiable alpha source.
+  pseudocode: |
+    # PATH A — counterparty-concentration analysis
+    platform_wallets ← get_platform_deposit_wallets(platform_id)
+    counterparty_wallets ← get_re_lending_destinations(platform_wallets)
+
+    # Compute Herfindahl-Hirschman Index of re-lending concentration
+    total_re_lent ← sum(outflow.amount for outflow in re_lending_outflows)
+    for each counterparty c in counterparty_wallets:
+      c_share ← sum(outflow.amount for outflow to c) / total_re_lent
+      hhi ← hhi + (c_share * 100)^2
+
+    if counterparty_wallets.length < 5 or max(c_share) > 0.30:
+      emit(PATH_A, platform=platform_id, counterparty_count=counterparty_wallets.length,
+           max_single_counterparty_share=max(c_share), hhi=hhi,
+           severity=high,
+           detail="concentrated re-lending counterparty exposure")
+
+    if hhi > 2500:  # DOJ/FTC threshold for "highly concentrated"
+      emit(PATH_A, platform=platform_id, hhi=hhi,
+           severity=critical,
+           detail="HHI above highly-concentrated threshold")
+
+    # PATH B — yield-rate sustainability cross-reference
+    platform_yield ← get_advertised_yield_rate(platform_id)
+    defi_benchmarks ← [
+      aave_supply_apy, compound_supply_apy, lido_steth_apy,
+      maker_dsr, us_treasury_3m_yield
+    ]
+    max_benchmark ← max(defi_benchmarks)
+    premium ← platform_yield - max_benchmark
+
+    if premium > 0.02:  # 200 bps above highest benchmark
+      if not has_disclosed_alpha_source(platform_id):
+        emit(PATH_B, platform=platform_id, yield=platform_yield,
+             max_benchmark=max_benchmark, premium_bps=premium * 10000,
+             severity=high,
+             detail="sustained yield premium without disclosed alpha source")
+
+parameters:
+  hhi_highly_concentrated_threshold:   { type: float,  default: 2500.0 }  # DOJ/FTC HHI threshold
+  max_single_counterparty_share:       { type: float,  default: 0.30 }    # >30% to any single counterparty
+  min_counterparty_count:              { type: int,    default: 5 }       # fewer than 5 distinct counterparties
+  yield_premium_threshold_bps:         { type: float,  default: 200.0 }   # >200 bps above highest DeFi benchmark
+  defi_benchmark_protocols:            { type: list,   default: ["aave", "compound", "lido", "maker"] }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               platform_id, counterparty_count, max_single_counterparty_share,
+               hhi, yield_rate, premium_bps, evidence]
+
+test_fixtures:
+  positive:
+    - 2020-11-cred                                                  # Canonical anchor — MoKredit default → Chapter 11
+  negative:
+    - "Custodial platform with diversified re-lending across >10 counterparties, all <15% share, HHI <1500 — well-diversified, should not alert"
+    - "Yield product with advertised rate within 50 bps of the highest DeFi benchmark — no unsustainable premium, should not alert"
+    - "Platform with disclosed alpha source (e.g., MEV extraction, basis-trading strategy with audited track record) and verifiable on-chain evidence — legitimate alpha, should not alert"
+
+false_positive_modes:
+  - Platform is an exchange with genuine operational flow rather than a yield platform — exchange hot-wallet rebalancing can look like concentrated re-lending flow; distinguish by deposit/withdrawal velocity and user-facing product type
+  - Yield premium driven by temporary DeFi rate depression rather than sustained above-market yield — use rolling 30-day median yield comparison rather than spot comparison
+  - Counterparty wallets are multi-sig or omnibus wallets aggregating multiple end-counterparties — the on-chain view shows concentration but the off-chain structure is diversified; flag for operator disclosure request rather than automatic escalation
+  - Re-lending flow is collateralised on-chain (e.g., over-collateralised lending protocol) rather than unsecured credit — the concentration risk is structurally lower; check for on-chain collateralisation before escalating
+
+mitigations: []
+
+reference_implementations:
+  - { target: chainalysis-reactor,  chain: cross-chain, url: "" }
+  - { target: nansen-wallet-labels, chain: evm,    url: "" }
+  - { target: arkham-intelligence,  chain: cross-chain, url: "" }
+  - { target: pacer-bankruptcy-docket, chain: off-chain, url: "" }
