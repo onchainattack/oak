@@ -1,0 +1,92 @@
+oak_techniques: [OAK-T4.011]
+spec_id: oak-detection-T4.011
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect compromise of the push-notification infrastructure (Apple Push
+  Notification Service / Firebase Cloud Messaging) that a wallet application
+  or portfolio tracker uses to communicate with its user base. The structural
+  signal is mass-simultaneous wallet draining across users of the same
+  application within hours of a push-notification broadcast. Covers the
+  canonical CoinStats June 2024 case.
+
+data_sources: [tx_call_trace, security_disclosure_feed,
+               application_notification_logs]
+
+detection_logic:
+  description: |
+    Monitor for mass-simultaneous wallet draining clustered by application
+    user base. When multiple users of the same wallet application report
+    wallet draining within a short time window following a push-notification
+    broadcast, the incident is a high-confidence T4.011 event.
+  pseudocode: |
+    # PATH A — cross-user drain-event temporal clustering by application
+    application_user_wallets ← get_application_user_wallets()
+
+    for each application app in application_user_wallets:
+      recent_drains ← []
+      for each user_wallet w in app.user_wallets:
+        if has_recent_large_outflow(w, window = drain_window_hours):
+          recent_drains.append(w)
+
+      if len(recent_drains) >= min_affected_users:
+        time_spread ← max_drain_time(recent_drains) - min_drain_time(recent_drains)
+        if time_spread < drain_cluster_window_hours:
+          # Verify push-notification broadcast preceded drains
+          notification_event ← get_push_notification_broadcast(app, window = time_spread * 2)
+          if notification_event is not None:
+            emit(PATH_A, application=app, affected_users=len(recent_drains),
+                 total_extracted=sum(d.amount for d in recent_drains),
+                 time_spread_hours=time_spread,
+                 notification_event=notification_event,
+                 severity=critical,
+                 detail="mass simultaneous user-wallet drain following push-notification broadcast — T4.011 entry vector")
+
+    # PATH B — push-notification infrastructure credential access anomaly
+    for each application app with push_notification_infrastructure:
+      credential_accesses ← get_recent_credential_usage(app.push_credentials)
+      for each access in credential_accesses:
+        if access.source_ip not in app.known_operational_ips:
+          emit(PATH_B, application=app, credential=access.credential_id,
+               source_ip=access.source_ip, timestamp=access.time,
+               severity=high,
+               detail="push-notification credential accessed from unrecognised IP")
+
+    # PATH C — notification-content integrity verification
+    for each push_notification n sent by application app:
+      if not verify_notification_signature(n, app.notification_signing_key):
+        emit(PATH_C, application=app, notification=n,
+             severity=high,
+             detail="unsigned or invalidly-signed push notification — possible injection")
+
+parameters:
+  min_affected_users:              { type: int,    default: 10 }
+  drain_detection_window_hours:    { type: float,  default: 24.0 }
+  drain_cluster_window_hours:      { type: float,  default: 6.0 }
+
+output_alert: [oak_technique, detection_path, severity, application,
+               affected_users, total_extracted, time_spread_hours,
+               notification_event, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-06-coinstats-snap                                         # Canonical anchor — CoinStats iOS push-notification compromise, ~1,590 wallets
+  negative:
+    - "Per-user phishing campaign producing sequential wallet drains across weeks — per-user interaction, not mass-simultaneous push-notification-driven"
+    - "Single-user wallet drain via malware — individual compromise, not push-notification infrastructure compromise"
+    - "Application announces a legitimate update via push notification and users update normally — no malicious payload, no draining"
+
+false_positive_modes:
+  - Application announces a legitimate asset migration requiring users to move funds — simultaneous user outflows are expected and operator-confirmed; verify the notification content matches the operator announcement
+  - Smart-contract exploit on a protocol where many users of the same application have approved the same contract — mass draining via shared approval, not push-notification compromise (check for approval transactions preceding drains)
+  - Wallet application's normal transaction-notification volume producing a statistical cluster of large outflows — verify that the outflows are to known user-controlled wallets, not to attacker-controlled addresses
+
+mitigations: [OAK-M18, OAK-M22, OAK-M40]
+
+reference_implementations:
+  - { target: slowmist,      chain: cross-chain, url: "" }
+  - { target: peckshield,    chain: evm,    url: "" }
+  - { target: zachxbt,       chain: cross-chain, url: "" }

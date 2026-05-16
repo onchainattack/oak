@@ -1,0 +1,83 @@
+oak_techniques: [OAK-T9.006.005]
+spec_id: oak-detection-T9.006.005
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect when a prediction-market platform or DeFi protocol exercises a
+  platform-level override authority to reverse or disregard a decentralised
+  oracle's outcome. The structural signal is a discrepancy between the
+  oracle's published resolution and the platform's actual settlement.
+  Covers the canonical Polymarket DJT / Barron Trump oracle-override
+  dispute (June 2024).
+
+data_sources: [prediction_market_state, oracle_reports,
+               platform_governance_events, security_disclosure_feed]
+
+detection_logic:
+  description: |
+    Monitor prediction-market and DeFi-protocol governance surfaces for
+    administrative actions that reverse or disregard a previously-published
+    oracle outcome. The platform's override authority — typically an
+    "ultimate discretion" clause in Terms of Service or a governance vote /
+    multi-sig that can reverse oracle output — is the structural mechanism.
+  pseudocode: |
+    # Pre-incident — platform-discretion-clause audit
+    for each prediction_market_platform p:
+      tos ← get_terms_of_service(p)
+      governance ← get_governance_mechanism(p)
+      override_clause ← extract_override_clause(tos) or extract_admin_override(governance)
+      if override_clause is not None:
+        emit(PATH_A, platform=p, override_mechanism=override_clause.kind,
+             clause_text=override_clause.text,
+             severity=medium,
+             detail="platform retains oracle-outcome override authority — oracle is signal, not settlement")
+
+    # At-incident — platform-oracle-outcome discrepancy detection
+    for each market m on platform p where m.resolved == true:
+      oracle_outcome ← get_oracle_outcome(m.oracle, m.question_id)
+      platform_outcome ← get_platform_resolution(p, m.market_id)
+      if oracle_outcome is not None
+         and platform_outcome is not None
+         and oracle_outcome.result != platform_outcome.result:
+        emit(PATH_B, platform=p, market=m,
+             oracle_outcome=oracle_outcome.result,
+             platform_outcome=platform_outcome.result,
+             override_authority=override_clause or governance.override_mechanism,
+             severity=high,
+             detail="platform overrode oracle outcome — T9.006.005 signature event")
+
+    # Post-incident — override-event registry
+    on PATH_B emit:
+      record_override_event(platform=p, market=m,
+                            oracle=oracle_outcome, platform=platform_outcome,
+                            timestamp=now())
+
+parameters:
+  override_mechanism_kinds:      { type: list,    default: [tos_discretion, governance_vote, multi_sig, admin_key] }
+  monitored_platforms:           { type: list,    default: [] }
+
+output_alert: [oak_technique, detection_path, severity, platform,
+               market, oracle_outcome, platform_outcome,
+               override_mechanism, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-06-polymarket-djt-oracle-override                         # Canonical anchor — Polymarket overrides UMA outcome on DJT/Barron Trump market
+  negative:
+    - "Oracle malfunction producing incorrect outcome — the platform follows the oracle correctly; no override occurred"
+    - "Market resolves to oracle outcome without platform intervention — standard oracle-settlement flow, no override"
+    - "Oracle vote dispute resolved through the oracle's native dispute mechanism (e.g., UMA DVM re-vote) without platform override"
+
+false_positive_modes:
+  - Oracle upgrade or migration producing a one-time resolution discrepancy for technical rather than discretionary reasons — verify that the override was a governance/admin action, not a routine protocol migration
+  - Market-specific resolution rule that explicitly delegates final settlement to the platform rather than the oracle — the override is documented and market participants are aware ex ante; classify as a platform-design feature, not a T9.006.005 incident
+  - Oracle latency or re-org window producing a temporary discrepancy that resolves within the oracle's native finality period — verify that the discrepancy was permanent and the platform's override was the settlement
+
+mitigations: []
+
+reference_implementations:
+  - { target: polymarket-uma-dvm,  chain: polygon, url: "" }
+  - { target: oracle-report-diff,  chain: cross-chain, url: "" }

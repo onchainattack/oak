@@ -43,6 +43,7 @@ Candidates from this file that have been promoted from `draft` to `emerging` and
 - **OAK-T7.008 — Stablecoin Issuer Freeze-Asymmetry Laundering** — promoted; see [`techniques/T7.008-stablecoin-issuer-coordination-laundering.md`](techniques/T7.008-stablecoin-issuer-coordination-laundering.md).
 - **OAK-T11.004 — Insufficient-Entropy Key Generation** — promoted to `stable`; see [`techniques/T11.004-insufficient-entropy-key-generation.md`](techniques/T11.004-insufficient-entropy-key-generation.md). Anchored: 2022-09 Wintermute / Profanity vanity-address generator.
 - **OAK-T4.010 — Fake Security-Tool / Browser-Extension Phishing** — promoted; see [`techniques/T4.010-fake-security-tool-browser-extension-phishing.md`](techniques/T4.010-fake-security-tool-browser-extension-phishing.md).
+- **OAK-T4.011 — Push-Notification Infrastructure Compromise** — promoted; see [`techniques/T4.011-push-notification-infrastructure-compromise.md`](techniques/T4.011-push-notification-infrastructure-compromise.md). Anchored: 2024-06 CoinStats iOS push-notification compromise (~$1M, ~1,590 wallets).
 - **OAK-T11.011 — Multi-chain Key-store Co-location** — promoted; see [`techniques/T11.011-multi-chain-key-store-co-location.md`](techniques/T11.011-multi-chain-key-store-co-location.md). Anchored: 2023-11 Poloniex hot-wallet drain ($120M simultaneous multi-chain extraction).
 - **OAK-T11.012 — Server-side Raw Private-Key Storage** — promoted; see [`techniques/T11.012-server-side-raw-private-key-storage.md`](techniques/T11.012-server-side-raw-private-key-storage.md). Anchored: 2024-09 DEXX trading-bot platform cohort ($2.5M+ mass user-wallet drain).
 - **OAK-T11.013 — Legacy-Version Maintenance Attack Surface** — promoted; see [`techniques/T11.013-legacy-version-maintenance-attack-surface.md`](techniques/T11.013-legacy-version-maintenance-attack-surface.md). Anchored: 2025-07 GMX V1 GLP global-short-tracking exploit ($42M).
@@ -110,7 +111,7 @@ These are Techniques that fit cleanly inside an existing v0.1 Tactic but are fla
 - **OAK-T4.008 Fake-DEX Clone-Frontend Phishing** — **promoted** to `emerging`; see [`techniques/T4.008-fake-dex-clone-frontend-phishing.md`](techniques/T4.008-fake-dex-clone-frontend-phishing.md).
 - **Pre-token brand-anticipation phishing** — **promoted** to `emerging` as **OAK-T4.009**; see [`techniques/T4.009-pre-token-brand-anticipation-phishing.md`](techniques/T4.009-pre-token-brand-anticipation-phishing.md). Anchored: zkSync airdrop anticipation (2023–2024), EigenLayer token anticipation (2024–02), StarkNet STRK pre-token (2023–2024), Bera Chain fake airdrop (2024–06).
 - QR-code phishing as an entry vector — relevant across T4 generally; merits a standalone Technique stub if the QR-specific surface (mobile-wallet UX, malicious WalletConnect QR codes) warrants one.
-- iOS / Android push-notification compromise as a wallet-extension distribution-channel surface (CoinStats Jun 2024 is the canonical case; OAK-T11.002 broadly construed at v0.1).
+- **iOS / Android push-notification compromise** — **promoted** to `emerging` as **OAK-T4.011**; see [`techniques/T4.011-push-notification-infrastructure-compromise.md`](techniques/T4.011-push-notification-infrastructure-compromise.md). Anchored: CoinStats Jun 2024 (~$1M, ~1,590 wallets).
 
 ### T5 — Value Extraction (additions for v0.x)
 
@@ -181,7 +182,7 @@ These are Techniques that fit cleanly inside an existing v0.1 Tactic but are fla
 
 - Specific AVS slashing-condition exploitation cases as EigenLayer and similar restaking platforms mature.
 - LRT (liquid restaking token) pricing manipulation (Bedrock Apr 2025 is a related case at OAK-T9.001; restaking-protocol-specific subclass deserves explicit T14 coverage).
-- Bridge-validator-set economic-incentive misalignment.
+- Bridge-validator-set economic-incentive misalignment — **covered** by **OAK-T10.007** (Bridge Validator Economic-Incentive Misalignment); see [`techniques/T10.007-bridge-validator-economic-incentive-misalignment.md`](techniques/T10.007-bridge-validator-economic-incentive-misalignment.md).
 - **T14.003.001 LST/LRT Depeg-Cascade as Constrained-Primitive Sub-class** — **promoted** to `emerging` as sub-Technique under T14.003; see [`techniques/T14.003.001-lst-lrt-depeg-cascade-constrained-primitive.md`](techniques/T14.003.001-lst-lrt-depeg-cascade-constrained-primitive.md).
 - **Mass-slashing via DVT-failover / operator-procedural error** — **promoted** as sub-case (e) within T14.001; see [`techniques/T14.001-slashing-condition-exploit.md`](techniques/T14.001-slashing-condition-exploit.md). T14.001 is now `emerging` on the strength of this operator-side anchor; the adversarial sub-cases (a)–(d) remain forward-looking surfaces.
 
