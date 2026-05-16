@@ -1,0 +1,70 @@
+oak_techniques: [OAK-T11.011]
+spec_id: oak-detection-T11.011
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect the operator-side custody architectural anti-pattern where signing
+  key material for multiple chains is co-located in a shared infrastructure
+  layer, such that a single compromise produces simultaneous extraction across
+  all supported chains. The structural signal is simultaneous or near-
+  simultaneous large outflows from exchange/custodian-labelled wallets across
+  multiple chains within a short time window. Covers the canonical Poloniex
+  November 2023 case and the broader OAK-G01 TraderTraitor cluster.
+
+data_sources: [onchain_transaction, onchain_block, tx_call_trace]
+
+detection_logic:
+  description: |
+    Monitor for simultaneous large outflows from exchange/custodian-labelled
+    wallets across multiple chains within a short time window (<1 hour).
+    Multi-chain simultaneous extraction is a high-confidence indicator of
+    co-located key infrastructure and a single-point compromise.
+  pseudocode: |
+    # Cross-chain simultaneous extraction detection
+    exchange_wallets ← get_labelled_exchange_wallets()
+
+    for each exchange e in exchange_wallets:
+      for each chain c where e has labelled wallets:
+        outflows_c ← recent_outflows(e.wallets[c], window=1h)
+
+      # Detect simultaneous outflows across chains
+      chains_with_outflows ← {c for c in e.chains if outflows_c.total > threshold}
+      if len(chains_with_outflows) >= 2:
+        # Check temporal proximity
+        outflow_times ← {c: earliest_outflow_time(outflows_c) for c in chains_with_outflows}
+        time_spread ← max(outflow_times.values()) - min(outflow_times.values())
+        if time_spread < 1h:
+          emit(PATH_A, exchange=e, chains=chains_with_outflows,
+               total_extracted=sum(outflows_c.total for c in chains_with_outflows),
+               time_spread_minutes=time_spread / 60,
+               severity=critical,
+               detail="simultaneous multi-chain extraction — co-located key infrastructure indicator")
+
+parameters:
+  extraction_window_minutes:     { type: float,  default: 60.0 }
+  min_extraction_per_chain:      { type: float,  default: 100000.0 }  # $100K minimum
+  min_chains_for_alert:          { type: int,    default: 2 }
+
+output_alert: [oak_technique, detection_path, severity, exchange,
+               chains, total_extracted, time_spread_minutes, evidence]
+
+test_fixtures:
+  positive:
+    - 2023-11-poloniex                                               # Canonical anchor — $120M simultaneous ETH/TRX/BTTC extraction
+  negative:
+    - "Single-chain exchange hot-wallet drain — no multi-chain extraction, perimeter compromise isolated to one chain"
+    - "Sequential multi-chain outflows across days (routine rebalancing) rather than simultaneous within 1h — operational flow, not compromise"
+
+false_positive_modes:
+  - Exchange hot-wallet rebalancing across chains can produce multi-chain outflows — distinguish by outflow destination (known exchange operational wallets vs. unknown/laundering addresses)
+  - Exchange delisting or asset migration can produce simultaneous outflows across chains — check for prior operator announcement
+  - Multi-chain outflows from a shared multi-chain address (e.g., a Gnosis Safe on multiple chains) due to a legitimate operational action — check for operator confirmation
+
+mitigations: []
+
+reference_implementations:
+  - { target: chainalysis-reactor,  chain: cross-chain, url: "" }
+  - { target: trm-labs,             chain: cross-chain, url: "" }

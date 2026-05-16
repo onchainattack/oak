@@ -43,6 +43,9 @@ Candidates from this file that have been promoted from `draft` to `emerging` and
 - **OAK-T7.008 — Stablecoin Issuer Freeze-Asymmetry Laundering** — promoted; see [`techniques/T7.008-stablecoin-issuer-coordination-laundering.md`](techniques/T7.008-stablecoin-issuer-coordination-laundering.md).
 - **OAK-T11.004 — Insufficient-Entropy Key Generation** — promoted to `stable`; see [`techniques/T11.004-insufficient-entropy-key-generation.md`](techniques/T11.004-insufficient-entropy-key-generation.md). Anchored: 2022-09 Wintermute / Profanity vanity-address generator.
 - **OAK-T4.010 — Fake Security-Tool / Browser-Extension Phishing** — promoted; see [`techniques/T4.010-fake-security-tool-browser-extension-phishing.md`](techniques/T4.010-fake-security-tool-browser-extension-phishing.md).
+- **OAK-T11.011 — Multi-chain Key-store Co-location** — promoted; see [`techniques/T11.011-multi-chain-key-store-co-location.md`](techniques/T11.011-multi-chain-key-store-co-location.md). Anchored: 2023-11 Poloniex hot-wallet drain ($120M simultaneous multi-chain extraction).
+- **OAK-T11.012 — Server-side Raw Private-Key Storage** — promoted; see [`techniques/T11.012-server-side-raw-private-key-storage.md`](techniques/T11.012-server-side-raw-private-key-storage.md). Anchored: 2024-09 DEXX trading-bot platform cohort ($2.5M+ mass user-wallet drain).
+- **OAK-T11.013 — Legacy-Version Maintenance Attack Surface** — promoted; see [`techniques/T11.013-legacy-version-maintenance-attack-surface.md`](techniques/T11.013-legacy-version-maintenance-attack-surface.md). Anchored: 2025-07 GMX V1 GLP global-short-tracking exploit ($42M).
 - **OAK-T14.001 — Slashing-Condition Exploit** — promoted from `speculative` to `emerging` on the strength of the operator-side correlated-self-slashing sub-surface (sub-case (e)) anchor; see [`techniques/T14.001-slashing-condition-exploit.md`](techniques/T14.001-slashing-condition-exploit.md). Anchored: 2025-09 SSV-Network correlated mass-slashing event (39 validators / Ankr maintenance-window error). Adversarial sub-cases (a)–(d) remain forward-looking surfaces without field-confirmed external-attacker anchors.
 - **OAK-T14.003.001 — LST/LRT Depeg-Cascade as Constrained-Primitive Sub-class** — promoted as sub-Technique of T14.003; see [`techniques/T14.003.001-lst-lrt-depeg-cascade-constrained-primitive.md`](techniques/T14.003.001-lst-lrt-depeg-cascade-constrained-primitive.md). Anchored: 2022-06 Lido stETH (i chain-level redemption-absence); 2024-04 Renzo ezETH (ii operator-blocked redemption); 2025-07 Lido stETH / Aave cascade (iii withdrawal-queue-depth saturation).
 
@@ -147,9 +150,9 @@ These are Techniques that fit cleanly inside an existing v0.1 Tactic but are fla
 ### T11 — Custody and Signing Infrastructure (additions for v0.x)
 
 - **T11.004 Insufficient-Entropy Key Generation** — **promoted** to `stable`; see [`techniques/T11.004-insufficient-entropy-key-generation.md`](techniques/T11.004-insufficient-entropy-key-generation.md). Canonical anchor: Wintermute / Profanity vanity-address generator (September 2022); paired with the Profanity cohort case at [`examples/2022-09-wintermute-profanity-cohort.md`](examples/2022-09-wintermute-profanity-cohort.md).
-- Multi-chain key-store co-location (canonical case is Poloniex Nov 2023; the simultaneous-multi-chain extraction pattern as architectural anti-pattern).
-- Custodial-private-key-storage trading-bot anti-pattern (canonical case is DEXX Sep-Nov 2024).
-- Legacy-version-maintenance attack-surface (canonical case is GMX V1 Jul 2025; the operator-side decision to maintain deprecated protocol versions as residual exploitable surface).
+- Multi-chain key-store co-location — **promoted** to `emerging` as **OAK-T11.011**; see [`techniques/T11.011-multi-chain-key-store-co-location.md`](techniques/T11.011-multi-chain-key-store-co-location.md). Anchored: Poloniex Nov 2023 ($120M).
+- Custodial-private-key-storage trading-bot anti-pattern — **promoted** to `emerging` as **OAK-T11.012**; see [`techniques/T11.012-server-side-raw-private-key-storage.md`](techniques/T11.012-server-side-raw-private-key-storage.md). Anchored: DEXX Sep-Nov 2024 ($2.5M+).
+- Legacy-version-maintenance attack-surface — **promoted** to `emerging` as **OAK-T11.013**; see [`techniques/T11.013-legacy-version-maintenance-attack-surface.md`](techniques/T11.013-legacy-version-maintenance-attack-surface.md). Anchored: GMX V1 Jul 2025 ($42M).
 - **T11.005 Operator-side Fake-Platform Fraud** (parent) — **promoted** to `emerging`; see [`techniques/T11.005-operator-side-fake-platform-fraud.md`](techniques/T11.005-operator-side-fake-platform-fraud.md). Sub-pattern status:
   - **T11.005.001 Fake-CEX / pig-butchering platform** — **promoted** to `emerging`; see [`techniques/T11.005.001-fake-cex-pig-butchering-platform.md`](techniques/T11.005.001-fake-cex-pig-butchering-platform.md). Anchored: JPEX 2023 (~$200M), GBL 2013, Moolah 2014, Huione Guarantee 2025, DOJ/SEC pig-butchering enforcement cohort 2024–2025.
   - **T11.005.002 Fake-custodian / fake-asset-manager fraud** — **promoted** to `observed`; see [`techniques/T11.005.002-fake-custodian-fake-asset-manager-fraud.md`](techniques/T11.005.002-fake-custodian-fake-asset-manager-fraud.md). Anchored: OneCoin, CryptoFX, HyperVerse/HyperFund, PlusToken, Forsage, CoinDeal.
@@ -170,7 +173,7 @@ These are Techniques that fit cleanly inside an existing v0.1 Tactic but are fla
 ### T13 — Account Abstraction Attacks (additions for v0.x)
 
 - Specific paymaster-vulnerability subclasses as the ERC-4337 deployment substrate matures.
-- Smart-wallet recovery-flow exploitation (Loopring Jun 2024 was a related case at OAK-T11.002 broadly construed, but the smart-wallet-recovery-flow class deserves explicit T13 coverage).
+- Smart-wallet recovery-flow exploitation — **covered** by **OAK-T13.003** (Session-Key Hijacking); see [`techniques/T13.003-session-key-hijacking.md`](techniques/T13.003-session-key-hijacking.md). Loopring Jun 2024 and Argent 2023–2024 guardian-recovery cases are anchored under T13.003.
 - Cross-bundler MEV variants beyond T13.002.
 - **T13.004 EIP-7702 Delegation Abuse** — promoted to `emerging`; see [`techniques/T13.004-eip7702-delegation-abuse.md`](techniques/T13.004-eip7702-delegation-abuse.md). Anchored: 2025-05 CrimeEnjoyor cohort (>\$12M cumulative, 15,000+ wallets).
 

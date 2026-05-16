@@ -1,0 +1,78 @@
+oak_techniques: [OAK-T11.013]
+spec_id: oak-detection-T11.013
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect the operator-side operational decision class where a protocol
+  operator maintains a deprecated legacy version in production without
+  backporting known vulnerability fixes from the current version. The
+  structural signal is a version-specific exploit targeting accounting,
+  pricing, or state-machine logic that was redesigned in the current version
+  but left unpatched in the legacy deployment. Covers the canonical GMX V1
+  July 2025 case.
+
+data_sources: [contract_bytecode, contract_events, contract_storage,
+               tx_call_trace, security_disclosure_feed]
+
+detection_logic:
+  description: |
+    Monitor multi-version protocol deployments for legacy versions retaining
+    material TVL with known vulnerability deltas from the current version.
+    When an exploit targets the legacy version's version-specific logic, the
+    incident is a high-confidence T11.013 event.
+  pseudocode: |
+    # Pre-incident — legacy-version TVL and vulnerability-delta monitoring
+    for each protocol p with multi_version_deployment:
+      legacy_versions ← p.deployed_versions where version.status == "deprecated"
+      current_version ← p.deployed_versions where version.status == "current"
+
+      for each legacy_v in legacy_versions:
+        if legacy_v.tvl > min_tvl_for_alert:
+          vulnerability_delta ← get_known_fixes(current_version) - get_applied_fixes(legacy_v)
+          if len(vulnerability_delta) > 0:
+            emit(PATH_A, protocol=p, legacy_version=legacy_v,
+                 current_version=current_version,
+                 unpatched_vulnerabilities=len(vulnerability_delta),
+                 legacy_tvl=legacy_v.tvl,
+                 severity=high,
+                 detail="deprecated version retains material TVL with unpatched vulnerability delta")
+
+    # At-incident — version-specific exploit detection
+    on exploit at protocol p:
+      if exploit.target_contract in p.legacy_version.contracts:
+        if exploit.vulnerability_class in p.current_version.fixes:
+          emit(PATH_B, protocol=p, legacy_version=p.legacy_version,
+               vulnerability=exploit.vulnerability_class,
+               known_to_operator=true,
+               severity=critical,
+               detail="version-specific exploit — vulnerability fixed in current version, unpatched in legacy")
+
+parameters:
+  min_tvl_for_alert:               { type: float,  default: 1000000.0 }  # $1M minimum legacy TVL
+  legacy_tvl_fraction_threshold:   { type: float,  default: 0.05 }       # >5% of protocol TVL
+
+output_alert: [oak_technique, detection_path, severity, protocol,
+               legacy_version, current_version, vulnerability_class,
+               unpatched_vulnerabilities, legacy_tvl, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-07-gmx-v1                                                 # Canonical anchor — $42M V1-specific accounting exploit
+  negative:
+    - "Exploit on a protocol's only deployed version — no multi-version deployment, no legacy-version surface"
+    - "Legacy version with zero TVL and disabled deposits — decommissioned, no exploitable surface"
+    - "Protocol where legacy version has been fully patched to match current version's security posture — delta is zero"
+
+false_positive_modes:
+  - Exploit on a current version whose vulnerability also exists on the legacy version — the vulnerability is not version-specific; classify under the appropriate T9.x Technique
+  - Legacy version with TVL but the vulnerability exploited was unknown to the operator before the incident — the deprecation-vs-fix decision was not a factor; classify under the appropriate T9.x Technique
+  - Protocol fork by a different operator (not same-operator legacy version) — classify under T9.007
+
+mitigations: []
+
+reference_implementations:
+  - { target: defillama-tvl,        chain: cross-chain, url: "" }
+  - { target: blocksec-phalcon,     chain: evm,    url: "" }

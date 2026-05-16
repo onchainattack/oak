@@ -1,0 +1,68 @@
+oak_techniques: [OAK-T11.012]
+spec_id: oak-detection-T11.012
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect the operator-side architectural anti-pattern where a trading-bot or
+  automated-execution platform stores users' raw (unencrypted) private keys
+  server-side. The structural signal is mass simultaneous user-wallet draining
+  from a single platform's user base without per-user phishing or approval
+  interaction. Covers the canonical DEXX September-November 2024 cohort.
+
+data_sources: [onchain_transaction, security_disclosure_feed, tx_call_trace]
+
+detection_logic:
+  description: |
+    Monitor for mass simultaneous wallet draining from user addresses associated
+    with the same trading-bot or automated-execution platform. The mass-
+    simultaneous pattern without per-user phishing signals is the T11.012
+    diagnostic signature.
+  pseudocode: |
+    # Mass simultaneous user-wallet drain detection
+    platform_user_wallets ← get_platform_user_wallets()
+
+    for each platform p in platform_user_wallets:
+      recent_drains ← []
+      for each user_wallet w in p.user_wallets:
+        if has_recent_large_outflow(w, window=24h):
+          recent_drains.append(w)
+
+      if len(recent_drains) >= min_affected_users:
+        time_spread ← max_drain_time(recent_drains) - min_drain_time(recent_drains)
+        if time_spread < 24h:
+          # Verify no per-user phishing interaction preceded drains
+          no_phishing ← verify_no_user_approval_transactions(recent_drains)
+          if no_phishing:
+            emit(PATH_A, platform=p, affected_users=len(recent_drains),
+                 total_extracted=sum(drain.amount for drain in recent_drains),
+                 time_spread_hours=time_spread,
+                 severity=critical,
+                 detail="mass simultaneous user-wallet drain — centralised key storage indicator")
+
+parameters:
+  min_affected_users:              { type: int,    default: 10 }
+  drain_detection_window_hours:    { type: float,  default: 24.0 }
+
+output_alert: [oak_technique, detection_path, severity, platform,
+               affected_users, total_extracted, time_spread_hours, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-09-dexx-cohort                                            # Canonical anchor — $2.5M+ mass user-wallet drain
+  negative:
+    - "Per-user phishing campaign producing sequential wallet drains across weeks — per-user interaction, not mass simultaneous"
+    - "Single-user wallet drain via malware — individual compromise, not platform-wide centralised key store"
+
+false_positive_modes:
+  - Platform announces a legitimate asset migration requiring users to move funds — simultaneous user outflows are expected and operator-confirmed
+  - Smart-contract exploit on a protocol where many users have approved the same contract — mass draining via shared approval, not centralised key storage (check for approval transactions preceding drains)
+  - Exchange delisting producing many user withdrawals within a short window — verify operator announcement and withdrawal-destination pattern (user-controlled wallets vs. unknown addresses)
+
+mitigations: []
+
+reference_implementations:
+  - { target: slowmist,      chain: cross-chain, url: "" }
+  - { target: peckshield,    chain: evm,    url: "" }
