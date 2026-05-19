@@ -1,0 +1,106 @@
+name: ai-tell-check
+
+on:
+  pull_request:
+    paths:
+      - "examples/**"
+      - "techniques/**"
+      - "tactics/**"
+      - "actors/**"
+      - "mitigations/**"
+      - "software/**"
+      - "investigations/**"
+      - "article-assets/**"
+      - "tools/detect_ai_tells.py"
+      - ".github/workflows/ai-tell-check.yml"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  ai-tells:
+    name: AI-generated text marker scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run AI tell detection
+        id: ai_scan
+        run: |
+          python3 tools/detect_ai_tells.py --ci --max-score 30 --dirs examples techniques investigations article-assets > /tmp/ai-tells.json 2>&1 || true
+          cat /tmp/ai-tells.json
+
+      - name: Report violations
+        if: always()
+        run: |
+          echo "### AI Text Marker Scan" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          VIOLATIONS=$(python3 -c "
+          import json
+          with open('/tmp/ai-tells.json') as f:
+              data = json.load(f)
+          print(data.get('violations', 0))
+          ")
+          SCANNED=$(python3 -c "
+          import json
+          with open('/tmp/ai-tells.json') as f:
+              data = json.load(f)
+          print(data.get('files_scanned', 0))
+          ")
+          TOTAL=$(python3 -c "
+          import json
+          with open('/tmp/ai-tells.json') as f:
+              data = json.load(f)
+          print(data.get('total_hits', 0))
+          ")
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Files scanned | $SCANNED |" >> $GITHUB_STEP_SUMMARY
+          echo "| Total AI-tell hits | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+          echo "| Files exceeding max-score (30) | $VIOLATIONS |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$VIOLATIONS" -gt 0 ]; then
+            echo "#### Files exceeding threshold:" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            python3 -c "
+          import json
+          with open('/tmp/ai-tells.json') as f:
+              data = json.load(f)
+          for v in data.get('violation_details', [])[:10]:
+              print(f\"  {v['file']}: score={v['score']} ({v['hits']} hits) — {', '.join(v['categories'])}\")
+          if len(data.get('violation_details', [])) > 10:
+              print(f\"  ... and {len(data['violation_details']) - 10} more\")
+          " >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Run \`python3 tools/detect_ai_tells.py --fix\` locally to auto-correct safe patterns." >> $GITHUB_STEP_SUMMARY
+          else
+            echo ":white_check_mark: All files within acceptable AI-tell threshold." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Fail if critical violations
+        run: |
+          CRITICAL=$(python3 -c "
+          import json
+          with open('/tmp/ai-tells.json') as f:
+              data = json.load(f)
+          # Count files with severity-3 hits (strong AI tells)
+          critical = 0
+          for v in data.get('violation_details', []):
+              if 'em_dash_clusters' in v.get('categories', []):
+                  critical += 1
+          print(critical)
+          ")
+          echo "Files with em_dash_clusters (severity 3): $CRITICAL"
+          # Warning only for now — ratchet to fail after corpus cleanup
+          if [ "$CRITICAL" -gt 100 ]; then
+            echo "::warning::High number of files with em-dash clusters ($CRITICAL). Run --fix locally."
+          fi

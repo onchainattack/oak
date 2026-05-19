@@ -3,11 +3,13 @@
 detect_ai_tells.py — Scan OAK markdown content for AI-generated text markers.
 
 Usage:
-    python3 tools/detect_ai_tells.py                  # scan defaults, print flagged files
-    python3 tools/detect_ai_tells.py --json           # JSON output
-    python3 tools/detect_ai_tells.py --threshold 10   # only files with >= 10 hits
-    python3 tools/detect_ai_tells.py --file examples/some-file.md  # single file
-    python3 tools/detect_ai_tells.py --fix            # auto-fix safe substitutions
+    python3 tools/detect_ai_tells.py                    # scan defaults, print flagged files
+    python3 tools/detect_ai_tells.py --json             # JSON output
+    python3 tools/detect_ai_tells.py --threshold 10     # only files with >= 10 hits
+    python3 tools/detect_ai_tells.py --file some.md     # single file
+    python3 tools/detect_ai_tells.py --fix              # auto-fix safe substitutions in-place
+    python3 tools/detect_ai_tells.py --ci               # CI mode: JSON, exit 1 if violations > limit
+    python3 tools/detect_ai_tells.py --ci --max-score 20  # CI with custom per-file limit
 """
 
 import re
@@ -32,160 +34,144 @@ SCAN_DIRS = [
 
 # ── Detection categories ──────────────────────────────────────────────
 
-# Pattern: (regex, severity, description)
-# severity: 1=weak tell, 2=medium, 3=strong tell
-
 PATTERNS = {
-    # ── 1. Overused AI sentence skeletons ──
     "canonical_padding": [
         (r"is the canonical \d{4}\s+(?:case|example|worked|anchor)", 2,
-         "'is the canonical <year> <noun>' — LLM favourite"),
+         "'is the canonical <year> <noun>'"),
         (r"serves as the\s+\w+\s+\w+\s+for", 1,
-         "'serves as the X Y for' — formulaic framing"),
+         "'serves as the X Y for'"),
         (r"extends the\s+\w+\s+class\s+(?:beyond|across|into)", 2,
-         "'extends the X class beyond/across/into' — AI taxonomy tic"),
+         "'extends the X class beyond/across/into'"),
         (r"collectively establish that\s", 2,
-         "'collectively establish that' — LLM orchestration phrase"),
+         "'collectively establish that'"),
         (r"anchors the\s+.+?\bcell\b", 2,
-         "'anchors the ... cell' — matrix-coverage LLM tic"),
+         "'anchors the ... cell'"),
     ],
 
-    # ── 2. Structural / distinct / informative overuse ──
     "structural_overuse": [
         (r"\bstructurally\s+\w+\s+(?:distinct|informative|significant|analogous|identical|separate|notable|similar)\b", 2,
-         "'structurally <adj>' — overused AI qualifier"),
+         "'structurally <adj>'"),
         (r"\bThe\s+\w+\s+lesson\s+(?:here|is that)\b", 1,
-         "'The X lesson here/is that' — didactic AI tic"),
+         "'The X lesson here/is that'"),
         (r"\bThis\s+(?:is|represents|demonstrates|reinforces)\s+the\s+\w+\s+", 1,
-         "'This represents the X ...' — low-effort transition"),
+         "'This represents/demonstrates the X'"),
         (r"\b(?:the\s+)?broader\s+(?:\d{4}[-–]\d{4}\s+)?\w+\s+pattern\b", 1,
-         "'the broader X pattern' — context-stretching LLM move"),
+         "'the broader X pattern'"),
         (r"\bdistinct from\b.{0,80}\bdistinct from\b", 2,
-         "'distinct from ... distinct from' repeated in same sentence"),
+         "'distinct from ... distinct from' in same sentence"),
     ],
 
-    # ── 3. Em-dash abuse ──
     "em_dash_clusters": [
-        # 3+ em-dashes in a single sentence (80-400 char window)
-        (r"(?:[^.!?\n]{80,400}?(?:—|—)[^.!?\n]*?){3,}", 2,
-         "3+ em-dashes in a single sentence — AI breathlessness"),
-        # Parenthetical em-dash pair with internal em-dash
+        (r"(?:[^.!?\n]{80,400}?(?:—)[^.!?\n]*?){3,}", 2,
+         "3+ em-dashes in a single sentence"),
         (r"—[^—]{20,80}—[^—]{20,80}—", 3,
-         "triple em-dash parenthetical nesting — LLM run-on"),
+         "triple em-dash parenthetical nesting"),
     ],
 
-    # ── 4. Academic padding ──
     "academic_padding": [
         (r"\b(?:It is\s+\w+\s+to\s+\w+|What is\s+\w+\s+is that|The fact that)\b", 1,
-         "Academic padding phrase — 'It is X to Y', 'What is X is that'"),
+         "Academic padding phrase"),
         (r"\b(?:notable|noteworthy|instructive|illuminating)\s+(?:that|is|—)\b", 2,
-         "'notable/noteworthy/instructive/illuminating that' — AI valorization"),
+         "'notable/noteworthy/instructive that'"),
         (r"\b(?:in other words|to put it differently|that is to say)\b", 1,
-         "'in other words / that is to say' — LLM rephrasing tic"),
+         "'in other words / that is to say'"),
         (r"\b(?:a|the)\s+(?:nuanced|granular|fine-grained)\s+\w+\b", 1,
-         "'a nuanced/granular X' — empty qualifier"),
+         "'a nuanced/granular X'"),
     ],
 
-    # ── 5. Formulaic conclusion openers ──
     "formulaic_endings": [
         (r"\bThe\s+\w+\s+case\s+(?:demonstrates|illustrates|highlights|underscores|reveals)\s+that\b", 2,
-         "'The X case demonstrates that' — formulaic conclusion opener"),
+         "'The X case demonstrates/illustrates that'"),
         (r"\bthis\s+case\s+(?:serves|stands)\s+as\s+(?:a|an|the)\b", 2,
-         "'this case serves/stands as a/the' — AI conclusion tic"),
+         "'this case serves/stands as a/the'"),
         (r"\b(?:Taken together|Collectively,|In sum,|All told,)\b", 1,
-         "'Taken together / Collectively / In sum' — LLM summation tic"),
+         "'Taken together/Collectively/In sum'"),
     ],
 
-    # ── 6. Bold-italic formatting abuse ──
     "bold_overload": [
         (r"\*\*[^*]+\*\*.{0,20}\*\*[^*]+\*\*.{0,20}\*\*[^*]+\*\*.{0,20}\*\*[^*]+\*\*", 2,
-         "4+ bold phrases in close proximity — AI emphasis sprawl"),
+         "4+ bold phrases in close proximity"),
         (r"(?:\*\*[^*]+\*\*\s*[,;.]?\s*){5,}", 2,
-         "5+ consecutive bold-then-plain sequences — LLM list-in-prose"),
+         "5+ consecutive bold-then-plain sequences"),
     ],
 
-    # ── 7. Repeated sentence openers ──
-    # Detected programmatically, not via regex
-
-    # ── 8. Future-tense/would hedging (LLM speculation tic) ──
     "llm_hedging": [
         (r"\b(?:would\s+be|would\s+have|would\s+not)\b.{0,60}\b(?:if|had|were)\b", 1,
-         "'would be/have ... if/had/were' — LLM counterfactual hedging cluster"),
+         "'would be/have ... if/had/were'"),
         (r"\bcould\s+(?:potentially|arguably|conceivably|plausibly)\b", 2,
-         "'could potentially/arguably/conceivably' — stacked hedging"),
+         "'could potentially/arguably' — stacked hedging"),
     ],
 
-    # ── 9. LLM-specific formatting artifacts ──
     "llm_formatting": [
         (r"^\*\*Prompt:\*\*", 1,
-         "'**Prompt:**' line — DALL-E/image-gen prompt artifact (article-assets)"),
+         "'**Prompt:**' — image-gen artifact"),
         (r"\[IMAGE \d", 1,
-         "'[IMAGE N]' placeholder — AI-assisted content scaffolding"),
+         "'[IMAGE N]' placeholder"),
         (r"^\s*[-–—]\s*\*\*[^*]+\*\*\s*[-–—]\s*", 1,
-         "Dash-bold-title-dash — LLM list-entry pattern"),
+         "Dash-bold-title-dash list entry"),
     ],
 
-    # ── 10. Overused bridging phrases ──
     "bridging_overuse": [
         (r"\bthis is the\s+\w+\s+(?:analogue|equivalent|version|variant)\b", 2,
-         "'this is the X analogue/equivalent' — AI bridging tic"),
+         "'this is the X analogue/equivalent'"),
         (r"\bthe\s+\w+\s+case\s+(?:generalise|extend|appl)y\s+beyond\b", 1,
-         "'the X case generalises beyond' — AI scope-stretching"),
+         "'the X case generalises beyond'"),
         (r"\b(?:For|In)\s+OAK.s\s+broader\b", 1,
-         "'For/In OAK's broader' — self-referential AI tic"),
+         "'For/In OAK's broader'"),
     ],
 }
 
-# ── Safe auto-fixes ────────────────────────────────────────────────────
+# ── Auto-fix substitutions ────────────────────────────────────────────
 
-# Only substitutions that don't change meaning.
 REPLACEMENTS = [
-    # Remove "it is worth noting that" / "it is notable that"
+    # ═══ ONLY safe, context-independent substitutions below ═══
+    # Each line must preserve meaning and grammatical correctness
+    # when applied blindly to any sentence.
+
+    # Hedging removal (safe: the sentence remains grammatical without these)
     (r"\bIt is worth noting that\s+", ""),
     (r"\bIt is notable that\s+", ""),
     (r"\bIt is noteworthy that\s+", ""),
-    # "can potentially" → "can"
-    (r"\bcan potentially\b", "can"),
-    # "in order to" → "to"
-    (r"\bin order to\b", "to"),
-    # "due to the fact that" → "because"
-    (r"\bdue to the fact that\b", "because"),
-    # Double hedging: "could potentially" → "could"
-    (r"\bcould potentially\b", "could"),
-    # "at the time of writing" → omit (it's obvious)
-    (r",?\s*at the time of writing\b", ""),
-    # "it should be noted that" → omit
     (r"\bIt should be noted that\s+", ""),
-    # "in the context of" → "in" (when it fits)
-    (r"\bin the broader context of\b", "in"),
+    (r"\bit is instructive to note that\s+", ""),
+
+    # Double hedging → single (safe: meaning preserved, one word shorter)
+    (r"\bcan potentially\b", "can"),
+    (r"\bcould potentially\b", "could"),
+    (r"\bmay potentially\b", "may"),
+    (r"\bmight potentially\b", "might"),
+
+    # Wordy connectors → compact (safe: grammatical equivalence)
+    (r"\bin order to\b", "to"),
+    (r"\bdue to the fact that\b", "because"),
+
+    # Empty academic connector removal (safe: sentence flows without them)
+    (r"\b(?:This|That) is to say,?\s+", ""),
+    (r"\bto put it differently,?\s+", ""),
+    (r"\bin other words,?\s+", ""),
+
+    # Formulaic summation openers (safe: sentence starts fine without them)
+    # Sentence-initial only (capital letter required)
+    (r"(?:^|\.\s+)Taken together,?\s*", ". "),
+    (r"(?:^|\.\s+)Collectively,?\s+these\b", ". These"),
+    (r"(?:^|\.\s+)In sum,?\s*", ". "),
+    (r"(?:^|\.\s+)All told,?\s*", ". "),
+
+    # Empty qualifiers → simpler (safe: same referent, less AI)
+    (r"\ba nuanced understanding of\b", "an understanding of"),
+    (r"\ba granular view of\b", "a view of"),
+
+    # ═══ END SAFE REPLACEMENTS ═══
+    # DO NOT add replacements that rewrite sentence structure,
+    # remove content-bearing words (e.g. "canonical", "case", "example"),
+    # or operate on multi-word phrases that depend on surrounding context.
 ]
 
-# ── Sentence opener repetition detector ────────────────────────────────
-
-def check_repeated_openers(text, window=3):
-    """Flag 3+ consecutive sentences starting with the same 2-3 words."""
-    hits = []
-    sentences = re.split(r'(?<=[.!?])\s+(?=[A-Z])', text)
-    for i in range(len(sentences) - window + 1):
-        openers = []
-        for s in sentences[i:i+window]:
-            words = s.strip().split()[:3]
-            openers.append(" ".join(words[:2]).lower())
-        # Check if all openers in the window share the same first 2 words
-        if len(set(openers)) == 1:
-            hits.append({
-                "line": -1,  # approximate
-                "opener": openers[0],
-                "sentences": [s.strip()[:80] for s in sentences[i:i+window]],
-            })
-    return hits
-
-
-# ── OAK metadata line patterns (bold-overload false positives) ──────────
+# ── OAK metadata line patterns (bold-overload false positives) ────────
 
 _OAK_META_TERMS = [
     r"OAK Techniques observed",
-    r"OAK-[TGMS]\d+(?:\.\d+)*",   # OAK-T9, OAK-T10.002, OAK-G01, etc.
+    r"OAK-[TGMS]\d+(?:\.\d+)*",
     r"OAK-Gnn",
     r"Loss",
     r"Attribution",
@@ -204,24 +190,40 @@ _OAK_META_TERMS = [
     r"Realised extraction",
     r"Notional damage",
     r"Recovery",
-    r"OAK Techniques observed",
     r"OAK-G\d",
 ]
 _OAK_META_COMBINED = "|".join(_OAK_META_TERMS)
-# Match a line that consists primarily of OAK metadata bold fields
 OAK_METADATA_LINE = re.compile(
     rf"^\s*\*\*\s*(?:{_OAK_META_COMBINED})", re.IGNORECASE
 )
 
+
 def is_oak_metadata_line(line_text):
-    """Check if a line is an OAK metadata header (bold field label)."""
     return bool(OAK_METADATA_LINE.search(line_text))
 
 
-# ── Scanner ────────────────────────────────────────────────────────────
+# ── Sentence opener repetition detector ───────────────────────────────
+
+def check_repeated_openers(text, window=3):
+    hits = []
+    sentences = re.split(r'(?<=[.!?])\s+(?=[A-Z])', text)
+    for i in range(len(sentences) - window + 1):
+        openers = []
+        for s in sentences[i:i+window]:
+            words = s.strip().split()[:3]
+            openers.append(" ".join(words[:2]).lower())
+        if len(set(openers)) == 1:
+            hits.append({
+                "line": -1,
+                "opener": openers[0],
+                "sentences": [s.strip()[:80] for s in sentences[i:i+window]],
+            })
+    return hits
+
+
+# ── Scanner ───────────────────────────────────────────────────────────
 
 def scan_file(filepath):
-    """Scan a single file and return all hits."""
     with open(filepath, "r", encoding="utf-8") as f:
         text = f.read()
     lines = text.split("\n")
@@ -232,15 +234,12 @@ def scan_file(filepath):
             for m in re.finditer(pattern, text, re.IGNORECASE):
                 pos = m.start()
                 line_num = text[:pos].count("\n") + 1
-                snippet = m.group(0)[:100]
+                snippet = m.group(0)[:120]
 
-                # Skip bold_overload hits on OAK metadata lines (format, not AI)
                 if category == "bold_overload":
                     line_text = lines[line_num - 1] if line_num <= len(lines) else ""
                     if is_oak_metadata_line(line_text):
                         continue
-                    # Also check if the match spans multiple lines and the first
-                    # non-empty line is metadata
                     match_lines = snippet.split("\n")
                     if any(is_oak_metadata_line(ml) for ml in match_lines):
                         continue
@@ -254,7 +253,6 @@ def scan_file(filepath):
                     "match": snippet,
                 })
 
-    # Repeated opener check
     opener_hits = check_repeated_openers(text)
     for oh in opener_hits:
         hits.append({
@@ -270,14 +268,17 @@ def scan_file(filepath):
 
 
 def auto_fix(text):
-    """Apply safe auto-fix substitutions."""
+    """Apply only safe, context-independent substitutions."""
     for pattern, replacement in REPLACEMENTS:
         text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+
+    # Clean up: collapse 3+ blank lines → 2 (safe: never touches content)
+    text = re.sub(r'\n{3,}', '\n\n', text)
+
     return text
 
 
 def scan_directory(directory):
-    """Scan all .md files in a directory recursively."""
     all_hits = []
     file_count = 0
     dir_path = os.path.join(ROOT, directory)
@@ -293,27 +294,31 @@ def scan_directory(directory):
     return all_hits, file_count
 
 
+def scan_directories(dirs):
+    all_hits = []
+    files_scanned = 0
+    for d in dirs:
+        hits, count = scan_directory(d)
+        all_hits.extend(hits)
+        files_scanned += count
+    return all_hits, files_scanned
+
+
 def print_report(all_hits, files_scanned, threshold):
-    """Human-readable report grouped by file, with severity scoring."""
-    # Aggregate by file
     by_file = defaultdict(list)
     for h in all_hits:
         by_file[h["file"]].append(h)
 
-    total_score = 0
     flagged = 0
-
     for filepath in sorted(by_file.keys()):
         hits = by_file[filepath]
         score = sum(h["severity"] for h in hits)
-        total_score += score
         if score >= threshold:
             flagged += 1
             relpath = os.path.relpath(filepath, ROOT)
             print(f"\n{'='*70}")
             print(f"{relpath}  [score: {score}]")
             print(f"{'='*70}")
-            # Group by line
             hits.sort(key=lambda h: h["line"])
             for h in hits:
                 cat_short = h["category"][:20]
@@ -325,9 +330,7 @@ def print_report(all_hits, files_scanned, threshold):
     print(f"Files scanned: {files_scanned}")
     print(f"Files flagged (score ≥ {threshold}): {flagged}")
     print(f"Total hits: {len(all_hits)}")
-    print(f"Cumulative severity score across all files: {total_score}")
 
-    # Category summary
     cat_counts = Counter(h["category"] for h in all_hits)
     if cat_counts:
         print(f"\nTop AI-tell categories:")
@@ -336,31 +339,82 @@ def print_report(all_hits, files_scanned, threshold):
             print(f"  {count:>4}  [{cat:<25}] avg severity {sev_avg:.1f}")
 
 
+def run_ci(args):
+    """CI mode: scan, report JSON, exit non-zero if violations exceed limit."""
+    all_hits, files_scanned = scan_directories(args.dirs)
+
+    by_file = defaultdict(list)
+    for h in all_hits:
+        by_file[h["file"]].append(h)
+
+    violations = []
+    for filepath, hits in by_file.items():
+        score = sum(h["severity"] for h in hits)
+        if score > args.max_score:
+            violations.append({
+                "file": os.path.relpath(filepath, ROOT),
+                "score": score,
+                "max_allowed": args.max_score,
+                "hits": len(hits),
+                "categories": list(set(h["category"] for h in hits)),
+            })
+
+    result = {
+        "files_scanned": files_scanned,
+        "total_hits": len(all_hits),
+        "max_score_per_file": args.max_score,
+        "violations": len(violations),
+        "violation_details": sorted(violations, key=lambda v: v["score"], reverse=True),
+    }
+
+    print(json.dumps(result, indent=2))
+    if violations:
+        sys.exit(1)
+    sys.exit(0)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Detect AI-generated text markers in OAK corpus")
     parser.add_argument("--json", action="store_true", help="Output as JSON")
     parser.add_argument("--threshold", type=int, default=3,
                         help="Minimum severity score to flag a file (default: 3)")
-    parser.add_argument("--file", type=str, help="Scan a single file instead of directories")
+    parser.add_argument("--file", type=str, help="Scan a single file")
     parser.add_argument("--fix", action="store_true",
                         help="Auto-fix safe substitutions in-place")
+    parser.add_argument("--ci", action="store_true",
+                        help="CI mode: JSON output, exit 1 if any file exceeds --max-score")
+    parser.add_argument("--max-score", type=int, default=30,
+                        help="Per-file severity limit for CI mode (default: 30)")
     parser.add_argument("--dirs", nargs="+", default=SCAN_DIRS,
-                        help="Directories to scan (default: standard content dirs)")
+                        help="Directories to scan")
     args = parser.parse_args()
 
+    if args.ci:
+        run_ci(args)
+        return
+
     if args.fix:
-        print("Auto-fix mode — applying safe substitutions to flagged files...")
-        all_hits, _ = scan_directories(args.dirs)
-        by_file = set(h["file"] for h in all_hits)
-        for filepath in sorted(by_file):
+        print("Auto-fix mode — applying safe substitutions + em-dash splitting...")
+        _hits, files_scanned = scan_directories(args.dirs)
+        by_file = defaultdict(list)
+        for h in _hits:
+            by_file[h["file"]].append(h)
+        fixed_count = 0
+        for filepath in sorted(by_file.keys()):
             with open(filepath, "r", encoding="utf-8") as f:
                 original = f.read()
             fixed = auto_fix(original)
             if fixed != original:
                 with open(filepath, "w", encoding="utf-8") as f:
                     f.write(fixed)
-                print(f"  Fixed: {os.path.relpath(filepath, ROOT)}")
-        print("Done.")
+                relpath = os.path.relpath(filepath, ROOT)
+                score_before = sum(h["severity"] for h in by_file[filepath])
+                # Quick rescan to show improvement
+                after_hits = scan_file(filepath)
+                score_after = sum(h["severity"] for h in after_hits)
+                print(f"  {relpath}: {score_before} → {score_after}")
+                fixed_count += 1
+        print(f"Fixed {fixed_count} file(s) out of {files_scanned} scanned.")
         return
 
     if args.file:
@@ -368,12 +422,7 @@ def main():
         all_hits = scan_file(filepath)
         files_scanned = 1
     else:
-        all_hits = []
-        files_scanned = 0
-        for d in args.dirs:
-            hits, count = scan_directory(d)
-            all_hits.extend(hits)
-            files_scanned += count
+        all_hits, files_scanned = scan_directories(args.dirs)
 
     if args.json:
         print(json.dumps({
@@ -384,16 +433,6 @@ def main():
         }, indent=2))
     else:
         print_report(all_hits, files_scanned, args.threshold)
-
-
-def scan_directories(dirs):
-    all_hits = []
-    files_scanned = 0
-    for d in dirs:
-        hits, count = scan_directory(d)
-        all_hits.extend(hits)
-        files_scanned += count
-    return all_hits, files_scanned
 
 
 if __name__ == "__main__":
