@@ -1,4 +1,4 @@
-# Crypto Security Has a Vocabulary Problem. OAK Fixes It.
+# Crypto Security Has a Vocabulary Problem — OAK Fixes It
 
 *There are 620+ documented on-chain attacks since 2010, totaling hundreds of billions in losses. Every investigator, vendor, and researcher describes them differently. We built OAK — the Onchain Attack Knowledge framework — to give crypto security a shared language.*
 
@@ -96,7 +96,7 @@ This is more useful than "hot wallet compromise." It tells a defender what to mo
 
 The spec for T11.011 defines the detection logic as executable pseudocode:
 
-```
+```python
 exchange_wallets ← get_labelled_exchange_wallets()
 for each exchange e in exchange_wallets:
     for each chain c where e has labelled wallets:
@@ -118,7 +118,8 @@ OAK v0.1 ships with substance behind the structure:
 
 [IMAGE 4 — FRAMEWORK STATISTICS DASHBOARD]
 **Prompt:** A dark-theme data visualization dashboard showing OAK v0.1's key metrics. Background: `#0a0a0c`. Four primary metric cards arranged horizontally across the top, each with a large number in teal `#00FFD1` and a label in white `#FFFFFF`:
-- Card 1: "144" → "Techniques" 
+
+- Card 1: "144" → "Techniques"
 - Card 2: "620+" → "Worked Examples"
 - Card 3: "17" → "Tactics"
 - Card 4: "1,486" → "BibTeX Citations"
@@ -148,6 +149,7 @@ Right side: attribution-strength donut chart — 5 segments (pseudonymous 44.6%,
 
 [IMAGE 5 — OAK-MCP INTEGRATION ARCHITECTURE]
 **Prompt:** A clean architecture diagram showing how AI tools connect to OAK via the MCP (Model Context Protocol) server. Background: `#0a0a0c`. Layout: three columns connected by horizontal arrows.
+
 - Left column: "AI Tools" — icons for Claude, Cursor, Windsurf, general LLM agents. White `#FFFFFF` labels.
 - Middle column: "oak-mcp" — a central server node in teal `#00FFD1` glow, with 4 sub-nodes: "Query Techniques", "Lookup Examples", "Resolve IDs", "Cross-reference Actors/Software/Mitigations". Dark `#101720` background for each sub-node.
 - Right column: "OAK Knowledge Base" — a database icon with the OAK logo mark, showing the 6 axes: Techniques (144), Examples (620+), Mitigations (43), Actors (19), Software (40), Data Sources (12). Numbers in teal `#00FFD1`.
