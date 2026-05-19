@@ -181,6 +181,43 @@ def check_repeated_openers(text, window=3):
     return hits
 
 
+# ── OAK metadata line patterns (bold-overload false positives) ──────────
+
+_OAK_META_TERMS = [
+    r"OAK Techniques observed",
+    r"OAK-[TGMS]\d+(?:\.\d+)*",   # OAK-T9, OAK-T10.002, OAK-G01, etc.
+    r"OAK-Gnn",
+    r"Loss",
+    r"Attribution",
+    r"Key teaching point",
+    r"Parent Tactics?",
+    r"Maturity",
+    r"Chains",
+    r"First documented",
+    r"Aliases",
+    r"Adjacent Techniques",
+    r"Maps to Techniques",
+    r"Used by Groups",
+    r"Observed Techniques",
+    r"Observed Examples",
+    r"Real-world examples",
+    r"Realised extraction",
+    r"Notional damage",
+    r"Recovery",
+    r"OAK Techniques observed",
+    r"OAK-G\d",
+]
+_OAK_META_COMBINED = "|".join(_OAK_META_TERMS)
+# Match a line that consists primarily of OAK metadata bold fields
+OAK_METADATA_LINE = re.compile(
+    rf"^\s*\*\*\s*(?:{_OAK_META_COMBINED})", re.IGNORECASE
+)
+
+def is_oak_metadata_line(line_text):
+    """Check if a line is an OAK metadata header (bold field label)."""
+    return bool(OAK_METADATA_LINE.search(line_text))
+
+
 # ── Scanner ────────────────────────────────────────────────────────────
 
 def scan_file(filepath):
@@ -193,10 +230,21 @@ def scan_file(filepath):
     for category, pattern_list in PATTERNS.items():
         for pattern, severity, description in pattern_list:
             for m in re.finditer(pattern, text, re.IGNORECASE):
-                # Find line number
                 pos = m.start()
                 line_num = text[:pos].count("\n") + 1
                 snippet = m.group(0)[:100]
+
+                # Skip bold_overload hits on OAK metadata lines (format, not AI)
+                if category == "bold_overload":
+                    line_text = lines[line_num - 1] if line_num <= len(lines) else ""
+                    if is_oak_metadata_line(line_text):
+                        continue
+                    # Also check if the match spans multiple lines and the first
+                    # non-empty line is metadata
+                    match_lines = snippet.split("\n")
+                    if any(is_oak_metadata_line(ml) for ml in match_lines):
+                        continue
+
                 hits.append({
                     "file": filepath,
                     "line": line_num,
