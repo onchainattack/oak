@@ -64,8 +64,8 @@ PATTERNS = {
     "em_dash_clusters": [
         (r"(?:[^.!?\n]{80,400}?(?:—)[^.!?\n]*?){3,}", 2,
          "3+ em-dashes in a single sentence"),
-        (r"—[^—]{20,80}—[^—]{20,80}—", 3,
-         "triple em-dash parenthetical nesting"),
+        (r"—[^—\n]{20,80}—[^—\n]{20,80}—", 3,
+         "triple em-dash parenthetical nesting (same line)"),
     ],
 
     "academic_padding": [
@@ -182,6 +182,9 @@ _OAK_META_TERMS = [
     r"First documented",
     r"Aliases",
     r"Adjacent Techniques",
+    r"Adjacent Tactics",
+    r"Adjacent tactics",
+    r"Adjacent Groups",
     r"Maps to Techniques",
     r"Used by Groups",
     r"Observed Techniques",
@@ -190,6 +193,8 @@ _OAK_META_TERMS = [
     r"Realised extraction",
     r"Notional damage",
     r"Recovery",
+    r"Status",
+    r"Phase \d",
     r"OAK-G\d",
 ]
 _OAK_META_COMBINED = "|".join(_OAK_META_TERMS)
@@ -200,6 +205,45 @@ OAK_METADATA_LINE = re.compile(
 
 def is_oak_metadata_line(line_text):
     return bool(OAK_METADATA_LINE.search(line_text))
+
+
+# ── OAK list-entry dash pattern (em_dash_clusters false positives) ─────
+
+_OAK_LIST_DASH_LINE = re.compile(
+    r"^\s*(?:\d+[.)]\s+\S|\d+\s+-\s+\S|-\s+\S)", re.IGNORECASE
+)
+_OAK_LIST_DASH_EM = re.compile(r"—")
+
+
+def is_oak_list_dash_line(line_text):
+    """Any markdown list item (ordered or unordered) that contains em-dashes
+    is structured data, not parenthetical prose nesting."""
+    if not _OAK_LIST_DASH_LINE.match(line_text):
+        return False
+    return bool(_OAK_LIST_DASH_EM.search(line_text))
+
+
+# ── Image prompt line (em_dash_clusters false positive) ────────────────
+
+_IMAGE_PROMPT_LINE = re.compile(r"^\s*\*\*Prompt:\*\*", re.IGNORECASE)
+
+
+def is_image_prompt_line(line_text):
+    """'**Prompt:**' lines are image-gen artifacts, not prose."""
+    return bool(_IMAGE_PROMPT_LINE.search(line_text))
+
+
+# ── OAK title-line dash pattern (em_dash_clusters false positives) ─────
+
+_OAK_TITLE_DASH_LINE = re.compile(
+    r"^#{1,3}\s+.*?—", re.IGNORECASE
+)
+
+
+def is_oak_title_dash_line(line_text):
+    """Title lines like '# Title — subtitle — chain — date' use dashes
+    as structured field separators, not parenthetical nesting."""
+    return bool(_OAK_TITLE_DASH_LINE.search(line_text))
 
 
 # ── Sentence opener repetition detector ───────────────────────────────
@@ -242,6 +286,17 @@ def scan_file(filepath):
                         continue
                     match_lines = snippet.split("\n")
                     if any(is_oak_metadata_line(ml) for ml in match_lines):
+                        continue
+
+                if category == "em_dash_clusters":
+                    line_text = lines[line_num - 1] if line_num <= len(lines) else ""
+                    if is_oak_list_dash_line(line_text):
+                        continue
+                    if is_oak_title_dash_line(line_text):
+                        continue
+                    if is_oak_metadata_line(line_text):
+                        continue
+                    if is_image_prompt_line(line_text):
                         continue
 
                 hits.append({

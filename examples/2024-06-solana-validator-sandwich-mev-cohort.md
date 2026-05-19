@@ -84,7 +84,7 @@ The Solana validator-coordinated sandwich-attack cohort sits at three structural
 
 ## Discussion
 
-The Solana validator-coordinated sandwich-MEV cohort is OAK's canonical 2024-2025 worked example for **non-EVM-L1 validator-coordinated MEV extraction**. The case sits at the intersection of OAK-T14.002 (mev-boost-relay-attack — adjacent EVM Technique), OAK-T8.001 (cluster reuse — at the operator-cluster layer), and OAK-T6 (defense evasion — at the foundation-policy layer).
+The Solana validator-coordinated sandwich-MEV cohort is OAK's canonical 2024-2025 worked example for **non-EVM-L1 validator-coordinated MEV extraction**. The case sits at the intersection of OAK-T14.002 (mev-boost-relay-attack: adjacent EVM Technique), OAK-T8.001 (cluster reuse: at the operator-cluster layer), and OAK-T6 (defense evasion: at the foundation-policy layer).
 
 The structural distinguishing feature of the case is the **trust-substrate-locus distinction** between Solana and EVM. EVM's proposer-builder separation provides a relay-layer trust-substrate that defender-side intervention can target directly (Flashbots Protect, mev-boost relay-policy changes). Solana's leader-schedule-driven block production does not provide a comparable trust-substrate; the binding defender-side intervention is at the foundation-policy layer (delegation-program removal). This is a structurally weaker defense locus, and the cohort's persistence through the June 2024 intervention provides empirical confirmation.
 

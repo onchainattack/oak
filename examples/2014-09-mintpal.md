@@ -21,7 +21,7 @@ The Kennedy criminal track is substantively separate from the MintPal incident i
 |---|---|---|
 | Pre-event (2013 → 2014) | MintPal launches as a UK-headquartered multi-asset altcoin exchange; rapid growth through 2014 on altcoin-trading demand | (operator-context) |
 | 2014-07 | Moolah (Moopay Ltd., operated by Ryan Kennedy / "Alex Green") acquires MintPal; operational consolidation begins | **Operator-context — custody transfer** |
-| 2014-07-13 → 2014-07-14 | Approximately 8M VeriCoin (VRC) — \~30% of circulating supply, \~\$2M at the at-time VRC price — drained from MintPal's VRC hot wallet | **T11 entry — multi-asset hot-wallet drain (VRC)** |
+| 2014-07-13 → 2014-07-14 | Approximately 8M VeriCoin (VRC) (\~30% of circulating supply, \~\$2M at the at-time VRC price) drained from MintPal's VRC hot wallet | **T11 entry: multi-asset hot-wallet drain (VRC)** |
 | 2014-07-14 | VeriCoin development team executes a chain-rollback hard fork to invalidate the stolen VRC balance; one of the earliest public-record uses of chain-rollback as an exchange-incident response on a non-Bitcoin asset | **Recovery — protocol-level chain rollback** |
 | 2014-09 → 2014-10 | MAID and BTC balances drained from MintPal customer accounts under Moolah custody; reports overlap hot-wallet compromise and operator misappropriation | **T11 + operator-fraud overlay — multi-asset extraction** |
 | 2014-10 | Moolah / MintPal collapse under Kennedy's control; Moopay Ltd. placed into UK insolvency proceedings; affected MintPal customers receive no recovery | **Operator collapse — insolvency proceedings** |

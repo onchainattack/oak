@@ -5,7 +5,7 @@
 
 ## Scope
 
-Holder Capture covers the ways adversarial tokens manufacture the appearance of organic demand in order to attract real holders. From a defender's perspective, the question is whether early holder activity reflects independent demand or coordinated activity originating from a small number of related funding sources.
+Holder Capture covers the ways adversarial tokens manufacture the appearance of organic demand to attract real holders. From a defender's perspective, the question is whether early holder activity reflects independent demand or coordinated activity originating from a small number of related funding sources.
 
 ## What defenders observe
 

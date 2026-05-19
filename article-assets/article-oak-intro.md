@@ -11,7 +11,7 @@
 
 ## The Babel Problem
 
-Ask three different security vendors whether they cover "the Bybit hack." One says yes — they monitor multisig contract manipulation. Another says yes — they track custody infrastructure compromise. A third says yes — they cover social-engineering of operator personnel. All three are right. None of them mean the same thing.
+Ask three different security vendors whether they cover "the Bybit hack." One says yes: they monitor multisig contract manipulation. Another says yes: they track custody infrastructure compromise. A third says yes: they cover social-engineering of operator personnel. All three are right. None of them mean the same thing.
 
 This is crypto security's Babel problem. Every investigator, detection vendor, and research team uses its own terminology to describe the same finite set of adversary behaviors. Coverage claims are not comparable across products. Academic findings rarely transfer cleanly to operational defense. And when a new exploit hits the timeline, the security community spends the first 48 hours arguing about what to call it before anyone starts discussing how to detect it.
 
@@ -189,7 +189,7 @@ OAK v0.1 is a foundation. The v0.x roadmap includes:
 
 The framework is open. The identifiers are stable. The specs are portable. The gaps are documented.
 
-If you build on-chain security tooling — use it. If you investigate on-chain incidents — cite it. If you research on-chain attacks — contribute to it. Crypto security needs a common language. OAK is one.
+If you build on-chain security tooling, use it. If you investigate on-chain incidents, cite it. If you research on-chain attacks, contribute to it. Crypto security needs a common language. OAK is one.
 
 ---
 

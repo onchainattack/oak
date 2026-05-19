@@ -12,7 +12,7 @@
 
 PulseChain launched in May 2023 as an Ethereum fork with a native PLS token and a community airdrop to PulseChain sacrificers. The chain's DeFi ecosystem grew rapidly through Q3-Q4 2023, with DEXs, lending protocols, and token projects deploying to capture the new chain's liquidity. The PulseChain community — predominantly retail investors who had participated in the sacrifice phase — had a strong appetite for early-stage DeFi projects.
 
-From November 2023 through February 2024, a cohort of approximately 15-20 token projects launched on PulseChain with a recurring trust-signal pattern: each project's marketing materials prominently displayed "Audit Pending — CertiK" or "Security Audit in Progress — Hacken" badges. The language varied — "currently undergoing CertiK audit," "audit scheduled Q1 2024," "working with Hacken Security" — but the structural pattern was identical: a named-audit-firm association that did not exist.
+From November 2023 through February 2024, a cohort of approximately 15-20 token projects launched on PulseChain with a recurring trust-signal pattern: each project's marketing materials prominently displayed "Audit Pending — CertiK" or "Security Audit in Progress — Hacken" badges. The language varied ("currently undergoing CertiK audit," "audit scheduled Q1 2024," "working with Hacken Security"), but the structural pattern was identical: a named-audit-firm association that did not exist.
 
 The projects' lifecycle followed a consistent arc:
 
