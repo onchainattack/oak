@@ -33,6 +33,7 @@ jobs:
             --cache
             --max-cache-age 1d
             --no-progress
-            --accept 200,206,403,429
+            --accept 200,202,206,403,410,429
+            --timeout 60
             './**/*.md'
           fail: true

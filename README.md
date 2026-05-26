@@ -115,7 +115,7 @@ Three strategy documents shape the contribution rhythm:
 
 | Implementation | Coverage | Status |
 |---|---|---|
-| [`mg-detectors-rs`](https://github.com/MeatGrinder-MG/mg-detectors-rs) | First reference implementation in Rust; open-core, Apache 2.0 | Tracking current schema |
+| `mg-detectors-rs` | First reference implementation in Rust; open-core, Apache 2.0 | Tracking current schema |
 
 Other vendors (GoPlus, RugCheck, Chainalysis, TRM Labs, MetaSleuth, Beosin, Cyvers, Match Systems, BlockSec, SlowMist, PeckShield, Halborn, Trail of Bits, OpenZeppelin Defender, etc.) are openly invited to publish their own OAK coverage maps and submit Reference-implementation entries via PR. Per-Technique coverage status is tracked in [`COVERAGE.md`](./COVERAGE.md).
 
