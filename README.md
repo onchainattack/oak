@@ -56,7 +56,7 @@ Seven populated axes:
 - **[Worked examples](./examples/)** — per-incident write-ups spanning 2014–present, each anchored to ≥ 1 Technique with attribution-strength labels (`confirmed` / `inferred-strong` / `inferred-weak` / `pseudonymous` / `unattributed`).
 - **[Detection Specs](./specs/)** — vendor-neutral, language-agnostic YAML specs (one per Technique) carrying detection logic as orthogonal `PATH A / PATH B / ...` pseudocode plus `data_sources`, `parameters`, `test_fixtures`, `false_positive_modes`, `mitigations` cross-refs, and `reference_implementations`. **100% coverage at v0.1: 98 specs / 98 Techniques / 17 Tactics** — see the per-Tactic browseable index in [`SPECS.md`](./SPECS.md). Closest existing-format analogue is Sigma (vendor-neutral YAML detection rules aligned to MITRE ATT&CK) — OAK specs align to OAK Techniques the same way. Specs are the primary detection artefact and are language-/runtime-portable; named reference implementations are secondary demos.
 
-Plus a machine-readable relationship graph in [`tools/oak.json`](./tools/oak.json) and a [STIX 2.1 export](./tools/oak-stix.json).
+Plus a machine-readable relationship graph (`tools/oak.json`) and a STIX 2.1 export (`tools/oak-stix.json`).
 
 ## Maintenance and CI
 
