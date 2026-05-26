@@ -1,7 +1,9 @@
+import { useRef } from "react";
 import { siteData } from "../../data/generated";
 import { useDocumentHtml } from "../../lib";
 import { handleMarkdownLinkClick, REPO_URL, reportIssueUrl } from "../../routing";
 import { highlightYaml } from "../../highlight";
+import { useMermaid } from "./useMermaid";
 import Breadcrumb from "../layout/Breadcrumb";
 import DocumentHero from "./DocumentHero";
 import DocumentToc from "./DocumentToc";
@@ -17,6 +19,9 @@ export default function MarkdownDocument({
 }) {
   const indexEntry = siteData.documentIndex[path as keyof typeof siteData.documentIndex];
   const documentHtml = useDocumentHtml(path);
+  const bodyRef = useRef<HTMLDivElement>(null);
+
+  useMermaid(bodyRef, documentHtml.status === "loaded");
 
   const documentKind = path.startsWith("examples/")
     ? "Incident"
@@ -99,6 +104,7 @@ export default function MarkdownDocument({
               />
               <div
                 className="markdown-body"
+                ref={bodyRef}
                 onClick={(event) => handleMarkdownLinkClick(event, path, onOpenDoc)}
                 dangerouslySetInnerHTML={{ __html: documentHtml.html }}
               />
@@ -109,4 +115,3 @@ export default function MarkdownDocument({
       </section>
   );
 }
-

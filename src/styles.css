@@ -2856,6 +2856,27 @@ button.document-path:hover {
   font-size: inherit;
 }
 
+/* ---- mermaid diagrams ---- */
+.mermaid-diagram {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  overflow-x: auto;
+  padding: 14px 16px;
+  margin: 20px 0;
+}
+
+.mermaid-diagram svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* raw code block shown when mermaid rendering fails */
+.mermaid-fallback {
+  opacity: 0.6;
+}
+
 .markdown-shell table {
   border-collapse: collapse;
   display: block;

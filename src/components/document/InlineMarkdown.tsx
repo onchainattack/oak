@@ -1,6 +1,8 @@
+import { useRef } from "react";
 import { siteData } from "../../data/generated";
 import { useDocumentHtml } from "../../lib";
 import { handleMarkdownLinkClick } from "../../routing";
+import { useMermaid } from "./useMermaid";
 
 // Strip an entire <h2 id="slug">…</h2> heading and the run of HTML up
 // to the next h2 / h3 at the same or higher level. Used by detail
@@ -10,9 +12,6 @@ import { handleMarkdownLinkClick } from "../../routing";
 function stripSections(html: string, slugs: ReadonlyArray<string>): string {
   let result = html;
   for (const slug of slugs) {
-    // Each section is <h2 id="slug"> ... </h2> followed by HTML until the
-    // next <h2 id=...> or end of body. addHeadingIds ensures every h2
-    // carries an id="slug" attribute.
     const re = new RegExp(
       `<h2 id="${slug}">[\\s\\S]*?(?=<h2 id="|$)`,
       "g",
@@ -33,6 +32,10 @@ export default function InlineMarkdown({
 }) {
   const indexEntry = siteData.documentIndex[path as keyof typeof siteData.documentIndex];
   const documentHtml = useDocumentHtml(path);
+  const bodyRef = useRef<HTMLDivElement>(null);
+
+  useMermaid(bodyRef, documentHtml.status === "loaded");
+
   if (!indexEntry) {
     return <p className="document-state">Markdown content not available for this entry.</p>;
   }
@@ -48,6 +51,7 @@ export default function InlineMarkdown({
   return (
     <div
       className="markdown-body markdown-shell"
+      ref={bodyRef}
       onClick={
         onOpenDoc
           ? (event) => handleMarkdownLinkClick(event, path, onOpenDoc)

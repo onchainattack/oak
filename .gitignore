@@ -61,6 +61,9 @@ src/data/generated.ts
 src/data/documents.ts
 public/sitemap.xml
 
+# Vendor outreach (not public yet)
+vendor-outreach/
+
 # Sub-agent transcripts (Claude Code)
 .claude/
 .tasks/
