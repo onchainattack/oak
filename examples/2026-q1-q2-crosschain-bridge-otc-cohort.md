@@ -1,9 +1,9 @@
-# Q1–Q2 2026 Cross-Chain, Bridge and OTC Exploit Cohort — CrossCurve, Purrlend, Transit Finance, Meteora DAMM V2 — Aggregate ~$7.8M
+# Q1–Q2 2026 Cross-Chain, Bridge and OTC Exploit Cohort — CrossCurve, Purrlend, Transit Finance, Meteora DAMM V2, TAC Protocol — Aggregate ~$10.6M
 
 **OAK Techniques observed:** OAK-T10.002, OAK-T9.004
 
 **Attribution:** **unattributed** (aggregate cohort).
-**Loss:** CrossCurve ~$3M (spoofed cross-chain messages — attacker forged cross-chain message payloads to trigger unauthorised transfers); Purrlend ~$1.5M (fake bridge address — attacker deployed a counterfeit bridge contract and routed deposits to it, on MegaETH and Hyperliquid L1); Transit Finance ~$1.88M (deprecated smart-contract exploit on Tron — attacker exploited a contract that was still deployed and holding value but no longer maintained); Meteora DAMM V2 ~$1.5M (fake OTC deal on Solana — attacker structured a fraudulent over-the-counter transaction that the protocol's DAMM V2 infrastructure processed as legitimate). Aggregate ~$7.8M across four incidents, January–May 2026.
+**Loss:** CrossCurve ~$3M (spoofed cross-chain messages — attacker forged cross-chain message payloads to trigger unauthorised transfers); Purrlend ~$1.5M (fake bridge address — attacker deployed a counterfeit bridge contract and routed deposits to it, on MegaETH and Hyperliquid L1); Transit Finance ~$1.88M (deprecated smart-contract exploit on Tron — attacker exploited a contract that was still deployed and holding value but no longer maintained); Meteora DAMM V2 ~$1.5M (fake OTC deal on Solana — attacker structured a fraudulent over-the-counter transaction that the protocol's DAMM V2 infrastructure processed as legitimate); TAC Protocol ~$2.8M (TON ⇄ Ethereum bridge exploit on the TON side — drained native TON Jettons across USDT, BLUM, and tsTON; later reclassified a white-hat incident after the attacker accepted a 10% bounty and returned the remainder). Aggregate ~$10.6M across five incidents, January–May 2026.
 
 **Key teaching point:** Four cross-chain, bridge, and OTC incidents demonstrate that **the trust boundary between chains, between contract versions, and between counterparties is only as strong as the validation logic at the entry point.** CrossCurve's cross-chain message verification trusted spoofed payloads; Purrlend's bridge-address resolution trusted an unvalidated address; Transit Finance's deprecated contract held value without active maintenance; Meteora's OTC infrastructure trusted a counterparty representation without verifying the counterparty's intent or assets. The structural thread is **a trust assumption at the boundary that the protocol did not independently verify.**
 
@@ -16,6 +16,7 @@
 | 2026-01-17 | Meteora DAMM V2: fake OTC deal on Solana; attacker presents a fraudulent OTC transaction to the DAMM V2 infrastructure; protocol processes it as legitimate; ~$1.5M extracted | **T14.001** (fake OTC deal), **T9.004** (missing counterparty verification) |
 | 2026-02-01 | CrossCurve: spoofed cross-chain messages enable unauthorised transfers; attacker forges cross-chain message payloads; protocol's message-verification logic accepts the forged payloads; ~$3M extracted | **T10.002** (cross-chain message spoofing), **T9.004** (missing message-origin verification) |
 | 2026-04-25 | Purrlend: fake bridge address deployed on MegaETH and Hyperliquid L1; users deposit to the counterfeit bridge; ~$1.5M lost | **T9.004** (fake bridge address — missing address-verification UX), **T10.002** (bridge-address spoofing) |
+| 2026-05-12 | TAC Protocol: TON ⇄ Ethereum bridge exploited on the TON side; ~$2.8M of native TON Jettons (USDT, BLUM, tsTON) drained — roughly the protocol's entire TVL; attacker later accepted a 10% bounty and returned ~90%, and TAC reclassified the event a white-hat incident | **T10.002** (bridge message/verification gap on the TON side), **T6** (negotiated white-hat resolution / bounty recovery) |
 | 2026-05-13 | Transit Finance: deprecated smart contract exploited on Tron; ~$1.88M extracted from a contract that was still deployed and holding value but had been abandoned by the development team | **T9.004** (deprecated-contract access-control gap — no active maintenance, no decommissioning) |
 
 ## CrossCurve — Cross-Chain Message Spoofing
@@ -50,12 +51,21 @@ The incident is one of the earliest significant OTC-infrastructure exploits and 
 
 **OAK mapping:** T9.004 (missing counterparty-verification logic in OTC infrastructure — the protocol's smart contracts could verify on-chain asset ownership but could not verify off-chain deal representations).
 
+## TAC Protocol — TON ⇄ Ethereum Bridge Exploit, White-Hat Resolution
+
+On May 12, 2026, TAC Protocol — a cross-chain bridge connecting TON and Ethereum — was exploited for ~$2.8M. The drain hit the **TON side** of TAC's cross-chain layer, extracting native TON Jettons across USDT, BLUM, and tsTON. TAC stated the vulnerability was isolated to native TON Jettons bridged from the TON network; the TAC token itself, native TON, and all ERC-20 tokens were unaffected. With TVL at roughly $2.74M as of May 14, the ~$2.8M extraction was approximately the protocol's entire TVL.
+
+The incident's distinguishing feature is its **resolution path**: the attacker accepted TAC's offer to keep 10% of the funds as a bounty and returned ~90%, after which TAC reclassified the event a white-hat incident. This is the negotiated-recovery pattern that has become standard practice in Web3 — a protocol offers the attacker a percentage to convert an adversarial drain into a bounty rather than pursue uncertain on-chain recovery or attribution. The pattern is worth recording as a cohort data point because the on-chain footprint of a "white-hat" resolution (drain → negotiation messages → partial return) is indistinguishable at the transaction layer from a failed laundering attempt; the reclassification is an off-chain agreement, not an on-chain property.
+
+**OAK mapping:** T10.002 (bridge message/verification gap on the TON side of the cross-chain layer) + T6 (defense-evasion-adjacent: the negotiated white-hat resolution converts an adversarial extraction into a bounty, complicating attribution and loss accounting).
+
 ## Public references
 
 - CrossCurve: DeFiLlama classification as "Spoofed Cross-Chain Messages"
 - Purrlend: DeFiLlama classification as "Fake Bridge Address" on MegaETH, Hyperliquid L1
 - Transit Finance: DeFiLlama classification as "Deprecated Smart Contract Exploit" on Tron
 - Meteora DAMM V2: DeFiLlama classification as "Fake OTC Deal" on Solana
+- TAC Protocol: "TAC labels $2.8M bridge exploit a white hat incident as hacker claims 10% bounty" (PeckShield-tracked; TON ⇄ Ethereum bridge, TON-side native Jettons USDT/BLUM/tsTON)
 - Cross-reference: T10.002 at `techniques/T10.002-cross-chain-message-spoofing.md`; T9.004 at `techniques/T9.004-access-control-misconfiguration.md`; T14.001 at `techniques/T14.001-otc-desk-scam-fake-otc-deal.md`
 
 ## Discussion
