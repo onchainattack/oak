@@ -1,0 +1,73 @@
+# DxSale — legacy BNB-Chain liquidity-locker backdoor (`setFee`→1 wei + obscured ownership) — 2026-05-29
+
+**Loss:** **~\$7.3M** drained from **DxSale's legacy (2021-era) BNB-Chain liquidity lockers**, affecting **1,400+ LP positions**. The attacker moved an early tranche of **2,958 BNB (~\$1.87M)** from `0xC457…FA69` to two consolidation wallets and onward to **Binance deposit addresses**. The losses fell on **liquidity providers whose tokens were locked in DxSale's old locker contracts**, not on DxSale's own treasury — a third-party-custody loss distribution.
+**OAK Techniques observed:** **OAK-T11.013** (Legacy-Version Maintenance Attack Surface — the canonical anchor. The exploited lockers were **2021-era contracts**, still deployed and holding value but no longer actively maintained or monitored; the standing admin surface on abandoned infrastructure was the attack's foundation. See [`techniques/T11.013-legacy-version-maintenance-attack-surface.md`](../techniques/T11.013-legacy-version-maintenance-attack-surface.md)). **OAK-T9.004** (Access-Control Misconfiguration — the mechanical primitive: a privileged `setFee` function let the controller reset the locking fee to **1 wei**, removing the cost barrier to editing locked positions, after which a backdated lock configuration allowed early unlock/withdrawal of LP tokens that should have remained locked). **OAK-T3.006** (Insider Multi-Vector Supply Extraction — cross-referenced: community researchers flagged **possible insider involvement**, citing an August-2025 Telegram service that advertised "unlocking" old DxSale LPs while claiming ties to the team). **OAK-T7.002** (CEX Deposit-Address Layering — the outflow consolidated to two wallets and was deposited to multiple Binance deposit addresses).
+**Attribution:** **inferred-weak (insider-suspected), pseudonymous on-chain.** The controlling wallet's admin rights over the locker had been **quietly transferred ~269 days before the drain** (≈2025-09) and then **moved through approximately 80 separate wallet-to-wallet transfers**, an obfuscation pattern that severs the custody trail between the original deployer and the eventual controller. The drain wallet `0xC457…FA69` is observable on-chain. Community signals (the August-2025 "unlock old DxSale LPs" Telegram service claiming team ties) raise but do **not** establish insider involvement; this entry records the suspicion at **inferred-weak** strength and does not attribute to a named individual or group.
+
+**Key teaching point:** DxSale is the **2026 worked example of how an abandoned-but-live admin surface becomes an exploit primitive** — the T11.013 legacy-maintenance failure made concrete. The lockers were a 2021 product: deployed, holding 1,400+ users' LP tokens, and then left to run without maintenance, monitoring, or a decommissioning plan. The exploit needed no zero-day — it used the lockers' **own privileged functions** (`setFee`, lock-configuration edit) exactly as designed, but from a controller position the LPs did not know had changed hands. The two structural enablers are (1) **residual privileged authority on deprecated contracts** that no one was watching, and (2) **ownership laundering** — ~80 transfers over ~269 days that hid *who could now pull the levers*. The detection-signal locus is the **custody-and-lifecycle layer**: a liquidity locker is a custody product, and a silent owner change on a value-holding locker — let alone 80 hops of it — should be a monitored, alertable event, not a routine on-chain transaction.
+
+## Summary
+
+DxSale is a long-running launchpad / liquidity-locking service. Liquidity providers lock LP tokens in DxSale locker contracts to signal to a token's holders that liquidity cannot be rugged for the lock duration. On 2026-05-29, an attacker drained **~\$7.3M** from DxSale's **legacy BNB-Chain lockers**, hitting **1,400+ LP positions** whose tokens were supposed to be time-locked.
+
+Per Coinsult's tracing, the mechanism was a chain of **privileged-function abuse** rather than a code exploit:
+
+1. **~269 days before the drain**, the DxSale deployer **quietly transferred ownership** of the legacy locker to a new wallet, then moved admin rights through **~80 separate wallet transfers** — an obfuscation sequence that reduced visibility into who ultimately controlled the locker while keeping the administrative privileges intact.
+2. The controller called the locker's privileged **`setFee`** function to reset the locking fee to **1 wei** (the smallest possible unit), removing any economic cost barrier to editing locked positions.
+3. With editing effectively free, a **backdated lock configuration** let the controller unlock/withdraw LP tokens that should have remained locked, draining ~\$7.3M across the affected positions.
+4. The drain wallet `0xC457…FA69` consolidated an early **2,958 BNB (~\$1.87M)** tranche into two wallets and deposited to multiple **Binance** deposit addresses.
+
+Community researchers raised the possibility of **insider involvement**, pointing to screenshots from **August 2025** describing a Telegram service that offered to "unlock" old DxSale LPs, with the operator claiming ties to the team. The drain therefore sits at the intersection of three OAK surfaces: a **deprecated, unmonitored contract** (T11.013), its **standing privileged-function authority** (T9.004), and a **suspected-insider** path to the controlling key (T3.006).
+
+## Why this is structurally significant
+
+DxSale demonstrates that **deprecation is not decommissioning**, and that the gap between them is a custody risk borne by *users*, not the operator. A liquidity locker's entire value proposition is that locked LP tokens cannot be withdrawn early. When the locker is a 2021-era contract that the team no longer maintains or monitors, three things remain true that the LPs are not tracking:
+
+- The contract **still holds their tokens**.
+- The contract **still exposes privileged functions** (`setFee`, lock-config edits) to whoever holds the owner key.
+- The **owner key can change hands silently** — and here it did, ~269 days before the drain, through ~80 obfuscating hops.
+
+This is the same lifecycle failure as Transit Finance (deprecated contract still holding value, exploited after abandonment — see `examples/2026-q1-q2-crosschain-bridge-otc-cohort.md`), but with a custody twist: Transit Finance's residual value was the *protocol's*, while DxSale's residual value was *1,400 third parties'* locked LP tokens. The blast radius of an un-decommissioned contract scales with how much *other people's* value it still custodies.
+
+The **ownership-laundering** detail is the second structural point and the more novel one. An owner transfer on a value-holding contract is a high-signal custody event; spreading it across ~80 transfers over ~269 days is a deliberate attempt to make that event un-noticeable — to ensure that when the lockers are finally drained, no one can quickly answer "who controlled this, and since when?" This is the on-chain analogue of layering in money-laundering, applied to *authority* rather than *funds*: the goal is not to move value but to obscure the provenance of control. Contributors should record "authority-provenance obfuscation" (laundering the owner role, not just the proceeds) as a distinct pre-positioning signal.
+
+## Timeline (UTC)
+
+| When | Event | OAK ref |
+|---|---|---|
+| ~2021 | DxSale deploys BNB-Chain liquidity lockers; 1,400+ LP positions accumulate; product later superseded but lockers left deployed, holding value, unmonitored | **T11.013** (legacy contract not decommissioned) |
+| ~2025-09 (≈269d pre-drain) | DxSale deployer quietly transfers locker ownership to a new wallet; admin rights subsequently moved through ~80 separate wallet transfers, obscuring the custody trail | **T8 / pre-positioning (authority-provenance obfuscation)** |
+| 2025-08 | (Earlier signal) Telegram service advertises "unlocking" old DxSale LPs, operator claiming ties to the team | (insider-suspicion signal) |
+| 2026-05-29 | Controller calls privileged `setFee` to reset the locking fee to 1 wei, removing the cost barrier to editing locked positions | **T9.004** (privileged-function abuse on legacy locker) |
+| 2026-05-29 | Backdated lock configuration enables early unlock/withdrawal; ~$7.3M drained across 1,400+ LP positions | **T9.004 + T11.013** (residual admin authority on abandoned contract) |
+| 2026-05-29 | Drain wallet `0xC457…FA69` moves 2,958 BNB (~$1.87M) to two consolidation wallets and on to multiple Binance deposit addresses | **T7.002** (CEX deposit-address layering) |
+| 2026-05-29 | Coinsult / PeckShield trace and report the drain; community raises insider-involvement suspicion | (third-party detection / forensic surface) |
+
+## What defenders observed
+
+- **Pre-event (lifecycle layer):** 2021-era lockers remained deployed, value-holding, and unmonitored years after the product moved on. There was no decommissioning (no migration of locked positions, no owner-renounce, no pause). Defender lesson: a custody contract that still holds third-party value is never "legacy" in the sense of "safe to ignore" — it must be monitored and have a defined end-of-life (migrate positions out, renounce ownership, or pause) before it is abandoned.
+- **Pre-event (custody-governance layer):** the locker's owner role was transferred and then laundered across ~80 wallets over ~269 days. A monitor that treated *owner/admin changes on value-holding contracts* as alertable events would have surfaced the first transfer; the 80-hop pattern is itself a strong "someone is hiding who controls this" signal. Defender lesson: watch the *authority graph* of custody contracts, not just their balance.
+- **At-event (on-chain signal):** the privileged `setFee` call resetting the fee to 1 wei is an anomalous administrative action — a fee parameter driven to the minimum immediately before mass position edits. A parameter-change monitor on the locker would have flagged it. The subsequent early-unlock against a backdated configuration violated the lockers' core invariant (locked = non-withdrawable until expiry).
+- **Post-event:** the proceeds consolidated to two wallets and flowed to Binance deposit addresses (T7.002), the standard CEX-layering off-ramp; the early 2,958-BNB tranche (~\$1.87M) was the visible first move. Community attribution leaned toward insider involvement on the strength of the August-2025 Telegram "unlock service," but this remained suspicion, not proof.
+
+## What this example tells contributors writing future Technique pages
+
+- **T11.013 needs the custody variant called out explicitly.** A legacy contract that holds *third-party* value (locked LP tokens, user deposits) is materially more dangerous on abandonment than one holding only the protocol's own funds, because the loss is distributed across users who have no visibility into the contract's maintenance state. Record the loss-distribution (third-party vs treasury) as a T11.013 field.
+- **"Authority-provenance obfuscation" is a recordable pre-positioning signal.** Laundering the *owner role* of a value-holding contract — many small transfers to hide who now holds the keys — is distinct from laundering *proceeds*. It is a pre-attack indicator and belongs alongside mixer-funded EOAs and fresh-contract deployment in the T8 pre-positioning vocabulary.
+- **Privileged-function abuse on a deprecated contract is T9.004 *enabled by* T11.013.** The mechanical exploit is access-control (a privileged `setFee` + lock-edit used from an unexpected controller), but the *reason it was reachable and unwatched* is the legacy-maintenance failure. Cross-reference both, and keep the distinction: T9.004 is the lever, T11.013 is why no one was guarding it.
+- **Insider suspicion should be recorded at calibrated strength.** The DxSale signals (owner-laundering + an "unlock service" claiming team ties) are suggestive but not dispositive. Record T3.006 cross-reference at inferred-weak, document the signals, and avoid naming individuals absent confirmation.
+
+## Public references
+
+- `[cryptotimesdxsale2026]` *(proposed)* — Crypto Times, "Hackers Drain \$7.3M From DxSale's Old BNB Chain Liquidity Lockers": <https://www.cryptotimes.io/2026/05/29/hackers-drain-7-3m-from-dxsales-old-bnb-chain-liquidity-lockers/>
+- `[cryptonewsdxsale2026]` *(proposed)* — crypto.news, "DxSale exploit drains \$7.3M in BNB through hidden contract backdoor": <https://crypto.news/dxsale-exploit-drains-7-3m-in-bnb-through-hidden-contract-backdoor/>
+- `[spendnodedxsale2026]` *(proposed)* — Spendnode, "DxSale Drained of \$7.3M as Backdoor Hits 2021-Era BNB Lockers": <https://www.spendnode.io/blog/dxsale-7-3m-legacy-locker-exploit-backdoor-may-2026/>
+- `[invezzdxsale2026]` *(proposed)* — Invezz, "DxSale loses \$7.3M in BNB Chain liquidity providers (LPs) hack": <https://invezz.com/news/2026/05/29/dxsale-loses-7-3m-in-bnb-chain-liquidity-providers-lps-hack/>
+- `[bitcoinfoundationdxsale2026]` *(proposed)* — Bitcoin Foundation, "DxSale Hacked for \$7.3M: Insider Team Attack Suspected": <https://bitcoinfoundation.org/news/crimes-and-fraud-news/dxsale-exploit/>
+- Drain wallet: `0xC457…FA69` (early tranche 2,958 BNB → two consolidation wallets → Binance deposit addresses). Coinsult traced the `setFee`→1 wei + backdated-lock mechanism.
+
+## Discussion
+
+DxSale is the corpus's clearest 2026 case of a **liquidity-locking custody product whose abandoned infrastructure was turned against its own users.** It anchors T11.013 (legacy-version maintenance attack surface) on the custody side, where Transit Finance anchors the same lifecycle failure on the protocol-treasury side: both are deprecated-but-live contracts exploited via their own standing functions, but DxSale's residual value was 1,400 third parties' locked LP tokens, which makes the un-decommissioned contract a custody liability rather than merely a treasury one.
+
+The case also extends the corpus's pre-positioning vocabulary. OAK already records mixer-funded EOAs (Verus), Sybil-funded clusters (T8.001), and fresh-contract deployment (Butter Bridge's precomputed address) as pre-attack signals. DxSale adds **authority-provenance obfuscation**: the ~80-hop, ~269-day laundering of the *owner role* itself. Where proceeds-laundering hides where the money went, authority-laundering hides who could take it — and on a value-holding custody contract, the latter is the more actionable warning, because it precedes the theft rather than following it. A custody-monitoring posture that watched owner/admin changes on DxSale's value-holding lockers would have had ~269 days of warning; that no one did is the heart of the T11.013 lesson.

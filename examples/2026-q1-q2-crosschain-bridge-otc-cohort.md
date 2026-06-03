@@ -1,9 +1,9 @@
-# Q1–Q2 2026 Cross-Chain, Bridge and OTC Exploit Cohort — CrossCurve, Purrlend, Transit Finance, Meteora DAMM V2, TAC Protocol — Aggregate ~$10.6M
+# Q1–Q2 2026 Cross-Chain, Bridge and OTC Exploit Cohort — CrossCurve, Purrlend, Transit Finance, Meteora DAMM V2, TAC Protocol, Alephium — Aggregate ~$11.4M
 
 **OAK Techniques observed:** OAK-T10.002, OAK-T9.004
 
 **Attribution:** **unattributed** (aggregate cohort).
-**Loss:** CrossCurve ~$3M (spoofed cross-chain messages — attacker forged cross-chain message payloads to trigger unauthorised transfers); Purrlend ~$1.5M (fake bridge address — attacker deployed a counterfeit bridge contract and routed deposits to it, on MegaETH and Hyperliquid L1); Transit Finance ~$1.88M (deprecated smart-contract exploit on Tron — attacker exploited a contract that was still deployed and holding value but no longer maintained); Meteora DAMM V2 ~$1.5M (fake OTC deal on Solana — attacker structured a fraudulent over-the-counter transaction that the protocol's DAMM V2 infrastructure processed as legitimate); TAC Protocol ~$2.8M (TON ⇄ Ethereum bridge exploit on the TON side — drained native TON Jettons across USDT, BLUM, and tsTON; later reclassified a white-hat incident after the attacker accepted a 10% bounty and returned the remainder). Aggregate ~$10.6M across five incidents, January–May 2026.
+**Loss:** CrossCurve ~$3M (spoofed cross-chain messages — attacker forged cross-chain message payloads to trigger unauthorised transfers); Purrlend ~$1.5M (fake bridge address — attacker deployed a counterfeit bridge contract and routed deposits to it, on MegaETH and Hyperliquid L1); Transit Finance ~$1.88M (deprecated smart-contract exploit on Tron — attacker exploited a contract that was still deployed and holding value but no longer maintained); Meteora DAMM V2 ~$1.5M (fake OTC deal on Solana — attacker structured a fraudulent over-the-counter transaction that the protocol's DAMM V2 infrastructure processed as legitimate); TAC Protocol ~$2.8M (TON ⇄ Ethereum bridge exploit on the TON side — drained native TON Jettons across USDT, BLUM, and tsTON; later reclassified a white-hat incident after the attacker accepted a 10% bounty and returned the remainder); Alephium TokenBridge ~$815K (forged bridge messages passed the guardian network — initially blamed on compromised guardian keys, later traced by Alephium/Blockaid to an off-chain backend vulnerability; ~13.76M unbacked wrapped ALPH minted on Ethereum plus multi-asset drain, all in ~7 minutes). Aggregate ~$11.4M across six incidents, January–May 2026.
 
 **Key teaching point:** Four cross-chain, bridge, and OTC incidents demonstrate that **the trust boundary between chains, between contract versions, and between counterparties is only as strong as the validation logic at the entry point.** CrossCurve's cross-chain message verification trusted spoofed payloads; Purrlend's bridge-address resolution trusted an unvalidated address; Transit Finance's deprecated contract held value without active maintenance; Meteora's OTC infrastructure trusted a counterparty representation without verifying the counterparty's intent or assets. The structural thread is **a trust assumption at the boundary that the protocol did not independently verify.**
 
@@ -18,6 +18,7 @@
 | 2026-04-25 | Purrlend: fake bridge address deployed on MegaETH and Hyperliquid L1; users deposit to the counterfeit bridge; ~$1.5M lost | **T9.004** (fake bridge address — missing address-verification UX), **T10.002** (bridge-address spoofing) |
 | 2026-05-12 | TAC Protocol: TON ⇄ Ethereum bridge exploited on the TON side; ~$2.8M of native TON Jettons (USDT, BLUM, tsTON) drained — roughly the protocol's entire TVL; attacker later accepted a 10% bounty and returned ~90%, and TAC reclassified the event a white-hat incident | **T10.002** (bridge message/verification gap on the TON side), **T6** (negotiated white-hat resolution / bounty recovery) |
 | 2026-05-13 | Transit Finance: deprecated smart contract exploited on Tron; ~$1.88M extracted from a contract that was still deployed and holding value but had been abandoned by the development team | **T9.004** (deprecated-contract access-control gap — no active maintenance, no decommissioning) |
+| 2026-05-30 | Alephium TokenBridge: forged bridge messages pass the guardian network; ~$815K drained on Ethereum + BNB Chain (200,967 USDT, 17,594 USDC, 5.18 WETH, 0.335 WBTC on ETH; 36,750 USDT, 24.386 WBNB on BSC) plus ~13.76M unbacked wrapped ALPH minted on Ethereum; entire sequence ~7 minutes. Initial reports blamed compromised guardian keys; Alephium and Blockaid later revised to an off-chain backend vulnerability triggerable in edge cases, not a key compromise. ALPH locked in the bridge itself was not drained | **T10.002** (forged-message verification bypass via off-chain backend flaw — explicitly NOT a key compromise) |
 
 ## CrossCurve — Cross-Chain Message Spoofing
 
@@ -59,6 +60,16 @@ The incident's distinguishing feature is its **resolution path**: the attacker a
 
 **OAK mapping:** T10.002 (bridge message/verification gap on the TON side of the cross-chain layer) + T6 (defense-evasion-adjacent: the negotiated white-hat resolution converts an adversarial extraction into a bounty, complicating attribution and loss accounting).
 
+## Alephium TokenBridge — Forged Guardian Messages via Off-Chain Backend Flaw
+
+On May 30, 2026, Alephium's **TokenBridge** was drained of ~$815K after an attacker submitted **forged bridge messages** that passed the protocol's guardian network and authorised fraudulent transfers. The attacker drained 200,967 USDT, 17,594 USDC, 5.18 WETH and 0.335 WBTC on Ethereum, plus 36,750 USDT and 24.386 WBNB on BNB Chain, and **minted ~13.76M unbacked wrapped ALPH** on Ethereum with no corresponding ALPH locked on the Alephium chain. Blockaid, which spotted the exploit first, timed the full sequence at about **seven minutes**. The native ALPH held inside the bridge was not drained, so users whose ALPH remained locked at shutdown were recoverable.
+
+The instructive feature of Alephium is the **root-cause revision**. Initial reporting — including from Blockaid — attributed the drain to **compromised guardian private keys**. Alephium and Blockaid subsequently corrected this: the exploit "does not appear to have involved a compromise of guardian private keys," and the root cause was instead an **off-chain vulnerability in the bridge backend** that could be triggered in specific edge cases to produce guardian-signed messages the guardians never intended. This places Alephium firmly in the T10.002 message-verification family rather than the T10.001 key-compromise family — a distinction that is easy to get wrong in the first hours of an incident, because "forged messages passed the guardian network" reads as "keys were stolen" until the backend flaw is isolated.
+
+Alephium therefore pairs instructively with the two standalone May-2026 bridge cases: like Verus (`examples/2026-05-verus-ethereum-bridge-source-amount-validation.md`) and Butter (`examples/2026-05-map-protocol-butter-bridge-encodepacked-collision.md`), the attacker minted/withdrew against messages that *should not have validated*, without holding signer keys. The common defender lesson across all three is that a bridge's **off-chain message-construction backend is part of its trust-validation surface** — a backend that can be coaxed into producing a validly-signed-but-illegitimate message is as dangerous as a missing on-chain check, and the on-chain signatures will look perfectly genuine.
+
+**OAK mapping:** T10.002 (message-verification bypass via an off-chain bridge-backend flaw that produced forged-but-validly-relayed guardian messages — explicitly not a guardian-key compromise, per the revised Alephium/Blockaid analysis).
+
 ## Public references
 
 - CrossCurve: DeFiLlama classification as "Spoofed Cross-Chain Messages"
@@ -66,6 +77,9 @@ The incident's distinguishing feature is its **resolution path**: the attacker a
 - Transit Finance: DeFiLlama classification as "Deprecated Smart Contract Exploit" on Tron
 - Meteora DAMM V2: DeFiLlama classification as "Fake OTC Deal" on Solana
 - TAC Protocol: "TAC labels $2.8M bridge exploit a white hat incident as hacker claims 10% bounty" (PeckShield-tracked; TON ⇄ Ethereum bridge, TON-side native Jettons USDT/BLUM/tsTON)
+- [Alephium — The Defiant](https://thedefiant.io/news/hacks/alephium-bridge-815k-forged-guardian-messages) — "Alephium Bridge Loses $815K to Forged Guardian Messages, Not Stolen Keys"
+- [Alephium — AMBCrypto](https://ambcrypto.com/815k-gone-in-7-minutes-inside-ethereums-alephium-tokenbridge-exploit/) — "$815K gone in 7 minutes – Inside Ethereum's Alephium TokenBridge exploit"
+- [Alephium — Crypto Times](https://www.cryptotimes.io/2026/05/30/alephium-bridge-exploited-for-815k-13-76m-unbacked-alph-minted/) — "Alephium Bridge Exploited for $815K, 13.76M Unbacked ALPH Minted" (asset breakdown; off-chain backend root cause; ~7-minute sequence)
 - Cross-reference: T10.002 at `techniques/T10.002-cross-chain-message-spoofing.md`; T9.004 at `techniques/T9.004-access-control-misconfiguration.md`; T14.001 at `techniques/T14.001-otc-desk-scam-fake-otc-deal.md`
 
 ## Discussion
