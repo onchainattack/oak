@@ -46,7 +46,7 @@ Joe Agent therefore earns its place as a **low-stakes, high-clarity teaching anc
 
 ## Public references
 
-- `[bitgetjunehacks2026]` *(proposed)* — Bitget News, "Exploit hits Gnosis Pay, TesseraDAO loses \$2.5M as June hacks start to climb" — describes the Joe Agent ($JOE) `_removeLiquidityViaContract` reentrancy: BNB sent via low-level call before updating `lpInfo[user].lpAmount`, ~25 reentrancy loops, ~62.5 BNB + ~1.196M JOE (~\$45K). (Bitget mirror, original via Cryptopolitan): <https://www.cryptopolitan.com/exploit-hits-gnosis-pay-tesseradao-june/>
+- `[bitgetjunehacks2026]` — Bitget News, "Exploit hits Gnosis Pay, TesseraDAO loses \$2.5M as June hacks start to climb" — describes the Joe Agent ($JOE) `_removeLiquidityViaContract` reentrancy: BNB sent via low-level call before updating `lpInfo[user].lpAmount`, ~25 reentrancy loops, ~62.5 BNB + ~1.196M JOE (~\$45K). (Bitget mirror, original via Cryptopolitan): <https://www.cryptopolitan.com/exploit-hits-gnosis-pay-tesseradao-june/>
 - Solidity documentation / Slither — checks-effects-interactions pattern; `reentrancy-eth` / `reentrancy-no-eth` detectors for external-call-before-state-write.
 - Cross-reference: `examples/2016-06-the-dao.md` (the canonical single-function reentrancy original) and `examples/2020-04-lendf-me.md` (hook-based variant) in the T9.005 set.
 

@@ -59,11 +59,11 @@ The three sub-classes have different detection loci. Nomad's lives at the post-u
 
 ## Public references
 
-- `[blockaidverus2026]` *(proposed)* — Blockaid (@blockaid_) root-cause thread on X, 2026-05-18: source↔destination economic-value-binding gap; missing source-amount validation in `checkCCEValues`; same class as Wormhole-2022 / Nomad-2022.
-- `[theblockverus2026]` *(proposed)* — The Block, "Ongoing exploit drains $11.6 million from Verus-Ethereum bridge: Blockaid": <https://www.theblock.co/post/401571/verus-ethereum-bridge-exploit>
-- `[thedefiantverus2026]` *(proposed)* — The Defiant, "$11.58M Drained in Ongoing Exploit on Verus-Ethereum Bridge": <https://thedefiant.io/news/hacks/verus-ethereum-bridge-exploit-11-5-million-ri18bt>
-- `[beincryptoverus2026]` *(proposed)* — BeInCrypto, "Crypto Hack Wave Hits Verus Bridge as May DeFi Losses Mount": <https://beincrypto.com/verus-bridge-exploit-may-defi-hacks/>
-- `[bitcoincomverus2026]` *(proposed)* — Bitcoin.com News, "Crypto Bridge Exploits Hit $328.6M in May as PeckShield Tracks 8 Major Incidents": <https://news.bitcoin.com/crypto-bridge-exploits-328-million-may-2026-peckshield/>
+- `[blockaidverus2026]` — Blockaid (@blockaid_) root-cause thread on X, 2026-05-18: source↔destination economic-value-binding gap; missing source-amount validation in `checkCCEValues`; same class as Wormhole-2022 / Nomad-2022.
+- `[theblockverus2026]` — The Block, "Ongoing exploit drains $11.6 million from Verus-Ethereum bridge: Blockaid": <https://www.theblock.co/post/401571/verus-ethereum-bridge-exploit>
+- `[thedefiantverus2026]` — The Defiant, "$11.58M Drained in Ongoing Exploit on Verus-Ethereum Bridge": <https://thedefiant.io/news/hacks/verus-ethereum-bridge-exploit-11-5-million-ri18bt>
+- `[beincryptoverus2026]` — BeInCrypto, "Crypto Hack Wave Hits Verus Bridge as May DeFi Losses Mount": <https://beincrypto.com/verus-bridge-exploit-may-defi-hacks/>
+- `[bitcoincomverus2026]` — Bitcoin.com News, "Crypto Bridge Exploits Hit $328.6M in May as PeckShield Tracks 8 Major Incidents": <https://news.bitcoin.com/crypto-bridge-exploits-328-million-may-2026-peckshield/>
 - Attacker EOA: `0x5aBb91B9c01A5Ed3aE762d32B236595B459D5777`
 - Holding wallet: `0x65Cb8b128Bf6e690761044CCECA422bb239C25F9`
 

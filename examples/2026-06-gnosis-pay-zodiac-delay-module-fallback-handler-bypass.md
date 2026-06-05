@@ -57,10 +57,10 @@ The case also illustrates a **fleet-wide blast radius from a shared configuratio
 
 ## Public references
 
-- `[zodiacgnosispay2026]` *(proposed)* — Zodiac statement, 2026-06-03: flaw affects Roles Modifier v2 / Delay Modifier v1.1.0 where a Safe using a vulnerable fallback handler is assigned as a module/role member; core Safe contracts unaffected; >95% of identifiable affected accounts remediated; full post-mortem pending. Via Crypto Times, "Zodiac Reveals Flaw Behind Gnosis Pay Exploit, Safe Unaffected": <https://www.cryptotimes.io/2026/06/03/zodiac-reveals-flaw-behind-gnosis-pay-exploit-safe-unaffected/>
-- `[cryptotimesgnosispay2026]` *(proposed)* — Crypto Times, "Gnosis Pay Pauses Bridge Following Active Zodiac Delay Module Exploit", 2026-06-01: <https://www.cryptotimes.io/2026/06/01/gnosis-pay-pauses-bridge-following-active-zodiac-delay-module-exploit/>
-- `[defiantgnosispay2026]` *(proposed)* — The Defiant, "Gnosis Pay Hit by 'Delay Module' Exploit as Gnosis Pledges to Cover User Losses": <https://thedefiant.io/news/hacks/gnosis-pay-hit-by-delay-module-exploit-as-gnosis-pledges-to-cover-user-losses>
-- `[cryptonewsgnosispay2026]` *(proposed)* — crypto.news, "Gnosis Pay exploit tied to Zodiac delay module as users exit": <https://crypto.news/gnosis-pay-exploit-tied-to-zodiac-delay-module-as-users-exit/>
+- `[zodiacgnosispay2026]` — Zodiac statement, 2026-06-03: flaw affects Roles Modifier v2 / Delay Modifier v1.1.0 where a Safe using a vulnerable fallback handler is assigned as a module/role member; core Safe contracts unaffected; >95% of identifiable affected accounts remediated; full post-mortem pending. Via Crypto Times, "Zodiac Reveals Flaw Behind Gnosis Pay Exploit, Safe Unaffected": <https://www.cryptotimes.io/2026/06/03/zodiac-reveals-flaw-behind-gnosis-pay-exploit-safe-unaffected/>
+- `[cryptotimesgnosispay2026]` — Crypto Times, "Gnosis Pay Pauses Bridge Following Active Zodiac Delay Module Exploit", 2026-06-01: <https://www.cryptotimes.io/2026/06/01/gnosis-pay-pauses-bridge-following-active-zodiac-delay-module-exploit/>
+- `[defiantgnosispay2026]` — The Defiant, "Gnosis Pay Hit by 'Delay Module' Exploit as Gnosis Pledges to Cover User Losses": <https://thedefiant.io/news/hacks/gnosis-pay-hit-by-delay-module-exploit-as-gnosis-pledges-to-cover-user-losses>
+- `[cryptonewsgnosispay2026]` — crypto.news, "Gnosis Pay exploit tied to Zodiac delay module as users exit": <https://crypto.news/gnosis-pay-exploit-tied-to-zodiac-delay-module-as-users-exit/>
 - Zodiac / Safe documentation — Delay Modifier (cooldown queue), Roles Modifier (scoped permissions), and Safe fallback-handler extension point.
 
 ## Discussion

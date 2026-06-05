@@ -50,11 +50,11 @@ Against the 2026 cohort, TesseraDAO is the **small-cap BNB-Chain restatement** o
 
 ## Public references
 
-- `[peckshieldtesseradao2026]` *(proposed)* — PeckShield / on-chain analysis, 2026-06-01: TesseraDAO exploit minted ~99M TSR, ~\$2.5M USDT realised, private-key leakage / ownership takeover; mint tx 2026-06-01 11:38:25 UTC. Via Bloomingbit, "PeckShield Says TesseraDAO Exploit Minted 99 Million TSR, Stole 2.5 Million USDT": <https://en.bloomingbit.io/feed/news/113373>
-- `[usethebitcointesseradao2026]` *(proposed)* — UseTheBitcoin, "Hacker Drains \$2.4 Million From TesseraDAO Through Unauthorized TSR Minting": <https://usethebitcoin.com/news/tesseradao-hack-tsr-mint-exploit/>
-- `[cryptotimestesseradao2026]` *(proposed)* — Crypto Times, "TesseraDAO TSR Token Crashes 99% Following 99M Token Mint Exploit", 2026-06-02: <https://www.cryptotimes.io/2026/06/02/tesseradao-tsr-plunges-99-after-attacker-mints-99m-tokens/>
-- `[chaincatchertesseradao2026]` *(proposed)* — ChainCatcher, "TesseraDao was attacked, hackers minted 99 million TSR and cashed out 2.5 million dollars" (notes bridge to Ethereum + ~1,285.5 ETH through Tornado Cash): <https://www.chaincatcher.com/en/article/2268696>
-- `[cryptoeconomytesseradao2026]` *(proposed)* — Crypto Economy, "TesseraDAO Suffers \$2.5 Million Exploit Following Ownership Takeover Attack": <https://crypto-economy.com/tesseradao-suffers-2-5-million-exploit-following-ownership-takeover-attack/>
+- `[peckshieldtesseradao2026]` — PeckShield / on-chain analysis, 2026-06-01: TesseraDAO exploit minted ~99M TSR, ~\$2.5M USDT realised, private-key leakage / ownership takeover; mint tx 2026-06-01 11:38:25 UTC. Via Bloomingbit, "PeckShield Says TesseraDAO Exploit Minted 99 Million TSR, Stole 2.5 Million USDT": <https://en.bloomingbit.io/feed/news/113373>
+- `[usethebitcointesseradao2026]` — UseTheBitcoin, "Hacker Drains \$2.4 Million From TesseraDAO Through Unauthorized TSR Minting": <https://usethebitcoin.com/news/tesseradao-hack-tsr-mint-exploit/>
+- `[cryptotimestesseradao2026]` — Crypto Times, "TesseraDAO TSR Token Crashes 99% Following 99M Token Mint Exploit", 2026-06-02: <https://www.cryptotimes.io/2026/06/02/tesseradao-tsr-plunges-99-after-attacker-mints-99m-tokens/>
+- `[chaincatchertesseradao2026]` — ChainCatcher, "TesseraDao was attacked, hackers minted 99 million TSR and cashed out 2.5 million dollars" (notes bridge to Ethereum + ~1,285.5 ETH through Tornado Cash): <https://www.chaincatcher.com/en/article/2268696>
+- `[cryptoeconomytesseradao2026]` — Crypto Economy, "TesseraDAO Suffers \$2.5 Million Exploit Following Ownership Takeover Attack": <https://crypto-economy.com/tesseradao-suffers-2-5-million-exploit-following-ownership-takeover-attack/>
 
 ## Discussion
 

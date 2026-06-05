@@ -61,11 +61,11 @@ The case also pairs the **replay** and **collision** primitives: the collision a
 
 ## Public references
 
-- `[blockaidbutter2026]` *(proposed)* — Blockaid (@blockaid_) root-cause thread on X, 2026-05-20: Butter Bridge retry-message verification weakness; `keccak256(abi.encodePacked(...))` non-injective packing; message replay + precomputed-address manipulation; not a signature forgery / key compromise.
-- `[cryptotimesbutter2026]` *(proposed)* — Crypto Times, "MAP Bridge Exploit: 1 Quadrillion MAPO Minted in Cross-Chain Attack": <https://www.cryptotimes.io/2026/05/21/map-bridge-exploit-1-quadrillion-mapo-minted-in-cross-chain-attack/>
-- `[cryptobriefingbutter2026]` *(proposed)* — Crypto Briefing, "Map Protocol token MAPO plunges 96% after exploit mints quadrillion tokens": <https://cryptobriefing.com/mapo-token-plunges-96-bridge-exploit/>
-- `[ambcryptobutter2026]` *(proposed)* — AMBCrypto, "MAP Protocol plunges 96% after quadrillion-token MAPO exploit": <https://ambcrypto.com/map-protocol-plunges-96-after-quadrillion-token-mapo-exploit-details/>
-- `[currencyanalyticsbutter2026]` *(proposed)* — The Currency Analytics, "Butter Bridge Hack Mints 1 Quadrillion MAPO Tokens": <https://thecurrencyanalytics.com/defi/butter-bridge-hack-mints-1-quadrillion-mapo-tokens-wiping-out-nearly-a-third-of-token-value-259299>
+- `[blockaidbutter2026]` — Blockaid (@blockaid_) root-cause thread on X, 2026-05-20: Butter Bridge retry-message verification weakness; `keccak256(abi.encodePacked(...))` non-injective packing; message replay + precomputed-address manipulation; not a signature forgery / key compromise.
+- `[cryptotimesbutter2026]` — Crypto Times, "MAP Bridge Exploit: 1 Quadrillion MAPO Minted in Cross-Chain Attack": <https://www.cryptotimes.io/2026/05/21/map-bridge-exploit-1-quadrillion-mapo-minted-in-cross-chain-attack/>
+- `[cryptobriefingbutter2026]` — Crypto Briefing, "Map Protocol token MAPO plunges 96% after exploit mints quadrillion tokens": <https://cryptobriefing.com/mapo-token-plunges-96-bridge-exploit/>
+- `[ambcryptobutter2026]` — AMBCrypto, "MAP Protocol plunges 96% after quadrillion-token MAPO exploit": <https://ambcrypto.com/map-protocol-plunges-96-after-quadrillion-token-mapo-exploit-details/>
+- `[currencyanalyticsbutter2026]` — The Currency Analytics, "Butter Bridge Hack Mints 1 Quadrillion MAPO Tokens": <https://thecurrencyanalytics.com/defi/butter-bridge-hack-mints-1-quadrillion-mapo-tokens-wiping-out-nearly-a-third-of-token-value-259299>
 - Solidity documentation — non-standard packed mode (`abi.encodePacked`) collision warning for multiple dynamic types; Slither `encode-packed-collision` detector.
 
 ## Discussion

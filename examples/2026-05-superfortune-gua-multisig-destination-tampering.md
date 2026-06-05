@@ -46,11 +46,11 @@ The lookalike address is the second structural point. The abbreviated-display co
 
 ## Public references
 
-- `[superfortunex2026]` *(proposed)* — SUPERFORTUNE AI (@SUPERFORTUNE888) on X, 2026-05-27: statement on the $GUA security incident — "suspected address poisoning attack … address manipulation through a multisig transaction."
-- `[halbornsuperfortune2026]` *(proposed)* — Halborn, "Explained: The Superfortune AI Hack (May 2026)": <https://www.halborn.com/blog/post/explained-the-superfortune-ai-hack-may-2026>
-- `[coininsidersuperfortune2026]` *(proposed)* — Coin Insider, "Superfortune Probes GUA Address-Tampering Claim": <https://www.coininsider.com/news/superfortune-probes-gua-address-tampering-claim/>
-- `[panewssuperfortune2026]` *(proposed)* — PANews, "Manta's co-founder stated they are investigating the Superfortune security incident; GUA tokens have fallen nearly 76%": <https://www.panewslab.com/en/articles/019e6c32-dc2c-75cd-91b9-16b7c9d61cbb>
-- `[cryipmay2026]` *(proposed)* — Cryip, "Crypto Hacks in May 2026 Cross $84 Million": <https://cryip.co/crypto-hacks-in-may-2026-cross-84-million-as-bridge-exploits-and-security-failures-intensify/>
+- `[superfortunex2026]` — SUPERFORTUNE AI (@SUPERFORTUNE888) on X, 2026-05-27: statement on the $GUA security incident — "suspected address poisoning attack … address manipulation through a multisig transaction."
+- `[halbornsuperfortune2026]` — Halborn, "Explained: The Superfortune AI Hack (May 2026)": <https://www.halborn.com/blog/post/explained-the-superfortune-ai-hack-may-2026>
+- `[coininsidersuperfortune2026]` — Coin Insider, "Superfortune Probes GUA Address-Tampering Claim": <https://www.coininsider.com/news/superfortune-probes-gua-address-tampering-claim/>
+- `[panewssuperfortune2026]` — PANews, "Manta's co-founder stated they are investigating the Superfortune security incident; GUA tokens have fallen nearly 76%": <https://www.panewslab.com/en/articles/019e6c32-dc2c-75cd-91b9-16b7c9d61cbb>
+- `[cryipmay2026]` — Cryip, "Crypto Hacks in May 2026 Cross $84 Million": <https://cryip.co/crypto-hacks-in-may-2026-cross-84-million-as-bridge-exploits-and-security-failures-intensify/>
 - Intended destination: `0x70ae7D3DECfB4C3aE996fb1c07092566F73D5c15`
 - Attacker address: `0x70AE678b457C5E1b3fD7AD9537F234dFc1795C15`
 

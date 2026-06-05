@@ -59,11 +59,11 @@ The **ownership-laundering** detail is the second structural point and the more 
 
 ## Public references
 
-- `[cryptotimesdxsale2026]` *(proposed)* — Crypto Times, "Hackers Drain \$7.3M From DxSale's Old BNB Chain Liquidity Lockers": <https://www.cryptotimes.io/2026/05/29/hackers-drain-7-3m-from-dxsales-old-bnb-chain-liquidity-lockers/>
-- `[cryptonewsdxsale2026]` *(proposed)* — crypto.news, "DxSale exploit drains \$7.3M in BNB through hidden contract backdoor": <https://crypto.news/dxsale-exploit-drains-7-3m-in-bnb-through-hidden-contract-backdoor/>
-- `[spendnodedxsale2026]` *(proposed)* — Spendnode, "DxSale Drained of \$7.3M as Backdoor Hits 2021-Era BNB Lockers": <https://www.spendnode.io/blog/dxsale-7-3m-legacy-locker-exploit-backdoor-may-2026/>
-- `[invezzdxsale2026]` *(proposed)* — Invezz, "DxSale loses \$7.3M in BNB Chain liquidity providers (LPs) hack": <https://invezz.com/news/2026/05/29/dxsale-loses-7-3m-in-bnb-chain-liquidity-providers-lps-hack/>
-- `[bitcoinfoundationdxsale2026]` *(proposed)* — Bitcoin Foundation, "DxSale Hacked for \$7.3M: Insider Team Attack Suspected": <https://bitcoinfoundation.org/news/crimes-and-fraud-news/dxsale-exploit/>
+- `[cryptotimesdxsale2026]` — Crypto Times, "Hackers Drain \$7.3M From DxSale's Old BNB Chain Liquidity Lockers": <https://www.cryptotimes.io/2026/05/29/hackers-drain-7-3m-from-dxsales-old-bnb-chain-liquidity-lockers/>
+- `[cryptonewsdxsale2026]` — crypto.news, "DxSale exploit drains \$7.3M in BNB through hidden contract backdoor": <https://crypto.news/dxsale-exploit-drains-7-3m-in-bnb-through-hidden-contract-backdoor/>
+- `[spendnodedxsale2026]` — Spendnode, "DxSale Drained of \$7.3M as Backdoor Hits 2021-Era BNB Lockers": <https://www.spendnode.io/blog/dxsale-7-3m-legacy-locker-exploit-backdoor-may-2026/>
+- `[invezzdxsale2026]` — Invezz, "DxSale loses \$7.3M in BNB Chain liquidity providers (LPs) hack": <https://invezz.com/news/2026/05/29/dxsale-loses-7-3m-in-bnb-chain-liquidity-providers-lps-hack/>
+- `[bitcoinfoundationdxsale2026]` — Bitcoin Foundation, "DxSale Hacked for \$7.3M: Insider Team Attack Suspected": <https://bitcoinfoundation.org/news/crimes-and-fraud-news/dxsale-exploit/>
 - Drain wallet: `0xC457…FA69` (early tranche 2,958 BNB → two consolidation wallets → Binance deposit addresses). Coinsult traced the `setFee`→1 wei + backdated-lock mechanism.
 
 ## Discussion

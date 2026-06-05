@@ -52,11 +52,11 @@ Finally, the **GME spillover** (a ~13% equity move) marks this as a rare on-chai
 
 ## Public references
 
-- `[wiseadvicerkc2026]` *(proposed)* — Wise Advice (@wiseadvicesumit) on X, 2026-05: $RKC launch-to-\$12.2M-cap-in-30-minutes summary; \$10M+ wiped from ATH; hacker realisation figures.
-- `[cryiprkc2026]` *(proposed)* — Cryip, "Roaring Kitty X Account Hacked: Solana Memecoin \$RKC Pumps to \$12M Before Crash": <https://cryip.co/roaring-kitty-x-account-hacked-solana-memecoin-rkc-pumps-to-12m-before-crash/>
-- `[ccnrkc2026]` *(proposed)* — CCN, "Roaring Kitty Linked Memecoin Crashes 67% After Viral X Post: What Really Happened?": <https://www.ccn.com/education/crypto/roaring-kitty-linked-memecoin-crashes-67-viral-x-post/>
-- `[coinpediarkc2026]` *(proposed)* — Coinpedia, "Solana Token Linked to Roaring Kitty Account Erases \$10 Million After Post Deletion": <https://coinpedia.org/news/solana-token-linked-to-roaring-kitty-account-erases-10-million-after-post-deletion/>
-- `[cryptotimesrkc2026]` *(proposed)* — Crypto Times, "Are Roaring Kitty, Matt Furie, and WinRAR X Account Hacks Connected?": <https://www.cryptotimes.io/2026/05/16/are-roaring-kitty-matt-furie-and-winrar-x-account-hacks-connected/>
+- `[wiseadvicerkc2026]` — Wise Advice (@wiseadvicesumit) on X, 2026-05: $RKC launch-to-\$12.2M-cap-in-30-minutes summary; \$10M+ wiped from ATH; hacker realisation figures.
+- `[cryiprkc2026]` — Cryip, "Roaring Kitty X Account Hacked: Solana Memecoin \$RKC Pumps to \$12M Before Crash": <https://cryip.co/roaring-kitty-x-account-hacked-solana-memecoin-rkc-pumps-to-12m-before-crash/>
+- `[ccnrkc2026]` — CCN, "Roaring Kitty Linked Memecoin Crashes 67% After Viral X Post: What Really Happened?": <https://www.ccn.com/education/crypto/roaring-kitty-linked-memecoin-crashes-67-viral-x-post/>
+- `[coinpediarkc2026]` — Coinpedia, "Solana Token Linked to Roaring Kitty Account Erases \$10 Million After Post Deletion": <https://coinpedia.org/news/solana-token-linked-to-roaring-kitty-account-erases-10-million-after-post-deletion/>
+- `[cryptotimesrkc2026]` — Crypto Times, "Are Roaring Kitty, Matt Furie, and WinRAR X Account Hacks Connected?": <https://www.cryptotimes.io/2026/05/16/are-roaring-kitty-matt-furie-and-winrar-x-account-hacks-connected/>
 
 ## Discussion
 

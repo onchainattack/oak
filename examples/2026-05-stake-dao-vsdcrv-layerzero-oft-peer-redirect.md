@@ -52,11 +52,11 @@ The case also illustrates **why illiquidity bounded the loss and why containment
 
 ## Public references
 
-- `[theblockstakedao2026]` *(proposed)* — The Block / contemporaneous reporting on the Stake DAO vsdCRV exploit, 2026-05-27.
-- `[cryptobriefingstakedao2026]` *(proposed)* — Crypto Briefing, "Stake DAO faces ongoing exploit as attacker mints 5.4T vsdCRV on Arbitrum": <https://cryptobriefing.com/stake-dao-exploit-vsdcrv-arbitrum/>
-- `[cryptotimesstakedao2026]` *(proposed)* — Crypto Times, "Stake DAO Exploited as Hacker Mints 5.4 Trillion Fake vsdCRV": <https://www.cryptotimes.io/2026/05/27/stake-dao-exploited-as-hacker-mints-5-4-trillion-fake-vsdcrv/>
-- `[cryptonewsstakedao2026]` *(proposed)* — crypto.news, "Stake DAO exploit update: Key products unaffected, bridge closed": <https://crypto.news/stake-dao-exploit-update-key-products-unaffected-bridge-closed/>
-- `[nftplazasstakedao2026]` *(proposed)* — NFT Plazas, "Stake DAO Exploit Lets Attacker Mint 5.4T vsdCRV on Arbitrum": <https://nftplazas.com/stake-dao-exploit-lets-attacker-mint-5-4t-vsdcrv-on-arbitrum/>
+- `[theblockstakedao2026]` — The Block / contemporaneous reporting on the Stake DAO vsdCRV exploit, 2026-05-27.
+- `[cryptobriefingstakedao2026]` — Crypto Briefing, "Stake DAO faces ongoing exploit as attacker mints 5.4T vsdCRV on Arbitrum": <https://cryptobriefing.com/stake-dao-exploit-vsdcrv-arbitrum/>
+- `[cryptotimesstakedao2026]` — Crypto Times, "Stake DAO Exploited as Hacker Mints 5.4 Trillion Fake vsdCRV": <https://www.cryptotimes.io/2026/05/27/stake-dao-exploited-as-hacker-mints-5-4-trillion-fake-vsdcrv/>
+- `[cryptonewsstakedao2026]` — crypto.news, "Stake DAO exploit update: Key products unaffected, bridge closed": <https://crypto.news/stake-dao-exploit-update-key-products-unaffected-bridge-closed/>
+- `[nftplazasstakedao2026]` — NFT Plazas, "Stake DAO Exploit Lets Attacker Mint 5.4T vsdCRV on Arbitrum": <https://nftplazas.com/stake-dao-exploit-lets-attacker-mint-5-4t-vsdcrv-on-arbitrum/>
 - Mint transaction: Arbitrum block 467160931, 09:17:58 UTC, 2026-05-27, ~5.45T vsdCRV from the null address.
 
 ## Discussion

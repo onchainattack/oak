@@ -54,7 +54,7 @@ The European concentration (~82%) and the shift toward targeting **family member
 - [Bloomberg — Crypto Thieves Move Offline to Terrorize Investors at Home](https://www.bloomberg.com/features/2026-crypto-thieves-kidnappers/)
 - [Coinbase — Protecting Our Customers: Standing Up to Extortionists](https://www.coinbase.com/blog/protecting-our-customers-standing-up-to-extortionists)
 - [Crowdfund Insider — Crypto Crime: Wrench Attacks Are Evolving Into Sophisticated Criminal Enterprise](https://www.crowdfundinsider.com/2026/05/278122-crypto-crime-wrench-attacks-are-evolving-into-sophisticated-criminal-enterprise-report-claims/)
-- `[cryipmay2026]` *(proposed)* — Cryip, "Crypto Hacks in May 2026 Cross $84 Million" (Kraken/Coinbase ~$6.7M figure; 1,554 ETH + 10.5 BTC + 34.1 cbBTC; ~$5.3M via Tornado Cash): <https://cryip.co/crypto-hacks-in-may-2026-cross-84-million-as-bridge-exploits-and-security-failures-intensify/>
+- `[cryipmay2026]` — Cryip, "Crypto Hacks in May 2026 Cross $84 Million" (Kraken/Coinbase ~$6.7M figure; 1,554 ETH + 10.5 BTC + 34.1 cbBTC; ~$5.3M via Tornado Cash): <https://cryip.co/crypto-hacks-in-may-2026-cross-84-million-as-bridge-exploits-and-security-failures-intensify/>
 
 ## Discussion
 
