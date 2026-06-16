@@ -10,6 +10,8 @@ on:
     branches: [main]
     paths:
       - "citations.bib"
+      - "tools/check_citations.py"
+      - ".github/workflows/citation-format.yml"
 
 permissions:
   contents: read
