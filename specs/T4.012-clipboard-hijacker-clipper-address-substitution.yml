@@ -1,0 +1,94 @@
+oak_techniques: [OAK-T4.012]
+spec_id: oak-detection-T4.012
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect clipboard-hijacker ("clipper") malware that substitutes copied
+  cryptocurrency destination addresses with attacker-controlled addresses of
+  the same coin at copy time, and the co-located secret-harvesting arm
+  (clipboard/screenshot exfiltration of BIP39 seed phrases and WIF/hex private
+  keys). Detection operates at the endpoint (clipboard-behaviour and anonymised
+  C2) and at the wallet-UX layer (full-address verification at sign time).
+  Excludes: T4.003 (address poisoning — on-chain wallet-history manipulation,
+  no host malware); the Bybit-class sign-time UI swap (compromise of operator
+  signing infrastructure, not a commodity end-user endpoint).
+
+data_sources: [endpoint_process_telemetry, clipboard_api_events, network_flow, tx_call_trace]
+
+detection_logic:
+  description: |
+    Three detection paths. PATH A (endpoint clipboard-behaviour): flag a
+    process that reads then writes the clipboard within a tight time window
+    whenever clipboard content matches a crypto-address regex, especially when
+    the written value differs from the read value but shares leading/trailing
+    characters. PATH B (anonymised C2 + persistence/worm artefacts): flag a
+    bundled Tor SOCKS proxy on localhost:9050, outbound Tor from non-browser
+    processes, .lnk files on removable drives whose target invokes a script
+    interpreter, and scheduled-task / LaunchAgent script persistence. PATH C
+    (wallet-side full-address verification): at sign time, re-render the full
+    destination and compare against the user-intended address from a trusted
+    source (address book / out-of-band), flagging same-prefix mismatches.
+  pseudocode: |
+    ADDR_RE ← { btc_bech32, btc_legacy, btc_p2sh, eth_hex, ltc, xmr, doge,
+                tron, xrp, sol, ada, zec }            # per-coin address formats
+    SECRET_RE ← { bip39_mnemonic(12..24 words), wif_privkey, hex_privkey }
+
+    # PATH A — endpoint clipboard-behaviour
+    for each clipboard_event E observed on host H:
+      if E.op == READ and matches_any(E.value, ADDR_RE):
+        W ← next_clipboard_write(H, within=clipboard_swap_window_ms)
+        if W and W.value ≠ E.value and same_format(W.value, E.value):
+          shared ← shared_prefix_len(W.value, E.value) + shared_suffix_len(W.value, E.value)
+          emit(PATH_A, host=H, proc=W.writer, copied=E.value, pasted=W.value,
+               shared_chars=shared, severity=critical)
+      if matches_any(E.value, SECRET_RE) and clipboard_reader_is_background(H):
+        emit(PATH_A, host=H, proc=E.reader, kind=secret_harvest, severity=critical)
+
+    # PATH B — anonymised C2 + persistence / worm artefacts
+    for each process P on host H:
+      if P.opens_socks_proxy("127.0.0.1:9050") or P.connects_tor() and not P.is_browser:
+        emit(PATH_B, host=H, proc=P, signal=tor_c2, severity=high)
+      if P.creates_lnk_on_removable_drive() and lnk_target_invokes_interpreter(P):
+        emit(PATH_B, host=H, proc=P, signal=usb_worm_lnk, severity=high)
+      if P.installs_persistence(scheduled_task|startup|launch_agent) and runs_script_payload(P):
+        emit(PATH_B, host=H, proc=P, signal=script_persistence, severity=medium)
+
+    # PATH C — wallet-side full-address verification (pre-send)
+    for each send_flow S:
+      intended ← resolve_from_trusted_source(S)          # address book / out-of-band
+      if S.destination ≠ intended and same_prefix_suffix(S.destination, intended):
+        block_or_warn(S, reason="possible clipper substitution — verify full address")
+        emit(PATH_C, wallet=S.wallet, destination=S.destination, severity=critical)
+
+parameters:
+  clipboard_swap_window_ms:   { type: integer, default: 1000 }   # read->write proximity
+  shared_affix_threshold:     { type: integer, default: 4 }      # leading+trailing match to flag look-alike
+  tor_socks_port:             { type: integer, default: 9050 }
+
+output_alert: [oak_technique, detection_path, severity, host, process,
+               copied_value, pasted_value, shared_affix_chars,
+               c2_signal, wallet, destination, evidence]
+
+test_fixtures:
+  positive:
+    - 2026-06-cryptobandits-usb-worm-tor-clipper          # USB-worm Tor clipper, BIP39/WIF harvest, EVAL RCE
+    - 2026-06-rust-clipper-fake-reputation-ghost-network  # Rust clipper, reputation-laundered distribution, 15.5K addresses
+  negative:
+    - "Legitimate password manager writing the clipboard on user paste of a non-address secret — no address-format swap"
+    - "A user manually correcting a mistyped address — clipboard write originates from a user gesture, not a background process"
+    - "Address-poisoning victim copy-pasting a look-alike address from on-chain wallet history — T4.003, no host clipboard tampering"
+
+false_positive_modes:
+  - Clipboard-manager / sync utilities that legitimately rewrite clipboard contents — distinguish via address-format-specific substitution and background (non-gesture) writes
+  - Tor Browser legitimately using localhost:9050 — PATH B requires Tor egress from a non-browser process
+  - Wallets that re-checksum or re-case an EIP-55 address on paste — not a value change to a different address; same-address normalisation must be excluded from PATH C
+
+mitigations: [OAK-M29, OAK-M18, OAK-M19, OAK-M22, OAK-M30, OAK-M40, OAK-M21]
+
+reference_implementations:
+  - { target: microsoft-defender, chain: cross-chain, url: "" }
+  - { target: trezor-suite,       chain: cross-chain, url: "" }
+  - { target: rabby,              chain: cross-chain, url: "" }
