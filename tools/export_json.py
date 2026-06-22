@@ -40,7 +40,7 @@ Output schema (v2):
 Tactics, Techniques retain v1 shape under v2 to preserve consumer compat.
 
 Usage:
-    python tools/export_json.py [--out tools/oak.json] [--version 0.1.0-draft]
+    python tools/export_json.py [--out tools/oak.json] [--version 0.7.0]
 
 Exits non-zero on any parse error so it can be wired into CI.
 """
@@ -268,7 +268,7 @@ def parse_software(path: Path) -> Software:
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", default="tools/oak.json", type=Path)
-    parser.add_argument("--version", default="0.1.0-draft")
+    parser.add_argument("--version", default="0.7.0")
     parser.add_argument("--root", default=".", type=Path)
     args = parser.parse_args(argv)
 

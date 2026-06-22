@@ -16,6 +16,6 @@ If you believe a specific named reference is inaccurate — or you are the sourc
 
 ## Trademarks
 
-"OAK" and "OnChain Attack Knowledge" are trademarks of the OAK project. Trademark filings in the United States, European Union, and Ukraine are in progress as of v0.1.
+"OAK" and "OnChain Attack Knowledge" are trademarks of the OAK project. Trademark filings in the United States, European Union, and Ukraine are in progress as of v0.7.
 
 All other trademarks referenced in OAK content (names of blockchains, protocols, exchanges, security vendors, threat-intel providers, and audit firms) are the property of their respective owners. References are made solely to identify and discuss the corresponding entities, products, and incidents in a defender's-eye-view context. No endorsement, sponsorship, or affiliation is implied by such references.

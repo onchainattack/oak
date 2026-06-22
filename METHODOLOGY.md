@@ -1,6 +1,6 @@
-# OAK Methodology v0.1.0
+# OAK Methodology v0.7.0
 
-**Status:** draft
+**Status:** released
 **Maintainer:** @iZonex
 **Target audience:** researchers citing OAK, detection vendors evaluating coverage claims, protocol teams assessing threat-model completeness
 
@@ -227,9 +227,9 @@ Academic citations should reference the content snapshot date and the specific T
 ```bibtex
 @misc{oak2026,
   author = {{OAK Contributors}},
-  title  = {OAK -- OnChain Attack Knowledge v0.1},
+  title  = {OAK -- OnChain Attack Knowledge v0.7},
   year   = {2026},
-  note   = {Content snapshot 2026-05-15. \url{https://github.com/onchainattack/oak}},
+  note   = {Content snapshot 2026-06-22. \url{https://github.com/onchainattack/oak}},
 }
 ```
 
@@ -240,7 +240,7 @@ Technique-specific citations should include the Technique ID in the citation key
   author = {{OAK Contributors}},
   title  = {OAK-T9.001 -- Oracle/Price Manipulation},
   year   = {2026},
-  note   = {OAK v0.1, Technique entry. \url{https://github.com/onchainattack/oak}},
+  note   = {OAK v0.7, Technique entry. \url{https://github.com/onchainattack/oak}},
 }
 ```
 

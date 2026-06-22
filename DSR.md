@@ -1,6 +1,6 @@
-# OAK Data Source Schema Registry (DSR) v0.1.0
+# OAK Data Source Schema Registry (DSR) v0.7.0
 
-**Status:** draft  
+**Status:** released  
 **Maintainer:** @iZonex  
 **Target audience:** detection-engine implementors, data-platform engineers  
 

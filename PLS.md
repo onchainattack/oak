@@ -1,6 +1,6 @@
-# OAK Pseudocode Language Specification (PLS) v0.1.0
+# OAK Pseudocode Language Specification (PLS) v0.7.0
 
-**Status:** draft  
+**Status:** released  
 **Maintainer:** @iZonex  
 **Target audience:** spec authors, detection-engine implementors, code-generator authors  
 

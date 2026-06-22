@@ -258,7 +258,7 @@ function App() {
               onOpenSoftware={openSoftware}
             />
             <a className="topbar-version" href="https://github.com/onchainattack/oak/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer" title="Schema version + content snapshot date — see VERSIONING.md">
-              schema 0.1 · {new Date(siteData.generatedAt).toISOString().slice(0, 10)}
+              schema 0.7 · {new Date(siteData.generatedAt).toISOString().slice(0, 10)}
             </a>
           </nav>
         </header>
@@ -267,7 +267,7 @@ function App() {
 
       {!detailNode && activeView === "about" && (
         <section className="overview-hero">
-          <p className="eyebrow">schema 0.1 · content {new Date(siteData.generatedAt).toISOString().slice(0, 10)} · open · community-comment</p>
+          <p className="eyebrow">schema 0.7 · content {new Date(siteData.generatedAt).toISOString().slice(0, 10)} · open · released</p>
           <h1>An open taxonomy of on-chain attack behavior.</h1>
           <p className="overview-lede">
             OAK is a vendor-neutral knowledge base of adversary tactics and techniques
@@ -602,7 +602,7 @@ function App() {
         <div className="foot-bar">
           <span>
             <span className="foot-tag">OAK//</span>
-            schema 0.1 · content {new Date(siteData.generatedAt).toISOString().slice(0, 10)} · onchainattack.org
+            schema 0.7 · content {new Date(siteData.generatedAt).toISOString().slice(0, 10)} · onchainattack.org
           </span>
         </div>
       </footer>

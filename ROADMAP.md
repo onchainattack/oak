@@ -64,7 +64,7 @@ The hard semantic commitment that comes with v1.0:
 
 - The Tactics are stable. New top-level Tactics may be introduced in v2.0+ but not before, and only after community consultation.
 - Existing Technique and Group IDs are stable. Deprecated entries are marked `Maturity: deprecated` and remain in the repository with a pointer to the superseding entry. IDs are never reused.
-- A canonical machine-readable schema is published alongside the markdown. The v0.1 `tools/oak.json` is treated as a draft until v1.0 promotes it to a stable schema.
+- A canonical machine-readable schema is published alongside the markdown, frozen as **stable**. `tools/oak.json` was promoted from a draft to a released (pre-1.0) schema at **v0.7**; v1.0 freezes it as the stable, ID-stable contract.
 - Account abstraction (ERC-4337) coverage.
 - Validator / staking / restaking coverage.
 - Severity and timing dimensions on every Technique.

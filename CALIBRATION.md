@@ -1,6 +1,6 @@
-# OAK Parameter Calibration Methodology v0.1.0
+# OAK Parameter Calibration Methodology v0.7.0
 
-**Status:** draft  
+**Status:** released  
 **Maintainer:** @iZonex  
 **Target audience:** detection-engine implementors, SOC analysts, spec authors  
 

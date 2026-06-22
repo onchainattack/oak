@@ -2,9 +2,15 @@
 
 All notable changes to OAK are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and OAK's versioning is independent of any calendar cadence — minor versions ship when content reaches a coherent next state, not on a fixed schedule.
 
-## [Unreleased / v0.1.0-draft] — pre-release
+## [0.7.0] — 2026-06-22 — out of draft
 
-The initial public release. v0.1 expanded mid-draft from the original "operator-behaviour kill chain only" scope to also include the smart-contract-exploit Tactic (T9) and a Threat Actors axis (`actors/`), making the framework substantially more useful as a v0.1 deliverable rather than as a launching point that left the largest classes of public losses unaddressed. Content is complete and self-consistent against the v0.1 launch criteria; remaining work to land the v0.1 tag is non-content (visual identity, landing page, peer-review outreach, US trademark review).
+OAK leaves draft status and becomes a released (pre-1.0) knowledge base. `tools/oak.json` is promoted from a draft schema to a released schema, the public version label moves off `0.1.0-draft`, and the first non-draft content snapshot (`snapshot/2026-06-22`) is cut. This is a status/maturity promotion, not a structural change — **no OAK ID was renamed and no field semantics changed**, so consumers pinned to the 0.6 schema shape continue to resolve. The taxonomy spine (17 Tactics) is settled and every Tactic, Technique, Threat Actor, Mitigation, Software, Data Source, and sub-Technique is anchored by at least one worked example. The hard ID-stability freeze and the formal "stable taxonomy" commitment remain reserved for **v1.0** (see `ROADMAP.md`): ~52% of Techniques are still `emerging` per their per-item maturity, which is why this lands at 0.7 and not 1.0.
+
+Snapshot counts at 0.7: **17** Tactics · **146** Techniques (100% detection-spec coverage) · **19** Threat Actors · **43** Mitigations · **41** Software · **12** Data Sources · **642** worked examples · **1555** bibtex entries. All structural gates pass (linkage, backlinks, integrity, specs, citations, markdownlint).
+
+## [0.1.0 – 0.6] — initial release line (2026-04 → 2026-06)
+
+The initial release line. v0.1 expanded mid-development from the original "operator-behaviour kill chain only" scope to also include the smart-contract-exploit Tactic (T9) and a Threat Actors axis (`actors/`), making the framework substantially more useful than a launching point that left the largest classes of public losses unaddressed. Content was complete and self-consistent against the launch criteria; the framework was promoted out of draft at 0.7 (above).
 
 ### Phase ZA additions — Detection-spec axis at 100% Technique coverage (schema-minor 0.5 → 0.6)
 

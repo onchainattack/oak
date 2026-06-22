@@ -193,7 +193,7 @@ Software entries cover named tools and malware families; the operator group that
 Operator-profile evolution, TTPs over time, attribution caveats, cluster-boundary distinctions vs neighbouring OAK-G entries.
 ```
 
-**Attribution-strength discipline.** OAK distinguishes three attribution levels: **confirmed** (multiple credible national-government or law-enforcement bodies have publicly attributed the activity — FBI press release, OFAC SDN, DOJ indictment, or multi-government joint advisory); **inferred-strong** (major industry forensic providers have published consistent attributions with technical evidence — wallet-cluster analysis, malware fingerprints, tactical fingerprints); **inferred-weak** (speculation or single-source attribution; OAK does not publish single-source attributions at v0.1). Be honest about which level applies and revise upward only when evidence supports it.
+**Attribution-strength discipline.** OAK distinguishes three attribution levels: **confirmed** (multiple credible national-government or law-enforcement bodies have publicly attributed the activity — FBI press release, OFAC SDN, DOJ indictment, or multi-government joint advisory); **inferred-strong** (major industry forensic providers have published consistent attributions with technical evidence — wallet-cluster analysis, malware fingerprints, tactical fingerprints); **inferred-weak** (speculation or single-source attribution; OAK does not publish single-source attributions). Be honest about which level applies and revise upward only when evidence supports it.
 
 ## Submission flow
 
@@ -223,7 +223,7 @@ python3 tools/check_linkage.py
 # actor `## Observed Examples` and technique `## Real-world examples`
 # sections must list every example that attributes / references them;
 # mitigation `**Maps to Techniques:**` and software `**Used by Groups:**`
-# metadata must resolve. v0.1 corpus has known legacy debt; new contributions
+# metadata must resolve. The corpus has known legacy debt; new contributions
 # must not add to it.
 python3 tools/check_backlinks.py
 
