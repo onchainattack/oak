@@ -1,7 +1,7 @@
 # 3520 BTC — Instant Exchange → Monero Laundering — 2025-04
 
 **Loss:** 3520 BTC (~$330.7M) from a potential victim. Funds laundered through 6+ instant exchanges to Monero (XMR), causing XMR price spike.
-**OAK Techniques observed:** OAK-T5 (Asset Drain) — large unauthorized BTC transfer; OAK-T7 (Laundering) — instant exchange chain to privacy coin (XMR).
+**OAK Techniques observed:** **OAK-T7.005** (Privacy-Chain Hops) — primary and sole; 3520 BTC routed through 6+ instant exchanges into Monero in a single-day window, bypassing every KYCing venue. The canonical T7.005 instant-swap-to-XMR shape: no CEX leg, terminal obfuscation at the privacy-chain hop, which is precisely T7.005's discriminator against T7.002. **No T5 sub-Technique:** the file does not establish the extraction vector, or even that a theft occurred — it records "a suspicious transfer from a *potential* victim". The XMR price spike is a detection signal, not a mechanism.
 **Attribution:** **pseudonymous** — theft address `bc1qcrypchnrdx87jnal5e5m849fw460t4gk7vz55g` identified on-chain. Attacker identity unknown.
 
 **Key teaching point:** The 3520 BTC theft demonstrates the **instant-exchange-to-privacy-coin laundering pattern**: the attacker bypassed centralized exchanges (which can freeze funds) entirely, using 6+ instant exchanges (eXch, ChangeNow, etc.) to swap BTC for XMR in rapid succession. The Monero conversion destroys on-chain traceability. The XMR price spiked during the laundering — making the laundering event itself observable via market data even when individual transactions are opaque. Detection approach: monitor XMR/BTC premium on instant exchanges for abnormal spikes indicating large-scale laundering in progress.

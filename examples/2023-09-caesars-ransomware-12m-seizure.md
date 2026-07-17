@@ -1,7 +1,7 @@
 # Caesar's Ransomware — $12M Seized / Multi-Agency Recovery — 2023-09
 
 **Loss:** Ransomware incident (September 2023). $12M in ransom payments traced and seized by law enforcement with ZachXBT assistance.
-**OAK Techniques observed:** OAK-T5 (Asset Drain — Ransomware) — ransomware extortion with crypto ransom demand; OAK-T7 (Laundering) — ransom payment tracing leading to seizure.
+**OAK Techniques observed:** **OAK-T5.008** (Ransomware Extortion Payment) — primary; a crypto ransom paid to attacker-controlled addresses, the canonical T5.008 shape where extraction is human-mediated under duress rather than via a contract primitive. **Not tagged:** the tracing and seizure are defender actions and outcome, not laundering technique. The file's evidentiary basis is thin — no ransomware family named, no addresses, attribution `unattributed` — and no T7 sub-Technique is supportable from it.
 **Attribution:** **unattributed** — ransomware group not publicly named. $12M seized in multi-agency operation.
 
 **Key teaching point:** The Caesar's ransomware seizure demonstrates the **ransomware-payment-to-seizure** pipeline: ransomware victims pay in crypto → on-chain tracing follows the ransom payments through laundering paths → law enforcement seizes identified funds. The $12M seizure validates ransomware tracing as an asset recovery mechanism, not just an investigative exercise. Detection approach: ransomware payment addresses should be immediately shared with exchange compliance teams upon identification; the time window between ransom payment and exchange withdrawal is the seizure opportunity.

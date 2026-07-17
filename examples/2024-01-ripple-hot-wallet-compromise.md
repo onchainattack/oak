@@ -1,7 +1,7 @@
 # Ripple — Private Key Compromise — 2024-01-31
 
 **Loss:** ~213M XRP ($112.5M at time of theft).
-**OAK Techniques observed:** OAK-T6 (Authorization / Key Compromise) — private key compromise of Ripple-controlled hot wallet; OAK-T7 (Laundering) — rapid multi-CEX laundering.
+**OAK Techniques observed:** **OAK-T7.002** (CEX Deposit-Address Layering) — the only cleanly-realised mechanism on the record; ~213M XRP was fanned out to deposit addresses at MEXC, Gate, Binance and Kraken in parallel within hours, calibrated to outrun manual freeze requests. **Key-compromise half: not mapped.** The account was drained by a valid signature from a fully-compromised hot-wallet key and the vector was never established. No T11 sub-Technique covers generic operator hot-wallet key compromise with an unestablished vector: T11.001 requires a third-party signing vendor, T11.004 an entropy defect, T11.012 server-side raw-key storage, T11.011 key-store co-location — none is evidenced. T9.004 is inapplicable: XRPL has no smart-contract authorisation surface to misconfigure. Declared gap.
 **Attribution:** **pseudonymous** — funds laundered through MEXC, Gate, Binance, Kraken, and other exchanges. No arrests reported.
 
 **Key teaching point:** The Ripple hack demonstrates the **enterprise hot wallet compromise** pattern: even well-resourced organizations with dedicated security teams can lose control of hot wallet keys. The laundering speed is the distinguishing signal — $112.5M moved through 5+ exchanges within hours. Detection approach: monitor known enterprise-controlled addresses for outbound transfers that fan out to multiple CEX deposit addresses within a compressed time window.

@@ -1,7 +1,7 @@
 # DSJ Exchange (DSJEX) — Ponzi Collapse — 2026-04/05
 
 **Loss:** $150M+ total; $92M+ laundered across chains in a 6-day window (April 27 – May 3, 2026).
-**OAK Techniques observed:** OAK-T2 (Token/Investment Fraud) — Ponzi scheme primary; OAK-T7 (Laundering) — cross-chain laundering exit.
+**OAK Techniques observed:** **OAK-T11.005.002** (Fake-Custodian / Fake-Asset-Manager Fraud) — primary; presented as an investment platform promising above-market returns, existing depositors were paid from new deposits, and it collapsed when withdrawals exceeded inflows. Despite "Exchange" in the name, the platform honoured withdrawals until deposits dried up — not a fake CEX with fictional balances and blocked withdrawals, which is T11.005.001's discriminator — and its other name, BG Wealth Sharing, matches T11.005.002's stated scope ("the pitch is wealth management, not exchange trading"). **OAK-T7.003** (Cross-Chain Bridge Laundering) — the dominant exit rail; \$92M+ across Ethereum, TRON and BSC in six days. **OAK-T7.001** (Mixer-Routed Hop) and **OAK-T7.002** (CEX Deposit-Address Layering) — the file names both rails in its own prose.
 **Attribution:** **confirmed** — operators of DSJ Exchange / BG Wealth Sharing platform. ZachXBT led cross-chain tracing initiative with multiple contributors.
 
 **Key teaching point:** The DSJ Exchange collapse demonstrates the **Ponzi-to-cross-chain-laundering exit pattern**: when a Ponzi scheme collapses, operators attempt to move remaining funds across multiple chains (Ethereum, TRON, BSC) within days to obscure the trail. The detection approach is similar to bridge exploit laundering: monitor for exchange outflows that fan out across chains + mixers + CEX deposits within a compressed time window.

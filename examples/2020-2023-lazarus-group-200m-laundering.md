@@ -1,7 +1,7 @@
 # Lazarus Group — $200M Fiat Cash-Out from 25+ Hacks — 2020-2023
 
 **Loss:** $200M+ from 25+ crypto hacks laundered to fiat by Lazarus Group over 2020-2023. $374K USDT frozen (Nov 2023); $3.4M frozen by 3 of 4 stablecoin issuers; undisclosed amount frozen at CEXs.
-**OAK Techniques observed:** OAK-T7 (Laundering) — multi-stage pipeline: mixer → cross-chain bridge → P2P marketplace → fiat off-ramp. Noones and Paxful P2P marketplaces identified as the fiat conversion layer.
+**OAK Techniques observed:** **OAK-T7.001** (Mixer-Routed Hop) — primary; stage 1 routed proceeds from 25+ hacks through Tornado Cash. **OAK-T7.003** (Cross-Chain Bridge Laundering) — stage 2; mixed funds bridged across chains. **OAK-T7.002** (CEX Deposit-Address Layering) — stage 4 consolidation and off-ramp. **OAK-T8.002** (Cross-Chain Operator Continuity) — the shared laundering path is what clustered 25+ nominally separate hacks to one operator. **Not mapped:** the Noones/Paxful P2P-marketplace fiat off-ramp — the file's own teaching point — has no covering Technique; T7.002 is the CEX off-ramp, not the lighter-KYC P2P layer.
 **OAK-Gnn:** [OAK-G01 Lazarus Group / DPRK-attributed](../actors/OAK-G01-lazarus.md).
 **Attribution:** **confirmed** — Lazarus Group (DPRK state-sponsored). ZachXBT 15-month investigation published April 2024.
 
