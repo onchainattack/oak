@@ -1,11 +1,17 @@
-oak_techniques: [OAK-T12.005]
+oak_techniques: [OAK-T16.001]
 spec_id: oak-detection-T12.005
 version: 0.1.0
-maturity: emerging
+maturity: deprecated
 maintainer: "@iZonex"
 license: Apache-2.0
 
 scope: |
+  DEPRECATED 2026-07-17 — superseded by the OAK-T16.001 spec. OAK-T12.005 and
+  OAK-T16.001 are the same Technique under two IDs (same-block flash-borrow of
+  governance tokens to carry a proposal); T12.005 was additionally misfiled under
+  T12 (NFT-Specific Patterns). Detection logic below is retained for reference;
+  use specs/T16.001-vote-takeover-via-flash-loan.yml.
+
   Detect governance-attack transactions where the attacker acquires voting
   power via uncollateralized flash-loan borrowing rather than through
   market purchase, delegation, or long-term accumulation. The attacker

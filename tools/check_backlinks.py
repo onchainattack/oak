@@ -136,6 +136,15 @@ def main() -> int:
         if not tid:
             continue
         text = f.read_text(encoding="utf-8")
+        # A deprecated Technique is a tombstone: the ID is retained and never
+        # reused (CONTRIBUTING), its content and its worked examples have moved to
+        # the superseding entry, and it is *supposed* to have no anchor of its own.
+        # Requiring one would force the examples to be listed under both IDs, which
+        # is the double-counting the deprecation exists to end.
+        if re.search(r"^\*\*Maturity:\*\*\s*deprecated\b", text, re.M | re.I):
+            tech_examples[tid] = set()
+            tech_no_anchor[tid] = True
+            continue
         body = section_body(text, "Real-world examples")
         if body is None:
             tech_examples[tid] = set()

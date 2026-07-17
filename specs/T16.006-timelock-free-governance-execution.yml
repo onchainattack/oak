@@ -1,5 +1,5 @@
-oak_techniques: [OAK-T12.004]
-spec_id: oak-detection-T12.004
+oak_techniques: [OAK-T16.006]
+spec_id: oak-detection-T16.006
 version: 0.1.0
 maturity: emerging
 maintainer: "@iZonex"
@@ -26,7 +26,7 @@ detection_logic:
     verify the upgrade path enforces a mandatory timelock interposed between
     governance approval and proxy upgrade function. PATH B (same-block
     upgrade monitoring): alert when an Upgraded event fires in the same
-    block as a ProposalExecuted event — the canonical T12.004 on-chain
+    block as a ProposalExecuted event — the canonical T16.006 on-chain
     signature. PATH C (timelock-parameter drift monitoring): track the
     timelock contract's minimum-delay parameter over time; alert on
     reductions below the documented governance-security window.

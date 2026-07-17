@@ -1,7 +1,7 @@
 # DeFi "move fast" era timelock-free protocol upgrade cohort — EVM — 2020–2021
 
 **Loss:** aggregate losses across the cohort at v0.1; no single headline loss attributable solely to timelock absence. The class is documented at the audit-finding / governance-design layer rather than the single-exploit layer. Multiple DeFi protocols deployed in 2020-2021 with upgrade authority (governance multisig, DAO executor, or proxy admin) capable of executing immediate protocol upgrades without a mandatory timelock — a governance design anti-pattern that converts any governance compromise into an immediate full-protocol extraction event.
-**OAK Techniques observed:** **OAK-T12.004** (Timelock-Free Protocol Upgrade Execution) — primary; the canonical cohort anchor for the timelock-absent governance design anti-pattern. The absent timelock is the load-bearing governance-design vulnerability: it does not cause the governance compromise but determines its blast radius. **OAK-T12.002** (Governance Multisig Compromise) — secondary; when the multisig is compromised, the absence of a timelock amplifies the extraction from "detectable pending upgrade" to "immediate full-protocol drain."
+**OAK Techniques observed:** **OAK-T16.006** (Timelock-Free Protocol Upgrade Execution) — primary; the canonical cohort anchor for the timelock-absent governance design anti-pattern. The absent timelock is the load-bearing governance-design vulnerability: it does not cause the governance compromise but determines its blast radius. **OAK-T12.002** (Governance Multisig Compromise) — secondary; when the multisig is compromised, the absence of a timelock amplifies the extraction from "detectable pending upgrade" to "immediate full-protocol drain."
 **Attribution:** **unattributed** The class is documented across multiple protocol deployments and audit-firm findings (Trail of Bits, OpenZeppelin, Spearbit). No single operator or protocol is solely associated with the anti-pattern.
 **Key teaching point:** **The Compound Timelock (48-hour mandatory delay between governance approval and execution) became the DeFi standard precisely because the 2020-2021 "move fast" era demonstrated that timelock-free upgrade authority converts any governance-compromise event from a detectable pending threat into an immediate full-extraction event.** The timelock is the load-bearing defense-in-depth primitive — it does not prevent governance capture but gives users time to observe a malicious upgrade and exit before execution.
 
@@ -18,17 +18,17 @@ The Compound Timelock — a 48-hour mandatory delay enforced by a TimelockContro
 3. During the 48-hour window, users and governance participants can observe the queued upgrade, inspect the proposed implementation contract, and — if the upgrade is malicious — exit their positions by withdrawing funds from the protocol.
 4. After 48 hours, the upgrade can be `execute`d. If the upgrade was detected as malicious during the window, governance participants can coordinate a counter-proposal or users can fully exit.
 
-The timelock does not prevent the governance compromise — it limits the blast radius by providing a user-exit window. This defense-in-depth primitive is now standard across Compound, Uniswap, Aave, and most major DeFi protocols. Protocols still deploying without a governance timelock as of 2024-2026 are considered elevated T12.004 risk.
+The timelock does not prevent the governance compromise — it limits the blast radius by providing a user-exit window. This defense-in-depth primitive is now standard across Compound, Uniswap, Aave, and most major DeFi protocols. Protocols still deploying without a governance timelock as of 2024-2026 are considered elevated T16.006 risk.
 
 ## Timeline (UTC)
 
 | When | Event | OAK ref |
 |---|---|---|
 | 2020-06 | Compound Finance deploys the Compound Timelock (48-hour governance delay); the TimelockController pattern is introduced as a Solidity standard | (canonical positive example) |
-| 2020–2021 | Multiple DeFi protocols deploy without governance timelocks; upgrade authority held by instant-execution multisig; audit firms flag timelock absence as critical governance-design finding | T12.004 (anti-pattern proliferation) |
+| 2020–2021 | Multiple DeFi protocols deploy without governance timelocks; upgrade authority held by instant-execution multisig; audit firms flag timelock absence as critical governance-design finding | T16.006 (anti-pattern proliferation) |
 | 2021 | OpenZeppelin publishes TimelockController as a standard Solidity component; adoption accelerates across DeFi | (mitigation standardisation) |
-| 2021–2023 | Audit-firm literature (Trail of Bits, OpenZeppelin, Spearbit) categorizes timelock-free upgrade authority as a distinct governance-risk class | T12.004 (audit-class formalisation) |
-| 2024–2026 | Most major DeFi protocols have adopted governance timelocks; T12.004 risk persists in long-tail protocols and new deployments that omit timelocks for operational agility | T12.004 (ongoing surface) |
+| 2021–2023 | Audit-firm literature (Trail of Bits, OpenZeppelin, Spearbit) categorizes timelock-free upgrade authority as a distinct governance-risk class | T16.006 (audit-class formalisation) |
+| 2024–2026 | Most major DeFi protocols have adopted governance timelocks; T16.006 risk persists in long-tail protocols and new deployments that omit timelocks for operational agility | T16.006 (ongoing surface) |
 
 ## Realised extraction
 
@@ -38,4 +38,4 @@ Aggregate extraction attributable solely to timelock absence is difficult to iso
 
 - Compound Finance TimelockController (OpenZeppelin standard implementation)
 - Trail of Bits, OpenZeppelin, Spearbit — governance-design audit findings flagging timelock absence as critical (2020–2023)
-- See `techniques/T12.004-timelock-free-protocol-upgrade-execution.md` for full technique characterisation
+- See `techniques/T16.006-timelock-free-protocol-upgrade-execution.md` for full technique characterisation
