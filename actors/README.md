@@ -55,7 +55,7 @@ OAK distinguishes three attribution levels:
 
 Attribution levels are explicit in the per-Group page header. When attribution evolves (de-listings, new public attributions), pages are updated and the change recorded in `CHANGELOG.md`.
 
-## Relationship to OAK-T8 (Operational Reuse)
+## Relationship to OAK-T8 (Operator Continuity / Attribution Signals)
 
 There is intentional overlap between OAK-T8 (a *Tactic* describing infrastructure reuse across incidents) and OAK-Gnn (an *axis entry* identifying a specific operator). T8 is the *defender capability* that produces Group attributions; OAK-Gnn entries are the *outputs* of that capability when the attribution is stable enough to publish. Per-Technique pages may reference both — for instance, an incident attributed to OAK-G01 Lazarus Group typically also exhibits OAK-T8.001 (Common-Funder Cluster Reuse) as a contributing detection signal.
 

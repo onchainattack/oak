@@ -57,6 +57,61 @@ TAG_RE = re.compile(r"OAK-(T\d+(?:\.\d+)*)")
 DECLARED_UNMAPPED_RE = re.compile(r"\bnone\b\s*[—–-]", re.I)
 
 
+def tactic_names() -> dict[str, str]:
+    """Ground truth: the H1 of each tactics/Tn-*.md file."""
+    out = {}
+    for f in os.listdir(TACTIC_DIR):
+        if not f.endswith(".md") or "-" not in f:
+            continue
+        with open(os.path.join(TACTIC_DIR, f), encoding="utf-8") as fh:
+            m = re.match(r"#\s*OAK-(T\d+)\s*[—-]\s*(.+)", fh.readline().strip())
+        if m:
+            out[m.group(1)] = m.group(2).strip()
+    return out
+
+
+NAME_CLAIM_RE = re.compile(r"OAK-(T\d+)\s*\(([^)]{3,60})\)")
+
+
+def wrong_tactic_names(names: dict[str, str]) -> list[tuple[str, str, str, str]]:
+    """Find `OAK-Tn (Some Name)` where Some Name is not Tn's name.
+
+    Two filters keep glosses out, because `OAK-Tn (...)` is used for both naming
+    a Tactic and describing an incident, and only the first can be wrong:
+
+    1. The claimed text must start with a capital — Tactic names are title-case,
+       glosses are not ("OAK-T4 (front-end-injected approval-solicitation)" is a
+       description of what happened, not a claim about what T4 is called).
+    2. It must share no significant word with the real name.
+
+    What survives both is the actual failure: a file confidently naming T6
+    "Authorization / Key Compromise" when T6 is Defense Evasion. Those names
+    exist nowhere in the taxonomy, and a reader who trusts them learns a tactic
+    layer that is not real.
+    """
+    out = []
+    for d in ("examples", "techniques", "mitigations", "actors", "software",
+              "tactics", "data-sources"):
+        if not os.path.isdir(d):
+            continue
+        for f in sorted(os.listdir(d)):
+            if not f.endswith(".md"):
+                continue
+            with open(os.path.join(d, f), encoding="utf-8", errors="ignore") as fh:
+                content = fh.read()
+            for tid, claimed in NAME_CLAIM_RE.findall(content):
+                real = names.get(tid)
+                if not real:
+                    continue
+                c = claimed.strip()
+                if not c[:1].isupper():
+                    continue  # a gloss, not a name claim
+                sig = {w for w in re.findall(r"[a-z]+", real.lower()) if len(w) > 3}
+                if sig and not any(w in c.lower() for w in sig):
+                    out.append((f"{d}/{f}", tid, c, real))
+    return out
+
+
 def technique_ids() -> set[str]:
     return {
         f.split("-", 1)[0]
@@ -90,6 +145,8 @@ def resolves_to_technique(tag: str, techs: set[str]) -> bool:
 def main() -> int:
     report_only = "--report" in sys.argv
     techs, tactics = technique_ids(), tactic_ids()
+    names = tactic_names()
+    misnamed = wrong_tactic_names(names)
 
     empty, tactic_only, unknown, declared = [], [], [], []
 
@@ -150,14 +207,24 @@ def main() -> int:
     for f, txt in declared:
         print(f"  {f}\n      {txt}")
 
-    fails = len(unknown) + len(empty) + len(tactic_only)
+    print(f"\n--- WRONG TACTIC NAME: file names a Tactic something it is not: "
+          f"{len(misnamed)} ---")
+    for f, tid, claimed, real in misnamed:
+        print(f'  {f}\n      OAK-{tid} ("{claimed}")  ->  actually: {real}')
+
+    fails = len(unknown) + len(empty) + len(tactic_only) + len(misnamed)
     print()
     if fails:
-        print(f"FAIL: {fails} example(s) declare no resolvable Technique.")
-        print("      Each is excluded from its Technique's example count and from")
-        print("      the backlink check, while STATS.md reports full coverage.")
-        print("      Fix by naming the Technique, or by declaring the gap")
-        print("      explicitly: 'none — <reason>'.")
+        print(f"FAIL: {fails} problem(s).")
+        if unknown or empty or tactic_only:
+            print("      Examples declaring no resolvable Technique are excluded from")
+            print("      their Technique's example count and from the backlink check,")
+            print("      while STATS.md reports full coverage. Fix by naming the")
+            print("      Technique, or by declaring the gap: 'none — <reason>'.")
+        if misnamed:
+            print("      A wrong Tactic name teaches a taxonomy layer that does not")
+            print("      exist. Fix the name — or, if the name was papering over a")
+            print("      misfiled Technique, fix the parent.")
     else:
         print("OK: every example declares at least one resolvable Technique.")
 

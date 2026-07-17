@@ -180,6 +180,14 @@ These are Techniques that fit cleanly inside an existing v0.1 Tactic but are fla
 
 ### T12 — NFT-Specific Patterns (additions for v0.x)
 
+- **⚠ MISFILED, pending a deprecate-and-supersede decision: `T12.004` and `T12.005` are not NFT Techniques.** T12's scope is attack classes structurally tied to non-fungible token semantics; **T12.004** (Timelock-Free Protocol Upgrade Execution) and **T12.005** (Flash-Loan Governance Vote Manipulation) contain nothing NFT-specific. Their correct parent is **T16 (Governance / Voting Manipulation)**. Both files declared their parent as "OAK-T12" under the label "Governance / Protocol Management" — a Tactic name that exists nowhere in the taxonomy, and which is precisely what kept the misfiling invisible to review. The names are now corrected to T12's real name so the mismatch is legible in the files themselves.
+
+  **T12.005 is additionally a probable duplicate of [`T16.001`](techniques/T16.001-vote-takeover-via-flash-loan.md) (Vote Takeover via Flash-Loan)**: same mechanism (same-block flash-borrow of governance tokens to carry a proposal, repaid in the same transaction), overlapping alias sets (both list "flash-loan governance attack"), and the same canonical anchor (Beanstalk, April 2022). T12.005 additionally cites Fortress Protocol and Elephant Money. If confirmed, the corpus currently carries one Technique under two IDs, one of them parented under NFTs — which also means the T16.001 and T12.005 example counts are splitting a single population.
+
+  **T12.004 appears unique but misparented** — T16 has no timelock sub-Technique today, so this is not a duplication, only a wrong parent.
+
+  Resolution is blocked on a decision, not on research: `CONTRIBUTING.md` fixes that published IDs are never reused and that superseded entries stay in-repo marked `Maturity: deprecated` with a pointer. So the fix is deprecate-and-supersede (T12.005 → T16.001; T12.004 → a new T16.00x), which moves the Technique count and the SPECS coverage denominator, and is therefore a maintainer call rather than a cleanup. Not covered by `TAXONOMY-AUDIT.md` — that audit closed at 93 sub-Techniques and these were added afterwards.
+
 - NFT-collateral lending exploits (the broader class beyond the foundational T12 trio).
 - Marketplace listing manipulation beyond OpenSea front-running stale-listing.
 - Real-world-asset (RWA) NFT bridge surfaces.
