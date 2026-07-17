@@ -1,11 +1,17 @@
 Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
 
 This license applies to all knowledge content in this repository, specifically
-the contents of `tactics/`, `techniques/`, `examples/`, and `citations.bib`,
-together with any supporting prose or diagrams embedded in such content.
+the contents of `tactics/`, `techniques/`, `examples/`, `actors/`,
+`mitigations/`, `software/`, `data-sources/`, and `citations.bib`, together
+with any supporting prose or diagrams embedded in such content.
 
-Tooling code in `tools/`, `.github/`, and any scripts in this repository is
-licensed separately under the MIT License; see `LICENSE-code`.
+Tooling code in `tools/`, `scripts/`, `src/`, `.github/`, and any build or
+validator scripts in this repository is licensed separately under the MIT
+License; see `LICENSE-code`.
+
+Detection specs in `specs/` carry a per-file `license:` field and are licensed
+under the terms declared in that field (Apache-2.0 at time of writing), not
+under CC BY-SA 4.0.
 
 The full legal code of CC BY-SA 4.0 is canonical and authoritative at:
 

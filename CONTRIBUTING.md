@@ -252,6 +252,29 @@ Maintainers commit to a **first response within 7 calendar days** of PR open. Su
 - Technique IDs (`OAK-Tn.NNN`), Mitigation IDs (`OAK-MNN`), Software IDs (`OAK-SNN`), Threat Actor IDs (`OAK-Gnn`), and Data Source IDs (`OAK-DS-NN`) are assigned by maintainers at PR-open time, based on the proposed scope and the next free numeric slot.
 - Once published, IDs are **never reused**. Deprecated entries are marked `Maturity: deprecated` (Techniques) or `Active: dormant / inactive` (Software, Groups) and remain in the repository with a pointer to the superseding entry.
 
+## Licensing your contribution
+
+By opening a pull request, you agree to the terms below. There is no form to sign — the act of submitting is the agreement, in the manner of the [Developer Certificate of Origin](https://developercertificate.org/).
+
+**You certify that:**
+
+1. The contribution is your original work, or you have the right to submit it under the licences below.
+2. You understand the contribution is public, is recorded permanently, and may be redistributed under these terms.
+
+**You grant:**
+
+3. For knowledge content (`tactics/`, `techniques/`, `examples/`, `actors/`, `mitigations/`, `software/`, `data-sources/`, `citations.bib`): a licence under **CC BY-SA 4.0**, matching `LICENSE-content` — **and, in addition**, a perpetual, worldwide, non-exclusive, royalty-free, irrevocable right for the OAK maintainers to use, reproduce, adapt, publish, translate, and distribute the contribution **under any licence terms, including proprietary and commercial terms**.
+4. For code (`tools/`, `scripts/`, `src/`, `.github/`): a licence under **MIT**, matching `LICENSE-code`.
+5. For detection specs (`specs/`): a licence under the terms declared in that file's `license:` field.
+
+**Why the additional grant in (3) exists — stated plainly, because you deserve the reason:**
+
+CC BY-SA's ShareAlike condition means that a work built on ShareAlike content must itself be ShareAlike. That is the right default for the corpus and it is not changing: **OAK stays free under CC BY-SA, permanently and irrevocably.** But it also means that without the additional grant, no derivative work — a book, a course, a printed edition, a translation carrying a publisher's terms — could ever incorporate a contributor's text, because a publisher cannot accept ShareAlike obligations on a commercial edition.
+
+The grant keeps that door open. It does not close any door for you: you keep your copyright, you keep every right you had, and your contribution remains available to everyone under CC BY-SA exactly as before. What it adds is the ability for the maintainers to carry the corpus into venues that CC BY-SA alone cannot reach.
+
+If you are not able to make the grant in (3) — because your employer holds the copyright, or for any other reason — **say so in the PR.** It is not a blocker. We will discuss it rather than silently accept a contribution under terms you cannot give.
+
 ## Code of conduct
 
 Be excellent. Disagreements happen — keep them about the content. Maintainers will close threads that get personal.
