@@ -39,5 +39,6 @@ The rule also carries a real false-positive cost that should be stated rather th
 ## Citations
 
 - See [`examples/2023-2026-coinbase-support-impersonation.md`](../examples/2023-2026-coinbase-support-impersonation.md) — the class anchor; ~\$300M/yr; data-broker-sourced personal detail; named arrests (rare in the corpus). Currently mis-mapped to T4.007 — see Limitations.
-- See [`examples/2026-01-hardware-wallet-social-engineering.md`](../examples/2026-01-hardware-wallet-social-engineering.md) — \$282M+ from a single individual; the device worked as designed and the recovery path was the target.
+- See [`examples/2024-08-genesis-creditor-social-engineering.md`](../examples/2024-08-genesis-creditor-social-engineering.md) — the class's best-established anchor and the one this mitigation is actually specified against: two chained spoofed calls an hour apart (Google Support, then Gemini Support, each stage's extraction authenticating the next), \$243M, attribution `confirmed`, three named principals, one arrest. The callback rule breaks the chain at either stage.
+- See [`examples/2026-01-hardware-wallet-social-engineering.md`](../examples/2026-01-hardware-wallet-social-engineering.md) — \$282M+, larger but **weaker evidence**: no public source establishes the impersonation channel, so whether this mitigation would have reached it is unknown. Cited for scale, not as a mechanism anchor.
 - See [`examples/2024-01-kk-park-compound-takedown.md`](../examples/2024-01-kk-park-compound-takedown.md) — the inbound acquisition script at industrial scale.

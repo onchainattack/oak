@@ -2,7 +2,7 @@
 
 **Loss:** ~$243M in BTC, ETH, and other crypto assets from a single Genesis Global Capital creditor.
 **OAK Techniques observed:** OAK-T4.007 (Native App Social Phishing / Engagement-Weighted Platforms) — primary; OAK-T7 (Laundering) — post-exploit.
-**Attribution:** **confirmed** — three threat actors: Malone Iam ("Greavys"), Veer Chetal ("Wiz"), and Jeandiel Serrano ("Box"). Malone arrested in Miami (Sep 2024); Wiz and Box at large as of investigation date. A fourth associate, Aakaash ("Light/Dark"), assisted with laundering.
+**Attribution:** **confirmed** — three threat actors: Malone Lam ("Greavys"; rendered "Malone Iam" in ZachXBT's original thread — a capital-I/lowercase-l transcription error. Full name Malone Lam Yu Xuan; the DOJ record and all subsequent reporting use **Lam**), Veer Chetal ("Wiz"), and Jeandiel Serrano ("Box"). Malone arrested in Miami (Sep 2024); Wiz and Box at large as of investigation date. A fourth associate, Aakaash ("Light/Dark"), assisted with laundering.
 
 **Key teaching point:** This is the largest known social engineering theft against a single individual in crypto history. The attack demonstrates the **multi-stage impersonation escalation** pattern: the attackers chained spoofed calls (Google Support → Gemini Support), each stage extracting credentials or authorizations that enabled the next. The victim was a sophisticated institutional creditor, not a retail user. The laundering used 15+ exchanges with rapid cross-asset swapping (BTC→LTC→ETH→XMR) to break traceability.
 
@@ -11,7 +11,7 @@
 On August 19, 2024, three threat actors executed a highly sophisticated social engineering attack against a single Genesis Global Capital creditor, stealing approximately $243M in cryptocurrency. The attackers:
 
 1. Called the victim spoofing Google Support, compromising personal accounts (email, cloud storage) to extract sensitive financial information
-2. Called again spoofing Gemini Support, using the compromised information to gain trust and obtain wallet credentials
+2. Called again spoofing Gemini Support, using the compromised information to gain trust; per the DOJ record the victim was induced to **reset two-factor authentication** and transfer funds to a wallet the attackers controlled
 3. Drained the victim's crypto assets to attacker-controlled addresses
 4. Split the proceeds three ways, laundering through 15+ exchanges with rapid cross-asset swaps (BTC → LTC → ETH → XMR)
 
@@ -46,7 +46,9 @@ ZachXBT traced the full on-chain flow and identified the three principals throug
 ## Public references
 
 - [ZachXBT — Investigation Thread (X/Twitter)](https://twitter.com/zachxbt/status/1836752923830702392) — 14-part investigation with on-chain tracing of all three principals.
-- [FBI / DOJ — Malone Lam arrest (Sep 2024)](https://www.justice.gov/) — Malone Iam ("Greavys") arrested in Miami.
+- [DOJ / U.S. Attorney D.C. — "Indictment Charges Two in \$230 Million Cryptocurrency Scam"](https://www.justice.gov/usao-dc/pr/indictment-charges-two-230-million-cryptocurrency-scam) — the charging document. Malone Lam (20, Miami / Los Angeles; also used "Anne Hathaway" and "\$\$\$") and Jeandiel Serrano (21, Los Angeles; "VersaceGod", @Skidstar) charged with conspiracy to steal and launder over \$230M from a victim in **Washington, D.C.** The charged figure (\$230M+) and the market-price valuation at theft (~\$243M) differ; both are correct for what they measure.
+- [Wikipedia — Malone Lam](https://en.wikipedia.org/wiki/Malone_Lam) — biographical detail: Malone Lam Yu Xuan, born 2004-07-19, Singaporean, raised in Choa Chu Kang, attended Unity Secondary School, dropped out as a teenager. Co-founded the "Social Engineering Enterprise" with roommates in Texas; the network reached ~14 members across several states, working from hacked databases, dark-web data and phishing mail. Arrested by the FBI in Miami on 2024-09-18 after an off-duty police officer tipped him off; he threw his phone into Biscayne Bay en route. Proceeds spent on ~33 luxury cars, jewellery, travel and nightclubs.
+- [The Block — Chetal bond revocation](https://www.theblock.co/post/359078/teen-in-245m-bitcoin-heist-loses-bond-after-new-2m-crypto-theft-unsealed-court-docs-show) — Veer Chetal ("Wiz") was a **teenager** at the time of the theft; secretly charged 2024-11; pleaded guilty; forfeited ~30 designer watches, clothing, and \$36M+ in ETH. Lost bond after committing a further ~\$2M crypto theft while awaiting sentencing.
 - Theft BTC transaction: `4b277ba298830ea538086114803b9487558bb093c2caaf2496b1ce15457f5ef96`
 - Laundering addresses: documented in ZachXBT thread (15+ exchange deposit addresses, eXch, THORSwap).
 
