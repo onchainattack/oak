@@ -110,8 +110,8 @@ Open questions, known edge cases, observed evasion variants. This is the
 ```markdown
 # OAK-MNN — <Mitigation Name>
 
-**Class:** detection | architecture | operational | venue | wallet-ux
-**Audience:** trader | protocol | venue | risk-team | vendor | wallet | custody-customer | custody-vendor | designer
+**Class:** detection | architecture | operational | venue | wallet-ux | user-behavioural
+**Audience:** trader | protocol | venue | risk-team | vendor | wallet | custody-customer | custody-vendor | designer | retail-user
 **Maps to Techniques:** OAK-Tn.NNN, OAK-Tm.MMM, ...
 
 ## Description

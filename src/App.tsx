@@ -469,7 +469,8 @@ function App() {
             Each mitigation maps many-to-many to techniques, so a vendor or risk team can
             specify procurement requirements as a coverage matrix rather than a long
             inline list. Classes are <strong>detection</strong>, <strong>architecture</strong>,
-            <strong> operational</strong>, <strong>venue</strong>, and <strong>wallet-ux</strong>.
+            <strong> operational</strong>, <strong>venue</strong>, <strong>wallet-ux</strong>, and{' '}
+            <strong>user-behavioural</strong>.
           </p>
         </div>
         <div className="mitigation-grid">

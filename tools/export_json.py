@@ -14,7 +14,7 @@ Output schema (v2):
       "techniques": [...],
       "mitigations": [
         {"id": "OAK-MNN", "name": "...",
-         "class": "detection|architecture|operational|venue|wallet-ux",
+         "class": "detection|architecture|operational|venue|wallet-ux|user-behavioural",
          "audience": ["...", ...],
          "maps_to_techniques": ["OAK-Tn.NNN", ...],
          "citations": [...],
