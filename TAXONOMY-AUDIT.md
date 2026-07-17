@@ -8,6 +8,58 @@ After two Tactic introductions (T15, T16) and ~20 sub-Technique promotions acros
 
 **Author:** maintainer audit, not agent-generated. Judgment calls flagged explicitly.
 
+---
+
+# Addendum — 2026-07-17: same-incident multi-file duplication
+
+Surfaced while fact-checking the corpus against external sources for a downstream project. Not part of the 2026-05 audit above, which closed at 93 sub-Techniques.
+
+**The probe.** 16 example pairs exist where one filename is a strict prefix of another (`2024-07-wazirx` / `2024-07-wazirx-230m-exchange-exploit`). Three are legitimate and are *not* duplication: `2022-04-inverse-finance` vs `-twap` (Inverse genuinely had two incidents that April), `2022-09-wintermute` vs `-profanity-cohort` (the $160M Wintermute loss vs the ~$3.3M cohort of *other* Profanity victims), and `2025-02-bybit` vs `-thorchain-laundering` (incident vs laundering leg).
+
+**Resolved: 4 files deleted.** Cleanly redundant — nothing declared that the canonical file did not, nothing anchoring them. `2023-04-sentiment-balancer-read-only-reentrancy`, `2024-07-li-finance-diamond-facet-exploit`, `2024-07-wazirx-230m-exchange-exploit`, `2022-02-wormhole-bridge`. Three were `test_fixtures.positive` in a spec and were repointed to the canonical example first, each of which already carries the required Technique. The wormhole file additionally claimed **T10.001** (Validator / Signer Key Compromise) while its own text says "primary classification is the signature-verification bypass" — which is T10.002, what the canonical file correctly carries. No Guardian key was ever compromised; the signature was forged through a verification flaw. The tag was wrong, not additional.
+
+## Finding A — seven files are technique-lens companions, not duplicates
+
+The following are same-incident-different-Technique files, and each is the **sole anchor** for Techniques the canonical file does not carry. Deleting them would silently break coverage:
+
+| File | Sole anchor for |
+|---|---|
+| `2022-06-harmony-horizon-economic-incentive-gap` | T10.005, **T10.007** |
+| `2022-06-harmony-horizon-bridge` | T10.005 |
+| `2022-12-ankr-abnbc-liquid-staking-exploit` | **T14.003, T14.004** |
+| `2023-07-multichain-mpc-bridge-verification-model-collapse` | T10.005, T10.007 |
+| `2023-12-ledger-connect-kit-library-supply-chain-compromise` | **T11.006, T4.001** |
+| `2024-01-socket-bungee-bridge` | T4.001, T9.005 |
+| `2024-06-loopring-smart-wallet` | **T11.008, T5.005** |
+
+This is a defensible pattern — one incident legitimately illustrates several Techniques, and a focused per-Technique anchor is more useful than a single sprawling file. **The open question is whether it should be explicit.** Today it is implicit, and it has two costs: the example count treats one incident as three (Harmony has *three* files), and nothing marks these files as views of a shared event.
+
+**Proposal:** an optional `**Same incident as:**` header field, mirroring the existing `**Adjacent Techniques:**` convention, plus a rule in CONTRIBUTING that a per-Technique companion must declare its sibling. Alternatively a `views:` grouping in `oak.json`. Either makes the pattern legible to a consumer counting incidents rather than files.
+
+## Finding B — companions contradict each other on attribution strength
+
+Load-bearing, because the attribution-strength distribution is published in `STATS.md` as an integrity metric:
+
+| Incident | File A | File B |
+|---|---|---|
+| Harmony Horizon | `-horizon` **inferred-strong** | `-horizon-bridge` / `-economic-incentive-gap` **confirmed** |
+| Ankr | `-ankr` **confirmed**, names an individual | `-abnbc-liquid-staking` **pseudonymous** |
+| Multichain | `-multichain` pseudonymous | `-mpc-bridge-…` unattributed |
+| Socket / Bungee, Loopring, Ledger Connect Kit | pseudonymous | varies |
+
+Same incident, same evidence, different strength label. At least one side of each pair is wrong, and the aggregate distribution inherits the error. Requires per-incident adjudication against the sources — not resolvable mechanically.
+
+## Finding C — two pairs disagree on the vulnerability class itself
+
+Worse than a duplicate; these are substantive contradictions and neither was resolved here:
+
+- **ParaSpace (2023-03).** `2023-03-paraspace` classifies the bug as **T9.005 reentrancy** and never uses the word "reinitialization". `2023-03-paraspace-reinitialization-blocksec-whitehat` classifies it as **T9.009 Cross-Contract Reinitialization**. Same date, same $0-loss BlockSec whitehat rescue, same ~$5M at risk. One is wrong about what the vulnerability was.
+- **Curve / Vyper (2023-07).** `2023-07-curve-vyper` carries **T9.005** with the Vyper-compiler-emitted-guard twist and never mentions read-only reentrancy. `2023-07-curve-vyper-market-xyz-read-only-reentrancy` carries **T9.010**. This may not even be the same incident — the filename names Market.xyz — in which case it is misfiled under a `curve-vyper` prefix rather than duplicated.
+
+Both need source research before either file is touched.
+
+---
+
 ## Top-line findings
 
 1. **T9.003 (Governance Attack) overlaps T16.x family** — biggest classification mistake. Should migrate.

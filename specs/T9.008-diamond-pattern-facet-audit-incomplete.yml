@@ -190,7 +190,7 @@ output_alert: [oak_technique, detection_path, severity, chain,
 
 test_fixtures:
   positive:
-    - 2024-07-li-finance-diamond-facet-exploit                              # Li.Fi post-audit facet addition call-verification gap (~$10M)
+    - 2024-07-li-finance                              # Li.Fi post-audit facet addition call-verification gap (~$10M)
     - 2022-07-li-fi-v1-diamond-facet-exploit                               # Li.Fi v1 diamond-facet vulnerability (~$600K)
     - 2023-04-paribus-diamond-facet-exploit                                # Paribus post-audit facet addition (~$150K)
   negative:

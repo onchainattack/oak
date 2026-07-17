@@ -200,7 +200,7 @@ output_alert: [oak_technique, detection_path, severity, chain,
 test_fixtures:
   positive:
     - 2023-07-curve-vyper-market-xyz-read-only-reentrancy                    # Curve Vyper + Market.xyz stale get_virtual_price() read
-    - 2023-04-sentiment-balancer-read-only-reentrancy                        # Sentiment Protocol stale Balancer LP-token price read
+    - 2023-04-sentiment                        # Sentiment Protocol stale Balancer LP-token price read
     - 2024-03-cygnus-finance-read-only-reentrancy                           # Cygnus Finance LP-token oracle stale-read (~$200K)
   negative:
     - "DEX aggregator reading pool reserves during a multi-hop route computation in-flight — legitimate composability, no economic action against stale read"

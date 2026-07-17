@@ -240,7 +240,7 @@ output_alert: [oak_technique, detection_path, severity, chain,
 test_fixtures:
   positive:
     - 2022-03-ronin-bridge                                                     # Ronin Bridge — validator concentration: 5-of-9 with 1 entity controlling threshold
-    - 2022-02-wormhole-bridge                                                   # Wormhole Bridge — zero economic bonding for 19-member Guardian set (stake/TVL = 0)
+    - 2022-02-wormhole                                                   # Wormhole Bridge — zero economic bonding for 19-member Guardian set (stake/TVL = 0)
     - 2022-06-harmony-horizon-economic-incentive-gap                           # Harmony Horizon — zero at-risk stake, 2-of-5 threshold, no slashing
     - 2026-05-thorchain-router-exploit                                         # THORChain Router — RUNE bond vs custodied TVL gap enabled malicious proposer
   negative:
