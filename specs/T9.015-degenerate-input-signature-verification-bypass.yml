@@ -1,0 +1,98 @@
+oak_techniques: [OAK-T9.015]
+spec_id: oak-detection-T9.015
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect signature- or proof-verification bypasses in which a verifier accepts a
+  mathematically degenerate input — the zero scalar, the identity element (point
+  at infinity), an off-curve point, or a point outside the correct prime-order
+  subgroup — so its verification equation evaluates to true trivially and the
+  contract treats the result as proof of an authorised signature. Covers the
+  pairing/BLS shape (e(sig,g2) == e(H(m),pk) satisfied when sig and pk are both
+  identity), ECDSA verifiers accepting r=0 / s=0, and verifiers omitting
+  KeyValidate or subgroup checks. Detection operates at the verifier boundary
+  (degenerate-calldata screening — prevention), at the provenance layer (accepted
+  committee-signed update with no off-chain signing counterpart), and at the
+  consuming protocol (implausible value + near-instant extraction).
+  Excludes: T10.002 (application-layer check missing/wrong; the primitive behaves
+  correctly); T9.004 (authorisation check absent or wrong role); T9.001 (attacker
+  moved a real reported value on a real venue); T10.001 / T11.001 (attacker
+  obtained key material — T9.015 requires none).
+
+data_sources: [chain_calldata, contract_state_writes, oracle_update_events, signer_offchain_records, lending_market_events]
+
+detection_logic:
+  description: |
+    Three detection paths. PATH A (degenerate-calldata screening — the cheap,
+    near-zero-false-positive rule): flag any call to a verification-bearing
+    entrypoint whose signature / proof / public-key fields are all-zero,
+    identity-valued, off-curve, or off-subgroup. Legitimate signatures are never
+    zero, so a hit is decisive. PATH B (signature-provenance reconciliation):
+    flag an accepted committee-signed state update for which no matching
+    off-chain signing event exists among the signer set — catches the class even
+    when the degenerate value is not literally zero. PATH C (consumer-side blast
+    radius): flag a value-consuming action (borrow, settle, liquidate) that
+    follows an oracle write of an implausible magnitude within a very short
+    window — does not detect the bypass itself but catches its monetisation.
+  pseudocode: |
+    VERIFY_ENTRYPOINTS ← contracts exposing signature/proof verification
+                          (oracle on-demand updates, bridge message receipt,
+                           threshold-committee attestation, zk proof verify)
+
+    # PATH A — degenerate input at the verifier boundary (prevention-grade)
+    for each call C to entrypoint E in VERIFY_ENTRYPOINTS:
+      fields ← extract_curve_fields(C.calldata)   # sig, pk, proof, vk
+      for f in fields:
+        if is_zero(f) or is_identity(f) or not on_curve(f) or not in_prime_order_subgroup(f):
+          emit(PATH_A, contract=E, call=C, field=f.name, reason=degenerate_kind(f),
+               severity=critical)
+
+    # PATH B — provenance: verified on-chain, never signed off-chain
+    for each accepted_update U on contract E:
+      if U.claims_committee_signature()
+         and not exists_offchain_signing_record(U.signer_set, U.message,
+                                                within=provenance_window):
+        emit(PATH_B, contract=E, update=U, claimed_set=U.signer_set, severity=critical)
+
+    # PATH C — consumer-side monetisation of a forged value
+    for each oracle_write W on feed F:
+      dev ← relative_deviation(W.value, F.previous_accepted_value)
+      if dev > implausible_deviation:
+        for each action A in consuming_actions(F, within=extraction_window_blocks):
+          if A.kind in { borrow, settle, liquidate } and A.benefits(A.caller):
+            emit(PATH_C, feed=F, write=W, deviation=dev, action=A,
+                 collateral=A.collateral_value, drawn=A.principal_value,
+                 severity=critical)
+
+parameters:
+  provenance_window:      { type: integer, default: 600 }    # seconds to match an off-chain signing record
+  implausible_deviation:  { type: number,  default: 10.0 }   # relative jump vs previous accepted value
+  extraction_window_blocks: { type: integer, default: 5 }    # oracle-write -> borrow proximity
+
+output_alert: [oak_technique, detection_path, severity, chain, contract, entrypoint,
+               degenerate_field, degenerate_kind, claimed_signer_set, feed, deviation,
+               consuming_action, collateral_value, principal_value, tx_hash, evidence]
+
+test_fixtures:
+  positive:
+    - 2026-07-bonzo-lend-supra-oracle-zeroed-signature-drain   # Supra verifier accepts [0,0] sig + zero-point pk; SAUCE inflated ~1e12x; ~$9.05M borrowed on Hedera
+  negative:
+    - "A verifier that rejects the zero signature and reverts — the call fails, no state write, no alert"
+    - "A legitimate committee-signed oracle update with a matching off-chain signing record and an in-range value"
+    - "A genuine large price move on a real venue reflected across multiple feeds — T9.001, not a degenerate input"
+    - "A bridge admitting a message because a source-channel check was commented out, with a correctly-behaving signature primitive — T10.002"
+    - "A drain performed with a stolen signer key producing cryptographically valid signatures — T10.001 / T11.001"
+
+false_positive_modes:
+  - Uninitialised-but-unused key slots in a freshly deployed verifier may read as the identity element without any attacker present — PATH A should scope to calls that produce an accepted state write, not to storage reads
+  - Test/staging deployments and fuzzing harnesses legitimately submit degenerate inputs to confirm rejection — scope PATH A to mainnet contracts, and treat a *reverted* degenerate call as evidence the check works rather than as a finding
+  - PATH B produces false positives where off-chain signing telemetry is incomplete or lagging — absence of a record is only meaningful when signer-set telemetry is known-complete
+  - PATH C fires on legitimate high-volatility repricing of thin assets — require both the deviation bound and same/adjacent-block extraction benefiting the caller
+
+mitigations: [OAK-M16, OAK-M09, OAK-M11, OAK-M39, OAK-M34]
+
+reference_implementations:
+  - { target: mg-detectors-rs, chain: cross-chain, url: "" }
