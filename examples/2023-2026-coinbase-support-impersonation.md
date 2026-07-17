@@ -2,7 +2,7 @@
 
 **Loss:** $300M+ annually across Coinbase users (per FOIA data); individual cases range from $275K to $6.5M.
 **OAK Techniques observed:** OAK-T4.007 (Native App Social Phishing) — primary. The attack pattern is consistent across multiple identified threat actors.
-**Attribution:** **confirmed** — Ronald Spektor ("Ron", $6.5M, arrested Dec 2025), Christian Nieves ("Daytwo/PawsOnHips", $4M+), Haby/Havard ($2M+, Canadian), Indian call scammer ring (elderly victim, $275K recovered).
+**Attribution:** **confirmed** — Ronald Spektor (23, Sheepshead Bay, Brooklyn; handle @lolimfeelingevil; **~\$16M from ~100 users nationally**, not \$6.5M as previously recorded here — see the Brooklyn DA's 31-count indictment of 2025-12-19, charging first-degree grand larceny, first-degree money laundering and scheme to defraud; ~1 year of activity; \$105K cash and ~\$400K crypto seized; apprehended via transaction records, blockchain analysis, digital forensics and IP linkage to the receiving wallets), Christian Nieves ("Daytwo/PawsOnHips", $4M+), Haby/Havard ($2M+, Canadian), Indian call scammer ring (elderly victim, $275K recovered).
 
 **Key teaching point:** Coinbase support impersonation is the highest-volume social engineering pattern in crypto. The MO is consistent across threat actors: (1) obtain victim's personal information from data brokers/leaks, (2) spoof Coinbase support phone number, (3) create urgency ("your account is being drained"), (4) trick victim into providing credentials, (5) drain account to theft addresses, (6) launder through instant exchanges. The detection approach is pre-incident: Coinbase's aggressive risk models (account restrictions, $300M+ in prevented losses) are the primary defense. On-chain detection is post-hoc (unauthorized transfers from previously normal accounts).
 
@@ -45,6 +45,8 @@ Coinbase's internal risk models prevented an estimated $300M+ in additional loss
 - **Exchange risk models are a detection data source.** Coinbase's internal models prevented $300M+ in losses. For OAK detection specs, exchange risk model outputs (anomaly scores, account restriction events) are a data source — though typically proprietary.
 
 ## Public references
+
+- [Brooklyn District Attorney — "Brooklyn Man Charged with Stealing nearly \$16 Million by Presenting Himself as Cryptocurrency Exchange Rep and Scamming Users" (2025-12-19)](https://brooklynda.org/2025/12/19/brooklyn-man-charged-with-stealing-nearly-16-million-by-presenting-himself-as-cryptocurrency-exchange-rep-and-scamming-users/) — the charging document. Corrects this file's prior \$6.5M figure for Spektor to ~\$16M across ~100 victims. DA characterisation: "digital robbery against scores of crypto investors."
 
 - [ZachXBT — Ronald Spektor Investigation (X/Twitter)](https://twitter.com/zachxbt/status/2000540219427135893)
 - [ZachXBT — Christian Nieves/Daytwo Investigation (X/Twitter)](https://twitter.com/zachxbt/status/1937276928911388930)
