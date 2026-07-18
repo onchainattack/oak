@@ -589,6 +589,7 @@ function App() {
           <span className="foot-section-label">community</span>
           <a href="https://github.com/onchainattack/oak" target="_blank" rel="noopener noreferrer">GitHub</a>
           <a href="https://github.com/onchainattack/oak-mcp" target="_blank" rel="noopener noreferrer">oak-mcp (AI integration)</a>
+          <a href="https://comparedtowhatbook.com" target="_blank" rel="noopener noreferrer">The book: Compared to What?</a>
           <a href="#" onClick={(e) => { e.preventDefault(); openDoc("CONTRIBUTING.md"); }}>Contributing</a>
           <a href="#" onClick={(e) => { e.preventDefault(); openDoc("CODE_OF_CONDUCT.md"); }}>Code of conduct</a>
           <a href="#" onClick={(e) => { e.preventDefault(); openDoc("SECURITY.md"); }}>Security</a>
