@@ -1,6 +1,6 @@
 # Coinbase Support Impersonation — Multi-Victim Social Engineering — 2023–2026
 
-**Loss:** $300M+ annually across Coinbase users (per FOIA data); individual cases range from $275K to $6.5M.
+**Loss:** $300M+ annually across Coinbase users (per FOIA data); individual cases range from $275K to ~$16M (Spektor, per the Brooklyn indictment).
 **OAK Techniques observed:** OAK-T4.007 (Native App Social Phishing) — primary. The attack pattern is consistent across multiple identified threat actors.
 **Attribution:** **confirmed** — Ronald Spektor (23, Sheepshead Bay, Brooklyn; handle @lolimfeelingevil; **~\$16M from ~100 users nationally**, not \$6.5M as previously recorded here — see the Brooklyn DA's 31-count indictment of 2025-12-19, charging first-degree grand larceny, first-degree money laundering and scheme to defraud; ~1 year of activity; \$105K cash and ~\$400K crypto seized; apprehended via transaction records, blockchain analysis, digital forensics and IP linkage to the receiving wallets), Christian Nieves ("Daytwo/PawsOnHips", $4M+), Haby/Havard ($2M+, Canadian), Indian call scammer ring (elderly victim, $275K recovered).
 
@@ -12,7 +12,7 @@ Coinbase support impersonation is a sustained, multi-actor social engineering ca
 
 ZachXBT has documented and assisted in the investigation of multiple threat actors in this category:
 
-- **Ronald Spektor ($6.5M, Nov 2024):** Single victim. Arrested in New York, Dec 2025.
+- **Ronald Spektor (~\$16M, ~100 victims, activity through 2025):** Charged 2025-12-19 on a 31-count Brooklyn indictment. Arrested in New York, Dec 2025. *(The \$6.5M / single-victim figure previously recorded here was a partial count taken before the charging document; the DA's indictment supersedes it.)*
 - **Christian Nieves / Daytwo ($4M+, Jun 2025):** New York based. Impersonated Coinbase support. Stole from multiple victims. Arrested.
 - **Haby / Havard ($2M+, Dec 2025):** Canadian threat actor. Blew funds on rare social media usernames and luxury goods.
 - **Indian call scammer ring ($275K, Apr 2024):** Targeted elderly US victim. Stole "large portion of their life savings." ZachXBT assisted in recovering funds.
