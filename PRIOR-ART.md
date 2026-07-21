@@ -96,6 +96,33 @@ OAK does not endorse any of these by listing them; the policy in `CONTRIBUTING.m
 
 ---
 
+## Audit-competition findings as a data source — evaluated, not integrated
+
+Accepted findings from competitive-audit platforms (Code4rena, Sherlock) are periodically proposed as an "empirical validation set" for OAK. The idea is intuitive: OAK catalogues what attackers did, audit findings catalogue what reviewers caught, so the overlap should validate the taxonomy. OAK evaluated this in July 2026 and **decided against integration**. The findings are recorded here so the evaluation is not repeated.
+
+**What is publicly available.** The data is genuinely open and reasonably structured — no vendor or API is required:
+
+- `github.com/code-423n4` — **376** `*-findings` repositories, one per contest.
+- `github.com/sherlock-audit` — **230** `*-judging` repositories.
+- Each C4 findings repo carries `data/<handle>-<issueId>.json` per submission (`contest`, `handle`, `risk` where `3` = High and `2` = Med, `title`, `issueId`, `issueUrl`), plus `report.md` — the curated, judged, **already deduplicated** final report. Work from `report.md`, not from raw issues.
+- Judging outcomes live in issue labels: `satisfactory`, `unsatisfactory`, `duplicate-<primaryId>`, `confirmed for report`, `downgraded by judge`, `disagree with severity`.
+
+**Why headline finding-counts overstate the corpus.** Raw submission counts are dominated by noise and duplicates. Measured on one contest (`2023-10-zksync-findings`): **1,142** issues total, **86** `satisfactory`, **788** `unsatisfactory` — roughly an 8% acceptance rate on raw submissions, and the accepted set still contains mutual duplicates that collapse via the `duplicate-<id>` labels. Any figure quoted as "N accepted findings" is therefore a count of *submissions*, not of distinct validated vulnerabilities; the distinct-bug count is substantially lower.
+
+**Why the mapping does not pay off.** Code4rena tags findings with an `### Assessed type` field, which is the natural join key to an OAK Technique ID. Sampled across five contests (76 classified findings), the distribution was: `Context` 28 (37%), `Math` 6, `Invalid Validation` 5, `Access Control` 5, `Timing` 4, `DoS` 4, `en/de-code` 3, `Error` 3, `ERC20` 3, `Under/Overflow` 2, `Reentrancy` 2, `Governance` 2, `ERC4626` 2, and singletons (`MEV`, `Rug-Pull`, `Uniswap`, `Library`, `Payable`, `Decimal`, `Other`). Three problems follow:
+
+1. The plurality category, `Context`, carries no classification information. Only ~15–20% of the sample maps cleanly onto an OAK Technique, and every one of those (`Reentrancy` → T9.005, `Access Control` → T9.004, `Governance` → T9.003) is a Technique OAK already documents and already anchors to realised incidents with losses.
+2. **The axes differ.** `Assessed type` classifies the *nature of a code defect*; OAK classifies *adversary behaviour*. These are adjacent but not joinable without a lossy hand-mapping.
+3. **The corpus overlap is one Tactic of fourteen.** Competitive audits speak to T9 (Smart-Contract Exploit). They have no analogue for T7 Laundering, T11 Custody/Signing, T5 Value Extraction, T8 Operator Continuity, or T4 Access Acquisition — key compromise, quorum capture, package-registry supply chain, and mixer routing are not things a contest can find.
+
+**The structural blocker.** Audit findings are pre-deployment defects that were caught; they never became incidents. `CONTRIBUTING.md` requires a publicly verifiable incident for a worked example, and `tools/check_backlinks.py` enforces zero Techniques without a canonical example anchor. A Technique minted from an audit finding would have no anchor and would **fail CI**. This is not a matter of editorial preference — the corpus cannot accept this class of input as-is.
+
+**What remains worth stating, and it needs no external data.** The useful claim runs the other way: competitive audit does not reach most of where realised losses occur, and OAK can evidence that from its own corpus — T9 is a minority of documented examples, while T7, T11, T5, and T8 together dominate. A contributor wanting to pursue the forward direction anyway should scope it to `satisfactory` + `risk: 3` findings from `report.md`, dedupe on `duplicate-<id>`, and treat the result as a prevalence signal about pre-deployment defect classes — not as validation of OAK's incident corpus.
+
+**On vendor offers.** Commercial re-packagings of this data appear periodically, sometimes as GitHub issues offering "free" access. The underlying records are public; the policy in `CONTRIBUTING.md` applies unchanged, and paid analysis services are not `reference_implementations` candidates.
+
+---
+
 ## How OAK positions itself
 
 The 30-second elevator pitch with prior art surfaced:
