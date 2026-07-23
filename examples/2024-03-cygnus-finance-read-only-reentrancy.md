@@ -13,7 +13,7 @@ In March 2024, an attacker exploited a read-only reentrancy vector: using a flas
 
 The AMM pool itself lost nothing — the view-function read did not mutate the pool's state, and the pool's post-transaction invariants were intact. The loss was entirely on Cygnus Finance, the consumer protocol that trusted the view-function output at a moment when the pool was mid-execution. This is the canonical T9.010 pattern: the target contract (the AMM pool) is "innocent"; the victim is the consumer protocol that consumed the stale view-function read for an economic decision.
 
-The incident structurally parallels the Curve Finance + Market.xyz read-only reentrancy chain of July 2023, where Market.xyz consumed a stale `get_virtual_price()` from Curve pools during the Vyper reentrancy window. The Cygnus case is a smaller-scale but independent confirmation that the T9.010 surface generalises across AMM-pool types and consumer-protocol architectures.
+The incident structurally parallels the Market.xyz read-only reentrancy of October 2022, where a QuickSwap-hosted lending market consumed a stale `get_virtual_price()` from a Curve pool during its `remove_liquidity` native-token callback. The Cygnus case is a smaller-scale but independent confirmation that the T9.010 surface generalises across AMM-pool types and consumer-protocol architectures.
 
 ## Timeline (UTC)
 
@@ -32,7 +32,7 @@ Approximately \$200K. No public recovery.
 ## Public references
 
 - Cross-reference: T9.010 at `techniques/T9.010-read-only-reentrancy.md`.
-- Cross-reference: 2023-07-curve-market-xyz-read-only-reentrancy at `examples/2023-07-curve-market-xyz-read-only-reentrancy.md` (canonical T9.010 anchor).
+- Cross-reference: 2022-10-market-xyz-curve-lp-oracle-read-only-reentrancy at `examples/2022-10-market-xyz-curve-lp-oracle-read-only-reentrancy.md` (canonical T9.010 anchor).
 - Cross-reference: 2023-04-sentiment at `examples/2023-04-sentiment.md` (Sentiment Protocol read-only reentrancy via Balancer LP integration).
 
 ## Public References
