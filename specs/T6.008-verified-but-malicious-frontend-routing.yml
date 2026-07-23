@@ -84,7 +84,7 @@ output_alert: [oak_technique, detection_path, severity, chain,
 test_fixtures:
   positive:
     - 2024-2025-swapkit-router-impersonator-phishing                     # SwapKit router impersonator cohort
-    - 2025-uniswap-routing-manipulation-frontend                        # Uniswap-alike intermediate-hop extraction
+    - 2025-03-uniswap-routing-manipulation-phishing                     # Uniswap-alike intermediate-hop extraction cohort (ScamSniffer / ZachXBT / SEAL)
     - 2024-2025-uniswap-permit2-phishing-cohort                         # Permit2 signature-authorisation extraction
   negative:
     - "Legitimate swap via canonical Uniswap frontend at app.uniswap.org with all intermediate hops in the canonical pool registry"
