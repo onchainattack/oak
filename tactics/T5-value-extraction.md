@@ -26,6 +26,8 @@ T5 events are the public, observable record of the extraction. They feed forensi
 - OAK-T5.005 — Treasury-Management Exit
 - OAK-T5.006 — Vesting-Cliff Dump
 - OAK-T5.007 — Third-Party Brand Impersonation Custodial Soft-Rug
+- OAK-T5.008 — Ransomware Extortion Payment
+- OAK-T5.009 — Physical-Coercion Extraction (Wrench Attack)
 
 ## Maintainer notes
 
