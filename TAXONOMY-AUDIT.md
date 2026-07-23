@@ -49,6 +49,13 @@ Load-bearing, because the attribution-strength distribution is published in `STA
 
 Same incident, same evidence, different strength label. At least one side of each pair is wrong, and the aggregate distribution inherits the error. Requires per-incident adjudication against the sources — not resolvable mechanically.
 
+**Resolved 2026-07-23** (adjudicated against public sources):
+
+- **Harmony → `confirmed`.** FBI officially attributed the theft to Lazarus / APT38 (2023-01-23), corroborated by Elliptic and Chainalysis — multi-source official attribution. `-horizon.md` was internally self-contradictory (header `inferred-strong`, body already cited the FBI `confirmed` line); aligned the header to `confirmed`, matching both companions.
+- **Ankr → `inferred-strong` (both files).** Ankr's own post-mortem attributed the exploit to a former team member (insider), which is a credible operator forensic attribution + on-chain evidence, but there is **no publicly named individual and no confirmed law-enforcement arrest**. The `-ankr.md` file's claim of a "Republic of Korea law-enforcement arrest … announced January 2023" and "named-individual attribution" was **unsupported by any source** (targeted search found no such arrest) and was removed — same fabrication signature as the c28e744 files, but this one shipped in the main release. Set both companions to `inferred-strong` with accurate insider language.
+- **Multichain → `unattributed` (both files).** The fund movements are genuinely unresolved (external MPC-compromise vs. insider / CEO-detention / possible authority-seizure vs. exit-scam); no entity attribution. Aligned `-multichain.md` (header was `pseudonymous`, body already said "Not OAK-G01" and reasoned toward no-attribution) to `unattributed`, matching the `-mpc-bridge` companion, and **removed the false OAK-G01 Lazarus backlink** from `actors/OAK-G01-lazarus.md` (the incident file already disclaimed Lazarus; the actor file's stale backlink was inflating the Lazarus count).
+- **Socket / Bungee, Loopring, Ledger Connect Kit — no contradiction.** All companion pairs are consistently `pseudonymous`, and none carries an `**OAK-Gnn:**` actor-assignment line. The apparent "varies" was incidental `OAK-Gnn` mentions in prose (negations like "no public OAK-G01", cross-references), not load-bearing attribution. No change needed.
+
 ## Finding C — two pairs disagree on the vulnerability class itself
 
 Worse than a duplicate; these are substantive contradictions and neither was resolved here:
