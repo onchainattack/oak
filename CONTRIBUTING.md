@@ -263,9 +263,11 @@ By opening a pull request, you agree to the terms below. There is no form to sig
 
 **You grant:**
 
+<!-- markdownlint-disable MD029 -- numbering continues from the list above; items (3) and (4) are referenced by number in the prose below -->
 3. For knowledge content (`tactics/`, `techniques/`, `examples/`, `actors/`, `mitigations/`, `software/`, `data-sources/`, `citations.bib`): a licence under **CC BY-SA 4.0**, matching `LICENSE-content` — **and, in addition**, a perpetual, worldwide, non-exclusive, royalty-free, irrevocable right for the OAK maintainers to use, reproduce, adapt, publish, translate, and distribute the contribution **under any licence terms, including proprietary and commercial terms**.
 4. For code (`tools/`, `scripts/`, `src/`, `.github/`): a licence under **MIT**, matching `LICENSE-code`.
 5. For detection specs (`specs/`): a licence under the terms declared in that file's `license:` field.
+<!-- markdownlint-enable MD029 -->
 
 **Why the additional grant in (3) exists — stated plainly, because you deserve the reason:**
 

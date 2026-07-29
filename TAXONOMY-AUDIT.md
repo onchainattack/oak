@@ -10,7 +10,7 @@ After two Tactic introductions (T15, T16) and ~20 sub-Technique promotions acros
 
 ---
 
-# Addendum — 2026-07-17: same-incident multi-file duplication
+## Addendum — 2026-07-17: same-incident multi-file duplication
 
 Surfaced while fact-checking the corpus against external sources for a downstream project. Not part of the 2026-05 audit above, which closed at 93 sub-Techniques.
 
