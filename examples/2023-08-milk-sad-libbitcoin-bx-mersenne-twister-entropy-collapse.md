@@ -51,7 +51,7 @@ The defect was found **on 2023-07-21, during incident response to the theft**, b
 - `[milksadsummary2023]` — Milk Sad research team, "`bx` summary" (condensed CVE-2023-39910 summary and affected-version matrix): <https://milksad.info/cve_2023_39910_summary.html>
 - `[ghsamilksad2023]` — GitHub Security Advisory GHSA-prgj-h7jq-7p9h (the advisory record for the Libbitcoin Explorer weak-entropy vulnerability): <https://github.com/advisories/GHSA-prgj-h7jq-7p9h>
 - `[nobsbitcoinmilksad2023]` — NOBSBitcoin, "Milk Sad: Wallet Theft Enabled By Weak Entropy" (independent coverage of the disclosure and its practical implications for users): <https://www.nobsbitcoin.com/milk-sad-vulnerability-disclosure/>
-- `[invdmilksad2023]` — invd blog, "Milk Sad — How Weak Entropy can Ruin Your Savings (CVE-2023-39910)" (researcher-side write-up of the defect and its exploitation): <https://blog.inhq.net/posts/milksad-vuln1/>
+- `[invdmilksad2023]` — invd blog, "Milk Sad — How Weak Entropy can Ruin Your Savings (CVE-2023-39910)" (researcher-side write-up of the defect and its exploitation): <https://blog.inhq.net/posts/milk-sad-vuln1/>
 
 ## Discussion
 
