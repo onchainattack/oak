@@ -1,0 +1,122 @@
+oak_techniques: [OAK-T10.002.001]
+spec_id: oak-detection-T10.002.001
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect bridge / intents incidents where the failing verification
+  predicate sits in an OFF-CHAIN observer (relayer, filler, solver,
+  indexer, executor) that decides a source-chain event occurred and
+  causes destination-side value release. The on-chain contracts are
+  correct and do exactly what they are instructed; the instruction is
+  wrong. Two sub-shapes: (a) PARSE-LEVEL — the observer reconstructs
+  an event from raw chain data without asserting the record's type
+  identity (Across 2026-07: unchecked 8-byte Anchor discriminator on
+  Solana, where events are rebuilt from traces and failed transactions
+  still emit data); (b) SEMANTIC / CUSTODY-LEVEL — the observer
+  validates a well-formed message's fields but never the fact the
+  message asserts (Coreum-XRPL 2026-08: memo amount and recipient
+  checked, actual XRP receipt never checked). Excludes: T10.002 parent
+  (failing predicate in deployed bytecode); T10.001 (validator-key
+  compromise — in both anchors the signers were honest and the
+  authorisation genuine); T10.003 (replay of a legitimate message);
+  T11.011 (observer's own hot keys stolen, e.g. LayerZero Executor
+  2026-07 — the observer was the victim, not the deceived party).
+
+data_sources: [bridge_deposit_log, bridge_lock_release_events,
+               bridge_message_logs, tx_call_trace, contract_events,
+               onchain_transaction, simulation_environment]
+
+detection_logic:
+  description: |
+    Four orthogonal paths, ordered by prevention value. PATH A
+    (locked-vs-issued gate) is the prevention-grade control and belongs
+    INSIDE the operator's release path, not in a periodic report: before
+    releasing X, confirm custody state actually rose by X. PATH B
+    (type-identity assertion) closes the parse-level shape at the point
+    of parsing. PATH C (source-transaction sanity) catches fills keyed to
+    transactions that moved nothing or failed. PATH D (reserve-depletion
+    velocity) is the runtime backstop that bounds any verification failure
+    the first three miss, and is the only path that fires without
+    instrumenting the observer itself.
+  pseudocode: |
+    # PATH A — locked-versus-issued gate in the release path
+    on observer_release_decision(claim):        # claim = {asset, amount, src_ref}
+      custody_now   ← custody_balance(bridge_custody_account, claim.asset)
+      custody_mark  ← last_reconciled_balance(bridge_custody_account, claim.asset)
+      credited      ← Σ released(claim.asset, since = last_reconciliation)
+      if custody_now − custody_mark < credited + claim.amount − reconcile_tolerance:
+        emit(PATH_A, bridge=claim.bridge, asset=claim.asset,
+             claimed=claim.amount, custody_delta=custody_now−custody_mark,
+             mode="release-without-matching-custody-increase", severity=critical)
+        BLOCK(claim)
+
+    # PATH B — type-identity assertion on every parsed event record
+    on parsed_event(record, expected_type):
+      tag ← type_tag(record)          # Anchor 8-byte discriminator | topic0 | protobuf type URL
+      if tag = ∅ or tag ≠ discriminator_of(expected_type):
+        emit(PATH_B, observer=record.observer, src_chain=record.chain,
+             tx=record.tx, expected=expected_type, observed=tag,
+             mode="event-type-tag-missing-or-mismatched", severity=critical)
+        BLOCK(record)
+
+    # PATH C — source-transaction value / status sanity
+    on observer_release_decision(claim):
+      src ← source_transaction(claim.src_ref)
+      if src.status = failed
+         or value_moved_to(bridge_custody_account, src) = 0
+         or counterparties(src) ⊆ {claim.beneficiary_cluster}:   # self-transfer
+        emit(PATH_C, tx=src.hash, beneficiary=claim.beneficiary,
+             mode="fill-against-zero-value-or-self-transfer", severity=critical)
+        BLOCK(claim)
+
+    # PATH D — reserve-depletion velocity (runtime backstop)
+    for each window W of size depletion_window:
+      outflows ← release_events(bridge_custody_account, in = W)
+      shapes   ← group_by(outflows, key = canonical_form(payment))
+      reserve_start ← custody_balance(bridge_custody_account, at = W.start)
+      drawn ← Σ amount for outflows
+      if drawn ≥ depletion_fraction × reserve_start
+         or (max(|s| for s in shapes.values()) ≥ same_shape_count
+             and drawn ≥ depletion_floor):
+        emit(PATH_D, bridge_custody_account, window=W, drawn=drawn,
+             reserve_fraction=drawn/reserve_start,
+             mode="reserve-depletion-velocity", severity=critical)
+
+parameters:
+  reconcile_tolerance:  { type: number,   default: 0 }        # exact by default; fees handled out-of-band
+  depletion_window:     { type: duration, default: 2h }
+  depletion_fraction:   { type: number,   default: 0.25 }     # 25% of reserve in one window
+  same_shape_count:     { type: integer,  default: 20 }       # Coreum drew 94 same-shaped payments
+  depletion_floor:      { type: number,   default: 25000 }    # absolute USD floor
+  observer_quorum:      { type: integer,  default: 2 }        # independent observers that must agree pre-release
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               bridge_custody_account, observer, tx, mode, evidence]
+
+test_fixtures:
+  positive:
+    - 2026-07-across-solana-relayer-anchor-event-discriminator-forgery   # parse-level: unchecked Anchor discriminator, 1,627 forged deposits
+    - 2026-08-coreum-xrpl-bridge-forged-deposit-memo-relayer-verification # semantic: memo trusted, XRP receipt never confirmed, 94 payments / 97 min
+  negative:
+    - "Legitimate high-volume filler activity where every fill maps to a source transaction that moved funds into custody"
+    - "Bridge reserve rebalancing by the operator — outflow present, but custody invariant preserved across the paired accounts"
+    - 2026-07-layerzero-executor-multi-chain-simultaneous-wallet-drain    # NOT this Technique: the observer's own hot keys were stolen (T11.011); no source event was forged
+    - 2026-05-verus-ethereum-bridge-source-amount-validation              # NOT this Technique: the missing conservation check was in deployed bytecode (parent T10.002)
+
+false_positive_modes:
+  - fee-adjusted settlement where the custody increase legitimately trails the credited amount by a protocol fee (PATH A's reconcile_tolerance, or reconcile net-of-fee)
+  - batched deposits reconciled asynchronously, so custody rises after the credit decision — restructure as reserve-then-release rather than widening the tolerance
+  - source-chain reorg temporarily inverting the custody delta; re-evaluate on finality rather than on inclusion
+  - operator-initiated treasury migration draining the custody account by design (PATH D — allowlist the operator's own destination cluster)
+  - "chains whose event model has no type tag at all: PATH B is unavailable and PATH A must carry the whole load"
+
+mitigations: [OAK-M11, OAK-M12, OAK-M16, OAK-M34, OAK-M36, OAK-M38, OAK-M39]
+
+reference_implementations:
+  - { target: forta-bot,            chain: evm,    url: "" }
+  - { target: oz-defender-sentinel, chain: evm,    url: "" }
+  - { target: dune,                 chain: evm,    url: "" }
+  - { target: anchor-discriminator, chain: solana, url: "" }
