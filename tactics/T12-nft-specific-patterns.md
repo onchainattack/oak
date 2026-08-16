@@ -36,10 +36,15 @@ The boundary rule for contributors: if the attack *targets* an NFT collection, i
 - OAK-T12.001 — NFT Wash-Trade Volume Inflation
 - OAK-T12.002 — Fake-Mint / Counterfeit Collection
 - OAK-T12.003 — Royalty Bypass / Marketplace Manipulation
+- OAK-T12.006 — NFT-Collateral Lending Manipulation *(added 2026-08; anchors XCarnival 2022-06, Omni Protocol 2022-07)*
+- OAK-T12.007 — Mint-Outcome Reroll (Revert-Until-Rare) *(added 2026-08; anchor Meebits 2021-05)*
+- OAK-T12.008 — Hybrid Fungible / Non-Fungible Standard Accounting Divergence *(added 2026-08; anchor Flooring Protocol / BitmapPunks 2026-06)*
+
+`OAK-T12.004` and `OAK-T12.005` are **deprecated tombstones**, not live Techniques: both were misfiled governance classes and were superseded on 2026-07-17 by `OAK-T16.006` and `OAK-T16.001` respectively. Per `CONTRIBUTING.md` the IDs are retained and never reused, which is why this Tactic's live Techniques run T12.001–T12.003 then resume at T12.006.
 
 ## Maintainer notes
 
-T12 in v0.1 is intentionally narrow at three Techniques. The canonical NFT industry retrospective `[chainalysis2022nft]` is the primary anchor citation across all three Techniques and supplies the forensic record for the 2021–2022 cohort. Per-Technique pages add marketplace-specific and case-specific citations.
+T12 in v0.1 was intentionally narrow at three Techniques; the 2026 Q3 focus quarter added the NFT-fi surfaces (T12.006, T12.007) that the v0.1 scope note flagged as out-of-scope-for-now. The canonical NFT industry retrospective `[chainalysis2022nft]` is the primary anchor citation across all three Techniques and supplies the forensic record for the 2021–2022 cohort. Per-Technique pages add marketplace-specific and case-specific citations.
 
 Patterns explicitly out of scope for v0.1 and targeted for v0.x updates:
 

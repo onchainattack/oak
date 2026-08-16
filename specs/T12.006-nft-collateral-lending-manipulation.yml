@@ -1,0 +1,114 @@
+oak_techniques: [OAK-T12.006]
+spec_id: oak-detection-T12.006
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect exploitation of protocols that accept non-fungible tokens as
+  loan collateral. Three sub-shapes, all reducible to one question —
+  can the protocol still prove what it holds and what it is worth?
+  (a) COLLATERAL-STATE DESYNCHRONISATION — the loan/order record stays
+  borrowable after the NFT leaves custody (XCarnival 2022-06, BAYC
+  #5110 re-pledged across attacker-deployed contracts). (b) TRANSFER-
+  CALLBACK REENTRANCY — ERC-721 safeTransferFrom's onERC721Received
+  hook re-enters a borrow/withdraw/liquidation path before state is
+  committed (Omni Protocol 2022-07, double reentrancy across two
+  unguarded functions). (c) COLLATERAL-VALUATION MANIPULATION — an
+  NFT-specific valuation input (floor feed, fractionalisation index,
+  staked-NFT derivative) is inflated before borrowing (ParaSpace
+  2023-03, pipeline). Excludes: generic fungible lending exploits;
+  T9.005 pure reentrancy with no NFT-collateral context; T9.001
+  oracle manipulation where the manipulated quantity is a fungible
+  market price.
+
+data_sources: [contract_events, token_transfer_events, tx_call_trace,
+               contract_storage, nft_marketplace_events, oracle_feed,
+               funder_graph]
+
+detection_logic:
+  description: |
+    Four paths. PATH A (escrow reconciliation) is the prevention-grade
+    control and belongs in the borrow path itself — assert the vault
+    still owns the collateral at the moment credit is extended, not
+    only when it was pledged. PATH B bounds any state bug with a
+    per-collection capacity invariant. PATH C detects the callback
+    reentrancy shape structurally. PATH D covers valuation.
+  pseudocode: |
+    # PATH A — escrow reconciliation at borrow time
+    on borrow(order):
+      if ownerOf(order.collection, order.tokenId) ≠ vault_address:
+        emit(PATH_A, protocol, order=order.id, token=order.tokenId,
+             actual_owner=ownerOf(...), mode="borrow-against-absent-collateral",
+             severity=critical)
+        BLOCK(borrow)
+      # continuous variant, independent of the protocol's own code:
+      for order in active_orders():
+        if ownerOf(order.collection, order.tokenId) ≠ vault_address:
+          emit(PATH_A, mode="active-loan-without-escrow", severity=critical)
+
+    # PATH B — per-collection borrow-capacity invariant
+    for each collection C:
+      escrowed ← count(tokenId : ownerOf(C, tokenId) = vault_address)
+      debt     ← Σ outstanding_debt(order) for order.collection = C
+      if debt > escrowed × per_token_limit × capacity_tolerance:
+        emit(PATH_B, collection=C, debt, escrowed,
+             mode="borrow-capacity-invariant-breached", severity=critical)
+
+    # PATH C — ERC-721 callback reentrancy
+    for each tx T touching the protocol:
+      trace ← call_trace(T)
+      for each safeTransferFrom(from=vault) call S in trace:
+        if ∃ call R in trace after S with R.to = protocol
+           and R.selector ∈ state_mutating_selectors
+           and depth(R) > depth(S):
+          emit(PATH_C, tx=T, reentered_selector=R.selector,
+               mode="onERC721Received-reentry", severity=critical)
+      # precondition signal, lower severity
+      if recipient_of(S) has extcodesize > 0:
+        emit(PATH_C, tx=T, mode="contract-recipient-on-nft-withdrawal",
+             severity=medium)
+
+    # PATH D — collateral valuation plausibility
+    on valuation_update(collection C, value v):
+      prev ← last_accepted_value(C)
+      trades ← trade_count(C, window = floor_window)
+      if v > prev × deviation_multiple or trades < min_trades:
+        emit(PATH_D, collection=C, value=v, prev, trades,
+             mode="implausible-collateral-valuation", severity=high)
+
+parameters:
+  per_token_limit:      { type: number,   default: 0 }      # protocol's max LTV per token, in quote units
+  capacity_tolerance:   { type: number,   default: 1.0 }    # no headroom by default
+  state_mutating_selectors: { type: list, default: ["borrow", "withdraw", "liquidate", "repay"] }
+  floor_window:         { type: duration, default: 24h }
+  min_trades:           { type: integer,  default: 5 }
+  deviation_multiple:   { type: number,   default: 1.5 }
+
+output_alert: [oak_technique, detection_path, severity, chain, protocol,
+               collection, token_id, order_id, tx, mode, evidence]
+
+test_fixtures:
+  positive:
+    - 2022-06-xcarnival-withdrawn-nft-collateral-order-reuse   # PATH A / PATH B — order borrowable after collateral withdrawn
+    - 2022-07-omni-protocol-erc721-callback-double-reentrancy  # PATH C — onERC721Received re-entry across two unguarded functions
+    - 2023-03-paraspace                                        # PATH D — rebasing-index inflation of NFT-linked collateral (~373%)
+  negative:
+    - "Legitimate repayment-then-withdrawal where the order is closed in the same transaction as the transfer"
+    - "Floor-price move on a genuinely liquid collection with trade count above min_trades"
+    - "Smart-contract-wallet borrower legitimately receiving collateral back — PATH C medium signal only, no re-entry present"
+
+false_positive_modes:
+  - "flash-loan-style same-transaction pledge/withdraw flows that a protocol intentionally supports: PATH A must evaluate at the credit-extension step, not at arbitrary trace points"
+  - batched liquidation transactions where several safeTransferFrom calls and protocol calls interleave without any actual re-entry — compare call depth, not ordering alone
+  - protocols that intentionally hold collateral in a per-borrower escrow contract rather than a single vault (PATH A must resolve the correct expected owner)
+  - collections with legitimately thin trading where min_trades is unreachable — tune per collection rather than globally, and lower LTV instead of suppressing the alert
+
+mitigations: [OAK-M10, OAK-M16, OAK-M09, OAK-M11, OAK-M02, OAK-M32]
+
+reference_implementations:
+  - { target: forta-bot,            chain: evm, url: "" }
+  - { target: oz-defender-sentinel, chain: evm, url: "" }
+  - { target: blocksec-phalcon,     chain: evm, url: "" }
+  - { target: dune,                 chain: evm, url: "" }

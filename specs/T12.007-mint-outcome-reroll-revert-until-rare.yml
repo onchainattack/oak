@@ -1,0 +1,100 @@
+oak_techniques: [OAK-T12.007]
+spec_id: oak-detection-T12.007
+version: 0.1.0
+maturity: observed
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect attacks on NFT distribution fairness in which a contract-based
+  minter learns the minted token's identity or rarity inside the mint
+  transaction and REVERTS whenever the outcome is not valuable enough,
+  repeating until a rare token is drawn. No assets move and no contract
+  is compromised; what is taken is the fairness of the distribution
+  buyers paid for. Two preconditions must both hold: the outcome is
+  knowable before the transaction is final, AND it can be priced at
+  that moment (published attributes, readable metadata, an archived or
+  enumerable per-tokenId characteristics file). Canonical anchor:
+  Meebits / Larva Labs 2021-05. Excludes: T12.002 (the token here is
+  genuine); T9.001/T9.006 (no oracle involved); randomness-compromise
+  cases — the draw may be perfectly fair and the attack still works,
+  because the defect is WHEN the minter learns the result relative to
+  when they must accept it.
+
+data_sources: [contract_events, onchain_transaction, tx_call_trace,
+               contract_creation_log, nft_marketplace_events]
+
+detection_logic:
+  description: |
+    PATH A is the only path that fires while the mint is still running,
+    which is the only window in which pausing helps — group mint calls
+    by sender and alert on revert ratio. PATH B is the cheap structural
+    precondition check. PATH C is the durable post-hoc evidence that
+    survives even when nobody watched the mempool. PATH D is the
+    pre-launch design audit, and it is the one that actually prevents.
+  pseudocode: |
+    # PATH A — revert-rate by sender during an active mint window
+    for each window W within [mint_open, mint_close]:
+      calls ← mint_entrypoint_calls(collection, in = W)
+      for sender, attempts in group_by(calls, key = tx.origin):
+        failed ← count(a for a in attempts if a.reverted)
+        if |attempts| ≥ min_attempts
+           and failed / |attempts| ≥ revert_ratio_threshold:
+          emit(PATH_A, collection, sender, attempts=|attempts|,
+               revert_ratio=failed/|attempts|,
+               mode="revert-until-rare-loop", severity=critical)
+
+    # PATH B — contract-caller signal on the mint entrypoint
+    for each mint call M:
+      if M.sender ≠ tx.origin or extcodesize(M.sender) > 0:
+        emit(PATH_B, collection, sender=M.sender,
+             mode="contract-minter", severity=low)   # signal, NOT a control
+
+    # PATH C — post-mint rarity concentration
+    on mint_close(collection):
+      observed ← rarity_distribution_by_holder(collection)
+      expected ← fair_draw_distribution(collection)
+      for holder, score in observed.items():
+        if divergence(score, expected[holder]) ≥ concentration_sigma:
+          emit(PATH_C, collection, holder, score,
+               mode="rarity-concentration-anomaly", severity=high)
+
+    # PATH D — pre-launch precondition audit
+    before mint_open(collection):
+      knowable  ← mint_returns_or_reveals_identity_in_tx(collection)
+      priceable ← attributes_reachable_before_reveal(collection)   # IPFS listing,
+                                                                   # sequential URI walk,
+                                                                   # repo/build artefact
+      if knowable and priceable:
+        emit(PATH_D, collection, mode="reroll-preconditions-present",
+             severity=critical)
+
+parameters:
+  min_attempts:              { type: integer, default: 5 }
+  revert_ratio_threshold:    { type: number,  default: 0.5 }
+  concentration_sigma:       { type: number,  default: 3.0 }
+  mint_window_granularity:   { type: duration, default: 5m }
+
+output_alert: [oak_technique, detection_path, severity, chain, collection,
+               sender, token_id, mode, evidence]
+
+test_fixtures:
+  positive:
+    - 2021-05-meebits-mint-outcome-reroll-rarity-exploit   # PATH A / PATH D — mint-check-revert loop against an archived per-tokenId attribute file
+  negative:
+    - "Failed mints caused by sell-out races or gas underpricing — high revert rate spread across many senders, not concentrated"
+    - "Delayed-reveal collection where attributes are bound after the mint window — PATH D returns knowable=true, priceable=false"
+    - "Smart-contract-wallet minters with normal success rates — PATH B fires at low severity by design and is not evidence on its own"
+
+false_positive_modes:
+  - "popular mints where every sender reverts on sell-out: PATH A must require concentration, not raw revert volume"
+  - aggregator and minting-bot services that revert on price or gas conditions rather than on outcome — inspect whether the revert condition reads the minted identity
+  - allowlist-gated mints where reverts reflect eligibility failures rather than outcome filtering
+  - "small collections where a fair draw is naturally lumpy: PATH C's concentration_sigma must scale with supply"
+
+mitigations: [OAK-M02, OAK-M16, OAK-M11, OAK-M34]
+
+reference_implementations:
+  - { target: dune,                  chain: evm, url: "" }
+  - { target: forta-bot,             chain: evm, url: "" }
+  - { target: chainlink-vrf,         chain: evm, url: "" }

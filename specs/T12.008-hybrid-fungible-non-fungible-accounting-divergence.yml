@@ -1,0 +1,106 @@
+oak_techniques: [OAK-T12.008]
+spec_id: oak-detection-T12.008
+version: 0.1.0
+maturity: observed
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect exploitation of the SEAM in contracts that maintain two
+  representations of one asset — a fungible ERC-20 balance and
+  per-tokenId non-fungible ownership — as ERC-404 / BT404 hybrids and
+  NFT fractionalisation protocols do by construction. Two enabling
+  properties: packed storage producing identifiers with more than one
+  valid reading (an authorisation check and the accounting behind it
+  disagree — "ghost ownership"), and bidirectional mint/burn on paths
+  a reviewer reads as plain transfers (so an unchecked underflow
+  creates supply). Canonical anchor: Flooring Protocol V2 /
+  BitmapPunks 2026-06, where a high-bit token-ID alias passed an
+  ownership check and an unchecked balance update underflowed, turning
+  a small WETH deposit into a near-unlimited fpToken balance redeemed
+  for locked NFTs. Excludes: T12.006 (NFT-collateral lending — one
+  representation, held in escrow); pure ERC-20 supply bugs with no
+  non-fungible side; T9.005 reentrancy without a representation
+  divergence.
+
+data_sources: [contract_events, token_transfer_events, tx_call_trace,
+               contract_storage, onchain_transaction, contract_bytecode]
+
+detection_logic:
+  description: |
+    PATH A is the controlling invariant and belongs inside the contract —
+    the two representations must agree at all times, and any divergence
+    is either an exploit or an accounting bug with no benign third case.
+    PATH B bounds the mint side in-transaction so a seam failure reverts
+    rather than alerts. PATH C rejects non-canonical identifiers before
+    any authorisation predicate reads them. PATH D covers the contagion
+    property this class carries by construction.
+  pseudocode: |
+    # PATH A — cross-representation invariant
+    for each hybrid contract H:
+      fungible ← totalSupply(H)
+      escrowed ← count(tokenId : ownerOf_canonical(H.collection, tokenId) = H)
+      if |fungible − escrowed × fraction_size| > invariant_tolerance:
+        emit(PATH_A, contract=H, fungible, escrowed,
+             mode="supply-escrow-divergence", severity=critical)
+
+    # PATH B — deposit-to-mint ratio bound, evaluated in-transaction
+    on mint(position):
+      minted   ← position.fungible_out
+      deposited ← quote_value_in(position)
+      if minted > deposited × max_mint_ratio:
+        emit(PATH_B, contract, tx, minted, deposited,
+             mode="disproportionate-mint", severity=critical)
+        BLOCK(mint)
+
+    # PATH C — identifier canonicalisation before authorisation
+    on any call reading ownership for identifier id:
+      if id ≥ max_token_id
+         or high_bits_set(id, reserved_bit_mask)
+         or canonical_form(id) ≠ id:
+        emit(PATH_C, contract, id, mode="non-canonical-token-identifier",
+             severity=critical)
+        BLOCK(call)
+      if owner_view_internal(id) ≠ ownerOf_canonical(collection, id):
+        emit(PATH_C, contract, id, mode="ghost-ownership-divergence",
+             severity=critical)
+
+    # PATH D — fork-population contagion after disclosure
+    on disclosure(hybrid_defect D affecting implementation I):
+      for each deployment F in fork_registry(I):
+        if code_hash(F) ∈ affected_code_hashes(D) and not patched(F):
+          emit(PATH_D, fork=F, upstream=I,
+               mode="unpatched-fork-post-disclosure", severity=high)
+
+parameters:
+  fraction_size:        { type: number,   default: 0 }      # fungible units per whole NFT, per protocol
+  invariant_tolerance:  { type: number,   default: 0 }      # exact by default
+  max_mint_ratio:       { type: number,   default: 1.05 }   # 5% headroom over deposited value
+  reserved_bit_mask:    { type: string,   default: "0xFFFFFFFFFFFFFFFF0000000000000000" }
+  max_token_id:         { type: integer,  default: 0 }      # collection supply bound, per protocol
+  fork_registry:        { type: object,   default: {} }     # maintained in advance, not after disclosure
+
+output_alert: [oak_technique, detection_path, severity, chain, contract,
+               collection, token_id, tx, mode, evidence]
+
+test_fixtures:
+  positive:
+    - 2026-06-flooring-protocol-bt404-ghost-ownership-underflow   # PATH A / PATH B / PATH C — aliased id past ownership check, then underflow
+  negative:
+    - "Normal fractionalisation deposit and redemption where supply and escrow move together"
+    - "Rebase or fee-accrual designs with a documented, bounded divergence — encode it in invariant_tolerance rather than disabling PATH A"
+    - "A fork that applied the upstream patch before disclosure — PATH D resolves patched(F) = true"
+
+false_positive_modes:
+  - "in-flight multi-step transactions observed mid-trace: PATH A must evaluate at transaction boundaries, not at arbitrary trace points"
+  - protocols where fraction_size is configurable per collection — a single global value produces spurious divergence
+  - "legitimate high-bit encodings used as protocol-internal flags: canonical_form must be defined per implementation, not assumed"
+  - fork registries that are stale, producing alerts against deployments that no longer hold assets
+
+mitigations: [OAK-M02, OAK-M16, OAK-M36, OAK-M11, OAK-M22, OAK-M35]
+
+reference_implementations:
+  - { target: forta-bot,            chain: evm, url: "" }
+  - { target: oz-defender-sentinel, chain: evm, url: "" }
+  - { target: blocksec-phalcon,     chain: evm, url: "" }
+  - { target: dune,                 chain: evm, url: "" }
