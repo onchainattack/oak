@@ -1,5 +1,6 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { TOP_LEVEL_DOCUMENTS } from "./site-documents.mjs";
 
 const root = process.cwd();
 const baseUrl = "https://onchainattack.org";
@@ -76,6 +77,29 @@ const route = (pathname, title, description, priority = 0.5, content = {}) => ({
 
 const canonicalUrlForPath = (pathname) => `${baseUrl}${pathname === "/" ? "/" : `${pathname}/`}`;
 
+// Search results truncate a title at roughly 60 characters, and Bing flags
+// anything longer. Keep the full brand suffix where it fits, fall back to the
+// short one, and clamp the page title itself only when even that overflows.
+const TITLE_MAX = 60;
+const HOME_TITLE = "OAK — OnChain Attack Knowledge: crypto attack taxonomy";
+
+const clampWords = (value, max) =>
+  value.length <= max
+    ? value
+    : value
+        .slice(0, max)
+        .replace(/\s+\S*$/, "")
+        .replace(/[\s\-—–:(,;/]+$/, "");
+
+const composeTitle = (title) => {
+  if (title === siteName) return HOME_TITLE;
+  const full = `${title} · ${siteName}`;
+  if (full.length <= TITLE_MAX) return full;
+  const short = `${title} · OAK`;
+  if (short.length <= TITLE_MAX) return short;
+  return `${clampWords(title, TITLE_MAX - " · OAK".length)} · OAK`;
+};
+
 // ---------------------------------------------------------------------------
 // Pre-rendered snapshot
 //
@@ -125,6 +149,7 @@ const NAV_LINKS = [
   { href: "/actors/", label: "Threat actors" },
   { href: "/mitigations/", label: "Mitigations" },
   { href: "/software/", label: "Software" },
+  { href: "/datasources/", label: "Data sources" },
   { href: "/coverage/", label: "Coverage & gaps" },
   { href: "/contribute/", label: "Contribute" },
 ];
@@ -134,32 +159,19 @@ const FOOTER_LINKS = [
   { href: "/tools/oak.json", label: "JSON export" },
   { href: "/tools/oak-stix.json", label: "STIX 2.1 bundle" },
   { href: "/citations.bib", label: "Citations (BibTeX)" },
+  { href: "/document/METHODOLOGY/", label: "Methodology" },
   { href: "/document/GLOSSARY/", label: "Glossary" },
   { href: "/document/CHANGELOG/", label: "Changelog" },
   { href: "/document/DISCLAIMER/", label: "Disclaimer" },
 ];
 
 const oak = JSON.parse(await readFile(path.join(root, "tools/oak.json"), "utf8"));
+const investigationFiles = (await readdir(path.join(root, "investigations")))
+  .filter((file) => file.endsWith(".md"))
+  .sort();
 const documentRender = JSON.parse(
   await readFile(path.join(root, "tools/document-render.json"), "utf8"),
 );
-
-const topLevelDocuments = [
-  "CHANGELOG",
-  "ROADMAP",
-  "TAXONOMY-GAPS",
-  "GLOSSARY",
-  "PRIOR-ART",
-  "COVERAGE",
-  "CROSSWALK",
-  "CONTRIBUTING",
-  "CODE_OF_CONDUCT",
-  "SECURITY",
-  "PEER-REVIEW",
-  "DISCLAIMER",
-  "CORRECTIONS",
-  "VERSIONING",
-];
 
 const exampleSlug = (file) => file.replace(/\.md$/, "");
 const exampleRoute = (file) => `/document/examples/${exampleSlug(file)}/`;
@@ -184,7 +196,10 @@ for (const dataSource of oak.data_sources ?? oak.dataSources ?? []) {
   const slug = path.basename(dataSource.source_file).replace(/\.md$/, "");
   registerSource(dataSource.source_file, `/document/data-sources/${slug}/`);
 }
-for (const doc of topLevelDocuments) registerSource(`${doc}.md`, `/document/${doc}/`);
+for (const doc of TOP_LEVEL_DOCUMENTS) registerSource(`${doc}.md`, `/document/${doc}/`);
+for (const file of investigationFiles) {
+  registerSource(`investigations/${file}`, `/document/investigations/${file.replace(/\.md$/, "")}/`);
+}
 registerSource("README.md", "/");
 
 const ABSOLUTE_HREF = /^(https?:|mailto:|tel:|data:|#|\/)/;
@@ -267,7 +282,7 @@ const prerenderMarkup = (meta) =>
 
 const htmlForRoute = (template, meta) => {
   const canonicalUrl = canonicalUrlForPath(meta.pathname);
-  const fullTitle = meta.title === siteName ? siteName : `${meta.title} · ${siteName}`;
+  const fullTitle = composeTitle(meta.title);
   // Replacement callbacks, not replacement strings — descriptions carry dollar
   // amounts ("$1.5M"), and `$1` in a replacement string is a capture group.
   const swap = (html, pattern, value) => html.replace(pattern, () => value);
@@ -537,6 +552,27 @@ const routes = [
     },
   ),
   route(
+    "/datasources",
+    "Data Sources",
+    "Browse the on-chain, off-chain, and vendor data sources OAK Techniques are detected from.",
+    0.7,
+    {
+      intro:
+        `${(oak.data_sources ?? []).length} data sources — the telemetry each Technique's detection ` +
+        `logic reads from, with access paths and covered chains.`,
+      sections: [
+        {
+          title: `Data sources (${(oak.data_sources ?? []).length})`,
+          links: (oak.data_sources ?? []).map((dataSource) => ({
+            href: `/document/data-sources/${path.basename(dataSource.source_file).replace(/\.md$/, "")}/`,
+            label: `${dataSource.id} ${dataSource.name}`,
+            note: [dataSource.layer, (dataSource.chains ?? []).join(", ")].filter(Boolean).join(" · "),
+          })),
+        },
+      ],
+    },
+  ),
+  route(
     "/contribute",
     "Contribute",
     "Learn how to contribute examples, Techniques, mitigations, and corrections to OAK.",
@@ -689,7 +725,7 @@ for (const dataSource of oak.data_sources ?? oak.dataSources ?? []) {
   );
 }
 
-for (const doc of topLevelDocuments) {
+for (const doc of TOP_LEVEL_DOCUMENTS) {
   const meta = await readMarkdownMeta(
     `${doc}.md`,
     doc.replace(/_/g, " "),
@@ -699,6 +735,21 @@ for (const doc of topLevelDocuments) {
     route(`/document/${doc}`, meta.title, meta.description, 0.5, {
       doc: `${doc}.md`,
       kicker: "Document",
+    }),
+  );
+}
+
+for (const file of investigationFiles) {
+  const slug = file.replace(/\.md$/, "");
+  const meta = await readMarkdownMeta(
+    path.join("investigations", file),
+    slug,
+    `${slug}: OAK investigation write-up.`,
+  );
+  routes.push(
+    route(`/document/investigations/${slug}`, meta.title, meta.description, 0.5, {
+      doc: `investigations/${file}`,
+      kicker: "Investigation",
     }),
   );
 }

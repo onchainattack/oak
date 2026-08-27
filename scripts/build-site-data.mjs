@@ -1,6 +1,7 @@
 import { readFile, readdir, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { marked } from "marked";
+import { TOP_LEVEL_DOCUMENTS } from "./site-documents.mjs";
 
 const root = process.cwd();
 const rel = (...parts) => path.join(root, ...parts);
@@ -309,22 +310,11 @@ const citationCount = (await readFile(rel("citations.bib"), "utf8")).match(
 
 const documentSpecs = [
   "README.md",
-  "CHANGELOG.md",
-  "CODE_OF_CONDUCT.md",
-  "CONTRIBUTING.md",
-  "CORRECTIONS.md",
-  "COVERAGE.md",
-  "CROSSWALK.md",
-  "DISCLAIMER.md",
-  "GLOSSARY.md",
-  "PEER-REVIEW.md",
-  "PRIOR-ART.md",
-  "ROADMAP.md",
-  "SECURITY.md",
-  "TAXONOMY-GAPS.md",
+  ...TOP_LEVEL_DOCUMENTS.map((doc) => `${doc}.md`),
   ...(await listMarkdownFiles("tactics")).map((file) => `tactics/${file}`),
   ...(await listMarkdownFiles("techniques")).map((file) => `techniques/${file}`),
   ...(await listMarkdownFiles("examples")).map((file) => `examples/${file}`),
+  ...(await listMarkdownFiles("investigations")).map((file) => `investigations/${file}`),
   ...(await listMarkdownFiles("actors")).map((file) => `actors/${file}`),
   ...(await listMarkdownFiles("data-sources")).map((file) => `data-sources/${file}`),
   ...(await listMarkdownFiles("mitigations")).map((file) => `mitigations/${file}`),

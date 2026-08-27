@@ -1,5 +1,6 @@
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { readFile, readdir, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
+import { TOP_LEVEL_DOCUMENTS } from "./site-documents.mjs";
 
 const root = process.cwd();
 const baseUrl = "https://onchainattack.org";
@@ -25,6 +26,7 @@ push(`${baseUrl}/actors`, 0.8, "weekly");
 push(`${baseUrl}/mitigations`, 0.7, "weekly");
 push(`${baseUrl}/software`, 0.7, "weekly");
 push(`${baseUrl}/coverage`, 0.7, "weekly");
+push(`${baseUrl}/datasources`, 0.7, "monthly");
 push(`${baseUrl}/contribute`, 0.5, "monthly");
 
 // Per-Technique
@@ -62,24 +64,13 @@ for (const ds of oak.data_sources ?? oak.dataSources ?? []) {
 
 // Top-level documents (markdown pages indexed via the in-app viewer; .md is
 // stripped from the URL surface and restored at lookup time)
-const documents = [
-  "CHANGELOG",
-  "ROADMAP",
-  "TAXONOMY-GAPS",
-  "GLOSSARY",
-  "PRIOR-ART",
-  "COVERAGE",
-  "CROSSWALK",
-  "CONTRIBUTING",
-  "CODE_OF_CONDUCT",
-  "SECURITY",
-  "PEER-REVIEW",
-  "DISCLAIMER",
-  "CORRECTIONS",
-  "VERSIONING",
-];
-for (const doc of documents) {
+for (const doc of TOP_LEVEL_DOCUMENTS) {
   push(`${baseUrl}/document/${doc}`, 0.5, "monthly");
+}
+
+// Investigations — long-form incident write-ups, opened as documents
+for (const file of (await readdir(path.join(root, "investigations"))).filter((f) => f.endsWith(".md"))) {
+  push(`${baseUrl}/document/investigations/${file.replace(/\.md$/, "")}`, 0.5, "monthly");
 }
 
 // Worked examples — each example file is its own indexable page
