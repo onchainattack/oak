@@ -29,6 +29,12 @@ Output schema (v2):
          "citations": [...],
          "source_file": "..."}
       ],
+      "examples": [
+        {"id": "<slug>", "file": "<slug>.md", "title": "...",
+         "date_prefix": "YYYY-MM", "techniques": ["OAK-Tn.NNN", ...],
+         "attribution": "confirmed|inferred-strong|inferred-weak|pseudonymous|unattributed",
+         "source_file": "..."}
+      ],
       "relationships": [
         {"type": "mitigates",  "source": "OAK-MNN",  "target": "OAK-Tn.NNN"},
         {"type": "uses",       "source": "OAK-SNN",  "target": "OAK-Tn.NNN"},
@@ -81,6 +87,27 @@ USED_BY_GROUPS_RE = re.compile(r"^\*\*Used by Groups:\*\*\s*(.+?)$", re.MULTILIN
 HOST_PLATFORMS_RE = re.compile(r"^\*\*Host platforms:\*\*\s*(.+?)$", re.MULTILINE)
 OBSERVED_TECHNIQUES_RE = re.compile(r"^\*\*Observed Techniques:\*\*\s*(.+?)$", re.MULTILINE)
 
+# --- examples ------------------------------------------------------------
+EXAMPLE_H1_RE = re.compile(r"^#\s+(.+?)\s*$", re.MULTILINE)
+# Same field semantics as tools/check_tags.py so the export cannot disagree
+# with the validator about what an example declares.
+EXAMPLE_FIELD_RE = re.compile(
+    r"\*\*OAK Techniques observed:\*\*(.*?)(?=\n\*\*|\n##|\Z)", re.S
+)
+EXAMPLE_TAG_RE = re.compile(r"OAK-(T\d+(?:\.\d+)*)")
+# The attribution block, then the first strength label inside it. Scanning the
+# whole block rather than the first few characters matters: cohort examples
+# open with "**mixed** (per-case strength labels follow)" and then list the
+# per-case labels, which a prefix-anchored pattern misses entirely.
+EXAMPLE_ATTR_BLOCK_RE = re.compile(
+    r"\*\*Attribution:\*\*(.*?)(?=\n\*\*|\n##|\Z)", re.S
+)
+EXAMPLE_ATTR_RE = re.compile(
+    r"\*\*(mixed|confirmed|inferred-strong|inferred-weak|pseudonymous|unattributed)\b",
+    re.I,
+)
+EXAMPLE_DATE_RE = re.compile(r"^(\d{4}(?:-\d{2})?)")
+
 CITATION_KEY_RE = re.compile(r"`\[([a-z][a-z0-9_]{4,})\]`")
 TACTIC_REF_IN_TEXT_RE = re.compile(r"OAK-T\d+(?!\.\d)")
 TECHNIQUE_REF_IN_TEXT_RE = re.compile(r"(?:OAK-)?T\d+\.\d{3}(?:\.\d{3})?")
@@ -118,6 +145,17 @@ class Mitigation:
     audience: list[str] = field(default_factory=list)
     maps_to_techniques: list[str] = field(default_factory=list)
     citations: list[str] = field(default_factory=list)
+    source_file: str = ""
+
+
+@dataclass
+class Example:
+    id: str
+    file: str
+    title: str = ""
+    date_prefix: str = ""
+    techniques: list[str] = field(default_factory=list)
+    attribution: str = ""
     source_file: str = ""
 
 
@@ -265,6 +303,33 @@ def parse_software(path: Path) -> Software:
     return sw
 
 
+def parse_example(path: Path) -> Example:
+    """Parse a worked example into its export shape.
+
+    Structural validity is enforced by tools/check_linkage.py, so this is
+    deliberately forgiving: a malformed example degrades to empty metadata
+    rather than failing the whole export and taking the site build with it.
+    """
+    text = path.read_text(encoding="utf-8")
+    ex = Example(
+        id=path.stem,
+        file=path.name,
+        source_file=str(path),
+    )
+    if (mh := EXAMPLE_H1_RE.search(text)):
+        ex.title = mh.group(1).strip()
+    if (md := EXAMPLE_DATE_RE.match(path.stem)):
+        ex.date_prefix = md.group(1)
+    if (mf := EXAMPLE_FIELD_RE.search(text)):
+        ex.techniques = sorted(
+            {f"OAK-{tag}" for tag in EXAMPLE_TAG_RE.findall(mf.group(1))}
+        )
+    if (mb := EXAMPLE_ATTR_BLOCK_RE.search(text)):
+        if (ma := EXAMPLE_ATTR_RE.search(mb.group(1))):
+            ex.attribution = ma.group(1).lower()
+    return ex
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", default="tools/oak.json", type=Path)
@@ -277,6 +342,7 @@ def main(argv: list[str]) -> int:
     techniques_dir = root / "techniques"
     mitigations_dir = root / "mitigations"
     software_dir = root / "software"
+    examples_dir = root / "examples"
 
     if not tactics_dir.is_dir() or not techniques_dir.is_dir():
         print(f"ERROR: {tactics_dir} or {techniques_dir} missing", file=sys.stderr)
@@ -331,6 +397,15 @@ def main(argv: list[str]) -> int:
                 print(f"ERROR parsing {p}: {exc}", file=sys.stderr)
                 return 1
 
+    examples: list[Example] = []
+    if examples_dir.is_dir():
+        for p in sorted(examples_dir.glob("*.md")):
+            try:
+                examples.append(parse_example(p))
+            except Exception as exc:
+                print(f"ERROR parsing {p}: {exc}", file=sys.stderr)
+                return 1
+
     relationships: list[dict[str, str]] = []
     for m in mitigations:
         for tid in m.maps_to_techniques:
@@ -340,6 +415,18 @@ def main(argv: list[str]) -> int:
             relationships.append({"type": "uses", "source": s.id, "target": tid})
         for gid in s.used_by_groups:
             relationships.append({"type": "uses", "source": gid, "target": s.id})
+
+    # source_file is emitted repo-relative. Absolute paths made the published
+    # export depend on where it was built (a local checkout vs. the CI runner's
+    # /home/runner/work/... tree), which is noise for consumers and makes two
+    # builds of identical content differ. Consumers already accept relative
+    # paths: scripts/build-route-pages.mjs resolves either form.
+    for entity in (*tactics, *techniques, *mitigations, *software, *examples):
+        if entity.source_file:
+            try:
+                entity.source_file = str(Path(entity.source_file).relative_to(root))
+            except ValueError:
+                pass
 
     document = {
         "schema_version": "2",
@@ -360,6 +447,7 @@ def main(argv: list[str]) -> int:
             for m in mitigations
         ],
         "software": [s.__dict__ for s in software],
+        "examples": [e.__dict__ for e in examples],
         "relationships": relationships,
     }
 
@@ -371,7 +459,7 @@ def main(argv: list[str]) -> int:
     print(
         f"OK: wrote {args.out} — {len(tactics)} tactics, {len(techniques)} techniques, "
         f"{len(mitigations)} mitigations, {len(software)} software, "
-        f"{len(relationships)} relationships."
+        f"{len(examples)} examples, {len(relationships)} relationships."
     )
     return 0
 
