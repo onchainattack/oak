@@ -132,9 +132,9 @@ Four commands and one lookup reproduce the identity-layer findings independently
 
 The delivery repository itself is **private** and returns 404 unauthenticated, so it is not independently retrievable. It was not accessed for this write-up beyond the copy obtained during the engagement; cloning it now would be an authenticated action visible to its owner.
 
-### Tier 2 — verifiable against the sealed evidence package
+### Tier 2 — recorded digests; the artefacts themselves were not retained
 
-Content hashes are listed rather than an archive hash, because the archive is expected to be re-sealed and its digest is not a stable identifier. All values SHA-256.
+**The collected artefacts no longer exist.** They were held locally, were never mirrored, and were deleted after the analysis was written up; OAK does not hold a copy and cannot produce one on request. What survives is the digest record below, and it is published for one purpose: **correlation**. If the same lure repository, loader file, or first-stage payload surfaces in anyone else's collection, these values identify it as the same specimen and tie it to this write-up. They are not an offer of verification against anything OAK can hand over, and should not be read as one. All values SHA-256.
 
 | Artefact | SHA-256 | Size |
 |---|---|---|
@@ -155,14 +155,14 @@ Content hashes are listed rather than an archive hash, because the archive is ex
 
 ### Tier 3 — what rests on our word
 
-- **That the correspondence is complete and unaltered.** We hold the only copies of the recruiter thread. Its headers are internally consistent and its transport timestamps interlock with the GitHub message to the second, but as established in Tier 1 it carries no verifiable signature. The GitHub message is the exception and anchors the delivery event.
-- **That the repository as hashed is the repository as delivered.** The archive was downloaded through a browser and carries no git metadata, so there is no upstream commit to diff against. The macOS quarantine attribute records the browser and the timestamp, which is corroborating but self-reported.
+- **That the correspondence was complete and unaltered.** The recruiter thread's headers were internally consistent and its transport timestamps interlocked with the GitHub message to the second, but as established in Tier 1 it carried no verifiable signature — and the file is no longer held, so it cannot now be re-examined. The GitHub invitation was the exception: its `d=github.com; s=pf2023` signature was verifiable while the file existed, and the selector is still published, so the same check remains available to anyone who holds a copy of that message. OAK does not.
+- **That the repository as hashed was the repository as delivered.** The archive was downloaded through a browser and carried no git metadata, so there was no upstream commit to diff against. The macOS quarantine attribute recorded the browser and the timestamp, which corroborates but is self-reported. The delivery repository is private and was not re-accessed, so the tree manifest cannot be recomputed from source.
 - **That nothing was executed.** Evidenced by the checks in *Establishing that it did not run*, all performed on our own host. Independently unverifiable by construction.
 - **That the JSONBin record served what we say it served.** The record is mutable and the observation is not reproducible; the response body hash fixes what we received, not what anyone else would receive.
 
 ## Public references
 
-This example's primary sources are the first-party artefacts held by OAK — the two original EML files, the repository archive, the first-stage payload as served, per-file hashes for all 1,367 files, HTTP acquisition metadata, and a YARA rule for the loader — sealed as a hashed evidence package on 2026-08-27. They are originals rather than public documents; *Evidence and verification* above sets out exactly how each claim can be checked, and which few cannot. The references below are not the basis of this entry — they corroborate specific components of it.
+This example was written from first-party artefacts collected on 2026-08-27 — the two original EML files, the repository archive, the first-stage payload as served, per-file hashes for all 1,367 files, HTTP acquisition metadata, and a YARA rule for the loader. **Those artefacts were not retained and OAK cannot produce them**; what remains of them is the digest record in *Evidence and verification* above, which also sets out which claims a reader can still check independently — a substantial share of them, because the identity-layer findings query live systems and need nothing from us. The references below are not the basis of this entry; they corroborate specific components of it.
 
 - `[osvgrayavatar2025]` — OSV / GitHub Advisory Database, "Malicious code in grayavatar (npm)", `MAL-2025-6012`, published 2025-07-20 (alias `GHSA-crhf-hxhx-8cx4`; the package declared in this repository's nested `server/package.json`): <https://osv.dev/vulnerability/MAL-2025-6012>
 - `[osvexpressrequestengine2026]` — OSV / GitHub Advisory Database, "Malicious code in express-request-engine (npm)", `MAL-2026-10414`, published 2026-07-13 (alias `GHSA-684q-384r-cr7r`; same JSONBin / secret-header / `Function.constructor` loader family): <https://osv.dev/vulnerability/MAL-2026-10414>
