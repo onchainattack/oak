@@ -29,6 +29,15 @@ Output schema (v2):
          "citations": [...],
          "source_file": "..."}
       ],
+      "groups": [
+        {"id": "OAK-Gnn", "name": "...", "aliases": [...],
+         "attribution_status": "...", "first_observed": "...", "active": "...",
+         "source_file": "..."}
+      ],
+      "data_sources": [
+        {"id": "OAK-DS-nn", "name": "...", "layer": "...", "chains": [...],
+         "access_path": "...", "source_file": "..."}
+      ],
       "examples": [
         {"id": "<slug>", "file": "<slug>.md", "title": "...",
          "date_prefix": "YYYY-MM", "techniques": ["OAK-Tn.NNN", ...],
@@ -86,6 +95,18 @@ FIRST_OBSERVED_RE = re.compile(r"^\*\*First observed:\*\*\s*(.+?)$", re.MULTILIN
 USED_BY_GROUPS_RE = re.compile(r"^\*\*Used by Groups:\*\*\s*(.+?)$", re.MULTILINE)
 HOST_PLATFORMS_RE = re.compile(r"^\*\*Host platforms:\*\*\s*(.+?)$", re.MULTILINE)
 OBSERVED_TECHNIQUES_RE = re.compile(r"^\*\*Observed Techniques:\*\*\s*(.+?)$", re.MULTILINE)
+
+# --- groups (threat actors) ----------------------------------------------
+GROUP_ID_RE = re.compile(r"^# (OAK-G\d+) — (.+?)$", re.MULTILINE)
+ATTR_STATUS_RE = re.compile(r"^\*\*Attribution status:\*\*\s*(.+?)$", re.MULTILINE)
+FIRST_OBSERVED_CRYPTO_RE = re.compile(
+    r"^\*\*First observed in crypto:\*\*\s*(.+?)$", re.MULTILINE
+)
+
+# --- data sources --------------------------------------------------------
+DATASOURCE_ID_RE = re.compile(r"^# (OAK-DS-\d+) — (.+?)$", re.MULTILINE)
+LAYER_RE = re.compile(r"^\*\*Layer:\*\*\s*(.+?)$", re.MULTILINE)
+ACCESS_PATH_RE = re.compile(r"^\*\*Typical access path:\*\*\s*(.+?)$", re.MULTILINE)
 
 # --- examples ------------------------------------------------------------
 EXAMPLE_H1_RE = re.compile(r"^#\s+(.+?)\s*$", re.MULTILINE)
@@ -145,6 +166,27 @@ class Mitigation:
     audience: list[str] = field(default_factory=list)
     maps_to_techniques: list[str] = field(default_factory=list)
     citations: list[str] = field(default_factory=list)
+    source_file: str = ""
+
+
+@dataclass
+class Group:
+    id: str
+    name: str
+    aliases: list[str] = field(default_factory=list)
+    attribution_status: str = ""
+    first_observed: str = ""
+    active: str = ""
+    source_file: str = ""
+
+
+@dataclass
+class DataSource:
+    id: str
+    name: str
+    layer: str = ""
+    chains: list[str] = field(default_factory=list)
+    access_path: str = ""
     source_file: str = ""
 
 
@@ -303,6 +345,40 @@ def parse_software(path: Path) -> Software:
     return sw
 
 
+def parse_group(path: Path) -> Group:
+    text = path.read_text(encoding="utf-8")
+    m = GROUP_ID_RE.search(text)
+    if not m:
+        raise ValueError(f"{path}: cannot find group id header (`# OAK-Gnn — Name`)")
+    g = Group(id=m.group(1), name=m.group(2).strip(), source_file=str(path))
+    if (ma := ALIASES_RE.search(text)):
+        g.aliases = [a.strip(' "') for a in _split_csv_with_parens(ma.group(1))]
+    if (mas := ATTR_STATUS_RE.search(text)):
+        g.attribution_status = mas.group(1).strip()
+    if (mf := FIRST_OBSERVED_CRYPTO_RE.search(text)):
+        g.first_observed = mf.group(1).strip()
+    if (mac := ACTIVE_RE.search(text)):
+        g.active = mac.group(1).strip()
+    return g
+
+
+def parse_data_source(path: Path) -> DataSource:
+    text = path.read_text(encoding="utf-8")
+    m = DATASOURCE_ID_RE.search(text)
+    if not m:
+        raise ValueError(
+            f"{path}: cannot find data-source id header (`# OAK-DS-nn — Name`)"
+        )
+    ds = DataSource(id=m.group(1), name=m.group(2).strip(), source_file=str(path))
+    if (ml := LAYER_RE.search(text)):
+        ds.layer = ml.group(1).strip()
+    if (mc := CHAINS_RE.search(text)):
+        ds.chains = [c.strip() for c in _split_csv_with_parens(mc.group(1))]
+    if (mp := ACCESS_PATH_RE.search(text)):
+        ds.access_path = mp.group(1).strip()
+    return ds
+
+
 def parse_example(path: Path) -> Example:
     """Parse a worked example into its export shape.
 
@@ -343,6 +419,8 @@ def main(argv: list[str]) -> int:
     mitigations_dir = root / "mitigations"
     software_dir = root / "software"
     examples_dir = root / "examples"
+    actors_dir = root / "actors"
+    data_sources_dir = root / "data-sources"
 
     if not tactics_dir.is_dir() or not techniques_dir.is_dir():
         print(f"ERROR: {tactics_dir} or {techniques_dir} missing", file=sys.stderr)
@@ -397,6 +475,24 @@ def main(argv: list[str]) -> int:
                 print(f"ERROR parsing {p}: {exc}", file=sys.stderr)
                 return 1
 
+    groups: list[Group] = []
+    if actors_dir.is_dir():
+        for p in sorted(actors_dir.glob("OAK-G*.md")):
+            try:
+                groups.append(parse_group(p))
+            except Exception as exc:
+                print(f"ERROR parsing {p}: {exc}", file=sys.stderr)
+                return 1
+
+    data_sources: list[DataSource] = []
+    if data_sources_dir.is_dir():
+        for p in sorted(data_sources_dir.glob("OAK-DS-*.md")):
+            try:
+                data_sources.append(parse_data_source(p))
+            except Exception as exc:
+                print(f"ERROR parsing {p}: {exc}", file=sys.stderr)
+                return 1
+
     examples: list[Example] = []
     if examples_dir.is_dir():
         for p in sorted(examples_dir.glob("*.md")):
@@ -421,7 +517,10 @@ def main(argv: list[str]) -> int:
     # /home/runner/work/... tree), which is noise for consumers and makes two
     # builds of identical content differ. Consumers already accept relative
     # paths: scripts/build-route-pages.mjs resolves either form.
-    for entity in (*tactics, *techniques, *mitigations, *software, *examples):
+    for entity in (
+        *tactics, *techniques, *mitigations, *software,
+        *groups, *data_sources, *examples,
+    ):
         if entity.source_file:
             try:
                 entity.source_file = str(Path(entity.source_file).relative_to(root))
@@ -447,6 +546,8 @@ def main(argv: list[str]) -> int:
             for m in mitigations
         ],
         "software": [s.__dict__ for s in software],
+        "groups": [g.__dict__ for g in groups],
+        "data_sources": [d.__dict__ for d in data_sources],
         "examples": [e.__dict__ for e in examples],
         "relationships": relationships,
     }
@@ -459,6 +560,7 @@ def main(argv: list[str]) -> int:
     print(
         f"OK: wrote {args.out} — {len(tactics)} tactics, {len(techniques)} techniques, "
         f"{len(mitigations)} mitigations, {len(software)} software, "
+        f"{len(groups)} groups, {len(data_sources)} data sources, "
         f"{len(examples)} examples, {len(relationships)} relationships."
     )
     return 0

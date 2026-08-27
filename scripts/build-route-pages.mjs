@@ -146,13 +146,20 @@ for (const group of oak.groups ?? []) {
   routes.push(route(`/group/${group.id}`, meta.title, meta.description, 0.6));
 }
 
+// Data sources are reached as documents, not as their own entity route. The
+// app opens them via openDoc("data-sources/<file>") and routing.ts has no
+// /data-source/<id> pattern — an unknown path falls through to the "about"
+// view, so emitting /data-source/OAK-DS-nn/ would publish indexable URLs that
+// render the wrong page. Emit the document path the SPA actually handles.
 for (const dataSource of oak.data_sources ?? oak.dataSources ?? []) {
+  if (!dataSource.source_file) continue;
+  const slug = path.basename(dataSource.source_file).replace(/\.md$/, "");
   const meta = await readMarkdownMeta(
     dataSource.source_file,
     `${dataSource.id} ${dataSource.name}`,
     `${dataSource.id} ${dataSource.name}: OAK Data Source entry.`,
   );
-  routes.push(route(`/data-source/${dataSource.id}`, meta.title, meta.description, 0.5));
+  routes.push(route(`/document/data-sources/${slug}`, meta.title, meta.description, 0.5));
 }
 
 const documents = [

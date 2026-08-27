@@ -52,9 +52,12 @@ for (const t of oak.tactics ?? []) {
   push(`${baseUrl}/tactic/${t.id}`, 0.7, "monthly");
 }
 
-// Per-Data-Source
+// Per-Data-Source — as documents; see the note in build-route-pages.mjs.
+// There is no /data-source/<id> route in the app.
 for (const ds of oak.data_sources ?? oak.dataSources ?? []) {
-  push(`${baseUrl}/data-source/${ds.id}`, 0.5, "monthly");
+  if (!ds.source_file) continue;
+  const slug = ds.source_file.split("/").pop().replace(/\.md$/, "");
+  push(`${baseUrl}/document/data-sources/${slug}`, 0.5, "monthly");
 }
 
 // Top-level documents (markdown pages indexed via the in-app viewer; .md is
