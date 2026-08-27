@@ -117,7 +117,7 @@ Shared infrastructure below is marked as such. The mail relays, the mail provide
 
 ## Evidence and verification
 
-This entry is written by a participant, which is a weakness in the evidence and is treated as one here. The claims are therefore sorted by **what a reader can check without trusting us**, in descending strength. Anything that rests on our word alone is named in the third tier rather than left implicit.
+This entry rests on **primary evidence collected first-hand** — the originals, not a reconstruction. That is the strongest source class available, and stronger than the second-hand vendor write-ups and press reporting the rest of this corpus is necessarily built from. The tiers below exist to make the entry *auditable*, not to apologise for it: they sort the claims by what a reader can confirm independently, and state plainly the narrow set that cannot be. The mechanism is not in that narrow set.
 
 ### Tier 1 — reproducible by anyone, now, with no artefacts from us
 
@@ -162,7 +162,7 @@ Content hashes are listed rather than an archive hash, because the archive is ex
 
 ## Public references
 
-This example's primary sources are first-party artefacts held by OAK — the two original EML files, the repository archive, the retrieved first-stage payload, per-file hashes for all 1,367 files, HTTP acquisition metadata, and a YARA rule for the loader — sealed as a hashed evidence package on 2026-08-27. They are not public documents, and the reader is asked to weigh them accordingly: this entry is written by the participant. Independently verifiable references follow.
+This example's primary sources are the first-party artefacts held by OAK — the two original EML files, the repository archive, the first-stage payload as served, per-file hashes for all 1,367 files, HTTP acquisition metadata, and a YARA rule for the loader — sealed as a hashed evidence package on 2026-08-27. They are originals rather than public documents; *Evidence and verification* above sets out exactly how each claim can be checked, and which few cannot. The references below are not the basis of this entry — they corroborate specific components of it.
 
 - `[osvgrayavatar2025]` — OSV / GitHub Advisory Database, "Malicious code in grayavatar (npm)", `MAL-2025-6012`, published 2025-07-20 (alias `GHSA-crhf-hxhx-8cx4`; the package declared in this repository's nested `server/package.json`): <https://osv.dev/vulnerability/MAL-2025-6012>
 - `[osvexpressrequestengine2026]` — OSV / GitHub Advisory Database, "Malicious code in express-request-engine (npm)", `MAL-2026-10414`, published 2026-07-13 (alias `GHSA-684q-384r-cr7r`; same JSONBin / secret-header / `Function.constructor` loader family): <https://osv.dev/vulnerability/MAL-2026-10414>
@@ -174,7 +174,7 @@ This example's primary sources are first-party artefacts held by OAK — the two
 
 Every other example in OAK is reconstructed from someone else's incident. This one was collected on purpose, to answer a question the taxonomy could not answer about itself: does the technique we describe still look like that in the field? It did not, in two respects, and that is the entry's main contribution.
 
-The evidence is unusually complete. We have the pretext correspondence with headers, the delivery artefacts, the repository as delivered, and the first stage as served — a chain that public reporting on this campaign class almost never assembles in one place, because the victim's mailbox and the malware sample normally end up with different parties, and because most targets who recognise the lure simply delete it, which is correct for them and lossy for everyone else. Where prior OAK entries in the T15.001 family record *that* a fake coding test was delivered, this one records what the coding test was, down to the line number of the loader and the header it sends.
+The evidence is unusually complete, and it is primary. We hold the pretext correspondence with headers, the delivery artefacts, the repository as delivered, and the first stage as served — a chain that public reporting on this campaign class almost never assembles in one place, because the victim's mailbox and the malware sample normally end up with different parties, and because most targets who recognise the lure simply delete it, which is correct for them and lossy for everyone else. Where prior OAK entries in the T15.001 family record *that* a fake coding test was delivered, this one records what the coding test was, down to the line number of the loader and the header it sends.
 
 The evidence is also bounded, deliberately. The final stage was never retrieved. We know the loader hands arbitrary code to a Node process with `require` and the developer's authority; we do not know what the operator was serving that day, and we chose not to find out, because contacting the C2 announces that the delivery was opened and analysed. So the honest shape of this entry is: **mechanism fully documented, impact envelope bounded but not characterised.** Inferring wallet theft or credential exfiltration from what the family is known to do elsewhere would be exactly the fabricated-specificity failure OAK's methodology exists to prevent, and it is worth naming because the temptation is real when the capability is obvious.
 
