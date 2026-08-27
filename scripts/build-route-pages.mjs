@@ -83,13 +83,21 @@ const canonicalUrlForPath = (pathname) => `${baseUrl}${pathname === "/" ? "/" : 
 const TITLE_MAX = 60;
 const HOME_TITLE = "OAK — OnChain Attack Knowledge: crypto attack taxonomy";
 
-const clampWords = (value, max) =>
-  value.length <= max
-    ? value
-    : value
-        .slice(0, max)
-        .replace(/\s+\S*$/, "")
-        .replace(/[\s\-—–:(,;/]+$/, "");
+const clampWords = (value, max) => {
+  if (value.length <= max) return value;
+  let clamped = value
+    .slice(0, max)
+    .replace(/\s+\S*$/, "")
+    .replace(/[\s\-—–:(,;/]+$/, "");
+  // A cut inside a parenthetical leaves "(Developer" hanging — drop the opening
+  // bracket and whatever followed it. Same for an unbalanced quote.
+  const balance = (open, close) =>
+    (clamped.split(open).length - 1) > (clamped.split(close).length - 1);
+  if (balance("(", ")")) clamped = clamped.slice(0, clamped.lastIndexOf("("));
+  if (balance("[", "]")) clamped = clamped.slice(0, clamped.lastIndexOf("["));
+  if ((clamped.split('"').length - 1) % 2) clamped = clamped.slice(0, clamped.lastIndexOf('"'));
+  return clamped.replace(/[\s\-—–:(,;/]+$/, "");
+};
 
 const composeTitle = (title) => {
   if (title === siteName) return HOME_TITLE;
