@@ -1,4 +1,9 @@
 User-agent: *
 Allow: /
 
+# Raw sources are published for download, not as a second indexable copy of
+# every page — the canonical surface is the route (e.g. /technique/OAK-T1.001/).
+Disallow: /*.md$
+Disallow: /tools/embedded.json
+
 Sitemap: https://onchainattack.org/sitemap.xml

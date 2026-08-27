@@ -54,6 +54,7 @@ tools/oak-stix.json
 tools/oak.json
 tools/stats.json
 tools/embedded.json
+tools/document-render.json
 tools/coverage.json
 tools/specs.json
 coverage/manifest.draft.yml

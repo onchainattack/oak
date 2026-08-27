@@ -509,3 +509,19 @@ await writeFile(
   rel("src/data/documents.ts"),
   `${banner}\nexport const documentBodies: Record<string, string> = ${JSON.stringify(documentBodies, null, 2)};\n`,
 );
+
+// Same rendered bodies, plus title/meta, as a plain JSON artifact. Consumed by
+// scripts/build-route-pages.mjs to pre-render each route entrypoint's content
+// into static HTML — the build step runs in Node, so it cannot import the .ts
+// module above. Regenerated per build; gitignored.
+await writeFile(
+  rel("tools/document-render.json"),
+  JSON.stringify(
+    Object.fromEntries(
+      Object.entries(documents).map(([key, doc]) => [
+        key,
+        { title: doc.title, meta: doc.meta, html: doc.html },
+      ]),
+    ),
+  ),
+);
