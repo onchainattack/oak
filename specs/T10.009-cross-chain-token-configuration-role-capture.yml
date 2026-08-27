@@ -1,0 +1,174 @@
+oak_techniques: [OAK-T10.009]
+spec_id: oak-detection-T10.009
+version: 0.1.0
+maturity: emerging
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect capture and abuse of configuration roles belonging to a token's
+  cross-chain deployments — LayerZero OFT `delegate` / `peer`, Wormhole
+  NTT manager and transceiver roles, CCIP token-pool administration,
+  Hyperlane warp-route ownership. The defining property is that the
+  captured object is a role introduced by the messaging standard, not
+  the application's own admin role and not a signing key, and that once
+  held it is used through the standard's normal, correctly-implemented
+  paths. Detection is therefore configuration-state monitoring plus a
+  cross-deployment supply invariant — not message-verification analysis,
+  because no message verification fails. Excludes: T10.006 (a governance
+  action approved on one chain and relayed to another — here nothing is
+  relayed and no proposal exists); T10.002 (the verification predicate
+  itself is bypassed); T11.001 (validator or signer key compromise);
+  T9.004 covers the reachability flaw that usually grants the role and is
+  cross-referenced rather than excluded.
+
+data_sources: [contract_source, contract_storage, config_change_events,
+               token_mint_burn_events, bridge_lock_release_events,
+               multi_chain_supply_index]
+
+detection_logic:
+  description: |
+    Three paths, ordered by how early they fire. PATH A is the primary
+    control and has an unusually good base rate; PATH C is the backstop
+    that fires even when A and B are missed.
+
+    PATH A (configuration drift — pre-realisation, rare-event signal):
+    maintain a committed artefact of the expected
+    (chain, deployment, peer_set, delegate, config_owner) tuples for
+    every deployment of the token. Poll live state on each chain and diff
+    against it. Alert on ANY difference, unconditionally — these values
+    are set at deployment and legitimately change on the order of a
+    handful of times in a token's lifetime, so the expected alert volume
+    is near zero and a single firing is worth a human. Also subscribe to
+    the standard's config-change events directly (`setPeer`,
+    `setDelegate`, `setEnforcedOptions`, NTT manager/transceiver
+    updates, CCIP pool admin transfer, warp-route ownership transfer) so
+    the signal does not depend on poll cadence. Severity is critical when
+    the caller is not the documented administrator, and critical when the
+    caller is the token contract's own address — the latter indicates a
+    callback surface was used to issue the call from the token's
+    authority, which is the Sandbox shape.
+
+    PATH B (cross-deployment inconsistency — pre-realisation, structural):
+    treat the deployment set as one graph rather than N independent
+    contracts, and evaluate it for internal consistency: a peer entry
+    pointing at an address with no corresponding known deployment; a
+    delegate on one chain differing from its siblings without a
+    corresponding change record; a peer relationship that is asymmetric
+    (A accepts B, B does not accept A). Each deployment can be
+    individually well-formed while the graph is not, and the per-chain
+    view is precisely the blind spot this path closes.
+
+    PATH C (supply invariant — post-realisation, backstop): on a fixed
+    schedule, sum issued supply across all remote deployments and compare
+    against locked or burned backing on the canonical chain. Alert when
+    remote issuance exceeds canonical backing beyond tolerance. This is
+    the only path that fires once the attacker has successfully
+    legitimised themselves as a peer, because from that point every
+    individual message is valid and every chain's local accounting is
+    internally consistent. Pair with a per-deployment issuance rate check
+    so a large mint is caught within one interval rather than at the next
+    reconciliation.
+
+  pseudocode: |
+    # EXPECTED is a committed artefact, updated as part of the deployment
+    # runbook. A stale EXPECTED is an operational defect, not alert noise.
+    EXPECTED = { (chain, token) -> {peer_set, delegate, config_owner} }
+    CONFIG_EVENTS = {SetPeer, SetDelegate, SetEnforcedOptions,
+                     NttManagerUpdated, TransceiverUpdated,
+                     PoolAdminTransferred, WarpRouteOwnershipTransferred}
+
+    # PATH A — configuration drift (rare-event signal, pre-realisation)
+    on event E ∈ CONFIG_EVENTS on token T at chain C:
+      exp ← EXPECTED[(C, T)]
+      if E.new_value ∉ exp:
+        sev ← critical
+        # caller == the token itself means a callback surface issued the
+        # call from the token's own authority (the Sandbox shape)
+        mode ← "callback-self-call" if E.caller == T
+               else "unauthorised-caller" if E.caller ∉ exp.config_owner
+               else "unexpected-value"
+        emit(PATH_A, chain=C, token=T, role=E.role, caller=E.caller,
+             previous_value=E.old_value, new_value=E.new_value,
+             mode=mode, severity=sev)
+
+    every config_poll_interval:                 # poll, so detection does not
+      for (C, T), exp in EXPECTED.items():      # depend on event delivery
+        live ← read_config(C, T)
+        for role in {peer_set, delegate, config_owner}:
+          if live[role] ≠ exp[role]:
+            emit(PATH_A, chain=C, token=T, role=role,
+                 previous_value=exp[role], new_value=live[role],
+                 mode="drift-vs-expected", severity=critical)
+
+    # PATH B — cross-deployment graph inconsistency (pre-realisation)
+    # Each deployment can be locally well-formed while the graph is not;
+    # the per-chain view is exactly the blind spot here.
+    every config_poll_interval:
+      deployments ← {(C, T) : known deployment of the token}
+      for (C, T) in deployments:
+        live ← read_config(C, T)
+        for peer in live.peer_set:
+          if resolve_deployment(peer) ∉ deployments:
+            emit(PATH_B, chain=C, token=T, role="peer", new_value=peer,
+                 mode="peer-without-known-deployment", severity=critical)
+          else if (C, T) ∉ read_config(resolve_deployment(peer)).peer_set:
+            emit(PATH_B, chain=C, token=T, role="peer", new_value=peer,
+                 mode="asymmetric-peering", severity=high)
+        if live.delegate ∉ {read_config(d).delegate for d in deployments}:
+          emit(PATH_B, chain=C, token=T, role="delegate",
+               new_value=live.delegate, mode="delegate-diverges-from-siblings",
+               severity=high)
+
+    # PATH C — cross-deployment supply invariant (backstop, post-realisation)
+    # Fires once the attacker is an accepted peer: from that point every
+    # individual message is valid and each chain's local accounting agrees.
+    every supply_reconcile_interval:
+      backing ← locked_or_burned_on_canonical(token)
+      issued  ← Σ remote_supply(d) for d in remote_deployments(token)
+      if issued − backing > supply_tolerance × backing + supply_floor:
+        emit(PATH_C, token=token, evidence={issued, backing},
+             mode="remote-issuance-exceeds-backing", severity=critical)
+
+      for d in remote_deployments(token):       # catch within one window
+        minted ← Σ mint_events(d, since = mint_rate_window)
+        if minted > mint_rate_multiple × trailing_median_issuance(d):
+          emit(PATH_C, chain=d.chain, token=token, evidence={minted},
+               mode="issuance-rate-spike", severity=high)
+
+parameters:
+  config_poll_interval:        { type: duration, default: 5m }
+  supply_reconcile_interval:   { type: duration, default: 15m }
+  supply_tolerance:            { type: number,  default: 0.001 }   # 0.1% of canonical backing
+  supply_floor:                { type: number,  default: 10000 }   # absolute USD floor, suppresses dust drift
+  mint_rate_window:            { type: duration, default: 10m }
+  mint_rate_multiple:          { type: number,  default: 5 }       # x trailing median per-deployment issuance
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               token_address, role, previous_value, new_value, caller, tx, evidence]
+
+test_fixtures:
+  positive:
+    - 2026-08-sandbox-sand-layerzero-oft-delegate-hijack-unbacked-mint   # delegate captured via approveAndCall; PATH A (caller == token address) then PATH C
+    - 2026-05-stake-dao-vsdcrv-layerzero-oft-peer-redirect               # peer set redirected; PATH A / PATH B
+  negative:
+    - "Planned peer addition when a token launches on a new chain — matches an updated committed artefact and a change record"
+    - "Delegate rotation during a documented multisig migration, announced and reflected in the expected-state artefact"
+    - "Remote supply legitimately exceeding a single canonical lock during in-flight transfers — resolves within one reconcile interval"
+    - 2026-08-allbridge-dormant-forged-cctp-attestation                  # NOT T10.009: no configuration role was captured; the verification predicate accepted a forged attestation (→ T10.002)
+    - 2023-09-stargate-layerzero-governance-relay-multisig               # NOT T10.009: a governance action relayed across chains (→ T10.006)
+
+false_positive_modes:
+  - legitimate new-chain launches and multisig migrations change peer/delegate values — PATH A is only low-noise if the committed expected-state artefact is updated as part of the deployment runbook; treat a stale artefact as an operational defect, not a tuning problem
+  - in-flight cross-chain transfers transiently break the supply invariant — PATH C's tolerance plus a confirm-on-next-interval rule handles this
+  - tokens with legitimate remote-native issuance (mint authority intentionally held on more than one chain) invalidate PATH C as written and need a per-deployment backing model instead
+  - chain reorgs on the canonical side temporarily understate backing — re-evaluate on finality
+  - proxy upgrades that relocate configuration storage can present as a delegate change; correlate against the upgrade event before escalating
+
+mitigations: [OAK-M03, OAK-M05, OAK-M11, OAK-M16, OAK-M17, OAK-M34, OAK-M39]
+
+reference_implementations:
+  - { target: oz-defender-sentinel,  chain: evm, url: "" }
+  - { target: forta-bot,             chain: evm, url: "" }
+  - { target: dune,                  chain: evm, url: "" }
+  - { target: allium,                chain: multi, url: "" }
