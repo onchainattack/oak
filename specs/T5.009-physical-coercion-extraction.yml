@@ -1,0 +1,155 @@
+oak_techniques: [OAK-T5.009]
+spec_id: oak-detection-T5.009
+version: 0.1.0
+maturity: observed
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Physical-coercion extraction ("wrench attack"): a holder, or an
+  associate able to pay, is compelled by violence or its credible threat
+  to authorise a transfer or surrender credentials.
+
+  State the limit first, because it governs the whole spec: a coerced
+  transfer is cryptographically authentic and on-chain indistinguishable
+  from a voluntary one. There is no signature of duress in a signature.
+  This spec therefore detects the CONDITIONS that precede an attack and
+  the PROCEEDS that follow one — never the act. Any path presented as
+  detecting coercion itself is a false-positive generator aimed at real
+  users making legitimate withdrawals.
+
+  HANDLING REQUIREMENT, binding on any deployment: PATH A produces a
+  dataset pairing real-world identities with high-value addresses. That
+  dataset is a target list for this exact crime. It must be access-
+  controlled, minimised, retained no longer than needed, and never
+  published — including in aggregate forms permitting re-identification.
+  A deployment that cannot meet this should not run PATH A.
+
+  Excludes: T5.008 (ransomware — leverage is data, not a person);
+  T4 family (victim is deceived, not compelled); T8.005 (the targeting
+  exposure itself — composes, PATH A is the shared surface); T7 (the
+  laundering leg — composes, PATH C keys on it).
+
+data_sources: [address_balance_history, tx_history, osint_identity_linkage,
+               exchange_deposit_events, kyt_feed, mixer_interaction_events,
+               victim_report_channel, duress_channel_events]
+
+detection_logic:
+  description: |
+    Three paths on three different clocks. PATH A is the only preventive
+    one and the only one that acts before harm. PATH B is at-event and
+    exists to route a signal AWAY from the victim's device. PATH C is
+    post-event and is where recovery actually happens — its decisive
+    variable is elapsed time, not detection quality.
+
+    PATH A (targeting exposure — pre-incident, preventive): watch for the
+    moment a real-world identity becomes publicly linkable to a high-
+    balance self-custodied address — self-disclosed holdings, an ENS or
+    social handle resolving to a large wallet, a doxx, a leaked customer
+    list, a court filing, press naming an individual's holdings. Output
+    is a private advisory to the holder: move funds, break the linkage.
+    Not a law-enforcement referral and not a public flag.
+
+    PATH B (consented behavioural deviation — at-event, out-of-band):
+    for opt-in holders only, alert on a composite of full-balance sweep,
+    never-before-seen destination, dormancy break, and hour outside the
+    address's multi-year pattern. Each component is individually weak and
+    individually matches ordinary self-custody behaviour; only the
+    composite is worth anything, and even then it is advisory. The alert
+    MUST route to a pre-arranged third party out of band. Routing it to
+    the holder's own device during an attack escalates the situation and
+    is a design fault, not a configuration choice. This path never
+    auto-freezes: the holder may simply be moving their own money.
+
+    PATH C (off-ramp correlation — post-incident, recovery): on a report
+    of physical coercion, take the extraction address and propagate it to
+    receiving VASPs immediately, then track the T7 signature — rapid
+    consolidation followed by high-value-mixer routing. Measure and alarm
+    on the pipeline's own latency: report-to-VASP-notification is the
+    variable that determines whether anything is recoverable. In the
+    TeufeurS case roughly $800K of a $2M ransom was frozen because the
+    address reached exchanges on a clock of hours.
+
+  pseudocode: |
+    # PATH A — targeting exposure (pre-incident, private advisory only)
+    on new osint_linkage L pairing identity I with address A:
+      bal ← balance_usd(A)
+      if bal ≥ exposure_balance_floor and linkage_is_public(L):
+        emit(PATH_A, address=A, evidence={source: L.source, balance: bal},
+             mode="identity-address-linkage-public",
+             severity = critical if bal ≥ exposure_balance_high else high,
+             routing="private-advisory-to-holder")     # never public, never LE
+      # storage of (I, A) pairs is subject to the HANDLING REQUIREMENT
+
+    # PATH B — consented behavioural deviation (at-event, out-of-band)
+    on transfer T from opted_in address A:
+      swept    ← T.amount ≥ sweep_fraction × balance_before(A)
+      novel    ← T.destination ∉ seen_destinations(A)
+      dormant  ← now − last_outflow(A) ≥ dormancy_window
+      off_hour ← hour(T) ∉ active_hours(A, baseline = baseline_window)
+      score ← swept + novel + dormant + off_hour
+      if score ≥ deviation_min_signals:
+        emit(PATH_B, address=A, tx=T, evidence={swept, novel, dormant, off_hour},
+             mode="behavioural-deviation", severity=high,
+             routing=prearranged_third_party(A))       # NOT the holder's device
+      # no auto-freeze, no on-device notification, advisory only
+
+    # PATH B' — duress channel (highest confidence, intentional signal)
+    on spend from decoy_wallet(A) or duress_pin_unlock(A):
+      emit(PATH_B, address=A, mode="duress-channel", severity=critical,
+           routing=prearranged_third_party(A))
+
+    # PATH C — off-ramp correlation and pipeline latency (post-incident)
+    on victim_report R with extraction address X:
+      t_report ← now
+      notify_vasps(X)                                  # broadcast, do not queue
+      emit(PATH_C, address=X, mode="report-received", severity=critical)
+      for each deposit D of funds traceable from X into a VASP:
+        emit(PATH_C, address=X, tx=D, mode="proceeds-at-offramp",
+             severity=critical, evidence={vasp: D.venue,
+             latency: D.time − t_report})
+      if any(mixer_interaction(X, since = t_report)):
+        emit(PATH_C, address=X, mode="mixer-routed", severity=critical)
+      # the pipeline itself is monitored, because it is the recovery surface
+      if notify_latency(R) > report_to_vasp_sla:
+        emit(PATH_C, mode="reporting-pipeline-breach",
+             evidence={latency: notify_latency(R)}, severity=high)
+
+parameters:
+  exposure_balance_floor:   { type: number,   default: 250000 }   # USD, PATH A entry
+  exposure_balance_high:    { type: number,   default: 2000000 }  # USD, PATH A critical
+  sweep_fraction:           { type: number,   default: 0.9 }      # of balance before tx
+  dormancy_window:          { type: duration, default: 90d }
+  baseline_window:          { type: duration, default: 730d }     # multi-year, per technique
+  deviation_min_signals:    { type: integer,  default: 3 }        # of 4 PATH B components
+  report_to_vasp_sla:       { type: duration, default: 2h }       # recovery clock
+
+output_alert: [oak_technique, detection_path, severity, chain, address, tx,
+               mode, routing, evidence]
+
+test_fixtures:
+  positive:
+    - 2025-01-ledger-cofounder-balland-kidnapping                    # PATH A (public identity↔holdings linkage), PATH C
+    - 2023-2024-french-streamer-kidnapping-ransom-crypto             # PATH C — ~$800K of $2M frozen on an hours clock
+    - 2026-05-kraken-coinbase-coordinated-physical-wallet-compromise # PATH B/C — ~$6.7M, ~$5.3M via Tornado Cash
+  negative:
+    - "Holder legitimately consolidating to a new hardware wallet — full sweep, novel destination, dormancy break, all voluntary. PATH B is advisory precisely because this case is indistinguishable."
+    - "Estate transfer or planned custody migration executed outside usual hours"
+    - 2026-08-repeat-victim-whale-approval-phishing-second-drain      # NOT T5.009: victim deceived into signing, not compelled (→ T4)
+    - "Ransomware payment to an extortion address — leverage is data, not a person (→ T5.008)"
+
+false_positive_modes:
+  - "PATH B's components each describe ordinary self-custody behaviour; a legitimate migration to a new wallet trips all four. This path must never gate funds — treating it as an authorisation control would harm real users at scale while stopping no attacker, since the attacker holds a valid key either way."
+  - "PATH A fires on legitimate publicity: an announced treasury, a public donation address, a protocol founder whose holdings are a matter of record. The advisory is still correct — the exposure is real regardless of how it arose."
+  - "Whale addresses with continuously novel destinations (OTC desks, market makers) generate PATH B noise; exclude by profile rather than by threshold tuning."
+  - "PATH C proceeds-tracing inherits T7 attribution error: mixer-adjacent addresses are not attacker addresses, and a freeze request built on a weak hop harms an uninvolved party."
+  - "On-device alerting is not a false-positive mode but a safety fault: any deployment that surfaces PATH B to the holder's own screen can escalate an in-progress attack."
+
+mitigations: [OAK-M11, OAK-M18, OAK-M37, OAK-M38, OAK-M41, OAK-M43]
+
+reference_implementations:
+  - { target: chainalysis-kyt,       chain: multi, url: "" }
+  - { target: trm-labs,              chain: multi, url: "" }
+  - { target: elliptic,              chain: multi, url: "" }
+  - { target: coldcard-duress-pin,   chain: bitcoin, url: "" }
+  - { target: timelocked-vault,      chain: evm, url: "" }
