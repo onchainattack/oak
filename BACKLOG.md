@@ -20,8 +20,9 @@ Each (Tactic, year) cell below has zero documented incidents despite the Tactic 
 
 ## P0 — sub-Techniques without canonical anchor
 
-- **OAK-T12.004** (timelock free protocol upgrade execution) — defined in `techniques/`, 0 referencing examples
-- **OAK-T12.005** (flash loan governance vote manipulation) — defined in `techniques/`, 0 referencing examples
+- _all non-deprecated sub-Techniques have at least one referencing example_
+
+_Excluded from this section: 2 deprecated Technique(s) with zero referencing examples (`OAK-T12.004`, `OAK-T12.005`). For a deprecated Technique that is the intended end state, not a gap._
 
 ## P1 — Tactics under per-year minimum coverage
 

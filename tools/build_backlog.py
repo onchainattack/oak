@@ -69,12 +69,26 @@ def parse_examples():
     return items
 
 
+MATURITY_RE = re.compile(r"^\*\*Maturity:\*\*\s*(\S+)", re.MULTILINE)
+
+
 def technique_inventory():
+    """Return (id, name, maturity) per Technique.
+
+    Maturity is read from the file rather than inferred from the filename
+    because deprecated Techniques must not be surfaced as backlog work. A
+    deprecated Technique having zero referencing examples is the intended
+    end state, not a gap, and listing it under P0 sends contributors to
+    research anchors for a class the taxonomy has already retired.
+    """
     out = []
     for f in sorted((REPO / "techniques").glob("T*.md")):
         m = re.match(r"^(T\d+(?:\.\d+){1,2})-(.+?)\.md$", f.name)
-        if m:
-            out.append((f"OAK-{m.group(1)}", m.group(2).replace("-", " ")))
+        if not m:
+            continue
+        mm = MATURITY_RE.search(f.read_text(encoding="utf-8"))
+        maturity = mm.group(1).strip().lower() if mm else ""
+        out.append((f"OAK-{m.group(1)}", m.group(2).replace("-", " "), maturity))
     return out
 
 
@@ -140,12 +154,22 @@ def main() -> int:
     out.append("")
 
     out.append("## P0 — sub-Techniques without canonical anchor\n")
-    no_anchor = [(tid, name) for tid, name in techniques if by_technique.get(tid, 0) == 0]
+    unanchored = [(tid, name, mat) for tid, name, mat in techniques if by_technique.get(tid, 0) == 0]
+    deprecated = [(tid, name) for tid, name, mat in unanchored if mat == "deprecated"]
+    no_anchor = [(tid, name) for tid, name, mat in unanchored if mat != "deprecated"]
     if no_anchor:
         for tid, name in no_anchor:
             out.append(f"- **{tid}** ({name}) — defined in `techniques/`, 0 referencing examples")
     else:
-        out.append("- _all sub-Techniques have at least one referencing example_")
+        out.append("- _all non-deprecated sub-Techniques have at least one referencing example_")
+    if deprecated:
+        names = ", ".join(f"`{tid}`" for tid, _ in deprecated)
+        out.append("")
+        out.append(
+            f"_Excluded from this section: {len(deprecated)} deprecated "
+            f"Technique(s) with zero referencing examples ({names}). For a "
+            "deprecated Technique that is the intended end state, not a gap._"
+        )
     out.append("")
 
     out.append("## P1 — Tactics under per-year minimum coverage\n")
@@ -173,7 +197,7 @@ def main() -> int:
             if m.group(3):
                 full += f".{m.group(3)}"
             proposed_ids.add(full)
-    real_ids = {tid for tid, _ in techniques}
+    real_ids = {tid for tid, _, _ in techniques}
     candidate_orphans = sorted(proposed_ids - real_ids - set(by_technique.keys()))
     if candidate_orphans:
         for cid in candidate_orphans:
