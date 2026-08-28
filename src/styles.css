@@ -515,49 +515,16 @@ button {
 }
 
 .oak-logo-mark {
-  display: grid;
+  display: block;
   flex: 0 0 auto;
   height: 44px;
-  place-items: center;
+  transition: filter var(--t-base), transform var(--t-base);
   width: 44px;
 }
 
-.oak-logo-mark svg {
-  display: block;
-  height: 44px;
-  overflow: visible;
-  width: 44px;
-}
-
-.oak-logo-mark .mark-hex {
-  fill: var(--accent-faint);
-  stroke: var(--accent-line);
-  stroke-linejoin: miter;
-  stroke-width: 1.6;
-}
-
-.oak-logo-mark .mark-row {
-  fill: var(--accent);
-  shape-rendering: crispEdges;
-}
-
-.oak-logo-mark .mark-row-breach {
-  fill: var(--accent);
-  filter: drop-shadow(0 0 2px rgba(0, 255, 209, 0.6));
-}
-
-.oak-logo-mark .mark-shard {
-  fill: var(--accent);
-  shape-rendering: crispEdges;
-  transition: transform 260ms ease;
-}
-
-.oak-logo-mark:hover .mark-shard {
-  transform: translateX(-2px);
-}
-
-.oak-logo-mark:hover .mark-shard:nth-child(odd) {
-  transform: translateX(-3px) translateY(-0.5px);
+.logo-lockup:hover .oak-logo-mark {
+  filter: drop-shadow(0 0 8px rgba(0, 255, 209, 0.22));
+  transform: translateY(-1px);
 }
 
 .brand-text {
@@ -568,8 +535,8 @@ button {
 .brand-text strong {
   color: var(--ink);
   font-size: var(--fs-h2);
-  font-weight: 600;
-  letter-spacing: 0.32em;
+  font-weight: 700;
+  letter-spacing: 0.16em;
   line-height: 1;
 }
 
@@ -577,20 +544,10 @@ button {
   color: var(--accent);
   font-family: var(--mono);
   font-size: var(--fs-mono-sm);
-  font-weight: 700;
-  letter-spacing: 0.22em;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   margin-top: 4px;
   text-transform: uppercase;
-}
-
-.logo-lockup .brand-text strong::after {
-  background: var(--accent);
-  content: "";
-  display: inline-block;
-  height: 14px;
-  margin: 0 0 -2px 8px;
-  vertical-align: baseline;
-  width: 2px;
 }
 
 .ui-icon {
@@ -3350,27 +3307,20 @@ font-style: italic;
   min-height: 36px;
 }
 
-.sb-logo .oak-logo-mark,
-.sb-logo .oak-logo-mark svg {
+.sb-logo .oak-logo-mark {
   height: 32px;
   width: 32px;
 }
 
 .sb-logo .brand-text strong {
   font-size: var(--fs-md);
-  letter-spacing: var(--ls-mono-wide);
+  letter-spacing: 0.14em;
   font-weight: 700;
-}
-
-.sb-logo .brand-text strong::after {
-  height: 10px;
-  width: 1.5px;
-  margin: 0 0 -1px 6px;
 }
 
 .sb-logo .brand-text small {
   font-size: var(--fs-mono-sm);
-  letter-spacing: var(--ls-mono-wide);
+  letter-spacing: 0.06em;
   margin-top: 2px;
 }
 

@@ -1,15 +1,11 @@
 <svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OAK mark">
-  <rect width="256" height="256" rx="48" fill="#0a0a0c"/>
-  <polygon points="168,32 224,72 224,184 168,224 96,184 96,72" fill="rgba(0,255,209,0.06)" stroke="rgba(0,255,209,0.22)" stroke-width="6"/>
-  <rect x="116" y="80" width="88" height="12" fill="#00ffd1"/>
-  <rect x="164" y="122" width="40" height="12" fill="#00ffd1"/>
-  <rect x="116" y="164" width="88" height="12" fill="#00ffd1"/>
-  <rect x="148" y="122" width="12" height="12" fill="#00ffd1" opacity="0.85"/>
-  <rect x="128" y="122" width="12" height="12" fill="#00ffd1" opacity="0.7"/>
-  <rect x="108" y="122" width="10" height="10" fill="#00ffd1" opacity="0.55"/>
-  <rect x="86" y="122" width="10" height="10" fill="#00ffd1" opacity="0.42"/>
-  <rect x="64" y="124" width="9" height="9" fill="#00ffd1" opacity="0.32"/>
-  <rect x="42" y="124" width="8" height="8" fill="#00ffd1" opacity="0.22"/>
-  <rect x="138" y="100" width="8" height="8" fill="#00ffd1" opacity="0.5"/>
-  <rect x="120" y="146" width="8" height="8" fill="#00ffd1" opacity="0.45"/>
+  <rect x="4" y="4" width="248" height="248" rx="52" fill="#0A0A0C" stroke="#1C2929" stroke-width="8"/>
+  <path d="M128 34L204 78V178L128 222L52 178V78L128 34Z" fill="#00FFD1" fill-opacity="0.055" stroke="#00FFD1" stroke-opacity="0.34" stroke-width="7" stroke-linejoin="round"/>
+
+  <!-- The hexagonal chain block doubles as an O; the attack vector completes an abstract A/K monogram. -->
+  <path d="M108 76H124V119L163 76H185L140 125L187 180H164L124 134V180H108V76Z" fill="#00FFD1"/>
+  <rect x="34" y="121" width="12" height="14" rx="2" fill="#00FFD1" fill-opacity="0.3"/>
+  <rect x="55" y="121" width="16" height="14" rx="2" fill="#00FFD1" fill-opacity="0.5"/>
+  <rect x="80" y="121" width="22" height="14" rx="2" fill="#00FFD1" fill-opacity="0.76"/>
+  <path d="M101 111L122 128L101 145V111Z" fill="#00FFD1"/>
 </svg>

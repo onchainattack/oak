@@ -1,91 +1,21 @@
-<svg width="1280" height="220" viewBox="0 0 1280 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OAK — OnChain Attack Knowledge">
+<svg width="1200" height="360" viewBox="0 0 1200 360" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OAK — OnChain Attack Knowledge">
   <defs>
-    <linearGradient id="bg-grad" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#0a0a0c"/>
-      <stop offset="0.55" stop-color="#101720"/>
-      <stop offset="1" stop-color="#0a0a0c"/>
-    </linearGradient>
-    <radialGradient id="accent-teal" cx="0.85" cy="0.5" r="0.55">
-      <stop offset="0" stop-color="rgba(0,255,209,0.18)"/>
-      <stop offset="1" stop-color="rgba(0,255,209,0)"/>
-    </radialGradient>
-    <radialGradient id="accent-red" cx="0.12" cy="0.35" r="0.4">
-      <stop offset="0" stop-color="rgba(255,77,69,0.12)"/>
-      <stop offset="1" stop-color="rgba(255,77,69,0)"/>
-    </radialGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="360" gradientUnits="userSpaceOnUse"><stop stop-color="#0A0A0C"/><stop offset="0.62" stop-color="#0E1718"/><stop offset="1" stop-color="#0A0A0C"/></linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(888 162) rotate(90) scale(260 430)"><stop stop-color="#00FFD1" stop-opacity="0.1"/><stop offset="1" stop-color="#00FFD1" stop-opacity="0"/></radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" stroke="#00FFD1" stroke-opacity="0.035"/></pattern>
   </defs>
-
-  <rect width="1280" height="220" fill="url(#bg-grad)"/>
-  <rect width="1280" height="220" fill="url(#accent-teal)"/>
-  <rect width="1280" height="220" fill="url(#accent-red)"/>
-
-  <!-- mark -->
-  <g transform="translate(64 49)">
-    <polygon points="84,0 130,32 130,90 84,122 38,90 38,32" fill="rgba(0,255,209,0.06)" stroke="#e8e9ec" stroke-width="6"/>
-    <rect x="50" y="32" width="68" height="9" fill="#00ffd1"/>
-    <rect x="86" y="61" width="32" height="9" fill="#00ffd1"/>
-    <rect x="50" y="90" width="68" height="9" fill="#00ffd1"/>
-    <rect x="74" y="61" width="9" height="9" fill="#00ffd1" opacity="0.85"/>
-    <rect x="58" y="61" width="9" height="9" fill="#00ffd1" opacity="0.7"/>
-    <rect x="42" y="61" width="8" height="8" fill="#00ffd1" opacity="0.55"/>
-    <rect x="24" y="62" width="8" height="8" fill="#00ffd1" opacity="0.4"/>
-    <rect x="8" y="62" width="7" height="7" fill="#00ffd1" opacity="0.28"/>
+  <rect width="1200" height="360" rx="24" fill="url(#bg)"/><rect width="1200" height="360" rx="24" fill="url(#glow)"/><rect width="1200" height="360" rx="24" fill="url(#grid)"/>
+  <rect x="1" y="1" width="1198" height="358" rx="23" stroke="#00FFD1" stroke-opacity="0.18" stroke-width="2"/>
+  <g transform="translate(72 52)">
+    <rect x="4" y="4" width="248" height="248" rx="52" fill="#0A0A0C" stroke="#1C2929" stroke-width="8"/>
+    <path d="M128 34L204 78V178L128 222L52 178V78L128 34Z" fill="#00FFD1" fill-opacity="0.055" stroke="#00FFD1" stroke-opacity="0.34" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M108 76H124V119L163 76H185L140 125L187 180H164L124 134V180H108V76Z" fill="#00FFD1"/>
+    <rect x="34" y="121" width="12" height="14" rx="2" fill="#00FFD1" fill-opacity="0.3"/><rect x="55" y="121" width="16" height="14" rx="2" fill="#00FFD1" fill-opacity="0.5"/><rect x="80" y="121" width="22" height="14" rx="2" fill="#00FFD1" fill-opacity="0.76"/><path d="M101 111L122 128L101 145V111Z" fill="#00FFD1"/>
   </g>
-
-  <!-- wordmark -->
-  <g transform="translate(244 60)" font-family="IBM Plex Mono, Menlo, Consolas, monospace">
-    <text x="0" y="80" font-size="100" font-weight="700" letter-spacing="-2" fill="#e8e9ec">OAK</text>
+  <g transform="translate(384 92)" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+    <text x="0" y="86" font-size="112" font-weight="700" letter-spacing="12" fill="#E8E9EC">OAK</text>
+    <text x="5" y="137" font-size="20" font-weight="600" letter-spacing="4.8" fill="#00FFD1">ONCHAIN ATTACK KNOWLEDGE</text>
+    <text x="5" y="184" font-size="17" font-weight="500" letter-spacing="0.5" fill="#A7ADB4">A common language for on-chain adversary behavior.</text>
   </g>
-
-  <!-- tagline -->
-  <g transform="translate(244 165)" font-family="IBM Plex Mono, Menlo, Consolas, monospace">
-    <text x="0" y="0" font-size="16" font-weight="600" letter-spacing="6" fill="#00ffd1">ONCHAIN ATTACK KNOWLEDGE</text>
-  </g>
-  <g transform="translate(244 178)" opacity="0.32">
-    <rect x="0" y="0" width="14" height="3" fill="#00ffd1"/><rect x="22" y="0" width="14" height="3" fill="#00ffd1"/><rect x="44" y="0" width="14" height="3" fill="#00ffd1"/><rect x="66" y="0" width="14" height="3" fill="#00ffd1"/><rect x="88" y="0" width="14" height="3" fill="#00ffd1"/><rect x="110" y="0" width="14" height="3" fill="#00ffd1"/><rect x="132" y="0" width="14" height="3" fill="#00ffd1"/><rect x="154" y="0" width="14" height="3" fill="#00ffd1"/><rect x="176" y="0" width="14" height="3" fill="#00ffd1"/><rect x="198" y="0" width="14" height="3" fill="#00ffd1"/><rect x="220" y="0" width="14" height="3" fill="#00ffd1"/><rect x="242" y="0" width="14" height="3" fill="#00ffd1"/><rect x="264" y="0" width="14" height="3" fill="#00ffd1"/><rect x="286" y="0" width="14" height="3" fill="#00ffd1"/>
-  </g>
-
-  <!-- right panel: stat strip -->
-  <g transform="translate(720 56)" font-family="IBM Plex Mono, Menlo, Consolas, monospace">
-    <g>
-      <text x="0" y="0" font-size="11" font-weight="700" letter-spacing="3" fill="#95A3B5">TACTICS</text>
-      <text x="0" y="38" font-size="34" font-weight="700" fill="#e8e9ec">14</text>
-    </g>
-    <g transform="translate(110 0)">
-      <text x="0" y="0" font-size="11" font-weight="700" letter-spacing="3" fill="#95A3B5">TECHNIQUES</text>
-      <text x="0" y="38" font-size="34" font-weight="700" fill="#e8e9ec">62</text>
-    </g>
-    <g transform="translate(260 0)">
-      <text x="0" y="0" font-size="11" font-weight="700" letter-spacing="3" fill="#95A3B5">MITIGATIONS</text>
-      <text x="0" y="38" font-size="34" font-weight="700" fill="#e8e9ec">40</text>
-    </g>
-    <g transform="translate(410 0)">
-      <text x="0" y="0" font-size="11" font-weight="700" letter-spacing="3" fill="#95A3B5">SOFTWARE</text>
-      <text x="0" y="38" font-size="34" font-weight="700" fill="#e8e9ec">40</text>
-    </g>
-    <g transform="translate(540 0)">
-      <text x="0" y="0" font-size="11" font-weight="700" letter-spacing="3" fill="#95A3B5">ACTORS</text>
-      <text x="0" y="38" font-size="34" font-weight="700" fill="#e8e9ec">18</text>
-    </g>
-
-    <g transform="translate(0 76)">
-      <text x="0" y="0" font-size="11" font-weight="700" letter-spacing="3" fill="#95A3B5">EXAMPLES</text>
-      <text x="0" y="38" font-size="34" font-weight="700" fill="#e8e9ec">142</text>
-    </g>
-    <g transform="translate(110 76)">
-      <text x="0" y="0" font-size="11" font-weight="700" letter-spacing="3" fill="#95A3B5">CITATIONS</text>
-      <text x="0" y="38" font-size="34" font-weight="700" fill="#e8e9ec">964</text>
-    </g>
-    <g transform="translate(260 76)">
-      <text x="0" y="0" font-size="11" font-weight="700" letter-spacing="3" fill="#95A3B5">RELATIONSHIPS</text>
-      <text x="0" y="38" font-size="34" font-weight="700" fill="#e8e9ec">416</text>
-    </g>
-    <g transform="translate(440 76)">
-      <text x="0" y="0" font-size="11" font-weight="700" letter-spacing="3" fill="#FF4D45">STATUS</text>
-      <text x="0" y="38" font-size="34" font-weight="700" fill="#FF4D45">open</text>
-    </g>
-  </g>
-
-  <!-- bottom-edge accent line -->
-  <line x1="0" y1="219" x2="1280" y2="219" stroke="#00ffd1" stroke-opacity="0.32" stroke-width="2"/>
+  <g transform="translate(1046 75)" fill="#00FFD1"><rect width="10" height="10" rx="2" fill-opacity="0.18"/><rect x="24" width="10" height="10" rx="2" fill-opacity="0.3"/><rect x="48" width="10" height="10" rx="2" fill-opacity="0.5"/><rect x="72" width="10" height="10" rx="2"/></g>
 </svg>
