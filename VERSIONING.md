@@ -105,6 +105,26 @@ The earliest snapshot is the OAK v0.1 public-draft commit (2026-04). The framewo
 | `snapshot/2026-06-22` | 0.7 | Out-of-draft promotion. 642 worked examples, 146 Techniques. |
 | `snapshot/2026-09-07` | 0.8 | First content line after going out of draft. 693 worked examples, 154 Techniques, 48 Mitigations. Carries the T12.004 / T12.005 deprecation window and the `tools/oak.json` example-export addition. |
 
+### How a snapshot is cut
+
+Four steps, in order. Steps 2 and 3 are one action — the CHANGELOG entry is what makes the snapshot legible, and a tag without it is a dated commit, not a release.
+
+1. **Regenerate derived files** — `npm run site:data`, then `npm run check` clean.
+2. **Write the `CHANGELOG.md` entry** for the version. Lead with anything a consumer must *act* on (deprecations and their upgrade path, export-shape changes), then additions, then corrections, then known gaps. Corrections to published content are listed, not folded away.
+3. **Add the row** to *Content snapshot history* above and to *Schema version history* below.
+4. **Cut the signed tag.** Snapshots are signed; the repo is configured for SSH signing against the maintainer's GitHub identity key:
+
+   ```sh
+   git config gpg.format ssh
+   git config user.signingkey ~/.ssh/id_ed25519.pub
+   git config gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers   # "<email> <pubkey line>"
+   git tag -s snapshot/YYYY-MM-DD -m "OAK content snapshot YYYY-MM-DD — vX.Y.Z"
+   git tag -v snapshot/YYYY-MM-DD        # must print: Good "git" signature
+   git push origin snapshot/YYYY-MM-DD
+   ```
+
+   `git config` here is repo-local by design, so signing behaviour elsewhere on the machine is untouched. GitHub renders the tag as *Unverified* until the same key is registered under **SSH and GPG keys → Signing keys** in account settings; that is a display property of GitHub's UI and does not affect `git tag -v`.
+
 A snapshot is due **quarterly at minimum**. The gap between `snapshot/2026-06-22` and `snapshot/2026-09-07` ran to 2.5 months and 51 worked examples, during which a deprecation window opened with no published upgrade path — the failure mode this cadence exists to prevent. Cutting the snapshot and writing the `CHANGELOG.md` entry are one action, not two.
 
 ## Why not just semver the whole thing
