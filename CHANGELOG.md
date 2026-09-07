@@ -2,6 +2,65 @@
 
 All notable changes to OAK are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and OAK's versioning is independent of any calendar cadence — minor versions ship when content reaches a coherent next state, not on a fixed schedule.
 
+## [0.8.0] — 2026-09-07 — first content line since going out of draft
+
+The first release entry since 0.7.0. Content between 2026-06-24 and 2026-09-07 landed commit-by-commit without a CHANGELOG record; this entry backfills it, because one of those changes was a **deprecation whose upgrade path consumers had no documented way to find** (`VERSIONING.md` § *Backwards-compatible deprecation*, step 3). Nothing here is breaking: no OAK ID was renamed or removed, and the two deprecated IDs remain resolvable.
+
+Snapshot counts at 0.8: **17** Tactics · **154** Techniques · **153** detection specs · **20** Threat Actors · **48** Mitigations · **41** Software · **13** Data Sources · **693** worked examples · **1555** bibtex entries. Content snapshot `snapshot/2026-09-07`.
+
+### Deprecated — read this first if you consume OAK IDs
+
+Two IDs were deprecated on **2026-07-17**. Both are **retained, resolvable, and not reused**; removal is deferred to the next schema major, per `VERSIONING.md`. The IDs were misfiled under T12 (NFT-Specific Patterns), which does not reach a governance-layer concern.
+
+| Deprecated ID | Read instead | Why |
+|---|---|---|
+| `OAK-T12.004` — Timelock-Free Protocol Upgrade Execution | [`OAK-T16.006`](techniques/T16.006-timelock-free-governance-execution.md) — Timelock-Free Governance Execution | Misfiled parent. Content moved to T16 (Governance / Voting Manipulation) intact, apart from the parent, renamed self-references, and one dangling-reference fix. |
+| `OAK-T12.005` — Flash-Loan Governance Vote Manipulation | [`OAK-T16.001`](techniques/T16.001-vote-takeover-via-flash-loan.md) — Vote Takeover via Flash-Loan | Duplicate *and* misfiled. Same mechanism as T16.001, overlapping alias sets, both anchored on Beanstalk (2022-04) — one Technique under two IDs splitting a single example population. Its two additional anchors (Fortress Protocol, Elephant Money) were carried across. |
+
+**Upgrade path:** rewrite `OAK-T12.004` → `OAK-T16.006` and `OAK-T12.005` → `OAK-T16.001` in coverage maps, detector configs, and any stored classifications. No content is lost in either move.
+
+### Added — Techniques (146 → 154)
+
+- **OAK-T5.009 — Physical-Coercion Extraction** ("wrench attack"). Anchored at the 2025-01 Ledger co-founder kidnapping. Detection signals and detection spec added later in the line.
+- **OAK-T9.015 — Degenerate-Input Signature-Verification Bypass.** Anchored at 2026-07 Bonzo Lend / Supra on-demand oracle verifier (~\$9.05M, Hedera), where an all-zero signature field against a zero-point public-key reference satisfied the pairing equation trivially. Preserves the distinction OAK cares about: *application-layer check missing* (T10.002) vs *cryptographic primitive returning true on degenerate input* (T9.015) — different owners, different audit scopes, different fixes.
+- **OAK-T10.002.001 — Off-chain Observer Source-Event Forgery** (sub-Technique of T10.002), promoted to `emerging`.
+- **OAK-T10.009 — Cross-Chain Token Configuration-Role Capture.** Promotion also corrected two mappings it exposed.
+- **OAK-T12.006 — NFT-Collateral Lending Manipulation** (XCarnival 2022-06, Omni Protocol 2022-07), **OAK-T12.007 — Mint-Outcome Reroll / Revert-Until-Rare** (Meebits 2021-05), and **OAK-T12.008 — Hybrid Fungible / Non-Fungible Accounting Divergence** (Flooring Protocol 2026-06) — wave one of the **2026 Q3 focus quarter** on T12 NFT-fi. Scope is deliberately NFT-fi rather than the 2021–2022 marketplace surfaces; see `RESEARCH-CADENCE.md`.
+- **OAK-T16.006 — Timelock-Free Governance Execution.** Receives the content of the deprecated T12.004.
+
+### Added — Mitigations (43 → 48)
+
+- **OAK-M44** seed-phrase-disclosure refusal · **OAK-M45** inbound-contact refusal · **OAK-M46** small-test-withdrawal invariant · **OAK-M47** first-party acquisition · **OAK-M48** unsolicited-code quarantine (shipped with a T15.001 detection rewrite).
+- The Mitigations axis gained a **retail-user audience** and a **user-behavioural class**. Most of OAK's mitigation catalogue addresses protocol operators; M44–M47 are the first written for the person holding the keys.
+
+### Changed — per-item maturity
+
+- **`OAK-T9.014` (Protocol-Client Consensus Bug): `emerging` → `stable`** (2026-09-07). Promotion basis is the `VERSIONING.md` bar of ≥ 3 anchored worked examples plus multi-vendor agreement, read as in the T11.004 precedent — multi-*source* attestation of the forensic chain rather than the existence of a runtime detector. Anchors: Bitcoin 2010 value overflow (CVE-2010-5139), Zcash Orchard 2026-06 disclosure, and the 2026-09 Liquid Network unbacked L-BTC peg-out (~\$320M), the second full-exploit anchor and the first outside Bitcoin Core. No rename, no scope change. Recorded with the caveat that `stable` describes the settled class definition and **not** a mature detection surface: T9.014 still has no runtime reference implementation and carries an explicit coverage `gap`.
+
+### Added — worked examples (642 → 693)
+
+Fifty-one incidents across monthly sweeps (late June, July, August in two passes, and 2026-08-24 → 09-07), plus backfills: Nobitex 2025, WEMIX 2025-02, the T11.004 entropy-collapse cohort (Coldcard, Milk Sad, Ill Bloom, with the CryptoJS root cause added later), SecondFi Cardano, and the Tangem / Ledger Donjon physical-access disclosures.
+
+### Fixed — corrections to published content
+
+A knowledge base's corrections are part of its record, so they are listed rather than folded away.
+
+- **Fabricated-fixture sweep.** Commit `c28e744` had introduced example mechanisms that no source supported; the sweep audited its descendants, found 1 fabrication among 10 live entries, and deleted the affected Uniswap-frontend case. The diagnostic tell is recorded for future review: single-incident-shaped, sourceless, hypothetical mechanism.
+- **Figure corrections.** Spektor \$6.5M → **~\$16M** (Brooklyn DA indictment added as primary source). QuadrigaCX restated to **26,500 BTC owed / 104 BTC in cold wallets** per the EY monitor. Two \$300M+ figures that had collapsed into a single line separated. One unsupported mechanism claim on the \$282M case withdrawn; the Malone Lam name corrected; a corrupted 65-hex-character transaction hash fixed.
+- **Structural integrity.** `tools/check_tags.py` added, and **38 examples that declared no resolvable Technique** were fixed. Repo-wide tactic-name sweep surfaced a misfiled Technique pair. `TAXONOMY-AUDIT.md` findings B (attribution-strength contradictions) and C (two mislabelled-mechanism pairs) resolved. Four redundant duplicate examples removed and the remainder recorded as open findings.
+
+### Changed — exports and tooling (consumer-facing)
+
+- **`tools/oak.json` now carries the worked-example corpus.** Until 2026-08-27 the export emitted taxonomy only, so the incident corpus — the largest thing OAK has — was not published to downstream consumers at all. `examples`, `groups`, and `data_sources` are now top-level keys. **Additive**: no existing key changed shape, so consumers pinned to the prior schema continue to resolve, and anyone who concluded OAK had no machine-readable example data should re-pull.
+- `tools/build_backlog.py` no longer routes contributors to anchor deprecated Techniques.
+- Site: every route is pre-rendered so the corpus is indexable without JavaScript; 12 missing routes published; sitemap and Bing verification added.
+- `LICENSE-content` synced with README; contributor licensing grant added. Audit-competition findings (Code4rena / Sherlock) evaluated and recorded in `PRIOR-ART.md`.
+
+### Known gaps at 0.8
+
+- `tools/check_coverage.py` fails on **30 reverse-drift edges** — vendors named in Technique prose that are absent from `coverage/manifest.yml`. Pre-existing and unrelated to any change above; the documented remedy is `tools/sync_coverage.py`.
+- `schema_version` in `tools/oak.json` is `"2"` while this history table counts OAK versions in `0.x`. The two numbering systems are not reconciled; consumers should pin on `schema_version` for shape and on the content snapshot tag for content, as `VERSIONING.md` § *How to pin* already directs.
+
 ## [0.7.0] — 2026-06-22 — out of draft
 
 OAK leaves draft status and becomes a released (pre-1.0) knowledge base. `tools/oak.json` is promoted from a draft schema to a released schema, the public version label moves off `0.1.0-draft`, and the first non-draft content snapshot (`snapshot/2026-06-22`) is cut. This is a status/maturity promotion, not a structural change — **no OAK ID was renamed and no field semantics changed**, so consumers pinned to the 0.6 schema shape continue to resolve. The taxonomy spine (17 Tactics) is settled and every Tactic, Technique, Threat Actor, Mitigation, Software, Data Source, and sub-Technique is anchored by at least one worked example. The hard ID-stability freeze and the formal "stable taxonomy" commitment remain reserved for **v1.0** (see `ROADMAP.md`): ~52% of Techniques are still `emerging` per their per-item maturity, which is why this lands at 0.7 and not 1.0.

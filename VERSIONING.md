@@ -74,9 +74,9 @@ The following are **not** breaking, even when they touch many items:
 
 When an item must be renamed or removed, OAK provides a deprecation window of one schema-minor cycle:
 
-1. Mark the item `**Maturity:** deprecated` and add a `**Replaces:**` or `**Replaced by:**` cross-reference.
+1. Mark the item `**Maturity:** deprecated`, retitle its page `(DEPRECATED)`, and add a `**Superseded by:**` cross-reference (plus `**Deprecated:**` with the date). On the receiving item, a `**Replaces:**` cross-reference is optional.
 2. Keep the old ID resolvable in `tools/oak.json` for at least one minor version.
-3. Update CHANGELOG with the rename and the upgrade path.
+3. Update CHANGELOG with the rename and the upgrade path, **in the same change that deprecates the ID** — a deprecated ID whose replacement is documented only inside its own page is not discoverable by a consumer reading a coverage map.
 4. Remove the ID at the next major version.
 
 ## Schema version history
@@ -91,12 +91,21 @@ When an item must be renamed or removed, OAK provides a deprecation window of on
 | 0.6 | 2026-05 | Additive: new `specs/` axis carrying vendor-neutral language-agnostic YAML detection specs (one per Technique) with `PATH A / PATH B / ...` pseudocode + `data_sources` + `parameters` + `test_fixtures.{positive,negative}` + `false_positive_modes` + `mitigations` cross-refs + `reference_implementations`. Schema is Sigma+ATT&CK-shape (specs primary, named impls secondary). 98 specs / 98 Techniques — 100% coverage across 17 Tactics. Maturity distribution post-calibration: 36 stable / 21 observed / 37 emerging / 4 draft. New tooling: `tools/build_specs.py` (validator), `tools/check_specs.py` (per-Tactic coverage + drift). `tools/embedded.json` extended with `specs` / `specs_by_technique` / `spec_yaml`; `oak-mcp` v0.3 ships `oak_get_detection_spec` tool. No existing axis touched. |
 
 | 0.7 | 2026-06 | **Out-of-draft promotion.** OAK leaves draft status: `tools/oak.json` is promoted from a draft to a released (pre-1.0) schema and the first non-draft content snapshot (`snapshot/2026-06-22`) is cut. Status/maturity change only — **no OAK ID renamed, no field semantics changed** — so consumers pinned to the 0.6 shape continue to resolve. The taxonomy spine (17 Tactics) is settled and every Tactic / Technique / Threat Actor / Mitigation / Software / Data Source / sub-Technique is anchored by ≥ 1 worked example (146 Techniques, 100% detection-spec coverage; 642 worked examples). The hard ID-stability freeze and the formal *stable taxonomy* commitment remain reserved for v1.0 — ~52% of Techniques are still `emerging` per their per-item maturity, which is why this is 0.7 and not 1.0. |
+| 0.8 | 2026-09 | **First content line since going out of draft.** Content-only; no OAK ID renamed or removed and no field semantics changed, so consumers pinned to the 0.7 shape continue to resolve. 146 → 154 Techniques (T5.009, T9.015, T10.002.001, T10.009, T12.006, T12.007, T12.008, T16.006), 43 → 48 Mitigations (M44–M48, incl. the first retail-user / user-behavioural class), 642 → 693 worked examples, 146 → 153 detection specs. `OAK-T12.004` → `OAK-T16.006` and `OAK-T12.005` → `OAK-T16.001` deprecated 2026-07-17 with both IDs retained and resolvable (upgrade path in `CHANGELOG.md`). `OAK-T9.014` promoted `emerging` → `stable`. **Additive export change:** `tools/oak.json` gained top-level `examples`, `groups` and `data_sources` — until 2026-08 the export carried taxonomy only, so the worked-example corpus was not published. Content snapshot `snapshot/2026-09-07`. |
 
 ## Content snapshot history
 
 Snapshots are published as signed git tags (`snapshot/YYYY-MM-DD`). Consumers should reference snapshots by tag.
 
 The earliest snapshot is the OAK v0.1 public-draft commit (2026-04). The framework was promoted out of draft at **v0.7** (`snapshot/2026-06-22`); subsequent snapshots are cut as the corpus matures and downstream consumers ship dependencies.
+
+| Snapshot | OAK version | Notes |
+|---|---|---|
+| `snapshot/2026-05-04` | 0.5 | Pre-release draft line. |
+| `snapshot/2026-06-22` | 0.7 | Out-of-draft promotion. 642 worked examples, 146 Techniques. |
+| `snapshot/2026-09-07` | 0.8 | First content line after going out of draft. 693 worked examples, 154 Techniques, 48 Mitigations. Carries the T12.004 / T12.005 deprecation window and the `tools/oak.json` example-export addition. |
+
+A snapshot is due **quarterly at minimum**. The gap between `snapshot/2026-06-22` and `snapshot/2026-09-07` ran to 2.5 months and 51 worked examples, during which a deprecation window opened with no published upgrade path — the failure mode this cadence exists to prevent. Cutting the snapshot and writing the `CHANGELOG.md` entry are one action, not two.
 
 ## Why not just semver the whole thing
 
