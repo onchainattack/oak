@@ -1379,6 +1379,7 @@ padding: 8px 10px;
   align-items: center;
   display: inline-grid;
   flex: 0 0 auto;
+  color: var(--accent);
   height: 30px;
   justify-content: center;
   place-items: center;
@@ -1387,25 +1388,13 @@ padding: 8px 10px;
 
 .tactic-glyph svg {
   display: block;
-  height: 30px;
-  overflow: visible;
-  width: 30px;
-}
-
-.tactic-glyph path,
-.tactic-glyph circle,
-.tactic-glyph rect,
-.tactic-glyph polygon {
+  height: 24px;
+  width: 24px;
   fill: none;
-  stroke: var(--accent);
+  stroke: currentColor;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 2.4;
-}
-
-.tactic-glyph .fill-accent {
-  fill: var(--accent);
-  stroke: var(--accent);
+  stroke-width: 1.75;
 }
 
 .tactic-meta {
