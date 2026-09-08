@@ -50,7 +50,7 @@ export default function DocumentToc({
             event.preventDefault();
             const heading = window.document.querySelector(`#${CSS.escape(slug)}`);
             if (heading) {
-              heading.scrollIntoView({ behavior: "smooth", block: "start" });
+              heading.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
             }
           }}
         >

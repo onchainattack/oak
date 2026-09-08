@@ -25,6 +25,7 @@ export function useAppRouting() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const clearAllRoutes = () => {
+    setSidebarOpen(false);
     setDocPath("");
     setTechniqueRoute("");
     setMitigationRoute("");
@@ -37,42 +38,42 @@ export function useAppRouting() {
     setActiveView(view);
     clearAllRoutes();
     setSidebarOpen(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "instant" });
   };
 
   const openDoc = (path: string) => {
     navigateTo(docPathToUrl(path));
     clearAllRoutes();
     setDocPath(path);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "instant" });
   };
 
   const openTechnique = (id: string) => {
     navigateTo(`technique/${id}`);
     clearAllRoutes();
     setTechniqueRoute(id);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "instant" });
   };
 
   const openMitigation = (id: string) => {
     navigateTo(`mitigation/${id}`);
     clearAllRoutes();
     setMitigationRoute(id);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "instant" });
   };
 
   const openSoftware = (id: string) => {
     navigateTo(`software/${id}`);
     clearAllRoutes();
     setSoftwareRoute(id);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "instant" });
   };
 
   const openGroup = (id: string) => {
     navigateTo(`group/${id}`);
     clearAllRoutes();
     setGroupRoute(id);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "instant" });
   };
 
   useEffect(() => {
@@ -84,6 +85,7 @@ export function useAppRouting() {
       window.history.replaceState(null, "", target);
     }
     const onPopState = () => {
+      setSidebarOpen(false);
       const nextDocPath = markdownRouteFromPath();
       const nextTechnique = techniqueRouteFromPath();
       const nextMitigation = mitigationRouteFromPath();

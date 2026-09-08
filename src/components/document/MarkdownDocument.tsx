@@ -21,7 +21,7 @@ export default function MarkdownDocument({
   const documentHtml = useDocumentHtml(path);
   const bodyRef = useRef<HTMLDivElement>(null);
 
-  useMermaid(bodyRef, documentHtml.status === "loaded");
+  useMermaid(bodyRef, documentHtml.status === "loaded", documentHtml.status === "loaded" ? documentHtml.html : "");
 
   const documentKind = path.startsWith("examples/")
     ? "Incident"

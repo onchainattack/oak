@@ -138,7 +138,7 @@ export function handleMarkdownLinkClick(
     const slug = href.slice(1);
     const heading = window.document.querySelector(`#${CSS.escape(slug)}`);
     if (heading) {
-      heading.scrollIntoView({ behavior: "smooth", block: "start" });
+      heading.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
     }
     return;
   }

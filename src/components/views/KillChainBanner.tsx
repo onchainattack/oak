@@ -22,6 +22,7 @@ export default function KillChainBanner({
         <button
           type="button"
           className={"kc-all" + (active === "all" ? " active" : "")}
+          aria-pressed={active === "all"}
           onClick={() => onSelect("all")}
         >
           All tactics
@@ -33,6 +34,7 @@ export default function KillChainBanner({
             <button
               type="button"
               className={"kc-chip" + (active === tactic.id ? " active" : "")}
+              aria-pressed={active === tactic.id}
               onClick={() => onSelect(tactic.id)}
               title={`${tactic.name} — ${tactic.phase}`}
             >
@@ -51,6 +53,7 @@ export default function KillChainBanner({
               type="button"
               key={tactic.id}
               className={"kc-aux-chip" + (active === tactic.id ? " active" : "")}
+              aria-pressed={active === tactic.id}
               onClick={() => onSelect(tactic.id)}
               title={`${tactic.name} — ${tactic.phase}`}
             >
@@ -63,4 +66,3 @@ export default function KillChainBanner({
     </div>
   );
 }
-

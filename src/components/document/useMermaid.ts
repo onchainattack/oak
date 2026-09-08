@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
+import { mermaidSource } from "./mermaidSource";
 
 function isMermaidBlock(el: HTMLElement): boolean {
   if (el.matches("pre code.language-mermaid, pre code.language-sequenceDiagram")) return true;
@@ -8,9 +9,11 @@ function isMermaidBlock(el: HTMLElement): boolean {
 
 function mermaidTheme() {
   return {
+    startOnLoad: false,
     theme: "base" as const,
-    fontFamily: '"Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+    fontFamily: '"Geist", ui-sans-serif, system-ui, sans-serif',
     themeVariables: {
+      fontSize: "14px",
       darkColor: "#e8e9ec",
       primaryColor: "#161618",
       primaryBorderColor: "rgba(232,233,236,0.16)",
@@ -21,13 +24,13 @@ function mermaidTheme() {
       tertiaryColor: "rgba(0,255,209,0.08)",
       tertiaryBorderColor: "rgba(0,255,209,0.4)",
       tertiaryTextColor: "#00ffd1",
-      lineColor: "rgba(232,233,236,0.16)",
+      lineColor: "#747780",
       textColor: "#e8e9ec",
       mainBkg: "#111114",
       actorBkg: "#161618",
       actorBorder: "rgba(232,233,236,0.16)",
       actorTextColor: "#e8e9ec",
-      actorLineColor: "rgba(232,233,236,0.08)",
+      actorLineColor: "#747780",
       signalColor: "#00ffd1",
       signalTextColor: "#e8e9ec",
       labelBoxBkgColor: "#111114",
@@ -45,54 +48,78 @@ function mermaidTheme() {
 }
 
 type Mermaid = Awaited<typeof import("mermaid")>["default"];
-let mermaidInstance: Mermaid | null = null;
-async function getMermaid(): Promise<Mermaid> {
-  if (mermaidInstance) return mermaidInstance;
-  const mod = await import("mermaid");
-  mod.default.initialize(mermaidTheme());
-  mermaidInstance = mod.default;
-  return mermaidInstance;
+let mermaidPromise: Promise<Mermaid> | null = null;
+let diagramId = 0;
+function getMermaid(): Promise<Mermaid> {
+  mermaidPromise ??= import("mermaid").then(({ default: mermaid }) => {
+    mermaid.initialize(mermaidTheme());
+    return mermaid;
+  }).catch((error) => {
+    mermaidPromise = null;
+    throw error;
+  });
+  return mermaidPromise;
 }
 
-/**
- * After the container element has mermaid code blocks rendered by
- * dangerouslySetInnerHTML, replace them with SVG diagrams.
- */
-export function useMermaid(containerRef: React.RefObject<HTMLElement | null>, ready: boolean) {
-  const renderedRef = useRef<WeakSet<HTMLElement>>(new WeakSet());
-
+/** Render only this document's diagrams and retain readable, scrollable labels. */
+export function useMermaid(containerRef: React.RefObject<HTMLElement | null>, ready: boolean, contentKey: string) {
   useEffect(() => {
-    if (!ready || !containerRef.current) return;
+    const container = containerRef.current;
+    if (!ready || !container) return;
+    let cancelled = false;
 
-    const allBlocks = containerRef.current.querySelectorAll<HTMLElement>("pre code");
-    const blocks = Array.from(allBlocks).filter((el) => !renderedRef.current.has(el) && isMermaidBlock(el));
-    if (blocks.length === 0) return;
-
-    // Mark as seen and replace with mermaid containers.
-    for (const codeEl of blocks) {
-      const pre = codeEl.closest("pre");
+    for (const code of container.querySelectorAll<HTMLElement>("pre code")) {
+      if (!isMermaidBlock(code)) continue;
+      const pre = code.closest("pre");
       if (!pre) continue;
-      renderedRef.current.add(pre);
-      const raw = codeEl.textContent ?? "";
-
-      // marked strips the language identifier (e.g. "sequenceDiagram") from
-      // fenced code blocks — it becomes the class="language-XXX" attribute.
-      // Mermaid needs it as the first line, so prepend it back.
-      const lang = codeEl.className.match(/language-(\w+)/)?.[1];
-      const source = lang ? `${lang}\n${raw}` : raw;
-
+      const language = code.className.match(/language-(\w+)/)?.[1];
+      const source = mermaidSource(code.textContent ?? "", language);
       const wrapper = document.createElement("div");
       wrapper.className = "mermaid-diagram";
-      wrapper.textContent = source;
+      wrapper.dataset.source = source;
+      wrapper.textContent = "Rendering diagram…";
+      wrapper.setAttribute("aria-busy", "true");
+      wrapper.tabIndex = 0;
+      wrapper.setAttribute("role", "region");
+      wrapper.setAttribute("aria-label", "Diagram — scroll to explore");
       pre.replaceWith(wrapper);
     }
 
-    getMermaid()
-      .then((mermaid) => mermaid.run({ querySelector: ".mermaid-diagram" }))
-      .catch((err) => {
-        console.error("mermaid run failed", err);
-        const containers = containerRef.current?.querySelectorAll<HTMLElement>(".mermaid-diagram");
-        containers?.forEach((c) => c.classList.add("mermaid-fallback"));
-      });
-  }, [ready, containerRef]);
+    // Unprocessed wrappers also cover React StrictMode's effect replay.
+    const wrappers = Array.from(container.querySelectorAll<HTMLElement>(".mermaid-diagram:not([data-rendered])"));
+    if (wrappers.length === 0) return;
+
+    const render = async () => {
+      for (const wrapper of wrappers) {
+        if (cancelled || !wrapper.isConnected) return;
+        const source = wrapper.dataset.source ?? "";
+        try {
+          const mermaid = await getMermaid();
+          await document.fonts.ready;
+          if (cancelled || !wrapper.isConnected) return;
+          const result = await mermaid.render(`oak-diagram-${++diagramId}`, source);
+          if (cancelled || !wrapper.isConnected) return;
+          wrapper.innerHTML = result.svg;
+          wrapper.dataset.rendered = "true";
+          wrapper.removeAttribute("aria-busy");
+          const svg = wrapper.querySelector("svg");
+          const width = svg?.viewBox.baseVal.width;
+          if (svg && width) {
+            svg.style.width = `${Math.ceil(width)}px`;
+            svg.style.maxWidth = "none";
+          }
+          result.bindFunctions?.(wrapper);
+        } catch (error) {
+          if (cancelled || !wrapper.isConnected) return;
+          wrapper.classList.add("mermaid-fallback");
+          wrapper.removeAttribute("aria-busy");
+          wrapper.setAttribute("aria-label", "Diagram source — rendering unavailable");
+          wrapper.textContent = source;
+          console.error("Diagram rendering failed", error);
+        }
+      }
+    };
+    void render();
+    return () => { cancelled = true; };
+  }, [ready, contentKey, containerRef]);
 }

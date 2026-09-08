@@ -24,8 +24,13 @@ export default function TopSearch({
       <label className="top-search">
         <span>Search</span>
         <input
+          type="search"
+          aria-label="Search OAK"
           value={value}
           onChange={(event) => onChange(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") onChange("");
+          }}
           placeholder="Technique, actor, mitigation, software, incident..."
         />
       </label>

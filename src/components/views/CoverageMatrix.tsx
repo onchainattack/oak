@@ -155,6 +155,7 @@ export default function CoverageMatrix({
               type="button"
               key={tier}
               className={"cov-stat-pill cov-tier-" + tier + (tierFilter === tier ? " active" : "")}
+              aria-pressed={tierFilter === tier}
               onClick={() => setTierFilter(tierFilter === tier ? "all" : tier)}
               title={`Filter cells with tier "${TIER_LABEL[tier]}"`}
             >
@@ -203,7 +204,7 @@ export default function CoverageMatrix({
         </button>
       </div>
 
-      <div className="cov-matrix-wrap">
+      <div className="cov-matrix-wrap" tabIndex={0} role="region" aria-label="Vendor coverage matrix, scroll to explore techniques">
         <table className="cov-matrix">
           <thead>
             <tr>
@@ -227,9 +228,10 @@ export default function CoverageMatrix({
                     key={t.id}
                     className="cov-tech-header"
                     title={`${t.id} — ${t.name}`}
-                    onClick={() => onOpenTechnique(t.id)}
                   >
-                    <span className="cov-tech-id">{t.id.replace("OAK-T", "")}</span>
+                    <button type="button" className="cov-tech-button" onClick={() => onOpenTechnique(t.id)} aria-label={`${t.id} — ${t.name}`}>
+                      <span className="cov-tech-id">{t.id.replace("OAK-T", "")}</span>
+                    </button>
                   </th>
                 )),
               )}
@@ -268,9 +270,12 @@ export default function CoverageMatrix({
                         key={t.id}
                         className={cls}
                         title={title}
-                        onClick={() => tier && onOpenTechnique(t.id)}
                       >
-                        {tier ? <span className="cov-cell-dot" /> : null}
+                        {tier ? (
+                          <button type="button" className="cov-cell-button" onClick={() => onOpenTechnique(t.id)} aria-label={title}>
+                            <span className="cov-cell-dot" aria-hidden="true" />
+                          </button>
+                        ) : null}
                       </td>
                     );
                   }),
@@ -342,4 +347,3 @@ export default function CoverageMatrix({
     </>
   );
 }
-

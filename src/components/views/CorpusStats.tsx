@@ -131,13 +131,14 @@ export default function CorpusStats({ openDoc }: { openDoc: (path: string) => vo
         <p className="stats-hint">
           Heat-map of how many incidents map to each (year, Tactic) cell. Cell intensity scales to the densest cell ({maxYearTactic}). Empty cells indicate either no public anchor case or a mis-mapping to an adjacent Tactic.
         </p>
-        <div className="heatmap-wrap">
+        <div className="heatmap-wrap" tabIndex={0} role="region" aria-label="Year by tactic density, scroll to explore">
           <table className="heatmap">
+            <caption className="sr-only">Worked examples by year and tactic. The final column counts distinct examples, not the sum of tactic mappings.</caption>
             <thead>
               <tr>
-                <th></th>
-                {TACTIC_ORDER.map((t) => <th key={t} title={TACTIC_NAMES_SHORT[t]}>{t}</th>)}
-                <th>Σ</th>
+                <th scope="col">Year</th>
+                {TACTIC_ORDER.map((t) => <th scope="col" key={t} title={TACTIC_NAMES_SHORT[t]}>{t}</th>)}
+                <th scope="col" title="Distinct worked examples in this year">Examples</th>
               </tr>
             </thead>
             <tbody>
@@ -145,7 +146,7 @@ export default function CorpusStats({ openDoc }: { openDoc: (path: string) => vo
                 const total = yearCounts[y] ?? 0;
                 return (
                   <tr key={y}>
-                    <th>{y}</th>
+                    <th scope="row">{y}</th>
                     {TACTIC_ORDER.map((t) => {
                       const v = yearTacticMatrix[y]?.[t] ?? 0;
                       const bg = heatColor(v);
@@ -153,10 +154,10 @@ export default function CorpusStats({ openDoc }: { openDoc: (path: string) => vo
                         <td
                           key={t}
                           className={v === 0 ? "heatmap-zero" : ""}
-                          style={bg ? { background: bg } : undefined}
-                          title={`${y} × ${t}: ${v}`}
+                          style={bg ? { background: bg, color: v / Math.max(maxYearTactic, 1) < 1 / 3 ? "var(--ink)" : "var(--bg)" } : undefined}
+                          title={`${y} × ${t} ${TACTIC_NAMES_SHORT[t]}: ${v}`}
                         >
-                          {v > 0 ? v : ""}
+                          {v}
                         </td>
                       );
                     })}
@@ -170,8 +171,9 @@ export default function CorpusStats({ openDoc }: { openDoc: (path: string) => vo
       </div>
 
       <div className="stats-section">
-        <h3>Recent corpus growth (last 18 months)</h3>
-        <div className="bar-chart-vert">
+        <h3>Examples by incident month</h3>
+        <p className="stats-hint">The latest 18 months represented in the corpus, by incident date.</p>
+        <div className="bar-chart-vert" tabIndex={0} role="region" aria-label="Monthly example counts, scroll to explore">
           {recentMonths.map((m) => {
             const count = ymCounts[m] ?? 0;
             const pct = (count / maxYm) * 100;
@@ -188,7 +190,7 @@ export default function CorpusStats({ openDoc }: { openDoc: (path: string) => vo
 
       <div className="stats-section">
         <h3>Attribution-strength distribution</h3>
-        <div className="stack-bar" role="img" aria-label="Attribution strength distribution">
+        <div className="stack-bar" aria-hidden="true">
           {ATTRIBUTION_ORDER.map((s) => {
             const v = attributionCounts[s] ?? 0;
             if (!v || !attributionTotal) return null;
@@ -200,7 +202,7 @@ export default function CorpusStats({ openDoc }: { openDoc: (path: string) => vo
                 style={{ width: `${pct}%`, background: ATTRIBUTION_COLORS[s] }}
                 title={`${s}: ${v} (${pct.toFixed(1)}%)`}
               >
-                <span className="stack-seg-label">{v}</span>
+                {pct >= 6 && <span className="stack-seg-label">{v}</span>}
               </div>
             );
           })}
@@ -222,7 +224,7 @@ export default function CorpusStats({ openDoc }: { openDoc: (path: string) => vo
       <div className="stats-section">
         <h3>Top attributed actors</h3>
         <div className="actor-list">
-          {Object.entries(actorCounts).slice(0, 10).map(([id, count]) => (
+          {Object.entries(actorCounts).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([id, count]) => (
             <div className="actor-row" key={id}>
               <strong>{id}</strong>
               <span>{actorTitles[id] ?? "?"}</span>

@@ -25,6 +25,7 @@ import { useGlobalSearch } from "./hooks/useGlobalSearch";
 import { useMatrixFilters } from "./hooks/useMatrixFilters";
 import { useCoverageLayer } from "./hooks/useCoverageLayer";
 import CoverageLayerPanel from "./components/views/CoverageLayerPanel";
+import { useMobileNavigation } from "./hooks/useMobileNavigation";
 
 function App() {
   const {
@@ -45,6 +46,7 @@ function App() {
     openSoftware,
     openGroup,
   } = useAppRouting();
+  const { mobile, toggleRef, sidebarRef } = useMobileNavigation(sidebarOpen, setSidebarOpen);
 
   useDocumentMeta({
     activeView,
@@ -202,7 +204,9 @@ function App() {
       <button
         type="button"
         className="sidebar-burger"
-        aria-label="Toggle navigation"
+        ref={toggleRef}
+        aria-label={sidebarOpen ? "Close navigation" : "Open navigation"}
+        aria-controls="site-navigation"
         aria-expanded={sidebarOpen ? "true" : "false"}
         onClick={() => setSidebarOpen((v) => !v)}
       >
@@ -211,7 +215,13 @@ function App() {
       {sidebarOpen && (
         <div className="sidebar-scrim" onClick={() => setSidebarOpen(false)} aria-hidden="true" />
       )}
-      <aside className={"oak-sidebar" + (sidebarOpen ? " is-open" : "")}>
+      <aside
+        id="site-navigation"
+        ref={sidebarRef}
+        className={"oak-sidebar" + (sidebarOpen ? " is-open" : "")}
+        inert={mobile && !sidebarOpen}
+        aria-label="Site navigation"
+      >
         <div className="sb-logo">
           <LogoMark />
         </div>
@@ -224,6 +234,7 @@ function App() {
                   className={"sb-link" + (activeView === view ? " active" : "")}
                   key={view}
                   type="button"
+                  aria-current={activeView === view && !detailNode ? "page" : undefined}
                   onClick={() => navigateView(view)}
                 >
                   <span className="sb-link-label">{label}</span>
@@ -241,7 +252,7 @@ function App() {
         </div>
       </aside>
 
-      <div className="app-content">
+      <div className="app-content" inert={mobile && sidebarOpen}>
         <header className="app-header">
           <nav className="topbar">
             <span className="topbar-route">
@@ -362,6 +373,7 @@ function App() {
               {chainOptions.map((option) => (
                 <button
                   className={chainFilter === option ? "active" : ""}
+                  aria-pressed={chainFilter === option}
                   key={option}
                   type="button"
                   onClick={() => setChainFilter(option)}
@@ -377,6 +389,7 @@ function App() {
               {maturityOptions.map((option) => (
                 <button
                   className={maturityFilter === option ? "active" : ""}
+                  aria-pressed={maturityFilter === option}
                   key={option}
                   type="button"
                   onClick={() => setMaturityFilter(option)}

@@ -34,7 +34,7 @@ export default function InlineMarkdown({
   const documentHtml = useDocumentHtml(path);
   const bodyRef = useRef<HTMLDivElement>(null);
 
-  useMermaid(bodyRef, documentHtml.status === "loaded");
+  useMermaid(bodyRef, documentHtml.status === "loaded", documentHtml.status === "loaded" ? documentHtml.html : "");
 
   if (!indexEntry) {
     return <p className="document-state">Markdown content not available for this entry.</p>;
