@@ -46,7 +46,7 @@ The ad-hoc nature of the coordination is the key operational insight: every exch
 
 ## Public references
 
-- [Curve Finance Post-Mortem (August 2023)](https://github.com/curvefi/curve-docs/blob/main/post-mortem/2023-07-30-vyper-reentrancy.md)
+- [BlockSec — Curve Incident: Compiler Error Produces Faulty Bytecode From Innocent Source Code](https://blocksec.com/blog/curve-incident-compiler-error-produces-faulty-bytecode-from-innocent-source-code) — the root cause: Vyper 0.2.15/0.2.16/0.3.0 assigned **different storage slots to the reentrancy locks of different functions**, so the lock did not lock
 - [ZachXBT — Curve Exploit Alert Thread (X/Twitter)](https://x.com/zachxbt/status/1685684462798893056)
 - [BlockSec — Vyper Reentrancy Analysis](https://blocksecteam.medium.com/curve-finance-incident-analysis-2023-07-30-2e5c6b1e3a2b)
 - Attacker address: identified across multiple EVM addresses; exchanges involved: Binance, OKX, Coinbase, FixedFloat, Huobi.

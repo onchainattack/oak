@@ -64,7 +64,7 @@ The case generalises across the 2020–2022 hidden-mint-by-platform-bug cohort. 
 - `[peckshieldcover2020]` *(proposed)* — PeckShield, "Cover Incident: The Unlimited Token-Minting Vulnerability": <https://peckshield.medium.com/cover-incident-the-unlimited-token-minting-vulnerability-f3afd9d2405c>
 - `[muditcover2020]` *(proposed)* — Mudit Gupta, "Cover Protocol Hack Analysis: Infinite Cover Tokens Minted Via an Exploit": <https://mudit.blog/cover-protocol-hack-analysis-tokens-minted-exploit/>
 - `[coverpostmortem2020]` *(proposed)* — Cover Protocol team, "12/28 Post-Mortem": <https://coverprotocol.medium.com/12-28-post-mortem-34c5f9f718d4>
-- `[immunebytescover2020]` *(proposed)* — ImmuneBytes, "COVER exploit: Business bug caused Unlimited Minting": <https://www.immunebytes.com/blog/cover-exploit-business-bug-caused-unlimited-minting/>
+- `[muditcover2020]` — Mudit Gupta, "Cover protocol hack analysis: Infinite Cover tokens minted via an exploit" (the `Blacksmith.sol` cached-pool-data bug: the contract cached pool data in memory, updated storage, never refreshed the cache, and the stale cache drove the reward calculation): <https://mudit.blog/cover-protocol-hack-analysis-tokens-minted-exploit/>
 - `[cointelegraphcover2020]` *(proposed)* — Cointelegraph, "Cover Protocol suffers infinite minting attack, price tanks 97%": <https://cointelegraph.com/news/cover-protocol-suffers-infinite-minting-attack-price-tanks-97>
 - `[odioncover2020]` *(proposed)* — Nonse Odion, "Deep Dive into Cover Protocol's December 28, 2020 Exploit": <https://nonseodion.medium.com/deep-dive-into-cover-protocols-december-28-2020-exploit-50e7966741c4>
 

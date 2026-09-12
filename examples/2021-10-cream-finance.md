@@ -49,7 +49,8 @@ This was the third Cream Finance incident in 2021. Cream's earlier 2021 incident
 
 - [Halborn — Explained: The CREAM Finance Hack (October 2021)](https://www.halborn.com/blog/post/explained-the-cream-finance-hack-october-2021) — protocol-side function-level walkthrough.
 - [Immunefi — Hack Analysis: Cream Finance Oct 2021](https://medium.com/immunefi/hack-analysis-cream-finance-oct-2021-fc222d913fc5) — root-cause analysis on the yUSDVault per-share book-value oracle.
-- [ImmuneBytes — Cream Finance Exploit – Oct 27, 2021 — Detailed Analysis](https://www.immunebytes.com/blog/cream-finance-exploit-oct-27-2021-detailed-analysis/) — transaction-level trace and asset-flow breakdown.
+- [Immunefi — Hack Analysis: Cream Finance, Oct 2021](https://immunefi.com/blog/bug-fix-reviews/hack-analysis-cream-finance-oct-2021/) — step-by-step reconstruction: MakerDAO DAI flash mint plus Aave V2 flash loans, yUSD vault shares borrowed against, then the share price doubled atomically by donating yUSD directly to the Yearn vault.
+- [Mudit Gupta — Creamed Cream: Learn the Secret Recipe](https://mudit.blog/cream-hack-analysis/) — the pricePerShare mechanic that let a direct transfer of yDAI+yUSDC+yUSDT+yTUSD revalue the collateral.
 - [Mudit Gupta — Creamed Cream: Learn the Secret Recipe (Cream Hack Analysis)](https://mudit.blog/cream-hack-analysis/) — independent researcher walkthrough of the oracle-manipulation primitive.
 - [C.R.E.A.M. Finance — Post Mortem: Flash Loan Exploit Oct 27](https://medium.com/cream-finance/post-mortem-exploit-oct-27-507b12bb6f8e) — protocol-side official post-mortem.
 - [CoinDesk — Cream Finance Exploited in Flash Loan Attack Worth Over \$100M](https://www.coindesk.com/business/2021/10/27/cream-finance-exploited-in-flash-loan-attack-worth-over-100m) — contemporaneous reporting.

@@ -39,7 +39,7 @@ Rather than patch and continue, BounceBit announced it would **permanently shut 
 - `[theblockbouncebit2026]` — The Block, "BounceBit to sunset blockchain, migrate to BNB Chain after \$3 million exploit" (2026-08-21; the retirement decision, migration to BNB Chain, YZi Labs backing): <https://www.theblock.co/news/ecosystems/2026-08-21-bouncebit-sunset-blockchain-migrate-bnb-chain-after-3-million-exploit-412485>
 - `[cryptotimesbouncebit2026]` — The Crypto Times, "BounceBit Shuts Down Chain After 286M BB Exploit" (2026-08-21; the 286,543,148 BB figure, 14 transactions over 4h 52m, 21:02 UTC start): <https://www.cryptotimes.io/2026/08/21/bouncebit-shuts-down-chain-after-286m-bb-exploit/>
 - `[cryptonomistbouncebit2026]` — The Cryptonomist, "BounceBit Blockchain Attack Prompts Chain Shutdown" (2026-08-21; the Evmos-stack authorisation flaw — a caller naming any account as the source of funds without an approval check): <https://en.cryptonomist.ch/2026/08/21/bouncebit-blockchain-attack/>
-- `[coinpaprikabouncebit2026]` — Coinpaprika, "BounceBit Shuts Down Layer 1 and Moves BB to BNB Chain After Exploit" (pre-attack snapshot used to cancel unauthorised transfers, BEP-20 reissue): <https://coinpaprika.com/news/bouncebit-shuts-down-l1-moves-bb-bnb/>
+- [Coinpaprika — BounceBit Shuts Down Layer 1 and Moves BB to BNB Chain After Exploit](https://coinpaprika.com/news/bouncebit-shuts-down-layer-1-moves-bb-bnb/) — the 2026-08-21 decision to retire the chain and reissue BB as a BEP-20 token after ~286.5M BB was taken through a protocol-level authorization flaw.
 
 ## Discussion
 

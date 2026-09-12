@@ -46,14 +46,14 @@ The two incidents are documented together in this worked example because the cro
 
 ### Incident 1 (April 2, 2022)
 
-- [Inverse Finance — Inverse Finance Suffers Oracle Price Manipulation Attack](https://www.inverse.finance/blog/posts/en-US/post-mortem-april-2nd-2022-economic-exploit) — protocol-side post-mortem.
+- [CertiK — Inverse Finance, 02 April 2022](https://www.certik.com/resources/blog/3HEBdgXIaSemB73rTFNrXT-inverse-finance-02-april-2022) — incident analysis of the INV price manipulation and the ~\$14.5M borrowed against it (1,588 ETH, 94 WBTC, 3,999,669 DOLA, 39 YFI). Post-mortem.
 - [PeckShield — Inverse Finance Hack Analysis](https://twitter.com/peckshield/status/1510232024228859908) — same-day on-chain trace identifying the Sushiswap INV/WETH oracle-input path.
 - [Halborn — Explained: The Inverse Finance Hack (April 2022)](https://www.halborn.com/blog/post/explained-the-inverse-finance-hack-april-2022) — defender-oriented technical post-mortem.
 - [The Block — Inverse Finance loses \$15.6 million in oracle manipulation attack](https://www.theblock.co/post/139745/inverse-finance-loses-15-6-million-in-oracle-manipulation-attack) — contemporaneous coverage.
 
 ### Incident 2 (June 16, 2022)
 
-- [Inverse Finance — Post-mortem: June 16 incident](https://www.inverse.finance/blog/posts/en-US/post-mortem-june-16-2022-economic-exploit) — protocol-side post-mortem of the second incident.
+- [Halborn — Explained: The Inverse Finance Hack (June 2022)](https://www.halborn.com/blog/post/explained-the-inverse-finance-hack-june-2022) — the second incident: a flash-loan-driven oracle manipulation netting 1,068.215 ETH (~\$1.26M).
 - [PeckShield — Inverse Finance Second Exploit](https://twitter.com/peckshield/status/1537511160895926273) — on-chain trace.
 - `[zhou2023sok]` — academic taxonomy covering both as flash-loan-enabled oracle-manipulation chains.
 

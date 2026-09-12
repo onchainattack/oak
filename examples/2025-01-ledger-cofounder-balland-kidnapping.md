@@ -37,11 +37,13 @@ The Balland case became the emblematic incident of a broader **2024–2026 wave 
 
 ## Public references
 
-- [Reuters — Ledger co-founder freed after kidnapping, several arrested in France](https://www.reuters.com/technology/ledger-co-founder-kidnapping-2025/)
-- [BBC News — French police free co-founder of crypto firm Ledger after kidnapping](https://www.bbc.com/news/articles/ledger-cofounder-kidnapping-2025)
-- [Associated Press — Co-founder of crypto wallet firm Ledger kidnapped in France, freed by police](https://apnews.com/article/ledger-crypto-kidnapping-france-2025)
-- [Le Monde — Enlèvement d'un cofondateur de Ledger : plusieurs personnes mises en examen](https://www.lemonde.fr/police-justice/article/2025/01/ledger-cofondateur-enlevement.html)
+- [Reuters via Yahoo News — Co-founder of French crypto firm Ledger freed after kidnapping, Paris prosecutors say](https://www.yahoo.com/news/co-founder-french-crypto-firm-141344947.html) — prosecutor-sourced account of the rescue and the arrests.
+- [Malay Mail / AFP — Tortured Ledger cryptocurrency co-founder free, seven kidnappers now face life sentences in France](https://www.malaymail.com/news/world/2025/01/25/tortured-ledger-cryptocurrency-co-founder-free-seven-kidnappers-now-face-life-sentences-in-france/164591) — the charges and the potential sentences.
+- [The Block — Authorities arrest missing suspect in Ledger co-founder David Balland's kidnapping](https://www.theblock.co/post/394688/authorities-arrest-missing-suspect-ledger-co-founder-david-ballands-kidnapping) — the final arrest, in Spain.
+
 - Context on the wider France/Europe wave and the CertiK statistics: see `examples/2026-05-kraken-coinbase-coordinated-physical-wallet-compromise.md` (CertiK 2026 wrench-attack tracking; family-member targeting; Bloomberg "offline to terrorize investors at home").
+
+**Correction, 2026-09-12:** the four press citations this entry originally carried — Reuters, BBC, Associated Press and Le Monde — pointed at URLs that do not exist and never did (slug-shaped paths with none of the article identifiers those outlets use). The events they were cited for are real and widely reported; the citations have been replaced with sources that resolve.
 
 *Reference URLs are representative of the widely-syndicated reporting on this case and are provided for verification; pin the specific outlet URLs on the next citation sweep.*
 

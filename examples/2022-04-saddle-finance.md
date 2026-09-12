@@ -44,7 +44,8 @@ The case is OAK's reference example for the **virtual-price** subclass of T9.001
 
 - [Saddle Finance — Incident report](https://medium.com/saddle-finance/incident-report-april-30-2022-c91d8a4d70f6) — protocol-side post-mortem with affected-pool list and recovery summary.
 - [PeckShield — Saddle Finance Hack Analysis](https://twitter.com/peckshield/status/1520370083830374400) — on-chain trace and root-cause summary published the day of the incident.
-- [BlockSec — Root-cause analysis of Saddle Finance metapool exploit](https://blocksec.com/blog/saddle-finance-metapool-attack) — function-level walkthrough.
+- [BlockSec — How to exploit the same vulnerability of MetaPool in two different ways (Nerve Bridge / Saddle Finance)](https://blocksecteam.medium.com/how-to-exploit-the-same-vulnerability-of-metapool-in-two-different-ways-nerve-bridge-saddle-774c271c8243) — function-level walkthrough of the mispriced metapool LP token.
+- [Immunefi — Hack Analysis: Saddle Finance, April 2022](https://immunefi.com/blog/bug-fix-reviews/hack-analysis-saddle-finance-april-2022/) — the sUSDv2 metapool was still deployed against the **old MetaSwapUtils library** after the fixed one shipped: a known bug left live in one deployment.
 - [Halborn — Explained: The Saddle Finance Hack (April 2022)](https://www.halborn.com/blog/post/explained-the-saddle-finance-hack-april-2022) — defender-oriented technical post-mortem.
 - [The Block — Saddle Finance loses around \$10 million in metapool exploit](https://www.theblock.co/post/144572/saddle-finance-loses-around-10-million-in-metapool-exploit) — contemporaneous coverage.
 - `[zhou2023sok]` — academic taxonomy classifying this as a flash-loan-enabled oracle-manipulation chain against an on-chain invariant-derived price helper.

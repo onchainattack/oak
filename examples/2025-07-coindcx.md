@@ -54,7 +54,7 @@ The OAK-G01 attribution rests on TTP-pattern concurrence: (a) receiving-address 
 - [Halborn — Explained: The CoinDCX Hack (July 2025)](https://www.halborn.com/blog/post/explained-the-coindcx-hack-july-2025) — independent post-incident technical write-up.
 - [The Block — CoinDCX CEO blames 'server breach' for \$44 million exploit](https://www.theblock.co/post/363479/coindcx-ceo-blames-server-breach-for-44-million-exploit-indian-firm-will-cover-losses) — operator-side characterisation of the entry vector as a server breach.
 - [DL News — CoinDCX hacker routes \$46m into Ethereum after Lazarus-style attack](https://www.dlnews.com/articles/people-culture/coindcx-hacker-routes-46m-into-ethereum-lazarus-style-attack/) — Lazarus-style TTP-pattern attribution coverage.
-- [Cointelegraph — CoinDCX Hack: How Attackers Stole \$44M Without Touching User Funds](https://cointelegraph.com/explained/how-hackers-stole-44m-from-coindcx-without-touching-user-wallets) — explainer-format coverage of the operational-wallet-vs-customer-custody distinction.
+- [TechCrunch — Indian crypto exchange CoinDCX confirms \$44 million stolen during hack](https://techcrunch.com/2025/07/21/indian-crypto-exchange-coindcx-confirms-44-million-stolen-during-hack) — the internal liquidity-provisioning account, the server-breach characterisation, and the company absorbing the loss from treasury.
 
 ## Discussion
 

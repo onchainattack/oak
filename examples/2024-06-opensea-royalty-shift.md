@@ -49,7 +49,7 @@ Zero on-chain loss. The realised effect is non-financial but structurally signif
 - Cross-reference: T6.007 at `techniques/T6.007-trust-substrate-shift-vendor-promise-revocation.md`.
 - Cross-reference: `examples/2023-05-ledger-recover-trust-substrate-shift.md` — canonical T6.007 anchor (hardware-wallet vendor-policy sub-class).
 - Cross-reference: `examples/2022-08-tornado-cash-ofac-sanctions.md` — regulatory-action variant of T6.007.
-- `[opensearoyaltysunset2024]` — OpenSea, "Sunsetting the Operator Filter Registry and Evolving Creator Earnings" (2024-06-19): <https://opensea.io/blog/articles/sunsetting-the-operator-filter-registry>
+- `[cointelegraphopenseafilter2023]` — Cointelegraph, "NFT marketplace OpenSea to disable royalty enforcement tool" (the Operator Filter sunset announced 2023-08-17, effective 2023-08-31, with collections registered by that date honoured to end of February 2024): <https://cointelegraph.com/news/opensea-disable-on-chain-royalty-enforcement-tool>
 - `[theblockopensearoyalty2024]` — The Block, "OpenSea to sunset royalty enforcement tool, move to optional creator fees" (2024-06-19).
 - `[decryptopensearoyalty2024]` — Decrypt, "OpenSea Ditches Mandatory NFT Royalties as Market Shifts" (2024-06).
 

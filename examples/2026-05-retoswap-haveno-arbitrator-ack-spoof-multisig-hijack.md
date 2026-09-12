@@ -59,7 +59,9 @@ The unifying thread across Superfortune, SquidRouterModule, and RetoSwap is that
 - [Crypto Times — Monero DEX RetoSwap Suspends Trading After $2.7M Exploit in Haveno Protocol](https://www.cryptotimes.io/2026/05/21/monero-dex-retoswap-suspends-trading-after-2-7m-exploit-in-haveno-protocol/)
 - [KuCoin — RetoSwap hacked via Haveno protocol vulnerability, 7,000 XMR stolen](https://www.kucoin.com/news/flash/retoswap-hacked-via-haveno-protocol-vulnerability-7-000-xmr-stolen)
 - [Smart Contract Hacking — RetoSwap Hack (2026) – $2.7M Lost](https://smartcontractshacking.com/hacks/retoswap-hack-2026)
-- [sambent — Haveno Brought Back the Arbitrator Multisig and Attackers Just Hijacked It](https://www.sambent.com/haveno-brought-back-the-arbitrator-multisig-and-attackers-just-hijacked-it/)
+- [sambent — Haveno Brought Back the Arbitrator Multisig and Attackers Just Hijacked It](https://web.archive.org/web/20260520172204/https://www.sambent.com/haveno-brought-back-the-arbitrator-multisig-and-attackers-just-hijacked-it/)
+- [The Crypto Times — Monero DEX RetoSwap Suspends Trading After \$2.7M Exploit in Haveno Protocol](https://www.cryptotimes.io/2026/05/21/monero-dex-retoswap-suspends-trading-after-2-7m-exploit-in-haveno-protocol/) — the trading suspension and loss figure.
+- [BlockSec — ~\$104.6M Lost: Verus, RetoSwap & More](https://blocksec.com/blog/web3-security-verus-bridge-retoswap-more) — independent weekly write-up covering the same incident.
 - [coin.space — RetoSwap DEX Hacked, $2.7M Drained](https://coin.space/retoswap-dex-hacked/)
 
 ## Discussion

@@ -42,5 +42,5 @@ The DPRK IT worker scheme is a well-documented revenue stream for the DPRK regim
 ## Public references
 
 - [ZachXBT — DPRK IT Worker Investigation (X/Twitter)](https://twitter.com/zachxbt/status/1824047425822310580)
-- [FBI — DPRK IT Worker Advisory (2024)](https://www.ic3.gov/PSA/2024/PSA240509)
+- [FBI IC3 — Democratic People's Republic of Korea Leverages U.S.-Based Individuals to Defraud U.S. Businesses and Generate Revenue (PSA240516, 2024-05-16)](https://www.ic3.gov/PSA/2024/PSA240516)
 - Laundering path: deBridge, eXch, documented in ZachXBT thread.

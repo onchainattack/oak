@@ -60,7 +60,7 @@ Check Point Research characterized the operation as "the first time a cryptocurr
 
 ## Public references
 
-- `[checkpointwalletconnect2024]` — Check Point Research, "Fake WalletConnect App on Google Play Steals $70K" (2024-09): <https://research.checkpoint.com/2024/fake-walletconnect-app-on-google-play/>
+- `[checkpointwalletdrainer2024]` — Check Point Research, "Wallet Scam: A Case Study in Crypto Drainer Tactics" (the fake WalletConnect app published 2024-03-21, undetected for over five months, 10,000+ downloads, 150+ victims, $70K+ taken; first drainer to target mobile users exclusively): <https://research.checkpoint.com/2024/wallet-scam-a-case-study-in-crypto-drainer-tactics/>
 - `[thehackernewswalletconnect2024]` — The Hacker News, "Crypto Scam App Disguised as WalletConnect Steals $70K in Five-Month Campaign" (2024-09-28): <https://thehackernews.com/2024/09/crypto-scam-app-disguised-as.html>
 - `[pcmagwalletconnect2024]` — PCMag, "Uninstall Now: This Android App Is Secretly Stealing Crypto" (2024-09)
 - `[cointelegraphwalletconnect2024]` — CoinTelegraph, "Crypto wallet drainer was on Google Play for months, stole $70K: Report" (2024-09)
@@ -68,7 +68,7 @@ Check Point Research characterized the operation as "the first time a cryptocurr
 
 ## Citations
 
-- `[checkpointwalletconnect2024]` — primary forensic analysis; MS Drainer identification, C2 infrastructure, IP/User-Agent evasion mechanism, $70K figure, 150+ victim count.
+- `[checkpointwalletdrainer2024]` — primary forensic analysis; MS Drainer identification, C2 infrastructure, IP/User-Agent evasion mechanism, $70K figure, 150+ victim count.
 - `[thehackernewswalletconnect2024]` — contemporaneous press; campaign timeline, app names, download counts, UNS LIS developer fingerprint.
 
 ## Discussion

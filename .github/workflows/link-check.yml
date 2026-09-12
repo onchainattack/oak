@@ -67,17 +67,21 @@ jobs:
         if: steps.scope.outputs.skip != 'true'
         uses: lycheeverse/lychee-action@v2
         with:
+          # Three settings, each from a false positive this check produced:
           # 401 joins the accept list because it means the resource exists
-          # behind auth (Reuters and other paywalled outlets answer 401 to
-          # every unauthenticated client). x.com / twitter.com are excluded
-          # outright: they answer 404 to any request without a session, so a
-          # cited tweet is unverifiable over HTTP and produces only noise.
+          # behind auth (Reuters answers 401 to every unauthenticated client);
+          # x.com / twitter.com are excluded outright because they answer 404
+          # without a session, so four cited ZachXBT threads read as dead and
+          # none of them are; and the browser user-agent is there because
+          # Cointelegraph and other Cloudflare-fronted outlets answer 404 to
+          # lychee's default agent and 200 to a browser.
           args: >-
             --cache
             --max-cache-age 1d
             --no-progress
             --accept 200,202,206,401,403,410,429
             --exclude '^https?://(www\.)?(x|twitter)\.com/'
+            --user-agent 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
             --timeout 60
             ${{ steps.scope.outputs.paths }}
           fail: true

@@ -65,7 +65,7 @@ The cohort is the Solana-side analogue of the EVM honeypot cohort (T1.004 + T1.0
 - `[coinspeakerpdburn2024]` *(proposed)* — Coinspeaker coverage of the Slorg / RED disclosure: <https://www.coinspeaker.com/solana-scammers-burning-tokens/>
 - `[cointelegraphpdburn2024]` *(proposed)* — Cointelegraph (republished via TradingView News): <https://www.tradingview.com/news/cointelegraph:13ab18ce1094b:0-scammers-have-found-a-way-to-burn-tokens-from-inside-solana-wallets/>
 - `[bitdegreepdburn2024]` *(proposed)* — Bitdegree coverage of the burn-after-purchase mechanic: <https://www.bitdegree.org/crypto/news/solana-users-beware-scammers-found-way-to-burn-tokens-right-after-purchase>
-- `[voiceofcryptopd2024]` *(proposed)* — Voice of Crypto explainer: <https://voiceofcrypto.online/news/solana-new-scam-alert>
+- `[cryptotimesburnscam2024]` — The Crypto Times, "Scammers Burn Solana Tokens Seconds After Purchase" (2024-09-04; the Jupiter community case where a `RED` token with a Permanent Delegate extension burned the buyer's balance seven seconds after the swap): <https://www.cryptotimes.io/2024/09/04/scammers-burn-solana-tokens-seconds-after-purchase/>
 - `[cryptotimespdburn2024]` *(proposed)* — Crypto Times coverage: <https://www.cryptotimes.io/2024/09/04/scammers-burn-solana-tokens-seconds-after-purchase/>
 - `[coindeskslerf2024]` *(proposed)* — CoinDesk SLERF accidental-burn coverage; cited for the negative-control distinction: <https://www.coindesk.com/markets/2024/03/18/solana-meme-slerf-notches-17b-in-volume-after-developer-loses-all-presale-funds>
 

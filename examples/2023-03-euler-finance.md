@@ -46,11 +46,11 @@ Euler Finance was an Ethereum-based permissionless lending protocol whose accoun
 
 ## Public references
 
-- [Euler Labs — Official statement on the exploit](https://www.eulerfinance.com/blog/euler-finance-march-13-2023) — protocol-side post-mortem and recovery summary.
+- [Euler Labs — War & Peace: Behind the Scenes of Euler's \$240M Exploit Recovery](https://www.euler.finance/blog/war-peace-behind-the-scenes-of-eulers-240m-exploit-recovery) — protocol-side account of the exploit and the three-week recovery negotiation.
 - [Halborn — Explained: The Euler Finance Hack (March 2023)](https://www.halborn.com/blog/post/explained-the-euler-finance-hack-march-2023) — detailed function-level walkthrough.
-- [Chainalysis — The Euler Finance Hack: Funds Recovered](https://www.chainalysis.com/blog/euler-finance-hack-funds-recovered/) — recovery and tracing analysis.
-- [BlockSec — Behind the scenes: the cause of the Euler Finance attack](https://blocksec.com/blog/behind-the-scenes-the-cause-of-the-euler-finance-attack) — root-cause analysis on the missing solvency check.
-- [Elliptic — Euler Finance hacker returns nearly all of stolen \$200 million](https://www.elliptic.co/blog/euler-finance-hacker-returns-nearly-all-of-stolen-200-million) — laundering and recovery tracing.
+- [Chainalysis — Euler Finance Flash Loan Attack Explained](https://www.chainalysis.com/blog/euler-finance-flash-loan-attack/) — tracing analysis, including the 2023-03-17 transfer of 100 ETH to an address previously funded by the Ronin Bridge theft.
+- [Zellic — Euler Finance Exploit Analysis](https://www.zellic.io/blog/euler-finance-exploit-analysis/) — root-cause analysis of the missing account-health check on `donateToReserves`, the self-collateralised loan, and the dynamic liquidation discount.
+- [Elliptic — Euler Finance loses \$199 million in flash loan attack](https://www.elliptic.co/insights/euler-finance-loses-199-million-in-flash-loan-attack/) — per-asset breakdown of the loss (USDC \$34.1M, DAI \$8.8M, WBTC \$18.9M, stETH \$137.1M) and the initial laundering route.
 - `[zhou2023sok]` — academic taxonomy classifying this as a flash-loan-enabled access-control-misconfiguration chain.
 - `[chainalysiseuler2023]`, `[halborneuler2023]`, `[blocksec2023euler]`, `[elliptipeuler2023]` — Euler-specific forensic write-ups (proposed citation keys; see `citations.bib`).
 

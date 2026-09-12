@@ -54,7 +54,7 @@ For OAK's T4 / T12 / T6 framing, the Pudgy Penguins Google-Ads campaign is the c
 
 - `[scamsnifferpudgy2024]` *(proposed)* — ScamSniffer attribution of the Pudgy Penguins Google-Ads phishing campaign to the Adloox CDN ad-injection vector. <https://crypto.news/scam-sniffer-malicious-google-ad-campaign-redirects-crypto-users-to-fake-pudgy-penguins-website/>
 - `[invezzpudgy2024]` *(proposed)* — Invezz reporting on the Pudgy Penguins Google ad campaign. <https://invezz.com/news/2024/12/26/pudgy-penguins-nft-users-targeted-by-malicious-google-ad-campaign/>
-- `[coinpediapudgy2024]` *(proposed)* — Coinpedia coverage. <https://coinpedia.org/news/crypto-scam-alert-pudgy-penguins-nft-users-targeted-by-google-ad-network-phishing/>
+- `[invezzpudgy2024]` — Invezz, "Pudgy Penguins NFT users targeted by malicious Google ad campaign" (2024-12-26; ScamSniffer traced the redirect chain to the Adloox tracking domain and a Prebid.js weakness, landing victims on `pudqypenguin[.]com`): <https://invezz.com/news/2024/12/26/pudgy-penguins-nft-users-targeted-by-malicious-google-ad-campaign/>
 - `[icoholderpudgy2024]` *(proposed)* — ICOHolder reporting. <https://icoholder.com/en/news/new-phishing-scam-targets-pudgy-penguins-nft-users-through-google-ads>
 - `[itcuapudgy2024]` *(proposed)* — ITC.ua reporting. <https://itc.ua/en/news/a-phishing-site-of-the-popular-nft-collection-pudgy-penguins-appeared-among-google-ads/>
 - `[slowmist2024report]` — broader 2024 wallet-drainer ecosystem context (~\$494M aggregate; OAK-G02 service-infrastructure framing).

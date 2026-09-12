@@ -42,9 +42,10 @@ Poly Network is structurally a cross-chain bridge, so contributors will reasonab
 ## Public references
 
 - [Chainalysis — The Poly Network Hack: What We Know So Far](https://www.chainalysis.com/blog/poly-network-hack-august-2021/) — primary forensic post and asset-flow tracing during the recovery window.
-- [Elliptic — \$600 Million Stolen From Poly Network — The Largest Crypto Theft Of All Time?](https://www.elliptic.co/blog/600-million-stolen-from-poly-network-the-largest-crypto-theft-of-all-time) — chain-by-chain breakdown and laundering-route analysis during the active phase.
+- [SlowMist — The Root Cause Of Poly Network Being Hacked](https://slowmist.medium.com/the-root-cause-of-poly-network-being-hacked-ec2ee1b0c68f) — the `verifyHeaderAndExecuteTx` / `_executeCrossChainTx` path and the crafted call-data that replaced the target chain's Keeper.
 - [Kudelski Security — The Poly Network Hack Explained](https://research.kudelskisecurity.com/2021/08/12/the-poly-network-hack-explained/) — technical post-mortem of the manager-to-data privilege boundary and the crafted call-data path.
-- [Merkle Science — Analysis of the Poly Network Hack](https://www.merklescience.com/blog/the-poly-network-hack-analysis) — secondary technical analysis with on-chain transaction references.
+- [SlowMist — The Analysis and Q&A Of Poly Network Being Hacked](https://slowmist.medium.com/the-analysis-and-q-a-of-poly-network-being-hacked-8112a35beb39) — AML-team loss accounting (>\$610M across chains) and the attacker-identification claim (mailbox, IP, device fingerprints).
+- [The Register — Thief hands back at least a third of \$600m in crypto-coins stolen from Poly Network](https://www.theregister.com/2021/08/11/poly_network_funds_returned/) — contemporaneous account of the return window.
 - [Poly Network — official incident statements (Twitter thread, 2021-08-10 onwards)](https://twitter.com/PolyNetwork2/status/1425073987164381196) — protocol-side disclosure and recovery announcements.
 
 ## Discussion
