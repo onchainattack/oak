@@ -28,7 +28,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: ${{ github.event_name == 'push' && 0 || 1 }}
+          # Full history: a push can span several commits, and the diff against
+          # github.event.before needs that object present. Note the GitHub
+          # Actions trap this originally fell into — `cond && 0 || 1` always
+          # evaluates to 1, because 0 is falsy in expressions, so a conditional
+          # fetch-depth silently stayed at 1 and the diff failed with
+          # "fatal: bad object".
+          fetch-depth: 0
 
       - name: Select scope
         id: scope
@@ -38,10 +44,16 @@ jobs:
             exit 0
           fi
           BEFORE="${{ github.event.before }}"
-          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
-            FILES=$(git show --name-only --pretty= HEAD -- '*.md')
-          else
+          # Fall back to the head commit's own files whenever the base is
+          # absent, zeroed (a new branch) or unreachable — never fail the run
+          # over scope selection.
+          if [ -n "$BEFORE" ] \
+             && [ "$BEFORE" != "0000000000000000000000000000000000000000" ] \
+             && git cat-file -e "${BEFORE}^{commit}" 2>/dev/null; then
             FILES=$(git diff --name-only "$BEFORE" "${{ github.sha }}" -- '*.md')
+          else
+            echo "Base commit unavailable — falling back to the head commit's markdown."
+            FILES=$(git show --name-only --pretty= HEAD -- '*.md')
           fi
           # Deleted files must not be handed to lychee as inputs.
           KEPT=""
