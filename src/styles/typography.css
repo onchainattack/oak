@@ -1,0 +1,260 @@
+/* One owner for text roles across React pages, document bodies and snapshots.
+   Layout files must not override fonts, sizes, weights or leading. */
+body {
+  font: var(--type-body);
+  font-feature-settings: "ss01", "ss02", "cv01";
+}
+
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: var(--ls-tight);
+}
+h1 { font: var(--type-h1); }
+h2 { font: var(--type-h2); }
+h3 { font: var(--type-h3); }
+h4 { font: var(--type-h4); }
+h5, h6 { font: var(--type-card); }
+p, li { line-height: inherit; }
+small { font: var(--type-meta); }
+strong { font-weight: var(--fw-semibold); }
+button, input, select, textarea { font: inherit; }
+code, kbd, samp { font-family: var(--mono); font-size: var(--fs-code-inline); }
+
+/* Page titles use h1. A compact card title has its own role, independent
+   of whether its markup is h3, strong or a link. */
+.t-display, .hero-copy h1 { font: var(--type-display); }
+.tactic-column h3,
+.technique-card strong,
+.example-card h3,
+.example-card-title,
+.actor-card strong,
+.mitigation-card strong,
+.software-card strong,
+.data-source-card > strong,
+.contributor-grid strong,
+.cov-vendor-card-head a,
+.rg-center strong,
+.rg-group-heading h3,
+.document-sidebar > strong,
+.cov-layer-panel-head strong,
+.link-row strong {
+  font: var(--type-card);
+  letter-spacing: var(--ls-tight);
+}
+
+/* Reading text inherits through paragraphs, lists and inline emphasis.
+   A paragraph inside a table or a metadata card keeps that context's size. */
+.markdown-shell, .detection-spec { font: var(--type-prose); }
+.markdown-shell p, .markdown-shell li { font-size: inherit; line-height: inherit; }
+.overview-lede, .technique-detail-tactic { font: var(--type-prose); }
+.hero-copy p:not(.eyebrow),
+.section-heading p:not(.eyebrow),
+.feature-card p,
+.signal-panel p,
+.coverage-panel p:not(.eyebrow),
+.example-card p,
+.data-source-card > p,
+.cov-vendor-desc,
+.technique-detail-dl dd,
+.pr-intro,
+.pr-list {
+  font: var(--type-body);
+}
+
+/* Secondary descriptions, result rows and document context. */
+.t-meta,
+.result-strip span,
+.document-sidebar nav a,
+.document-notes p,
+.document-facts strong,
+.pr-meta dd,
+.pr-note,
+.detection-spec-meta,
+.detection-spec-refs-note,
+.howto-step p,
+.stats-hint,
+.bar-row,
+.actor-row,
+.recent-item,
+.search-popover strong,
+.search-popover small,
+.search-empty,
+.empty-column,
+.audience-row span,
+.audience-row strong,
+.contributor-grid small,
+.technique-card small,
+.actor-card small,
+.mitigation-card small,
+.software-card small,
+.link-row small,
+.rg-node,
+.rg-relation,
+.stack-legend,
+.aka-banner,
+.cov-layer-panel-head small,
+.cov-layer-error {
+  font: var(--type-meta);
+}
+.search-popover strong, .document-facts strong, .audience-row strong { font-weight: var(--fw-semibold); }
+.technique-detail-meta { font: var(--type-meta); }
+.technique-detail-meta strong { font: inherit; font-weight: var(--fw-semibold); }
+
+/* Eyebrows and field labels. Only labels are uppercase; IDs retain case. */
+.t-eyebrow,
+.t-label,
+.eyebrow,
+.document-kind,
+.document-sidebar > span,
+.search-popover > button > span,
+.kc-label,
+.sb-group-label,
+.foot-section-label,
+.top-search span,
+.matrix-console > span,
+.matrix-console label > span,
+.chip-group > span,
+.cov-filter > span,
+.document-facts span,
+.document-notes span,
+.pr-meta dt,
+.stat-label,
+.stat-card > span,
+.actor-category-label > span:first-child {
+  font: var(--type-label);
+  letter-spacing: var(--ls-mono-wide);
+  text-transform: uppercase;
+}
+
+/* Identifiers, dates, badges and compact numeric annotations. */
+.t-code-inline,
+.tactic-column header > .tactic-heading > span:not(.tactic-glyph),
+.technique-card > span,
+.actor-card > span,
+.mitigation-card > span,
+.software-card > span,
+.data-source-card > span,
+.example-card > span:first-child,
+.example-meta em,
+.example-meta code,
+.example-meta-more,
+.data-source-meta em,
+.feature-icon,
+.kc-num,
+.tactic-column header small,
+.cov-tech-id,
+.cov-vendor-type,
+.cov-vendor-total,
+.cov-vendor-tid,
+.document-sidebar code,
+.document-hero > div > code,
+.document-path,
+.document-state,
+.document-chip-row span,
+.rg-center code,
+.rg-node code,
+.rg-count,
+.recent-date,
+.bar-label strong,
+.bar-count,
+.bar-vert-label,
+.bar-vert-count,
+.actor-row strong,
+.actor-count,
+.actor-category-count,
+.aka-label,
+.aka-tag,
+.card-aka,
+.cov-layer-active,
+.cov-layer-active em,
+.howto-step .step-num,
+.technique-detail-dl dt,
+.topbar-version,
+.block-ticker,
+.foot-meta,
+.foot-bar {
+  font: var(--type-code);
+  letter-spacing: var(--ls-mono-tight);
+  font-variant-numeric: tabular-nums;
+}
+.card-aka, .example-meta em, .data-source-meta em, .cov-layer-active em { font-style: normal; }
+
+/* Navigation and buttons share a control role. Inputs have the same readable
+   size in every filter panel, including the mobile search field. */
+.button,
+.sb-link,
+.nav-links a,
+.nav-links button,
+.kc-all,
+.chip-group button,
+.filter-row button,
+.reset-button,
+.cov-pill,
+.cov-stat-pill,
+.cov-vendor-stats summary,
+.howto-step button,
+.document-context-toggle,
+.breadcrumb-trail,
+.breadcrumb-trail button,
+.breadcrumb-back,
+.topbar-route {
+  font: var(--type-control);
+  letter-spacing: var(--ls-mono-tight);
+}
+.app-content input, .app-content select, .app-content textarea { font: var(--type-input); }
+.cov-pill strong, .cov-stat-pill strong { font: inherit; font-weight: var(--fw-bold); }
+.kc-name { font: var(--type-card-small); }
+.button::after, .button-back::before, .sb-link-tag, .kc-arrow { font: inherit; }
+.cov-vendor-link, .pr-brand { font: var(--type-card-small); }
+.foot-section a, .pr-nav, .pr-foot { font: var(--type-meta); }
+.overview-disclaimer { font: var(--type-meta); }
+
+/* Reading tables never mix a 13px cell with a 16px nested paragraph/list. */
+.coverage-table,
+.cov-matrix,
+.markdown-shell th,
+.markdown-shell td,
+.detection-spec-params table {
+  font: var(--type-meta);
+}
+.markdown-shell th,
+.detection-spec-params th,
+.coverage-table thead th,
+.cov-corner,
+.cov-tactic-header {
+  font: var(--type-label);
+}
+.coverage-table code, .heatmap, .heatmap th, .heatmap td, .stack-seg {
+  font: var(--type-code);
+  font-variant-numeric: tabular-nums;
+}
+.heatmap th, .heatmap td, .stack-seg { font-weight: var(--fw-semibold); }
+
+/* Inline code scales once. Preformatted text and chart labels keep the
+   surrounding explicit role, including nested syntax-highlighting spans. */
+.markdown-shell code, .overview-hero code, .markdown-shell a.oak-id-link {
+  font-family: var(--mono);
+  font-size: var(--fs-code-inline);
+}
+.markdown-shell pre, .raw-document, .detection-spec-pseudocode, .mermaid-fallback {
+  font: var(--type-code-block);
+}
+.markdown-shell pre code, .detection-spec-pseudocode code, .markdown-shell td code,
+.markdown-shell th code, .detection-spec-params code, .detection-spec-meta code,
+.markdown-shell code code, .markdown-shell a.oak-id-link code {
+  font-size: inherit;
+}
+.mermaid-diagram { font: var(--type-diagram); }
+.mermaid-diagram p { font: inherit; line-height: var(--lh-compact); }
+.mermaid-diagram[aria-busy="true"] { font: var(--type-meta); }
+.hl-keyword, .hl-label { font-weight: var(--fw-semibold); }
+
+.stat-card strong, .stat-num {
+  font: var(--type-stat);
+  letter-spacing: var(--ls-tight);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The wordmark is branding, with shared sizes and its own tracking. */
+.brand-text strong { font: var(--type-h2); letter-spacing: 0.16em; }
+.sb-logo .brand-text strong { font: var(--type-card); letter-spacing: 0.14em; }
+.brand-text small { font: var(--type-label); letter-spacing: var(--ls-mono-wide); text-transform: uppercase; }

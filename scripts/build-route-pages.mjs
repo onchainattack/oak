@@ -119,37 +119,7 @@ const composeTitle = (title) => {
 // visitor sees while the bundle downloads.
 // ---------------------------------------------------------------------------
 
-const PRERENDER_CSS = `
-#root .pr{max-width:940px;margin:0 auto;padding:28px 20px 72px;line-height:1.62;color:#e8e9ec;background:#0a0a0c}
-#root .pr a{color:#00ffd1;text-decoration:none}
-#root .pr a:hover{text-decoration:underline}
-#root .pr-head{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline;padding-bottom:14px;border-bottom:1px solid rgba(232,233,236,.12)}
-#root .pr-brand{font-weight:600;letter-spacing:-.01em}
-#root .pr-nav{display:flex;flex-wrap:wrap;gap:14px;font-size:.9rem}
-#root .pr-nav a{color:#b8bac0}
-#root .pr-kicker{margin:22px 0 0;font-family:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:#8b8e96}
-#root .pr-main h1{margin:6px 0 14px;font-size:1.9rem;line-height:1.2;letter-spacing:-.02em}
-#root .pr-intro{color:#b8bac0;margin:0 0 18px}
-#root .pr-meta{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px 18px;margin:0 0 22px;padding:14px 16px;border:1px solid rgba(232,233,236,.1);border-radius:10px;background:rgba(255,255,255,.02)}
-#root .pr-meta dt{font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:#8b8e96}
-#root .pr-meta dd{margin:2px 0 0;font-size:.92rem}
-#root .pr-body h2{margin:30px 0 8px;font-size:1.22rem;letter-spacing:-.01em}
-#root .pr-body h3{margin:22px 0 6px;font-size:1.02rem}
-#root .pr-body table{width:100%;border-collapse:collapse;margin:16px 0;font-size:.9rem;display:block;overflow-x:auto}
-#root .pr-body th,#root .pr-body td{border:1px solid rgba(232,233,236,.12);padding:7px 10px;text-align:left;vertical-align:top}
-#root .pr-body code{font-family:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.88em;background:rgba(255,255,255,.05);border-radius:4px;padding:1px 5px}
-#root .pr-body pre{overflow-x:auto;padding:12px 14px;border:1px solid rgba(232,233,236,.1);border-radius:10px;background:rgba(255,255,255,.02)}
-#root .pr-body pre code{background:none;padding:0}
-#root .pr-body blockquote{margin:16px 0;padding:2px 0 2px 14px;border-left:2px solid rgba(0,255,209,.4);color:#b8bac0}
-#root .pr-body img{max-width:100%;height:auto}
-#root .pr-section{margin:30px 0 0}
-#root .pr-section h2{font-size:1.05rem;margin:0 0 10px;padding-bottom:6px;border-bottom:1px solid rgba(232,233,236,.1)}
-#root .pr-list{margin:0;padding:0;list-style:none;display:grid;gap:5px}
-#root .pr-list li{font-size:.93rem}
-#root .pr-note{color:#8b8e96;font-size:.85em}
-#root .pr-foot{margin-top:48px;padding-top:16px;border-top:1px solid rgba(232,233,236,.12);display:flex;flex-wrap:wrap;gap:14px;font-size:.86rem}
-#root .pr-foot a{color:#b8bac0}
-`.trim();
+// Snapshot layout and typography come from the same built CSS as the app.
 
 const NAV_LINKS = [
   { href: "/matrix/", label: "Matrix" },
@@ -267,7 +237,7 @@ const documentMarkup = (docPath) => {
         )
         .join("")}</dl>`
     : "";
-  return `${meta}<div class="pr-body">${dropLeadingHeading(rewriteLinks(doc.html, docPath))}</div>`;
+  return `${meta}<div class="pr-body markdown-body markdown-shell">${dropLeadingHeading(rewriteLinks(doc.html, docPath))}</div>`;
 };
 
 const prerenderMarkup = (meta) =>
@@ -277,7 +247,7 @@ const prerenderMarkup = (meta) =>
     ({ href, label }) => `<a href="${href}">${escapeHtml(label)}</a>`,
   ).join("")}</nav></header>` +
   `<main class="pr-main">` +
-  (meta.kicker ? `<p class="pr-kicker">${escapeHtml(meta.kicker)}</p>` : "") +
+  (meta.kicker ? `<p class="pr-kicker eyebrow">${escapeHtml(meta.kicker)}</p>` : "") +
   `<h1>${escapeHtml(meta.title)}</h1>` +
   (meta.intro ? `<p class="pr-intro">${escapeHtml(meta.intro)}</p>` : "") +
   documentMarkup(meta.doc) +
@@ -321,7 +291,6 @@ const htmlForRoute = (template, meta) => {
       /<meta name="twitter:description" content="[^"]+"\s*\/?>/,
       `<meta name="twitter:description" content="${escapeHtml(meta.description)}" />`,
     ],
-    [/<\/head>/, `  <style id="pr-style">${PRERENDER_CSS}</style>\n  </head>`],
     [/<div id="root"><\/div>/, `<div id="root">${prerenderMarkup(meta)}</div>`],
   ].reduce((html, [pattern, value]) => swap(html, pattern, value), template);
 };

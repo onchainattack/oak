@@ -1,0 +1,143 @@
+:root {
+  color-scheme: dark;
+
+  /* surfaces */
+  --bg: #0a0a0c;
+  --panel: #111114;
+  --panel-2: #161618;
+  --panel-elev: #1a1a1d;
+
+  /* ink */
+  --ink: #e8e9ec;
+  --ink-strong: #ffffff;
+  --muted: #8b8e96;
+  --muted-strong: #b8bac0;
+  --line: rgba(232, 233, 236, 0.08);
+  --line-strong: rgba(232, 233, 236, 0.16);
+
+  /* single accent — electric teal on graphite */
+  --accent: #00ffd1;
+  --accent-soft: rgba(0, 255, 209, 0.12);
+  --accent-line: rgba(0, 255, 209, 0.4);
+  --accent-dim: rgba(0, 255, 209, 0.7);
+
+  /* danger reserved for actual errors */
+  --red: #ff4d45;
+  --red-soft: rgba(255, 77, 69, 0.1);
+
+  /* chain-color data accents — used as flags only */
+  --chain-evm: #627eea;
+  --chain-sol: #9945ff;
+  --chain-btc: #f7931a;
+  --chain-bnb: #f0b90b;
+  --chain-tron: #ff060a;
+
+  /* font families */
+  --sans: "Geist", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --shadow: 0 32px 64px -16px rgba(0, 0, 0, 0.7);
+  --shadow-sharp: 0 1px 0 rgba(232, 233, 236, 0.04), 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+
+  /* radius scale */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+  --r-pill: 999px;
+
+  /* spacing scale — use these for gap / margin / padding instead of literals */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* surfaces */
+  --surface-1: rgba(255, 255, 255, 0.012);
+  --surface-2: rgba(255, 255, 255, 0.025);
+  --surface-3: rgba(255, 255, 255, 0.04);
+
+  /* Semantic type scale. rem keeps browser text-size preferences intact. */
+  --fs-display: clamp(2.25rem, 1.5rem + 3vw, 4rem);
+  --fs-h1: clamp(1.875rem, 1.5rem + 1.5vw, 2.75rem);
+  --fs-h2: clamp(1.5rem, 1.25rem + 0.75vw, 1.875rem);
+  --fs-h3: 1.125rem;
+  --fs-h4: 1rem;
+  --fs-md: 1rem;
+  --fs-prose: var(--fs-md);
+  --fs-input: max(16px, 1rem);
+  --fs-diagram: var(--fs-body);
+  --fs-code-inline: 0.92em;
+  --fs-body: 0.9375rem;
+  --fs-small: 0.8125rem;
+  --fs-mono: 0.75rem;
+  --fs-stat: clamp(1.75rem, 1.25rem + 1.5vw, 2.5rem);
+  --lh-body: 1.6;
+  --lh-heading: 1.25;
+  --lh-title: 1.15;
+  --lh-subheading: 1.35;
+  --lh-compact: 1.5;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  /* Complete roles prevent a component from mixing unrelated sizes/leading. */
+  --type-body: var(--fw-regular) var(--fs-body)/var(--lh-body) var(--sans);
+  --type-prose: var(--fw-regular) var(--fs-prose)/var(--lh-body) var(--sans);
+  --type-display: var(--fw-bold) var(--fs-display)/var(--lh-title) var(--sans);
+  --type-h1: var(--fw-bold) var(--fs-h1)/var(--lh-title) var(--sans);
+  --type-h2: var(--fw-semibold) var(--fs-h2)/var(--lh-heading) var(--sans);
+  --type-h3: var(--fw-semibold) var(--fs-h3)/var(--lh-subheading) var(--sans);
+  --type-h4: var(--fw-semibold) var(--fs-h4)/var(--lh-subheading) var(--sans);
+  --type-card: var(--fw-semibold) var(--fs-md)/var(--lh-compact) var(--sans);
+  --type-card-small: var(--fw-semibold) var(--fs-small)/var(--lh-compact) var(--sans);
+  --type-meta: var(--fw-regular) var(--fs-small)/var(--lh-compact) var(--sans);
+  --type-label: var(--fw-semibold) var(--fs-mono)/var(--lh-compact) var(--mono);
+  --type-code: var(--fw-medium) var(--fs-mono)/var(--lh-compact) var(--mono);
+  --type-code-block: var(--fw-regular) var(--fs-small)/var(--lh-body) var(--mono);
+  --type-control: var(--fw-semibold) var(--fs-small)/var(--lh-compact) var(--mono);
+  --type-input: var(--fw-regular) var(--fs-input)/var(--lh-compact) var(--sans);
+  --type-stat: var(--fw-bold) var(--fs-stat)/var(--lh-title) var(--mono);
+  --type-diagram: var(--fw-regular) var(--fs-diagram)/var(--lh-compact) var(--sans);
+
+  /* letter-spacing */
+  --ls-tight: -0.025em;
+  --ls-mono-tight: 0.02em;
+  --ls-mono-wide: 0.08em;
+
+  /* transitions */
+  --t-fast: 120ms ease;
+  --t-base: 180ms ease;
+  --t-slow: 240ms ease;
+
+  /* composite-friendly transition list — covers state-change props
+     (color/background/border/transform/box-shadow/opacity) without
+     animating layout-triggering ones (width/height/padding/margin) */
+  --t-state: color var(--t-fast), background var(--t-fast),
+    background-color var(--t-fast), border-color var(--t-fast),
+    transform var(--t-fast), box-shadow var(--t-fast),
+    opacity var(--t-fast);
+
+  /* secondary data accents — used sparingly, only as flags */
+  --gold: #e6c14a;
+  --blue: #9ec0ff;
+
+  /* accent fade variants (faint surface tints) */
+  --accent-faint: rgba(0, 255, 209, 0.06);
+  --accent-fade: rgba(0, 255, 209, 0.04);
+  --accent-mist: rgba(0, 255, 209, 0.025);
+
+  /* ink fade variants (subtle borders / muted overlays) */
+  --line-soft: rgba(232, 233, 236, 0.04);
+  --line-medium: rgba(232, 233, 236, 0.13);
+  --ink-faint: rgba(232, 233, 236, 0.32);
+
+  /* additional surface tints */
+  --surface-fade: rgba(255, 255, 255, 0.015);
+  --surface-soft: rgba(255, 255, 255, 0.02);
+  --surface-medium: rgba(255, 255, 255, 0.03);
+}
