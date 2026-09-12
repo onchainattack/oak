@@ -155,7 +155,7 @@ false_positive_modes:
   - "Packaging with cosmetic damage from shipping that mimics tampering — PATH C distinguishes via seal integrity: a broken seal is definitive; scuffed packaging with intact seal is cosmetic"
   - PATH C PCB mismatch due to a legitimate hardware revision, not a counterfeit — cross-reference against vendor-published revision history; flag only when PCB layout differs from ALL known legitimate revisions
 
-mitigations: [OAK-M22, OAK-M21]
+mitigations: [OAK-M21, OAK-M22, OAK-M47]
 
 reference_implementations:
   - { target: ledger-live-genuineness,    chain: cross-chain, url: "" }

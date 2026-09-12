@@ -44,6 +44,18 @@ PLACEHOLDER_RE = re.compile(r"\bOAK-(?:G|T|M|S)nn\b")
 ATTR_STRENGTH_RE = re.compile(
     r"\*\*(confirmed|inferred-strong|inferred-weak|pseudonymous|unattributed)\b"
 )
+ATTRIBUTION_LINE_RE = re.compile(r"^\*\*Attribution:\*\*.*$", re.MULTILINE)
+
+
+def attribution_scope(text: str) -> str:
+    """Restrict the strength search to the **Attribution:** line.
+
+    A whole-file search takes the first bold strength word anywhere, which
+    misreads examples using one in earlier prose (a Loss line reading
+    "**confirmed** losses" makes a pseudonymous case look attributed).
+    """
+    line = ATTRIBUTION_LINE_RE.search(text)
+    return line.group(0) if line else text
 
 ATTR_ORDER = ["confirmed", "inferred-strong", "inferred-weak", "pseudonymous", "unattributed", "(missing)"]
 TACTIC_NAMES = {
@@ -91,7 +103,7 @@ def parse_example(path: Path) -> dict[str, object]:
     tactic_codes = {int(m) for m in TECHNIQUE_REF_RE.findall(cleaned)}
     techniques = set(TECHNIQUE_FULL_RE.findall(cleaned))
     actors = set(ACTOR_REF_RE.findall(cleaned))
-    strength_match = ATTR_STRENGTH_RE.search(text)
+    strength_match = ATTR_STRENGTH_RE.search(attribution_scope(text))
     strength = strength_match.group(1) if strength_match else "(missing)"
     return {
         "name": name,

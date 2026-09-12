@@ -95,7 +95,7 @@ false_positive_modes:
   - PATH B false positives for legitimate custodial wallets receiving routine user deposits without matched on-chain trading (require trading-outflow ratio low + brand-flag PATH A)
   - PATH C false positives for legitimate exchanges with incidental Huione-substrate exposure during routine operations (require cluster-attribution strength)
 
-mitigations: [OAK-M21, OAK-M27, OAK-M30, OAK-M36]
+mitigations: [OAK-M21, OAK-M27, OAK-M30, OAK-M36, OAK-M46]
 
 reference_implementations:
   - { target: chainalysis-crypto-crime-report, chain: cross-chain, url: "" }

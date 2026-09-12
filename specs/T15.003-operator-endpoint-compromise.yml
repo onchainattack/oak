@@ -113,7 +113,7 @@ false_positive_modes:
   - employee-laptop bulk-export operations during legitimate business processes (require exfil destinations outside known data-flows)
   - CROSS-CHECK false positives from routine system updates that match teardown signatures (combine with PATH A or B presence)
 
-mitigations: [OAK-M18, OAK-M19, OAK-M21, OAK-M22]
+mitigations: [OAK-M18, OAK-M19, OAK-M21, OAK-M22, OAK-M48]
 
 reference_implementations:
   - { target: mandiant,                chain: cross-chain, url: "" }

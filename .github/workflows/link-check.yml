@@ -1,6 +1,15 @@
 name: link-check
 
 on:
+  # Content lands by committing to main, so the pull_request trigger alone
+  # left every push unchecked until the weekly cron. On push we check only
+  # the markdown that changed — the full corpus is 3,400+ links and belongs
+  # on the schedule, not on every commit.
+  push:
+    branches: [main]
+    paths:
+      - "**/*.md"
+      - ".github/workflows/link-check.yml"
   pull_request:
     paths:
       - "**/*.md"
@@ -18,8 +27,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ github.event_name == 'push' && 0 || 1 }}
+
+      - name: Select scope
+        id: scope
+        run: |
+          if [ "${{ github.event_name }}" != "push" ]; then
+            echo "paths=./**/*.md" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          BEFORE="${{ github.event.before }}"
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            FILES=$(git show --name-only --pretty= HEAD -- '*.md')
+          else
+            FILES=$(git diff --name-only "$BEFORE" "${{ github.sha }}" -- '*.md')
+          fi
+          # Deleted files must not be handed to lychee as inputs.
+          KEPT=""
+          for f in $FILES; do [ -f "$f" ] && KEPT="$KEPT $f"; done
+          KEPT=$(echo "$KEPT" | xargs || true)
+          if [ -z "$KEPT" ]; then
+            echo "No markdown changed in this push — nothing to check."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Checking: $KEPT"
+            echo "paths=$KEPT" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Restore lychee cache
+        if: steps.scope.outputs.skip != 'true'
         uses: actions/cache@v4
         with:
           path: .lycheecache
@@ -27,13 +64,20 @@ jobs:
           restore-keys: cache-lychee-
 
       - name: Check links
+        if: steps.scope.outputs.skip != 'true'
         uses: lycheeverse/lychee-action@v2
         with:
+          # 401 joins the accept list because it means the resource exists
+          # behind auth (Reuters and other paywalled outlets answer 401 to
+          # every unauthenticated client). x.com / twitter.com are excluded
+          # outright: they answer 404 to any request without a session, so a
+          # cited tweet is unverifiable over HTTP and produces only noise.
           args: >-
             --cache
             --max-cache-age 1d
             --no-progress
-            --accept 200,202,206,403,410,429
+            --accept 200,202,206,401,403,410,429
+            --exclude '^https?://(www\.)?(x|twitter)\.com/'
             --timeout 60
-            './**/*.md'
+            ${{ steps.scope.outputs.paths }}
           fail: true

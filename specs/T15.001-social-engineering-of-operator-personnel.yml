@@ -105,7 +105,7 @@ false_positive_modes:
   - PATH B noise from generic CTI tags without per-pretext fingerprint match (require sender or payload-hash match)
   - cross-staff false positives from broad recruitment campaigns (require pretext-template fingerprint, not just multi-target)
 
-mitigations: [OAK-M21, OAK-M22]
+mitigations: [OAK-M21, OAK-M22, OAK-M48]
 
 reference_implementations:
   - { target: mandiant-cti,            chain: cross-chain, url: "" }

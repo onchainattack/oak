@@ -170,7 +170,7 @@ false_positive_modes:
   - Platform with MLM-style referral commissions that is a legitimate affiliate-marketing program with a real product independent of the referral structure — distinguish via PATH D corporate-registry and product-verification checks
   - Wallet cluster flagged by PATH B where apparent "new-depositor-funded payouts" are actually trading profits from a DEX whose router address is not yet in KNOWN_EXCHANGE_WALLETS — maintain the known-exchange-wallet registry per chain
 
-mitigations: [OAK-M22, OAK-M21, OAK-M23, OAK-M24]
+mitigations: [OAK-M21, OAK-M22, OAK-M23, OAK-M24, OAK-M45, OAK-M46]
 
 reference_implementations:
   - { target: chainalysis-crypto-crime,   chain: cross-chain, url: "" }

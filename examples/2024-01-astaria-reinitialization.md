@@ -29,7 +29,7 @@ The finding was disclosed to the Astaria team, who restructured the initialisati
 ## Public references
 
 - Cross-reference: T9.009 at `techniques/T9.009-cross-contract-reinitialization-attack.md`.
-- Cross-reference: 2023-08-exactly-reinitialization at `examples/2023-08-exactly-reinitialization.md` (Exactly Protocol, ~\$7.3M, adversarial-exploit counterpart).
+- Cross-reference: the Exactly Protocol incident (Optimism, 2023-08, ~\$7.3M) was previously carried in this corpus as a cross-contract reinitialisation counterpart. That mapping was **withdrawn on 2026-09-12**: the incident was an unvalidated market-address and forged-permit exploit with reentrancy, not a reinitialisation. See [`examples/2023-08-exactly-protocol.md`](./2023-08-exactly-protocol.md).
 - Cross-reference: 2025-12-uspd-cpimp-clandestine-proxy at `examples/2025-12-uspd-cpimp-clandestine-proxy.md` (USPD CPIMP stablecoin reinitialization).
 
 ## Public References

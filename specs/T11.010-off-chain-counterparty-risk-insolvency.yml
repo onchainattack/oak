@@ -94,7 +94,7 @@ false_positive_modes:
   - Counterparty wallets are multi-sig or omnibus wallets aggregating multiple end-counterparties — the on-chain view shows concentration but the off-chain structure is diversified; flag for operator disclosure request rather than automatic escalation
   - Re-lending flow is collateralised on-chain (e.g., over-collateralised lending protocol) rather than unsecured credit — the concentration risk is structurally lower; check for on-chain collateralisation before escalating
 
-mitigations: []
+mitigations: [OAK-M46]
 
 reference_implementations:
   - { target: chainalysis-reactor,  chain: cross-chain, url: "" }

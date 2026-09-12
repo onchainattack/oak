@@ -33,9 +33,10 @@ YEAR_MONTH_RE = re.compile(r"^(\d{4}-(?:0[1-9]|1[0-2]))")
 TECH_RE = re.compile(r"\bOAK-T(\d+)(?:\.\d+){1,2}\b")
 ACTOR_RE = re.compile(r"\bOAK-G\d{2}\b")
 PLACEHOLDER_RE = re.compile(r"\bOAK-(?:G|T|M|S)nn\b")
-ATTR_RE = re.compile(
-    r"\*\*(confirmed|inferred-strong|inferred-weak|pseudonymous|unattributed)\b"
-)
+# Attribution strength is read from the **Attribution:** line only — see
+# common.attribution_strength() for why a whole-file search misreads examples
+# that use "**confirmed**" in prose above it.
+from common import attribution_strength  # noqa: E402
 
 
 TACTIC_NAMES = {
@@ -71,8 +72,7 @@ def parse_examples() -> list[dict[str, object]]:
         cleaned = PLACEHOLDER_RE.sub("", text)
         tactics = {int(t) for t in TECH_RE.findall(cleaned)}
         actors = set(ACTOR_RE.findall(cleaned))
-        sm = ATTR_RE.search(text)
-        strength = sm.group(1) if sm else "(missing)"
+        strength = attribution_strength(text) or "(missing)"
         out.append(
             {"name": p.name, "year": year, "tactics": tactics, "actors": actors, "strength": strength}
         )

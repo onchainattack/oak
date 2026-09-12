@@ -160,7 +160,7 @@ false_positive_modes:
   - Victim narrative cluster that shares patterns with known compound templates but arises from independent single operators copying the template without compound infrastructure — distinguish via PATH A wallet overlap with known compound entities
   - "Platform flagged as compound-operated because operator wallets share infrastructure (same gas station, same CEX deposit address) with a known compound entity — distinguish via direct deposit-flow tracing: only flag if victim deposits flow directly to compound-controlled wallets"
 
-mitigations: [OAK-M22, OAK-M21, OAK-M23, OAK-M24]
+mitigations: [OAK-M21, OAK-M22, OAK-M23, OAK-M24, OAK-M46]
 
 reference_implementations:
   - { target: chainalysis-crypto-crime,   chain: cross-chain, url: "" }

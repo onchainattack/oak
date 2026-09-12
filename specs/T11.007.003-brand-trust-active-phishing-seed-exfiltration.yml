@@ -188,7 +188,7 @@ false_positive_modes:
   - Third-party wallet app that legitimately imports a seed phrase for wallet recovery (e.g., importing a MetaMask seed into Rabby) — the legitimate-vendor-never-asks invariant applies to vendor-branded communications, not to third-party wallet import flows; distinguish via app publisher identity vs. claimed vendor identity
   - Browser extension with wallet-like functionality that requests seed import as its core feature — distinguish via the extension's store listing publisher vs. the impersonated vendor; a legitimate third-party wallet that supports seed import is not T11.007.003
 
-mitigations: [OAK-M22, OAK-M21]
+mitigations: [OAK-M21, OAK-M22, OAK-M44, OAK-M45]
 
 reference_implementations:
   - { target: ledger-phishing-tracker,        chain: cross-chain, url: "" }

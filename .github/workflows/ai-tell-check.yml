@@ -1,6 +1,22 @@
 name: ai-tell-check
 
 on:
+  # This repository lands content by committing to main, not through pull
+  # requests, so a pull_request-only trigger left this gate dormant from
+  # 2026-07-17 onward. Both triggers now, same paths.
+  push:
+    branches: [main]
+    paths:
+      - "examples/**"
+      - "techniques/**"
+      - "tactics/**"
+      - "actors/**"
+      - "mitigations/**"
+      - "software/**"
+      - "investigations/**"
+      - "article-assets/**"
+      - "tools/detect_ai_tells.py"
+      - ".github/workflows/ai-tell-check.yml"
   pull_request:
     paths:
       - "examples/**"

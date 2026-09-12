@@ -108,7 +108,7 @@ false_positive_modes:
   - PATH B false positives for legacy-bridge tokens that pre-date current registry (extend bridge_deployment_registry historically)
   - PATH C false positives during bridge bootstrap / canonical genesis mint (annotate genesis window)
 
-mitigations: [OAK-M02, OAK-M11, OAK-M16, OAK-M25]
+mitigations: [OAK-M02, OAK-M11, OAK-M16, OAK-M25, OAK-M47]
 
 reference_implementations:
   - { target: scamsniffer,         chain: cross-chain, url: "" }

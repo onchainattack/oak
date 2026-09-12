@@ -114,7 +114,7 @@ false_positive_modes:
   - PATH C false positives from advisory feed errors / retracted advisories — require non-retracted status
   - cohort outflows during volatility windows that coincidentally align with compromise window (require compromise window from PATH A/B/C, not standalone)
 
-mitigations: [OAK-M01, OAK-M03, OAK-M20, OAK-M22, OAK-M40]
+mitigations: [OAK-M01, OAK-M03, OAK-M20, OAK-M22, OAK-M40, OAK-M48]
 
 reference_implementations:
   - { target: github-advanced-security, chain: cross-chain, url: "" }

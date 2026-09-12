@@ -28,6 +28,7 @@ from pathlib import Path
 from common import (
     REPO,
     ATTR_STRENGTH_RE,
+    attribution_strength,
     ATTRIBUTION_HEADER_RE,
     ACTOR_LINK_RE,
     MAPS_TO_RE,
@@ -166,9 +167,41 @@ def jaccard_similarity(a: set[str], b: set[str]) -> float:
 
 # --- Check functions ---
 
+ALLOWLIST_PATH = Path(__file__).resolve().parent / "quality-duplicate-titles-allowlist.txt"
+
+
+def load_title_allowlist() -> dict[frozenset[str], tuple[str, str]]:
+    """Reviewed near-duplicate pairs -> (verdict, note).
+
+    D1 fuzzy-matches titles, and most of what it finds is legitimate — the same
+    venue hit twice years apart, overlapping cohort windows, one incident filed
+    under two Technique framings. Without a ledger of reviewed pairs the check
+    can only be advisory, and an advisory check is one nobody runs: the Exactly
+    Protocol duplicate sat in this report from the v0.1 release until
+    2026-09-12 because nothing failed on it.
+    """
+    out: dict[frozenset[str], tuple[str, str]] = {}
+    if not ALLOWLIST_PATH.exists():
+        return out
+    for line in ALLOWLIST_PATH.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = [c.strip() for c in line.split("\t") if c.strip()]
+        if len(parts) < 3:
+            continue
+        verdict, file_a, file_b = parts[0], parts[1], parts[2]
+        note = parts[3].lstrip("# ").strip() if len(parts) > 3 else ""
+        out[frozenset((file_a, file_b))] = (verdict, note)
+    return out
+
+
 def check_duplicate_titles(examples: list[Path]) -> list[str]:
     issues: list[str] = []
     seen: list[tuple[set[str], str, str]] = []  # (tokens, filename, title)
+    allowlist = load_title_allowlist()
+    matched: set[frozenset[str]] = set()
+    unreviewed: list[str] = []
 
     for path in examples:
         text = path.read_text(encoding="utf-8")
@@ -183,12 +216,34 @@ def check_duplicate_titles(examples: list[Path]) -> list[str]:
         for seen_tok, seen_fn, seen_title in seen:
             sim = jaccard_similarity(tok, seen_tok)
             if sim >= 0.55:
+                key = frozenset((path.name, seen_fn))
+                if key in allowlist:
+                    matched.add(key)
+                    verdict, note = allowlist[key]
+                    if verdict == "unreviewed":
+                        unreviewed.append(f"{path.name} <-> {seen_fn} — {note}")
+                    continue
                 issues.append(
                     f"{path.name} <-> {seen_fn}:\n"
-                    f"    jaccard: {sim:.2f} — \"{title[:80]}\" vs \"{seen_title[:80]}\""
+                    f"    jaccard: {sim:.2f} — \"{title[:80]}\" vs \"{seen_title[:80]}\"\n"
+                    f"    Not in {ALLOWLIST_PATH.name}. Either these are the same incident "
+                    f"filed twice — merge them — or add a reviewed verdict."
                 )
 
         seen.append((tok, path.name, title))
+
+    # A stale entry is a pair the detector no longer reports: the files were
+    # merged or renamed and the ledger kept a verdict about nothing.
+    for key in allowlist.keys() - matched:
+        issues.append(
+            f"stale allowlist entry: {' <-> '.join(sorted(key))} is no longer "
+            f"reported as a near-duplicate — drop it from {ALLOWLIST_PATH.name}"
+        )
+
+    if unreviewed:
+        print(f"\nDUPLICATE TITLES — {len(unreviewed)} allowlisted pair(s) awaiting review:")
+        for u in unreviewed:
+            print(f"  {u}")
 
     return issues
 
@@ -296,10 +351,10 @@ def check_attribution_conflicts(examples: list[Path]) -> list[str]:
     # Check each example against linked actors
     for path in examples:
         text = path.read_text(encoding="utf-8")
-        ex_m = ATTR_STRENGTH_RE.search(text)
-        if not ex_m:
+        ex_label = attribution_strength(text)
+        if not ex_label:
             continue
-        ex_label = ex_m.group(1).lower()
+        ex_label = ex_label.lower()
 
         # Find linked actors
         actors: set[str] = set()
@@ -476,6 +531,21 @@ def _attribution_is_to_named_person(attr_text: str, full_text: str) -> bool:
     # @handle (Real Name) pattern: "@cryptobeastreal (Crypto Beast)"
     if re.search(r"@\w+\s*\([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\)", attr_text):
         return True
+    # Attribution established through a judicial process against individuals who
+    # are not a tracked group: "charges against approximately ten individuals",
+    # "five defendants indicted". These cases are confirmed precisely because a
+    # court named people, and there is no OAK-Gnn to link because the people are
+    # not an operator cluster.
+    if re.search(
+        r"\b(?:charges?|charged|indictment|indicted|arrests?|arrested|convictions?|"
+        r"convicted|sentenced|prosecuted)\b[^.]{0,90}\b"
+        r"(?:individuals|defendants|suspects|accomplices|co-conspirators)\b"
+        r"|\b(?:individuals|defendants|suspects|accomplices|co-conspirators)\b"
+        r"[^.]{0,90}\b(?:charged|indicted|arrested|convicted|sentenced|prosecuted)\b",
+        attr_text,
+        re.IGNORECASE,
+    ):
+        return True
     return False
 
 
@@ -491,10 +561,10 @@ def check_missing_actor_link(examples: list[Path]) -> list[str]:
 
     for path in examples:
         text = path.read_text(encoding="utf-8")
-        m = ATTR_STRENGTH_RE.search(text)
-        if not m:
+        label = attribution_strength(text)
+        if not label:
             continue
-        label = m.group(1).lower()
+        label = label.lower()
         if label not in ("confirmed", "inferred-strong"):
             continue
 

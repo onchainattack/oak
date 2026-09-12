@@ -98,7 +98,7 @@ false_positive_modes:
   - PATH B false positives for legitimate organisation expansion with new repository publications (require credential-compromise disclosure to anchor)
   - PATH C false positives for legitimate developer-tooling C2-adjacent infrastructure (require G01 cohort match strength)
 
-mitigations: [OAK-M19, OAK-M20, OAK-M30, OAK-M37, OAK-M40]
+mitigations: [OAK-M19, OAK-M20, OAK-M30, OAK-M37, OAK-M40, OAK-M48]
 
 reference_implementations:
   - { target: socket-dev,             chain: cross-chain, url: "" }

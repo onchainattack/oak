@@ -162,7 +162,7 @@ false_positive_modes:
   - Cloud-account compromise correlated with wallet drain where the wallet vault was not in the cloud backup — the drain may be via email-based phishing (T11.007.003-class) or credential-stuffing against the wallet service directly; verify the cloud backup actually contained wallet data
   - Wallet app where cloud-backup is explicitly opt-in and the user affirmatively enabled it — the surface is closer to T11.006.001 (user-initiated) than T11.006.002 (implicit default); cross-reference the app's default posture
 
-mitigations: [OAK-M22, OAK-M21]
+mitigations: [OAK-M21, OAK-M22, OAK-M44]
 
 reference_implementations:
   - { target: metamask-security-advisories,  chain: cross-chain, url: "" }

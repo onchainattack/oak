@@ -22,6 +22,18 @@ REPO = Path(__file__).resolve().parent.parent
 ATTR_STRENGTH_RE = re.compile(
     r"\*\*(confirmed|inferred-strong|inferred-weak|pseudonymous|unattributed)\b"
 )
+ATTRIBUTION_LINE_RE = re.compile(r"^\*\*Attribution:\*\*.*$", re.MULTILINE)
+
+
+def attribution_scope(text: str) -> str:
+    """Restrict the strength search to the **Attribution:** line.
+
+    A whole-file search takes the first bold strength word anywhere, which
+    misreads examples using one in earlier prose (a Loss line reading
+    "**confirmed** losses" makes a pseudonymous case look attributed).
+    """
+    line = ATTRIBUTION_LINE_RE.search(text)
+    return line.group(0) if line else text
 ACTOR_LINK_RE = re.compile(
     r"\.\./actors/(OAK-G\d{2})-[A-Za-z0-9._-]+\.md"
 )
@@ -81,7 +93,7 @@ def find_missing_files() -> list[Path]:
         if f.name.lower() == "readme.md":
             continue
         text = f.read_text(encoding="utf-8")
-        m = ATTR_STRENGTH_RE.search(text)
+        m = ATTR_STRENGTH_RE.search(attribution_scope(text))
         if not m:
             continue
         label = m.group(1).lower()

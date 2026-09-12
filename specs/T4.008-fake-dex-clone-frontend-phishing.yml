@@ -128,7 +128,7 @@ false_positive_modes:
   - PATH B false positives from accounts that include DEX names without impersonation (require impersonation score above floor)
   - PATH D false positives for legitimate community wallets that happen to integrate a DEX (require non-authorised package_id + mnemonic prompt)
 
-mitigations: [OAK-M02, OAK-M30, OAK-M31, OAK-M40]
+mitigations: [OAK-M02, OAK-M30, OAK-M31, OAK-M40, OAK-M47]
 
 reference_implementations:
   - { target: scamsniffer,            chain: cross-chain, url: "" }

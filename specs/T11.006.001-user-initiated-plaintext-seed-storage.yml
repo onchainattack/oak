@@ -164,7 +164,7 @@ false_positive_modes:
   - User who rotated seed phrase post-breach and subsequently experienced a drain via a different vector — post-rotation drains are not attributable to the storage-service breach; verify rotation transaction timestamp vs. drain transaction timestamp
   - PATH E false positive where the drain curve coincidentally matches the brute-force curve due to attacker operational pacing rather than actual cracking completion — require PATH B victim-interview corroboration for critical severity
 
-mitigations: [OAK-M22, OAK-M21]
+mitigations: [OAK-M21, OAK-M22, OAK-M44]
 
 reference_implementations:
   - { target: zachxbt-forensics,          chain: cross-chain, url: "" }

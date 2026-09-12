@@ -32,6 +32,26 @@ ATTRIBUTION_NEGATION_RE = re.compile(
 ATTR_STRENGTH_RE = re.compile(
     r"\*\*(confirmed|inferred-strong|inferred-weak|pseudonymous|unattributed)\b"
 )
+ATTRIBUTION_LINE_RE = re.compile(r"^\*\*Attribution:\*\*.*$", re.MULTILINE)
+
+
+def attribution_strength(text: str) -> str | None:
+    """The strength label declared on the **Attribution:** line.
+
+    Searching the whole file for the first bold strength word misreads any
+    example that uses one of those words earlier in prose — "Galaxy Research
+    puts **confirmed** losses at ..." in a Loss line reads as an attribution
+    of `confirmed` for a case that is actually pseudonymous. All 698 examples
+    carry the label on the Attribution line itself, so scope the search there
+    and fall back to the whole text only when the line is absent (a malformed
+    file, which check_linkage reports separately).
+    """
+    line = ATTRIBUTION_LINE_RE.search(text)
+    if line:
+        m = ATTR_STRENGTH_RE.search(line.group(0))
+        return m.group(1) if m else None
+    m = ATTR_STRENGTH_RE.search(text)
+    return m.group(1) if m else None
 
 H2_RE = re.compile(r"^## (.+?)$", re.MULTILINE)
 MAPS_TO_RE = re.compile(r"^\*\*Maps to Techniques:\*\*\s*(.+?)$", re.MULTILINE)

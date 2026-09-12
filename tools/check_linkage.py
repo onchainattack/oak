@@ -38,6 +38,7 @@ from common import (
     ID_RE,
     PLACEHOLDER_RE,
     ATTR_STRENGTH_RE,
+    attribution_strength,
     build_inventory,
     parse_taxonomy_gaps_candidates,
 )
@@ -99,8 +100,7 @@ def check_example_references(
 
 
 def get_attribution_strength(text: str) -> str | None:
-    m = ATTR_STRENGTH_RE.search(text)
-    return m.group(1) if m else None
+    return attribution_strength(text)
 
 
 def get_tactic_codes(text: str) -> set[str]:

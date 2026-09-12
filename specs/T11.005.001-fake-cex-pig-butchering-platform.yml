@@ -154,7 +154,7 @@ false_positive_modes:
   - New exchange not yet appearing in regulator registries but with transparent corporate registration in its claimed jurisdiction — distinguish via absence of the other four PATH signals; licensed-VASP-registry absence alone is not dispositive
   - Victim report cluster with common feeder narrative but on-chain deposits go to a real exchange's deposit addresses — the narrative may be a social-engineering front for a real exchange account takeover, not T11.005.001
 
-mitigations: [OAK-M22, OAK-M21, OAK-M23, OAK-M24]
+mitigations: [OAK-M21, OAK-M22, OAK-M23, OAK-M24, OAK-M45, OAK-M46]
 
 reference_implementations:
   - { target: chainalysis-crypto-crime,   chain: cross-chain, url: "" }
