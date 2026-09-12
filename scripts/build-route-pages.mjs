@@ -263,7 +263,20 @@ const htmlForRoute = (template, meta) => {
   const fullTitle = composeTitle(meta.title);
   // Replacement callbacks, not replacement strings — descriptions carry dollar
   // amounts ("$1.5M"), and `$1` in a replacement string is a capture group.
-  const swap = (html, pattern, value) => html.replace(pattern, () => value);
+  // A pattern that stops matching (a reformatted meta tag, a renamed element)
+  // would otherwise leave every route carrying the template's own title,
+  // canonical and description — silently, on all 1,000+ pages. Test for the
+  // match rather than comparing before/after: a route whose replacement equals
+  // what the template already holds is legitimate (the root route's title).
+  const swap = (html, pattern, value) => {
+    if (!pattern.test(html)) {
+      throw new Error(
+        `build-route-pages: no match for ${pattern} in the page template — `
+          + `refusing to emit routes with stale <head> metadata.`,
+      );
+    }
+    return html.replace(pattern, () => value);
+  };
   return [
     [/<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(fullTitle)}</title>`],
     [/<link rel="canonical" href="[^"]+" \/>/, `<link rel="canonical" href="${canonicalUrl}" />`],

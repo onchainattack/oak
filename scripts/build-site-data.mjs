@@ -472,29 +472,6 @@ await writeFile(
 const documentBodies = Object.fromEntries(
   Object.entries(documents).map(([key, doc]) => [key, doc.html]),
 );
-// Refresh the og:description meta in index.html from current stats so social
-// previews stay honest without manual editing. Idempotent — only rewrites
-// the file if the rendered string actually changed.
-{
-  const s = siteData.stats;
-  const description =
-    `Open vendor-neutral knowledge base of adversary Tactics and Techniques `
-    + `observed against on-chain assets. v0.1: ${s.tactics} Tactics, `
-    + `${s.techniques} Techniques, ${s.mitigations} Mitigations, `
-    + `${s.software} Software, ${s.actors} Threat Actors, `
-    + `${s.examples} worked examples, ${s.citations} citations, `
-    + `${s.relationships} relationships.`;
-  const indexPath = rel("index.html");
-  const indexHtml = await readFile(indexPath, "utf8");
-  const updated = indexHtml.replace(
-    /(<meta property="og:description" content=")[^"]+(")/,
-    `$1${description}$2`,
-  );
-  if (updated !== indexHtml) {
-    await writeFile(indexPath, updated);
-  }
-}
-
 await writeFile(
   rel("src/data/documents.ts"),
   `${banner}\nexport const documentBodies: Record<string, string> = ${JSON.stringify(documentBodies, null, 2)};\n`,
