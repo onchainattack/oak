@@ -2,6 +2,34 @@
 
 All notable changes to OAK are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and OAK's versioning is independent of any calendar cadence — minor versions ship when content reaches a coherent next state, not on a fixed schedule.
 
+## [Unreleased]
+
+Recorded here rather than held to the next version bump because one item is a **reclassification consumers may have stored** — the same reasoning `VERSIONING.md` applies to deprecations.
+
+### Changed — classification correction (read this first if you consume OAK classifications)
+
+**`examples/2026-04-kelpdai-rseth-bridge-layerzero-compromise.md` (KelpDAO / LayerZero, 2026-04-18, 116,500 rsETH / ~\$292M) is reclassified from `OAK-T10.001` to `OAK-T10.002.001`**, and its attribution is corrected from `pseudonymous` to **confirmed — DPRK TraderTraitor / UNC4899** (Mandiant, CrowdStrike, zeroShadow; named in LayerZero Labs' own incident report), now linked to `OAK-G01`.
+
+| Was | Read instead | Why |
+|---|---|---|
+| `OAK-T10.001` — Validator / Signer-Key Compromise | [`OAK-T10.002.001`](techniques/T10.002.001-off-chain-observer-source-event-forgery.md) — Off-chain Observer Source-Event Forgery, sub-shape (c) | **No signing key was stolen.** The DVN's attestation was cryptographically valid and produced by the legitimate key, over RPC data poisoned beneath it. The two classes have no overlapping mitigations: T10.001 points at key management, which was never in play here. |
+
+The original text was written in the v0.1 bulk release while the LayerZero investigation was open, with a **references section containing no URLs**, and was never revisited after the facts landed in May 2026. Full correction record, including three further corrected facts (source chain was Unichain; the Aave cascade was initiated by the attacker depositing unbacked rsETH as collateral rather than by existing positions repricing; several unsourced figures replaced or dropped), is in that file's `Discussion`, per `CORRECTIONS.md`. `OAK-T10.001` carries a reciprocal boundary note.
+
+### Changed — per-item maturity
+
+- **`OAK-T10.002.001` (Off-chain Observer Source-Event Forgery): `emerging` → `stable`** (2026-09-16). Five anchors across three sub-shapes — Across (2026-07, parse-level), Coreum–XRPL (2026-08, semantic), Chainflip (2026-09, semantic), KelpDAO / LayerZero (2026-04, infrastructure-level), Long (2026-09, infrastructure-level). Attestation leg carried by KelpDAO (LayerZero's two-part report, Chainalysis, Blockaid, plus Mandiant / CrowdStrike / zeroShadow attribution), read as in the T11.004 precedent. A third sub-shape, **(c) infrastructure-level source forgery**, is named on the Technique page: the observer's *data source* is subverted, so it parses and reasons correctly over events that never occurred. Recorded with the caveat that `stable` describes a settled class definition and **not** a mature detection surface — shape (c) has no reference implementation and its controls are integrator configuration decisions.
+
+### Added — worked examples (693 at 0.8.0 → 713)
+
+Includes the 2026-09-12 → 09-16 sweep: **Chainflip** (Tron memo append / duplicate refund, 736,442 USDT), **Safe strategy executor** (module `multicall` self-target → DELEGATECALL, ~\$7.8M), **BonfireSwap** (router `transfer` missing caller check, ~\$50K / 41 holders), **SpiralCom** (Uniswap V4 spot-price collateral, 10.7 ETH), **D'CENT App Wallet** (mechanism not established; opened on disclosure), **Long** (third-party RPC fabricated withdrawal events, ~\$118K).
+
+### Added — TAXONOMY-GAPS candidates
+
+- **T9.004.002 — Smart-Account Module Authority Escalation** (forward candidate). Three 2026 Safe anchors with three distinct root causes: SquidRouterModule (05-25), Gnosis Pay / Zodiac (06-01), Safe strategy executor (09-15). Detection surface is account configuration — enumerate enabled modules, treat each as full withdrawal authority — rather than source review.
+
+---
+
 ## [0.8.0] — 2026-09-07 — first content line since going out of draft
 
 The first release entry since 0.7.0. Content between 2026-06-24 and 2026-09-07 landed commit-by-commit without a CHANGELOG record; this entry backfills it, because one of those changes was a **deprecation whose upgrade path consumers had no documented way to find** (`VERSIONING.md` § *Backwards-compatible deprecation*, step 3). Nothing here is breaking: no OAK ID was renamed or removed, and the two deprecated IDs remain resolvable.
