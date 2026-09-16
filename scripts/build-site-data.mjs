@@ -2,6 +2,7 @@ import { readFile, readdir, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { marked } from "marked";
 import { TOP_LEVEL_DOCUMENTS } from "./site-documents.mjs";
+import { buildRouteMap, rewriteRelativeLinks } from "./site-links.mjs";
 
 const root = process.cwd();
 const rel = (...parts) => path.join(root, ...parts);
@@ -308,6 +309,12 @@ const citationCount = (await readFile(rel("citations.bib"), "utf8")).match(
   /@\w+\s*\{/g,
 )?.length ?? 0;
 
+// Relative `.md` hrefs in the markdown bodies must become site routes before
+// the HTML is embedded — see scripts/site-links.mjs for why this is shared with
+// the prerenderer rather than reimplemented.
+const routeForSource = buildRouteMap(oak, await listMarkdownFiles("investigations"));
+const unmappedMarkdown = new Set();
+
 const documentSpecs = [
   "README.md",
   ...TOP_LEVEL_DOCUMENTS.map((doc) => `${doc}.md`),
@@ -338,7 +345,12 @@ const documents = Object.fromEntries(
           title: titleFromMarkdown(markdown, docPath),
           toc: tocFromMarkdown(documentMeta.markdown),
           meta: documentMeta.meta,
-          html: linkifyOakIds(addHeadingIds(marked.parse(documentMeta.markdown))),
+          html: rewriteRelativeLinks(
+            linkifyOakIds(addHeadingIds(marked.parse(documentMeta.markdown))),
+            docPath,
+            routeForSource,
+            unmappedMarkdown,
+          ),
         },
       ];
     }),
@@ -492,3 +504,25 @@ await writeFile(
     ),
   ),
 );
+
+// A `.md` href that survived rewriting is a URL the site advertises and
+// robots.txt disallows — the exact shape Search Console reports as "blocked by
+// robots.txt". This is a hard failure rather than a warning: it was a warning
+// nobody read that let ~2,000 of them ship. A hit means either a gap in the
+// route map (scripts/site-links.mjs) or a genuinely broken in-repo link.
+if (unmappedMarkdown.size > 0) {
+  console.error(
+    `FAIL: ${unmappedMarkdown.size} unmapped .md link(s) would ship in embedded HTML.`,
+  );
+  for (const entry of [...unmappedMarkdown].sort().slice(0, 20)) {
+    console.error(`  ${entry}`);
+  }
+  if (unmappedMarkdown.size > 20) {
+    console.error(`  … and ${unmappedMarkdown.size - 20} more`);
+  }
+  console.error(
+    "Fix the link, or register the source in buildRouteMap() in scripts/site-links.mjs.",
+  );
+  process.exit(1);
+}
+console.log("OK: no raw .md links left in embedded document HTML");

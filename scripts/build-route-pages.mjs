@@ -1,6 +1,7 @@
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TOP_LEVEL_DOCUMENTS } from "./site-documents.mjs";
+import { buildRouteMap, rewriteRelativeLinks } from "./site-links.mjs";
 
 const root = process.cwd();
 const baseUrl = "https://onchainattack.org";
@@ -154,55 +155,14 @@ const documentRender = JSON.parse(
 const exampleSlug = (file) => file.replace(/\.md$/, "");
 const exampleRoute = (file) => `/document/examples/${exampleSlug(file)}/`;
 
-// Repo-relative source path → canonical site route. Drives href rewriting so
-// the snapshot links to the route surface rather than to raw `.md` files.
-const routeForSource = new Map();
-const registerSource = (sourceFile, target) => {
-  if (sourceFile) routeForSource.set(sourceFile.replace(/^\.\//, ""), target);
-};
+// Repo-relative source path → canonical site route. Shared with
+// build-site-data.mjs so the prerendered pages and the SPA-embedded HTML
+// cannot drift apart — see scripts/site-links.mjs.
+const routeForSource = buildRouteMap(oak, investigationFiles);
+const unmappedMarkdown = new Set();
 
-for (const tactic of oak.tactics ?? []) registerSource(tactic.source_file, `/tactic/${tactic.id}/`);
-for (const technique of oak.techniques ?? []) registerSource(technique.source_file, `/technique/${technique.id}/`);
-for (const mitigation of oak.mitigations ?? []) registerSource(mitigation.source_file, `/mitigation/${mitigation.id}/`);
-for (const sw of oak.software ?? []) registerSource(sw.source_file, `/software/${sw.id}/`);
-for (const group of oak.groups ?? []) registerSource(group.source_file, `/group/${group.id}/`);
-for (const example of oak.examples ?? []) {
-  if (example.file) registerSource(`examples/${example.file}`, exampleRoute(example.file));
-}
-for (const dataSource of oak.data_sources ?? oak.dataSources ?? []) {
-  if (!dataSource.source_file) continue;
-  const slug = path.basename(dataSource.source_file).replace(/\.md$/, "");
-  registerSource(dataSource.source_file, `/document/data-sources/${slug}/`);
-}
-for (const doc of TOP_LEVEL_DOCUMENTS) registerSource(`${doc}.md`, `/document/${doc}/`);
-for (const file of investigationFiles) {
-  registerSource(`investigations/${file}`, `/document/investigations/${file.replace(/\.md$/, "")}/`);
-}
-registerSource("README.md", "/");
-
-const ABSOLUTE_HREF = /^(https?:|mailto:|tel:|data:|#|\/)/;
-
-const resolveRepoPath = (docPath, href) => {
-  const base = docPath.includes("/") ? docPath.slice(0, docPath.lastIndexOf("/")) : "";
-  return path.posix.normalize(path.posix.join(base, href)).replace(/^(\.\/|\/)+/, "");
-};
-
-// Markdown bodies link to sibling files (`../techniques/T5.009-….md`). Relative
-// hrefs would resolve against the route directory, so every in-repo link is
-// rewritten to its route — or, failing that, anchored at the site root where
-// copy-static-content.mjs places the raw file.
 const rewriteLinks = (html, docPath) =>
-  html.replace(/\s(href|src)="([^"]*)"/g, (match, attr, value) => {
-    if (!value || ABSOLUTE_HREF.test(value)) return match;
-    const [target, hash] = value.split("#");
-    if (!target) return match;
-    const resolved = resolveRepoPath(docPath, target);
-    const mapped = routeForSource.get(resolved);
-    const anchored = resolved.startsWith("public/")
-      ? `/${resolved.slice("public/".length)}`
-      : `/${resolved}`;
-    return ` ${attr}="${mapped ?? anchored}${hash ? `#${hash}` : ""}"`;
-  });
+  rewriteRelativeLinks(html, docPath, routeForSource, unmappedMarkdown);
 
 const linkList = (links) =>
   `<ul class="pr-list">${links
