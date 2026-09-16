@@ -57,6 +57,7 @@ Without a cadence, an open framework drifts. Maintainer attention is bursty; com
 - `tools/build_backlog.py` — prioritized contributor backlog regenerated from corpus state
 - `tools/check_targets.py` — per-Tactic floor enforcement
 - `tools/check_known.py` — pre-flight duplicate check
+- `tools/check_sourcing.py` — flags examples that cite nothing (complement to `check_citations.py`, which only validates keys that are present)
 - `tools/source_diversity.py` — citation-publisher distribution audit
 - `COVERAGE-TARGETS.md` — per-Tactic minimums
 - `VERSIONING.md` — schema / content / per-item maturity model
