@@ -45,11 +45,22 @@ Output schema (v2):
          "source_file": "..."}
       ],
       "relationships": [
-        {"type": "mitigates",  "source": "OAK-MNN",  "target": "OAK-Tn.NNN"},
-        {"type": "uses",       "source": "OAK-SNN",  "target": "OAK-Tn.NNN"},
-        {"type": "uses",       "source": "OAK-Gnn",  "target": "OAK-SNN"},
-        ...
+        {"type": "mitigates",       "source": "OAK-MNN",  "target": "OAK-Tn.NNN"},
+        {"type": "uses",            "source": "OAK-SNN",  "target": "OAK-Tn.NNN"},
+        {"type": "uses",            "source": "OAK-Gnn",  "target": "OAK-SNN"},
+        {"type": "demonstrates",    "source": "<example-slug>", "target": "OAK-Tn.NNN"},
+        {"type": "belongs-to",      "source": "OAK-Tn.NNN", "target": "OAK-Tn"},
+        {"type": "subtechnique-of", "source": "OAK-Tn.NNN.NNN", "target": "OAK-Tn.NNN"},
+        {"type": "attributed-to",   "source": "<example-slug>", "target": "OAK-Gnn"}
       ]
+
+      The graph is emitted in full: `demonstrates` (worked example anchors a
+      Technique) is by far the largest edge class and is the corpus's primary
+      relation. Until schema 2.1 only `mitigates` and the two `uses` forms were
+      emitted, so the published graph carried 478 of ~2,600 edges and omitted
+      every incident-to-Technique link — the relation OAK exists to express.
+      Additive per VERSIONING.md ("Adding new relationships between existing
+      objects" is explicitly non-breaking); no existing edge changed shape.
     }
 
 Tactics, Techniques retain v1 shape under v2 to preserve consumer compat.
@@ -512,6 +523,61 @@ def main(argv: list[str]) -> int:
         for gid in s.used_by_groups:
             relationships.append({"type": "uses", "source": gid, "target": s.id})
 
+    # Worked example → Technique. The largest edge class in the corpus and the
+    # one consumers actually want: "what incidents anchor this Technique?".
+    # A handful of examples map to a bare Tactic where no Technique fits; those
+    # are real edges to the Tactic object, not dropped references. Anything left
+    # over is a TAXONOMY-GAPS candidate ID with no object to point at yet — it is
+    # reported rather than silently discarded, because a disappearing edge is
+    # indistinguishable from a typo.
+    technique_ids = {t.id for t in techniques}
+    tactic_ids = {t.id for t in tactics}
+    unresolved: dict[str, int] = {}
+    for ex in examples:
+        for tid in ex.techniques:
+            if tid in technique_ids or tid in tactic_ids:
+                relationships.append(
+                    {"type": "demonstrates", "source": ex.id, "target": tid}
+                )
+            else:
+                unresolved[tid] = unresolved.get(tid, 0) + 1
+
+    # Technique → parent Tactic, and sub-Technique → parent Technique. Both are
+    # derivable by a consumer from `parent_tactics` and the ID shape, but a
+    # graph that requires the consumer to re-derive its own spine is not a
+    # graph.
+    for t in techniques:
+        for tac_id in t.parent_tactics:
+            relationships.append(
+                {"type": "belongs-to", "source": t.id, "target": tac_id}
+            )
+        parent_id = t.id.rsplit(".", 1)[0]
+        if t.id.count(".") == 2 and parent_id in technique_ids:
+            relationships.append(
+                {"type": "subtechnique-of", "source": t.id, "target": parent_id}
+            )
+
+    # Worked example → Threat Actor, read from each actor's `## Observed
+    # Examples` section (the authoritative list; check_backlinks.py enforces it
+    # bidirectionally). Example front-matter carries an attribution *strength*,
+    # not an actor ID, so this is the only place the edge exists.
+    example_ids = {ex.id for ex in examples}
+    for g in groups:
+        src = root / g.source_file if g.source_file else None
+        if not src or not src.is_file():
+            continue
+        body = src.read_text(encoding="utf-8")
+        mo = re.search(r"^## Observed Examples\s*$(.*?)(^## |\Z)", body,
+                       re.S | re.M)
+        if not mo:
+            continue
+        for fname in sorted(set(re.findall(r"examples/([A-Za-z0-9._\-]+)\.md",
+                                           mo.group(1)))):
+            if fname in example_ids:
+                relationships.append(
+                    {"type": "attributed-to", "source": fname, "target": g.id}
+                )
+
     # source_file is emitted repo-relative. Absolute paths made the published
     # export depend on where it was built (a local checkout vs. the CI runner's
     # /home/runner/work/... tree), which is noise for consumers and makes two
@@ -557,6 +623,14 @@ def main(argv: list[str]) -> int:
         json.dumps(document, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
+    if unresolved:
+        total = sum(unresolved.values())
+        names = ", ".join(sorted(unresolved))
+        print(
+            f"NOTE: {total} example Technique reference(s) across "
+            f"{len(unresolved)} candidate ID(s) have no object to link to "
+            f"(TAXONOMY-GAPS candidates): {names}"
+        )
     print(
         f"OK: wrote {args.out} — {len(tactics)} tactics, {len(techniques)} techniques, "
         f"{len(mitigations)} mitigations, {len(software)} software, "

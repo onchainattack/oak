@@ -19,7 +19,15 @@ Schema mapping:
                   OR tool (if type in tool|drainer-kit|mev-bot|vanity-gen)
 - OAK-Gnn       → intrusion-set
 - OAK-DS-NN     → x-oak-data-source (custom)
+- <example-slug> → x-oak-incident (custom; the 713 worked examples)
 - relationships → relationship SROs
+
+Worked examples were absent from the bundle until schema 2.1, so a consumer
+pulling the STIX export saw a taxonomy with no evidence base — no incident
+carried a link to the Technique it anchors. They are emitted as a custom SDO
+rather than the STIX 2.1 `incident` type, which is a reserved stub with no
+defined properties; `x-oak-incident` matches the existing x-oak-tactic /
+x-oak-data-source convention.
 
 UUIDs are derived deterministically from the OAK ID via uuid5(oak_namespace, oak_id),
 so re-running this script produces stable STIX IDs across regenerations.
@@ -210,6 +218,27 @@ def datasource_to_sdo(ds_id: str, name: str, description: str) -> dict:
     }
 
 
+def example_to_sdo(ex: dict) -> dict:
+    refs = [
+        {
+            "source_name": "oak",
+            "external_id": ex["id"],
+            "url": f"https://onchainattack.org/document/examples/{ex['id']}/",
+        }
+    ]
+    return {
+        "type": "x-oak-incident",
+        "spec_version": "2.1",
+        "id": stix_id("x-oak-incident", ex["id"]),
+        "created": NOW,
+        "modified": NOW,
+        "name": ex.get("title") or ex["id"],
+        "x_oak_date_prefix": ex.get("date_prefix"),
+        "x_oak_attribution": ex.get("attribution"),
+        "external_references": refs,
+    }
+
+
 def relationship_sro(rel_type: str, source_oak_id: str, target_oak_id: str,
                      source_stix: str, target_stix: str) -> dict:
     return {
@@ -313,6 +342,12 @@ def main(argv: list[str]) -> int:
                 sdo = datasource_to_sdo(ds["id"], ds["name"], ds["description"])
                 objects.append(sdo)
                 oak_to_stix[ds["id"]] = sdo["id"]
+
+    # Worked examples (incidents)
+    for ex in oak.get("examples", []):
+        sdo = example_to_sdo(ex)
+        objects.append(sdo)
+        oak_to_stix[ex["id"]] = sdo["id"]
 
     # Relationships
     skipped_rels = 0

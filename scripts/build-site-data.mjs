@@ -305,7 +305,15 @@ const coverageRows = coverageText
     notes,
   }));
 
-const citationCount = (await readFile(rel("citations.bib"), "utf8")).match(
+// "Citations" means references the corpus actually cites, not the size of
+// citations.bib. The two differ in both directions: 757 keys are documented
+// inline in a page's own references section and never enter the bib, and some
+// bib entries are not yet cited anywhere. Counting the bib file understated the
+// evidence base and labelled it as something it was not. Same key regex and the
+// same definition of "cited" as tools/check_citations.py, so the site number
+// and the validator's number agree.
+const CITATION_KEY_RE = /`\[([a-z][a-z0-9_]{4,})\]`/g;
+const bibEntryCount = (await readFile(rel("citations.bib"), "utf8")).match(
   /@\w+\s*\{/g,
 )?.length ?? 0;
 
@@ -327,6 +335,13 @@ const documentSpecs = [
   ...(await listMarkdownFiles("mitigations")).map((file) => `mitigations/${file}`),
   ...(await listMarkdownFiles("software")).map((file) => `software/${file}`),
 ];
+
+const citedKeys = new Set();
+for (const docPath of documentSpecs) {
+  const body = await readFile(rel(docPath), "utf8");
+  for (const [, key] of body.matchAll(CITATION_KEY_RE)) citedKeys.add(key);
+}
+const citationCount = citedKeys.size;
 
 const specDocPaths = (await listSpecFiles("specs")).map(
   (file) => `specs/${file}`,
@@ -432,6 +447,7 @@ const siteData = {
     examples: examples.length,
     actors: actors.length,
     citations: citationCount,
+    bibEntries: bibEntryCount,
     coverageRows: coverageRows.length,
     relationships: relationships.length,
     documents: Object.keys(documents).length,
