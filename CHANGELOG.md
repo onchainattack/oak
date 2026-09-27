@@ -18,9 +18,12 @@ The original text was written in the v0.1 bulk release while the LayerZero inves
 
 ### Changed — per-item maturity
 
+- **`OAK-T15.001` (Social Engineering of Operator Personnel): `emerging` → `stable`** (2026-09-27). Anchors were long sufficient (Ronin, DMM Bitcoin, Drift for the fake-recruiter sub-shape alone); the missing leg — multi-source attestation of the pattern — is supplied by the 2026-09-18 WaterPlum joint advisory. Scope unchanged.
 - **`OAK-T10.002.001` (Off-chain Observer Source-Event Forgery): `emerging` → `stable`** (2026-09-16). Five anchors across three sub-shapes — Across (2026-07, parse-level), Coreum–XRPL (2026-08, semantic), Chainflip (2026-09, semantic), KelpDAO / LayerZero (2026-04, infrastructure-level), Long (2026-09, infrastructure-level). Attestation leg carried by KelpDAO (LayerZero's two-part report, Chainalysis, Blockaid, plus Mandiant / CrowdStrike / zeroShadow attribution), read as in the T11.004 precedent. A third sub-shape, **(c) infrastructure-level source forgery**, is named on the Technique page: the observer's *data source* is subverted, so it parses and reasons correctly over events that never occurred. Recorded with the caveat that `stable` describes a settled class definition and **not** a mature detection surface — shape (c) has no reference implementation and its controls are integrator configuration decisions.
 
-### Added — worked examples (693 at 0.8.0 → 713)
+### Added — worked examples (693 at 0.8.0 → 726)
+
+Includes the 2026-09-16 → 09-27 sweep: **Bitget** (wallet backend spoofed transfer data into the exchange's own approval process, \$351.6M), **Neutron proposal 9** (bought vote → `MsgUpdateAdmin` → Astroport / Drop drained, ~\$9.4M), **SingularityNET bridge** (authorizer key; signature did not bind recipient), **Nostra**, **Duelbits**, **Payy**, **Limit Break PP V2**, **Meter Passport**, **MultiversX**, **Flamincome**, **DoinGud**, **Likwid**; and the **WaterPlum / Contagious Interview** joint attribution (NPA, NCO, FBI, DC3, ASD's ACSC, BND, BfV — ≥30,000 PCs, >7,000 wallets, ≥¥1.7B).
 
 Includes the 2026-09-12 → 09-16 sweep: **Chainflip** (Tron memo append / duplicate refund, 736,442 USDT), **Safe strategy executor** (module `multicall` self-target → DELEGATECALL, ~\$7.8M), **BonfireSwap** (router `transfer` missing caller check, ~\$50K / 41 holders), **SpiralCom** (Uniswap V4 spot-price collateral, 10.7 ETH), **D'CENT App Wallet** (mechanism not established; opened on disclosure), **Long** (third-party RPC fabricated withdrawal events, ~\$118K).
 
