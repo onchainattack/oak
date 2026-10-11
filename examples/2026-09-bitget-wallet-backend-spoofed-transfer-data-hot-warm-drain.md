@@ -4,7 +4,7 @@
 
 **OAK Techniques observed:** **OAK-T11.001** (Third-Party Signing / Custody Vendor Compromise — *primary, operator-stated mechanism, recorded in the in-house sub-vector*. Bitget's account is that attackers **"compromised a critical backend system within our wallet infrastructure, used it to spoof transaction data, and triggered our authorization process."** That is the T11.001 shape exactly — **signatures valid, intent not** — with the substitution point sitting in the operator's own wallet backend rather than in a vendor's signing UI. The corpus already stretches T11.001 past its title for the Radiant developer-laptop case; Bitget is the second such stretch and is noted as such below. See [`techniques/T11.001-third-party-signing-vendor-compromise.md`](../techniques/T11.001-third-party-signing-vendor-compromise.md)). **OAK-T11.011** (Multi-chain Key-store Co-location — *structural, inferred*: one intrusion reached outflows on seven chains through one authorisation path; here the co-located thing is the approval pipeline, not the keys).
 
-**Explicitly not OAK-T10.001-style key theft.** Bitget's CEO states **no private keys were stolen and no signers were bribed**; the signing layer operated normally on falsified inputs. **The initial access vector is undisclosed** — OAK does not assign T15.001 / T15.003 / T15.004 until the Mandiant / SlowMist investigation says how the backend was reached.
+**Explicitly not OAK-T10.001-style key theft.** Bitget's CEO states **no private keys were stolen and no signers were bribed**; the signing layer operated normally on falsified inputs. **Initial access, per SlowMist's preliminary findings (2026-09-30):** the earliest malicious activity was **2026-08-31**, when attackers exploited a **zero-day in a third-party security product node** to enter the service environment. In the early hours of 09-25 (UTC+8) they used **compromised internal accounts** to reach **another security product's management platform**, uploaded custom tools in batches, and used them to **forge withdrawal parameters** that triggered the transfers. OAK now assigns **OAK-T15.004** (Operator Credential Compromise — *preliminary*) for the internal-account step; the zero-day product is unnamed and gets no Technique until it is. The third party in this chain is a **security product on the path to the approval system**, not a signing vendor; that bears on the T11.001 scope question below and in TAXONOMY-GAPS.
 
 **Attribution:** **inferred-weak** — operator-suggested, not established. Bitget's CEO Gracy Chen said the method was *"highly consistent with known patterns of North Korean hacker organizations,"* citing IP behaviour and on-chain analysis; no group was named and no government or independent forensic firm has published an attribution. Bloomberg reports the incident as pushing the DPRK-attributed 2026 total past \$1B, which is a reporting framing, not a finding. Investigators: **Mandiant** and **SlowMist**.
 
@@ -20,7 +20,8 @@ Cold storage was untouched. Withdrawals were paused; deposits and trading contin
 
 | When | Event | OAK ref |
 |---|---|---|
-| undisclosed | Attacker gains access to a wallet-backend system | (entry vector — undisclosed) |
+| 2026-08-31 | Zero-day in a third-party security product node exploited; foothold in service environment (SlowMist, preliminary) | (entry vector) |
+| 2026-09-24 late (09-25 early UTC+8) | Compromised internal accounts used on a second security product's management platform; tools uploaded; withdrawal parameters forged | **T15.004** |
 | 2026-09-24 ~18:31 | Monitoring flags unauthorized outflows from hot and warm wallets | **T11.001 — spoofed data into honest approval path** |
 | 2026-09-24 | Outflows across ETH, XRPL, Arbitrum, Avalanche, Optimism, BSC, Base | (extraction) |
 | 2026-09-25 | Bitget confirms \$351.6M; states no keys stolen; withdrawals suspended; protection fund >\$464M | (operator disclosure) |
@@ -34,6 +35,7 @@ Cold storage was untouched. Withdrawals were paused; deposits and trading contin
 
 ## Public references
 
+- `[techflowslowmistbitget2026]` — TechFlow, "SlowMist Releases Update on Bitget Incident Investigation: Malicious Activity Traced to Late August, Involves Third-Party Security Product" (2026-09-30): <https://www.techflowpost.com/en-US/newsletter/138358>
 - `[coindeskbitget2026]` — CoinDesk, "Bitget's \$352 million hack happened via spoofed transfers, not private keys, CEO Gracy Chen says" (2026-09-25): <https://www.coindesk.com/markets/2026/09/25/bitget-s-usd351-million-hack-happened-via-spoofed-transfers-not-private-keys-ceo-gray-chen-says>
 - `[thehackernewsbitget2026]` — The Hacker News, "Bitget Says Suspected North Korean Hackers Stole \$351.6M After Backend Compromise": <https://thehackernews.com/2026/09/bitget-says-suspected-north-korean.html>
 - `[bloombergbitget2026]` — Bloomberg, "Crypto Theft by North Korea Tops \$1 Billion in 2026 After Bitget Attack" (2026-09-25): <https://www.bloomberg.com/news/articles/2026-09-25/bitget-hack-pushes-north-korean-crypto-haul-past-1-billion>
