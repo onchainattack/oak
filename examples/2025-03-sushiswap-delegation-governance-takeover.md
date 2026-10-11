@@ -40,6 +40,5 @@ $0 — the governance treasury-drain attempt was prevented through community cou
 - SushiSwap DAO on-chain governance record — proposal submissions, voting outcomes, and delegation events (via Governor contract event logs)
 - Cross-reference: T16.003 at `techniques/T16.003-delegation-cluster-vote-takeover.md`
 - Cross-reference: `examples/2024-07-compound-vote-takeover.md` — Compound DAO Proposal 289 (canonical T16.003 prevented-attempt anchor)
-- Cross-reference: `examples/2023-2024-balancer-vebal-delegation-takeover.md` — Balancer veBAL delegation-cluster vote takeover (economic-incentive-capture sub-shape)
 - `[compoundproposal289_2024]` — Compound DAO on-chain proposal record (2024)
 - `[tallygovernancecompound2024]` — Tally governance-analytics methodology and delegation-graph surveillance

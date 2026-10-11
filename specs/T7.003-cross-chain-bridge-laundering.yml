@@ -91,7 +91,6 @@ test_fixtures:
   positive:
     - 2025-02-bybit-thorchain-laundering    # canonical $1.4B / 10 days / $12M fees
     - 2022-03-ronin-bridge                  # pre-THORChain-dominance Lazarus T7.003
-    - 2022-06-harmony-horizon               # Railgun + chain-hopping
     - 2024-07-wazirx                        # OAK-G01 multi-chain laundering
   negative:
     - "Cross-chain DEX aggregator routing organic users — no illicit-cluster source attribution"

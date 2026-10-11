@@ -50,7 +50,6 @@ Operationally, Lazarus's modern crypto-theft playbook combines social engineerin
 - [`examples/2020-09-kucoin.md`](../examples/2020-09-kucoin.md) — KuCoin exchange hot-wallet theft
 - [`examples/2021-08-liquid-global.md`](../examples/2021-08-liquid-global.md) — Liquid Global warm-wallet compromise (~\$91M); inferred-strong G01 attribution with G08 (BlueNoroff) macOS-tooling fingerprint overlap.
 - [`examples/2021-12-ascendex.md`](../examples/2021-12-ascendex.md) — AscendEX hot-wallet compromise (~\$77.7M) across ETH/BSC/Polygon; inferred-strong G01 attribution.
-- [`examples/2022-06-harmony-horizon.md`](../examples/2022-06-harmony-horizon.md) — Harmony Horizon Bridge
 - [`examples/2023-09-coinex.md`](../examples/2023-09-coinex.md) — CoinEx hot-wallet theft
 - [`examples/2023-09-stake-com.md`](../examples/2023-09-stake-com.md) — Stake.com hot-wallet theft
 - [`examples/2023-11-htx-heco-bridge.md`](../examples/2023-11-htx-heco-bridge.md) — HTX hot wallet + HECO Bridge
@@ -74,9 +73,7 @@ Operationally, Lazarus's modern crypto-theft playbook combines social engineerin
 - [`examples/2019-05-binance-hot-wallet.md`](../examples/2019-05-binance-hot-wallet.md) — Binance hot-wallet compromise; canonical pre-Bybit DPRK exchange-vendor compromise (~$40M)
 - [`examples/2020-2023-lazarus-group-200m-laundering.md`](../examples/2020-2023-lazarus-group-200m-laundering.md) — Lazarus Group $200M fiat cash-out from 25+ hacks over 2020-2023
 - [`examples/2022-06-harmony-horizon-bridge.md`](../examples/2022-06-harmony-horizon-bridge.md) — Harmony Horizon Bridge light-client verification bypass; Lazarus-attributed (~$100M)
-- [`examples/2022-06-harmony-horizon-economic-incentive-gap.md`](../examples/2022-06-harmony-horizon-economic-incentive-gap.md) — Harmony Horizon Bridge validator economic-incentive gap; Lazarus-attributed (~$100M)
 - [`examples/2023-07-alphapo.md`](../examples/2023-07-alphapo.md) — Alphapo payment-processor hot-wallet compromise (~$60M+)
-- [`examples/2023-2025-dprk-post-tornado-cash-aggregator-laundering.md`](../examples/2023-2025-dprk-post-tornado-cash-aggregator-laundering.md) — DPRK post-Tornado-Cash aggregator laundering (2023-2025)
 - [`examples/2024-01-coinspaid-lazarus-endpoint-compromise.md`](../examples/2024-01-coinspaid-lazarus-endpoint-compromise.md) — CoinsPaid Lazarus endpoint compromise (January 2024)
 - [`examples/2024-01-dprk-chain-hop-laundering.md`](../examples/2024-01-dprk-chain-hop-laundering.md) — DPRK chain-hop laundering pattern (January 2024)
 - [`examples/2024-08-dprk-it-worker-infiltration.md`](../examples/2024-08-dprk-it-worker-infiltration.md) — DPRK IT worker infiltration into crypto companies (August 2024)

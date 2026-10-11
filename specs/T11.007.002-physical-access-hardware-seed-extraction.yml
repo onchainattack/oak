@@ -168,7 +168,6 @@ test_fixtures:
   positive:
     - 2020-01-trezor-kraken-rdp-downgrade                                       # Trezor One/Model T voltage-glitch RDP downgrade (~15 min, ~$500, $0 loss)
     - 2019-08-wallet-fail-trezor-keepkey-35c3-disclosure                         # Wallet.fail 35C3 multi-vendor hardware-side seed extraction demonstration
-    - 2023-01-ledger-donjon-side-channel                                         # Ledger Donjon side-channel research (laboratory-grade attack on secure element)
   negative:
     - "Hardware wallet with EAL6+ certified secure element AND BIP39 passphrase enabled with >50 bits entropy — seed extraction requires laboratory equipment AND passphrase brute-force"
     - "Hardware wallet that has never left the user's possession, stored in a personal safe, with no international travel history — minimal physical-access opportunity"

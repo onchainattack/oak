@@ -1,6 +1,7 @@
 # DeFi yield-strategy laundering via liquidity-provision and staking-as-rail — multi-chain — 2023–2025
 
-**Loss:** structural — DeFi yield-strategy laundering is a *cover volume* rather than a *dollar-extraction* surface. Illicit proceeds deposited into DeFi yield strategies (liquidity provision, staking, lending, yield aggregators) re-emerge as yield-bearing LP tokens or receipt tokens whose on-chain provenance terminates at the protocol contract rather than at the illicit source. The laundering volume is not directly extractable as a single loss figure but is observable at the cohort level through provider-side cross-chain forensic graphs. Per Chainalysis 2024–2025 reporting, DeFi-protocol deposit-side illicit flows represent a growing share of post-Tornado Cash sanctions laundering volume, with yield-bearing receipt tokens substituting for mixer deposit/withdrawal cycles as the canonical obfuscation primitive.
+**Loss:** structural — DeFi yield-strategy laundering is a *cover volume* rather than a *dollar-extraction* surface. Illicit proceeds deposited into DeFi yield strategies (liquidity provision, staking, lending, yield aggregators) re-emerge as yield-bearing LP tokens or receipt tokens whose on-chain provenance terminates at the protocol contract rather than at the illicit source. The laundering volume is not directly extractable as a single loss figure but is observable at the cohort level through provider-side cross-chain forensic graphs. Chainalysis's 2024 money-laundering report (covering 2023) says illicit funds sent to DeFi grew but attributes that mainly to DeFi's overall growth, and states that DeFi's transparency generally makes it a poor choice for obfuscating fund movement `[chainalysis2024ml]`. The claim that yield-bearing receipt tokens have substituted for mixers as the canonical obfuscation primitive is this file's hypothesis about the mechanism, not a finding of the cited source.
+**Corrected 2026-10-11:** the file asserted that Chainalysis documents a dominant post-Tornado-Cash shift to DeFi-mediated laundering; the cited Chainalysis report says otherwise (mixer inflows fell from \$1.0B to \$504.3M, bridge inflows rose, DeFi growth tracked overall DeFi growth), so the trend claims, the "statistically significant shift" claim and the unsourced TRM/Elliptic references were removed.
 
 **OAK Techniques observed:** **OAK-T7.006** (DeFi Yield Strategy Laundering — primary; the DeFi protocol's deposit function converts illicit base-asset inflows into legitimate-protocol receipt tokens, whose on-chain provenance terminates at the protocol contract, and whose subsequent transfer/sale on secondary markets carries the protocol's legitimacy stamp rather than the original inflow's risk profile). **OAK-T7.001** (Mixer-Routed Hop — structurally adjacent; the yield-strategy deposit serves the same obfuscation function as a mixer deposit: break the direct on-chain link between illicit source and clean output. The difference is that a mixer returns the *same asset* after a delay, while a yield strategy returns a *different asset* (LP token, receipt token, staking derivative) that carries the protocol's own provenance). **OAK-T7.003** (Cross-Chain Bridge Laundering — frequently chained; illicit proceeds are bridged to a chain with deep DeFi yield infrastructure before entering the yield strategy, adding a chain-hop to the already-effective receipt-token obfuscation layer) + **OAK-T7.007** (DEX-Aggregator Routing Laundering).
 
@@ -22,9 +23,9 @@ The laundering sequence is:
 
 4. **The obfuscation is amplified by protocol complexity.** Depositing into a multi-hop yield strategy (e.g., deposit USDC → Curve LP → Convex staking → cvxCRV) produces a receipt token four protocol-hops removed from the illicit inflow. Each hop adds a legitimate-protocol provenance layer that forensic tools must unwind.
 
-The class grew in operational relevance after the Tornado Cash sanctions (OFAC SDN designation, August 8, 2022), which narrowed the mixer-availability surface (T7.001) and drove laundering-cohort migration toward DeFi yield strategies and cross-chain swap protocols (T7.003) as substitute obfuscation rails. Per Chainalysis's 2024–2025 crypto-crime reporting, the post-Tornado-Cash shift toward DeFi-protocol-mediated laundering is the dominant trend in on-chain laundering infrastructure through the 2024–2025 active window.
+The class grew in operational relevance after the Tornado Cash sanctions (OFAC SDN designation, August 8, 2022), which narrowed the mixer-availability surface (T7.001) and drove laundering-cohort migration toward DeFi yield strategies and cross-chain swap protocols (T7.003) as substitute obfuscation rails. Chainalysis's 2024 report instead records mixer inflows falling from \$1.0B (2022) to \$504.3M (2023) and bridge-protocol inflows rising from \$312.2M to \$743.8M, with illicit-to-DeFi flows growing in line with DeFi overall `[chainalysis2024ml]`; it does not identify yield-strategy deposits as the dominant substitute.
 
-Specific protocol-level cases are not named at v0.1 because no single protocol is the primary T7.006 surface — the surface is structural to the DeFi deposit-and-receipt architecture rather than concentrated at any specific protocol. Forensic-provider reporting documents the pattern at the cohort level across major DeFi protocols on Ethereum, Arbitrum, BNB Chain, and Solana.
+Specific protocol-level cases are not named at v0.1 because no single protocol is the primary T7.006 surface — the surface is structural to the DeFi deposit-and-receipt architecture rather than concentrated at any specific protocol. No cited source documents the receipt-token pattern at the cohort level on specific chains; that is unverified.
 
 ## Timeline
 
@@ -32,8 +33,7 @@ Specific protocol-level cases are not named at v0.1 because no single protocol i
 |---|---|---|
 | 2021–2022 | DeFi yield infrastructure matures (Curve, Convex, Yearn, Aave, Compound, Lido) | (surface deployment) |
 | 2022-08-08 | Tornado Cash OFAC SDN designation narrows T7.001 mixer surface | (laundering-rail shift trigger) |
-| 2022-Q4 to 2023 | Documented shift of laundering flows from mixers to DeFi yield strategies and cross-chain swap protocols | **T7.006 cohort onset** |
-| 2023–2025 | DeFi yield-strategy laundering is an established, steady-state laundering rail alongside T7.003 (cross-chain bridge) and T7.005 (privacy-chain hops) | **T7.006 steady state** |
+| 2023 | Chainalysis records mixer inflows down to \$504.3M and bridge inflows up to \$743.8M; DeFi yield-strategy laundering as a distinct trend is not documented in the source `[chainalysis2024ml]` | (context) |
 
 ## What defenders observed
 
@@ -45,25 +45,12 @@ Specific protocol-level cases are not named at v0.1 because no single protocol i
 
 - **T7.006 is the structural companion to T7.001 and T7.003 in the post-Tornado-Cash laundering ecosystem.** T7.001 (mixer), T7.003 (cross-chain bridge), and T7.006 (DeFi yield strategy) are the three dominant post-2022 laundering rails. T7.005 (privacy-chain hops) is the fourth but operates at a different defender-capability tier.
 - **No single named incident is canonical for T7.006 because the surface is architectural, not incident-concentrated.** Contributors writing future T7.006 examples should resist the temptation to name a specific protocol as *the* T7.006 surface — the class is about the deposit-and-receipt architecture that all DeFi protocols share, and naming a single protocol would misrepresent the structural nature of the surface.
-- **The Tornado Cash sanctions date (2022-08-08) is the key temporal anchor for T7.006 cohort analysis.** Laundering-flow composition before and after that date shows a statistically significant shift from mixer-dominated to DeFi-and-bridge-dominated obfuscation rails.
+- **The Tornado Cash sanctions date (2022-08-08) is the key temporal anchor for T7.006 cohort analysis.** The cited Chainalysis data shows mixer inflows roughly halving between 2022 and 2023 and bridge inflows more than doubling `[chainalysis2024ml]`; no source cited here shows a statistically significant shift toward DeFi yield strategies.
 
 ## Public references
 
-- Chainalysis. *"2024 Crypto Crime Report"* and *"2024 Money Laundering Report"* — DeFi-protocol-mediated laundering as post-Tornado-Cash trend.
-- TRM Labs. *"DeFi Laundering Typologies."* 2023–2025 reporting.
-- Elliptic. *"Cross-Chain and DeFi Laundering."* 2023–2025.
+- `[chainalysis2024ml]` — Chainalysis, "2024 Crypto Money Laundering" report (2024-02-15): <https://www.chainalysis.com/blog/2024-crypto-money-laundering/>
 - Cross-reference: T7.006 (DeFi Yield Strategy Laundering) at `techniques/T7.006-defi-yield-strategy-laundering.md`.
 - Cross-reference: T7.001 (Mixer-Routed Hop) at `techniques/T7.001-mixer-routed-hop.md`.
 - Cross-reference: T7.003 (Cross-Chain Bridge Laundering) at `techniques/T7.003-cross-chain-bridge-laundering.md`.
 - Cross-reference: T7.005 (Privacy-Chain Hops) at `techniques/T7.005-privacy-chain-hops.md`.
-
-### Proposed new BibTeX entries
-
-```bibtex
-@misc{chainalysis2024defilaundering,
-  author = {{Chainalysis}},
-  title = {DeFi-Protocol-Mediated Laundering in the Post-Tornado-Cash Era — 2024 Crypto Crime Report},
-  year = {2024},
-  note = {Documents the shift from mixer-dominated to DeFi-and-bridge-dominated laundering flows after the 2022-08-08 Tornado Cash sanctions}
-}
-```

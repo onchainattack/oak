@@ -151,7 +151,6 @@ output_alert: [oak_technique, detection_path, severity, chain,
 test_fixtures:
   positive:
     - 2022-04-icloud-metamask-seed-phrase-cohort                                 # iCloud-backup MetaMask (~$650K Iacovone case; ~$2.5M+ broader cohort)
-    - 2022-2024-android-google-drive-wallet-backup-cohort                         # Android Google-Drive wallet-backup seed exfiltration
   negative:
     - "Wallet app that sets NSURLIsExcludedFromBackupKey=true on iOS and android:allowBackup=false on Android — cloud-backup explicitly opted out at the app level"
     - "User who has disabled cloud-backup for the wallet app at the device level — wallet vault not included in cloud-backup regardless of app-level default"

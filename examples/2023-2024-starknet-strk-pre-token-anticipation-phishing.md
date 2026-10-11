@@ -1,8 +1,9 @@
 # StarkNet STRK Pre-Token Anticipation Phishing — 2023–2024
 
-**Loss:** ~$2M+ cumulative estimated across the STRK anticipation phishing cohort; per-victim losses from ~$500 to ~$250K. Loss quantification is approximate — the phishing campaigns operated through standard drainer-kit backends (Inferno / Angel lineage) that aggregated victim funds across multiple campaigns, making per-campaign attribution imprecise.
+**Loss:** not quantified by any source cited here. The earlier figures (~\$2M+ cumulative; ~\$500 to ~\$250K per victim) had no source and were removed. [pcriskstrk] documents a fake "Starknet Airdrop" claim site with drainer code and reports no loss amounts.
 **OAK Techniques observed:** **OAK-T4.009** (Pre-token Brand-Anticipation Phishing — the canonical pre-token anticipation pattern at one of the largest L2 ecosystems. StarkWare publicly signalled STRK token plans for over two years before the February 2024 airdrop; the extended signalling window created a prolonged phishing exposure surface.) **OAK-T6.001** (Source-Verification Mismatch — fake "STRK claim" sites presented themselves as official StarkNet Foundation claim portals; the divergence between the front-end-displayed claim UI and the actual drainer-contract backend is the canonical T6.001 pattern at the pre-token layer.) **OAK-T4.008** (Fake-DEX Clone-Frontend Phishing — structurally adjacent; the attacker's claim portal is a clone of what users expect an airdrop claim UI to look like, distributed through the same social/ad-platform channels as T4.008.)
-**Attribution:** **pseudonymous** at drainer-kit operator-cluster level; campaigns attributed to Inferno / Angel drainer-kit affiliate operators based on on-chain drainer-contract fingerprinting. No named individual attribution.
+**Attribution:** **pseudonymous** — no actor or drainer-kit attribution is established by the sources cited here; the earlier Inferno / Angel affiliate attribution is unverified.
+**Corrected 2026-10-11:** removed the unsourced ~\$2M+ loss figure, the Inferno / Angel attribution, invented example domains and unverified distribution-channel claims; only the existence of fake STRK claim sites with drainer code is sourced.
 
 **Key teaching point:** **The STRK pre-token anticipation phishing cohort is the largest L2-scale instance of the T4.009 pattern.** StarkWare's extended pre-launch signalling window (2022–February 2024) created the longest pre-token phishing exposure surface in the L2 ecosystem: over two years of "STRK token is coming" messaging internalised by the user base, during which attacker-operated "STRK claim" sites appeared chronologically credible. The structural lesson generalises from the EigenLayer (restaking) and zkSync (ZK-rollup) cohorts: the longer the pre-launch signalling window, the more attacker-operated claim portals look like expected ecosystem infrastructure rather than phishing anomalies. The load-bearing mitigation — platform-side canonical-claim-URL pre-announcement combined with pre-launch defensive domain registration — was not operationalised by StarkWare during the pre-launch window.
 
@@ -12,11 +13,11 @@ StarkWare, the developer of StarkNet (a ZK-rollup L2 on Ethereum), publicly sign
 
 During the ~2-year pre-launch window, attacker-operated phishing sites claiming to be the "official STRK airdrop claim portal" proliferated. The phishing infrastructure followed the standard pre-token anticipation pattern established by the EigenLayer and zkSync cohorts:
 
-1. **Domain registration following StarkWare signalling events.** Within days of each major StarkWare announcement referencing STRK token plans, new typosquat / near-miss domains appeared combining "starknet," "strk," "airdrop," "claim," and "token" (e.g., `starknet-claim.com`, `strk-airdrop.io`, `starknet-token.app`).
+1. **Domain registration following StarkWare signalling events.** Within days of each major StarkWare announcement referencing STRK token plans, new typosquat / near-miss domains appeared combining "starknet," "strk," "airdrop," "claim," and "token".
 
-2. **Drainer-backend connection.** The claim portal prompted users to connect their wallet and "verify eligibility" — the wallet-connection triggered a Permit2 / `approve` / `setApprovalForAll` transaction routed through Inferno / Angel drainer-kit backends, identical to the on-chain extraction substrate observed in T4.008 campaigns.
+2. **Drainer-backend connection.** The claim portal prompted users to connect their wallet and "verify eligibility" — the wallet-connection triggered a Permit2 / `approve` / `setApprovalForAll` transaction routed to drainer code ([pcriskstrk]; the specific drainer-kit lineage is unverified).
 
-3. **Social-platform amplification.** Links to the fake claim portals were distributed through X/Twitter (replies to StarkWare's official posts), Telegram groups, Discord servers, and Google Search ads — the same multi-channel distribution surface as T4.008 but targeted at the StarkNet ecosystem's anticipation of the STRK token event.
+3. **Social-platform amplification.** Links to the fake claim portals were promoted on X/Twitter ([pcriskstrk]; other channels such as Telegram, Discord and search ads are unverified) — the same multi-channel distribution surface as T4.008 but targeted at the StarkNet ecosystem's anticipation of the STRK token event.
 
 The phishing campaigns were effective because StarkNet's extended pre-launch signalling created a structural ambiguity: users knew STRK was coming, the ecosystem had been discussing it for over a year, and the appearance of a "claim portal" during this window was chronologically plausible. The legitimate STRK airdrop claim portal (`provisions.starknet.io`) was not announced until the February 2024 airdrop date — meaning there was no canonical ground-truth URL for users to verify against during the entire pre-launch window.
 
@@ -30,15 +31,14 @@ The STRK cohort is structurally distinguished from the EigenLayer and zkSync coh
 |---|---|---|
 | 2022 | StarkWare publicly signals STRK token plans; token's role in governance, staking, and fee payment discussed in blog posts and community calls | (ambiguity window opens) |
 | 2022–2023 | STRK token plans reiterated in ecosystem presentations and community AMAs; user base internalises expectation of future airdrop | T4.009 (prolonged signalling) |
-| 2023-Q1–Q4 | Attacker-operated "STRK claim" / "StarkNet airdrop" phishing sites proliferate, tracking StarkWare's public signalling events | T4.009 + T6.001 |
+| 2023-Q4 onward (earliest dated evidence in [pcriskstrk]: a December 2023 screenshot) | Attacker-operated "STRK claim" / "StarkNet airdrop" phishing sites proliferate, tracking StarkWare's public signalling events | T4.009 + T6.001 |
 | 2024-02 | Official STRK airdrop launched via `provisions.starknet.io`; phishing surface shifts to post-airdrop impersonation | T4.009 (post-airdrop transition) |
 | 2024-Q1–Q2 | Post-airdrop impersonation campaigns ("additional STRK claim," "STRK staking") continue through the drainer-kit distribution infrastructure | T4.009 |
 
 ## Public references
 
+- `[pcriskstrk]` — PCrisk, "How to spot fake giveaways like 'Starknet Airdrop'" (2024-06-19): <https://www.pcrisk.com/removal-guides/28671-starknet-airdrop-scam>
 - StarkWare Foundation official STRK token announcement and airdrop details (February 2024)
-- ScamSniffer drainer-campaign tracking covering STRK-anticipation phishing domains (2023–2024)
-- SEAL ISAC phishing-domain monitoring feeds
 - Community reporting on fake STRK claim portals (r/StarkNet, StarkNet Discord, X/Twitter)
 - Inferno / Angel drainer-kit operator-cluster attribution (see T4.008 for drainer-kit lineage)
 

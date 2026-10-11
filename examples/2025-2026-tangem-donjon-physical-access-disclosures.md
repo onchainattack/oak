@@ -47,7 +47,6 @@ Both findings share the property that gives the pair its OAK significance: **nei
 - `[protostangemtearing2025]` — Protos, "Tangem wallet brute force vulnerability revealed by rival Ledger" (tearing attack: power-cut defeats failure counter, EM emission analysis; disclosed 2025-09-18 by Ledger CTO Charles Guillemet; ~\$5,000; ~2.5 attempts/sec; 4-digit ~1 hour vs ~5 days, 8-digit ~460 days vs ~148 years; Tangem's "self-defeating by design" response and bug-bounty refusal; Donjon's rebuttal): <https://protos.com/tangem-wallet-brute-force-vulnerability-revealed-by-rival-ledger/>
 - `[incryptedtangemledger2026]` — Incrypted, "Ledger and Tangem Publicly Argued Over a Wallet Hack via a Laser Attack" (the public vendor dispute over severity framing): <https://incrypted.com/en/ledger-and-tangem-publicly-argued/>
 - Cross-reference: T11.007.002 at `techniques/T11.007.002-physical-access-hardware-seed-extraction.md`.
-- Cross-reference: 2023-01-ledger-donjon-side-channel at `examples/2023-01-ledger-donjon-side-channel.md` (same research team; establishes that secure-element hardware raises attack cost to laboratory-grade without eliminating the physical-access surface).
 - Cross-reference: 2020-01-trezor-kraken-rdp-downgrade at `examples/2020-01-trezor-kraken-rdp-downgrade.md` (canonical T11.007.002 anchor; contrast: answered by hardware revision, an option unavailable here).
 
 ## Discussion

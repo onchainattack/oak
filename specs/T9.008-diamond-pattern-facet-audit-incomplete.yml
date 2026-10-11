@@ -192,7 +192,6 @@ test_fixtures:
   positive:
     - 2024-07-li-finance                              # Li.Fi post-audit facet addition call-verification gap (~$10M)
     - 2022-07-li-fi-v1-diamond-facet-exploit                               # Li.Fi v1 diamond-facet vulnerability (~$600K)
-    - 2023-04-paribus-diamond-facet-exploit                                # Paribus post-audit facet addition (~$150K)
   negative:
     - "Diamond with all facets listed in the audit report and no post-audit additions — all facets covered"
     - "Newly-deployed facet that has been re-audited and included in a supplemental audit report before deployment"

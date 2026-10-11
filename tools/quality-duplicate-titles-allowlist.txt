@@ -28,11 +28,7 @@ distinct	2021-2023-uranium-finance-exploit-seizure.md	2021-04-uranium-finance.md
 distinct	2021-bsc-pancakeswap-token-impersonation-wave.md	2021-2025-pancakeswap-token-launch-mev-bsc.md	# token impersonation vs launch-MEV sandwiching
 distinct	2022-01-looksrare-x2y2-wash-trading-cohort.md	2022-01-looksrare-wash-trading-launch.md	# single-venue launch incentive vs the two-venue cohort
 distinct	2022-04-ronin-discord.md	2022-03-ronin-bridge.md	# bridge key compromise vs the Discord-impersonation follow-on
-framing	2022-06-harmony-horizon.md	2022-06-harmony-horizon-bridge.md	# one incident, T10.001 vs T10.005 framing; loss, tx count, Elliptic and FBI attribution agree across both, and the second cites the first as a companion
-framing	2022-06-harmony-horizon.md	2022-06-harmony-horizon-economic-incentive-gap.md	# same incident, T10.007 framing; 2-of-5 multisig and $100M consistent with both companions
-distinct	2022-2024-snapshot-voting-exploitation-cohort.md	2022-09-snapshot-sybil-governance-cohort.md	# flash-loan/delegated voting power vs Sybil account cohort
 distinct	2023-11-poloniex.md	2014-03-poloniex.md	# same venue, nine years apart
-unreviewed	2023-12-ledger-connect-kit.md	2023-12-ledger-connect-kit-library-supply-chain-compromise.md	# one incident, T11.002 vs T11.006 framing; facts not cross-verified
 distinct	2024-03-ether-fi-profanity-entropy-cohort.md	2022-09-wintermute-profanity-cohort.md	# same Profanity root cause, different victim cohorts and windows
 unreviewed	2024-2026-nft-marketplace-insider-trading-wash-trading.md	2022-2025-nft-marketplace-wash-trading-and-royalty-bypass-infrastructure.md	# overlapping cohort windows on the same surface; scope boundary not reviewed
 distinct	2024-eigenlayer-restaking-airdrop.md	2024-2025-eigenlayer-airdrop-staking-frontend-phishing-cohort.md	# the airdrop's slashing/cascading-risk context vs the phishing cohort that targeted it

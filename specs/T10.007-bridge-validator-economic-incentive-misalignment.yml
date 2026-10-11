@@ -241,7 +241,7 @@ test_fixtures:
   positive:
     - 2022-03-ronin-bridge                                                     # Ronin Bridge — validator concentration: 5-of-9 with 1 entity controlling threshold
     - 2022-02-wormhole                                                   # Wormhole Bridge — zero economic bonding for 19-member Guardian set (stake/TVL = 0)
-    - 2022-06-harmony-horizon-economic-incentive-gap                           # Harmony Horizon — zero at-risk stake, 2-of-5 threshold, no slashing
+    - 2022-06-harmony-horizon-bridge                           # Harmony Horizon — zero at-risk stake, 2-of-5 threshold, no slashing
     - 2026-05-thorchain-router-exploit                                         # THORChain — ~635K RUNE bond (slashed) bought a vault seat worth ~$10M to a malicious validator
   negative:
     - "Bridge with stake/TVL ratio > 1.0 and diversified validator set with enforceable on-chain slashing — well-capitalized cryptoeconomic security"

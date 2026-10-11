@@ -40,6 +40,5 @@ The case is the most operationally complete T16.004 anchor bridging the off-chai
 - Tornado Cash DAO on-chain governance contracts — proposal-execution and governance-control parameter modification event logs (May 2023)
 - Tornado Cash community channels (Discord, governance forum) — community counter-mobilisation discussion and counter-proposal documentation (May 2023)
 - Cross-reference: T16.004 at `techniques/T16.004-snapshot-off-chain-voting-exploitation.md`
-- Cross-reference: `examples/2022-09-snapshot-sybil-governance-cohort.md` — Snapshot.org off-chain voting Sybil-attack cohort (2022–2025)
 - Cross-reference: `examples/2022-2024-snapshot-voting-exploitation-cohort.md` — Snapshot off-chain voting exploitation via flash-loaned and delegated voting power (2022–2024)
 - `[zhou2023sok]` — academic taxonomy classifying governance attacks as a recurring class

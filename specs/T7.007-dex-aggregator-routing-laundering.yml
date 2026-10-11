@@ -94,7 +94,6 @@ output_alert: [oak_technique, detection_path, severity, chain,
 
 test_fixtures:
   positive:
-    - 2023-2025-dprk-post-tornado-cash-aggregator-laundering            # Lazarus Group aggregator-routing chains
   negative:
     - "Aggregator-routed trade with route matching the per-pair baseline — legitimate execution optimisation, not T7.007"
     - "Trader using a single aggregator for gas optimisation without cross-aggregator churn — standard DeFi trading behaviour"

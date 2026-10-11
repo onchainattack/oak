@@ -8,7 +8,7 @@
 
 ## Summary
 
-zkSync — a ZK-rollup L2 scaling solution for Ethereum developed by Matter Labs — publicly referenced a future ZK token in documentation and community communications as early as 2022, but the token was not deployed on-chain until June 2024. During this ~2-year pre-token window, attackers registered dozens of domains combining "zksync" with anticipation keywords (airdrop, claim, token, launch, rewards, allocation) and deployed fake "ZK token claim" UIs.
+zkSync — a ZK-rollup L2 scaling solution for Ethereum developed by Matter Labs — publicly referenced a future ZK token in documentation and community communications as early as 2022, but the token was not deployed on-chain until June 2024. During this ~2-year pre-token window, attackers registered multiple domains combining "zksync" with anticipation keywords (airdrop, claim, token, launch, rewards, allocation) and deployed fake "ZK token claim" UIs.
 
 The phishing UIs typically prompted users to: (1) connect their wallet; (2) view a fabricated "airdrop allocation" based on their wallet activity; (3) approve a token allowance or sign a transaction to "claim" the allocation — which instead drained the wallet or approved a drainer contract. Some variants included a fake "ZK token" interface with fabricated price charts and allocation calculators.
 
@@ -25,6 +25,6 @@ The detection signal is structural: during the pre-token window, the claimed ZK 
 
 ## Public references
 
+- `[pcriskzksync]` — PCrisk, "How to identify scams like 'zkSync' crypto scam" (page updated 2025-01-08; screenshots dated December 2023 to June 2024; fake zkSync reward domains with drainer code, no loss figures): <https://pcrisk.com/removal-guides/28663-zksync-scam>
+- `[beosinzksync]` — Beosin, "Amidst Ongoing Debates, Can zkSync Still Become a Dark Horse in the Layer 2 Race" (2024-06-17): warns phishing may increase as the ZK airdrop begins: <https://beosin.com/resources/amidst-ongoing-debates-can-zksync-still-become-a-dark-horse-in-the-layer-2-race>
 - Matter Labs / zkSync official documentation: tokenomics and airdrop announcements.
-- Domain registration data for typosquat domains targeting `zksync.io` (Certificate Transparency logs).
-- Web3 security firms: pre-token phishing campaign tracking (SlowMist, CertiK, 2023-2024).

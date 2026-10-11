@@ -212,9 +212,7 @@ output_alert: [oak_technique, detection_path, severity, chain,
 
 test_fixtures:
   positive:
-    - 2023-2024-layerzero-governance-relay-misconfiguration-audit-cohort     # LayerZero OFT governance relay source-address/nonce/finality gaps
     - 2024-07-compound-cross-chain-governance-relay                         # Compound cross-chain governance relay misconfiguration
-    - 2023-09-stargate-layerzero-governance-relay-multisig                  # Stargate/LayerZero multisig-controlled bridge parameter relay
   negative:
     - "Governance message delivered by a backup relayer whose delegation is traceable to a verifiable source-chain governance event — relayer delegation, not T10.006"
     - "Cross-chain governance execution with verifiable source-chain proposal, matching parameters, from the authorized relayer set — legitimate cross-chain delivery"

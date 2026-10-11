@@ -1,45 +1,33 @@
 # ERC-20 transferFrom return-value spoofing cohort — EVM — 2022–2025
 
-**Loss:** aggregate across affected DeFi protocols in the seven figures. Individual protocol-level losses range from mid-five-figures (smaller lending-market integrations that hardcoded a non-standard token's return-value convention) to low-seven-figures (larger protocols where the faulty integration went undetected through multiple audits). USDT (Tether) on Ethereum is the canonical non-conforming token — its pre-2019 deployments did not return a `bool` from `transfer()` and `transferFrom()`, violating the ERC-20 standard's return-value specification. The SafeERC20 library adoption by OpenZeppelin (2020) was the primary mitigation; protocols that did not adopt SafeERC20 or that integrated new non-standard tokens without return-value validation continued to incur losses through 2025.
-**OAK Techniques observed:** **OAK-T2.005** (Token Metadata Spoofing — primary; the token's interface-level behaviour diverges from what integrators expect based on the token's metadata-level claims of ERC-20 conformance); **OAK-T9.004** (Access Control Misconfiguration — co-occurring; the `transferFrom` integration failure occurs when the protocol's access-control logic relies on the return value of a transfer that either returns `false` without reverting or returns no value on a contract where the protocol expects a `bool`).
-**Attribution:** **unattributed** The return-value spoofing surface is a structural property of ERC-20's underspecified return-value convention, not an attacker-controlled exploit primitive. Tokens that return `false` instead of reverting on failed transfers, or that do not return a `bool` at all, create integration vulnerabilities that attackers can trigger but did not create. The attribution is to the token deployer's non-compliance with the ERC-20 return-value convention and to the integrating protocol's failure to validate return values.
-**Key teaching point:** **ERC-20's underspecified return-value convention — the standard requires `transfer()` and `transferFrom()` to return a `bool` but the EVM does not enforce it — makes `transferFrom` return-value spoofing a T2.005 surface. The token is "real" (it exists as a deployed contract with genuine utility) but its interface behaviour is non-conforming — a metadata-level representation problem where the token's self-reported ERC-20 conformance (implied by its deployment as an "ERC-20 token") does not match its actual interface behaviour.**
+**Loss:** not tabulated. The original's "seven figures aggregate" and per-protocol loss ranges had no source and were removed; the cited sources are audit findings, not realised-loss incident reports.
+**OAK Techniques observed:** **OAK-T2.005** (Token Metadata Spoofing — primary; the token's interface-level behaviour diverges from what integrators expect of an ERC-20); **OAK-T9.004** (Access Control Misconfiguration — co-occurring; the integration treats an unverified transfer as having succeeded).
+**Attribution:** **unattributed** The surface is a property of the ERC-20 return-value convention and of integrating contracts that do not validate it. No attacker, campaign or named incident is identified in this file.
+**Key teaching point:** **ERC-20 tokens differ in how they signal transfer failure, and integrators that assume one convention break on the others.** Some tokens (USDT is the commonly cited example) return no value from `transfer`/`transferFrom`, so a call through an interface declaring a `bool` return reverts; others return `false` instead of reverting, so a caller that ignores the return value records a transfer that never happened. The standard remedy is a safe-transfer wrapper such as OpenZeppelin's SafeERC20.
+
+**Corrected 2026-10-11:** removed unsourced loss figures, the Solidity 0.4.22 and "SafeERC20 introduced 2020" dating, and the Uniswap V1 and "post-2022 false-returning token" timeline claims; the file now rests on public audit findings and states that no realised incident is documented here.
 
 ## Summary
 
-The ERC-20 token standard (EIP-20) specifies that `transfer(address, uint256)` and `transferFrom(address, address, uint256)` must return a `bool` indicating success or failure. However, the EVM does not enforce return-value conformance at the bytecode level — a token contract compiled from Solidity before version 0.4.22 (which introduced the `bool` return type requirement for ERC-20 functions) may not return any value from `transfer` or `transferFrom`, and the calling contract cannot distinguish "no return value" from "returned `false`" without a low-level `call` and return-data-length check.
+The ERC-20 interface declares `transfer` and `transferFrom` as returning `bool`. Public audit findings document two integration failure modes:
 
-USDT (Tether) on Ethereum is the canonical non-conforming token. The USDT contract deployed at `0xdAC17F958D2ee523a2206206994597C13D831ec7` does not return a `bool` from its `transfer()` and `transferFrom()` functions — the functions execute the transfer and return nothing. This violates the ERC-20 standard but is the deployed reality for the largest stablecoin by market cap. Protocols that integrate USDT using the standard ERC-20 interface (which expects a `bool` return value) will encounter a revert at the ABI-decoding layer on Solidity versions that enforce return-value decoding.
+1. **Non-returning tokens.** Per a Code4rena Juicebox finding, because the `IERC20` interface requires a boolean return, attempting to transfer tokens with missing return values (it names USDT and BNB) reverts, so a terminal using the plain interface cannot support them; the recommended fix is a safe-transfer library such as OpenZeppelin SafeERC20. A Sherlock finding makes the related point that unchecked USDT-style transfers can fail without reverting and leave protocol state wrong.
+2. **False-returning tokens.** Code4rena and Sherlock findings (including ENS and Aave v3 contest reports) note that some tokens return `false` instead of reverting, so a caller that does not check the return value may update its accounting as if tokens moved. In a lending or vault context this lets an attacker be credited for a deposit or repayment that never arrived. SafeERC20 handles both cases.
 
-The return-value spoofing surface splits into two sub-patterns:
+The USDT mainnet contract is at `0xdAC17F958D2ee523a2206206994597C13D831ec7` (address as given in the original file; the cited audit findings name USDT as non-returning, but this file did not independently re-verify the contract code).
 
-1. **Non-returning tokens (the USDT pattern).** The token's `transfer`/`transferFrom` does not return a value, but the integrating contract expects a `bool`. On Solidity >=0.4.22, calling a non-returning function via an interface that declares a return value causes a revert — the integrating contract's call to `transferFrom` reverts not because the transfer failed but because the ABI decoder cannot decode the (absent) return data. This breaks protocol integrations that assume all ERC-20 tokens conform — the integration fails for USDT, the most important stablecoin, until the protocol adopts SafeERC20 or an equivalent low-level-call wrapper.
-2. **False-returning tokens.** The token's `transfer`/`transferFrom` returns `false` on failed transfers instead of reverting. An integrating contract that checks the return value will see `false`, but a contract that does not check the return value will proceed as if the transfer succeeded — the token never left the sender's balance, but the protocol's state was updated as if it did. This creates a double-spend or free-mint surface where the attacker calls a protocol function that relies on `transferFrom`, the transfer silently fails (returns `false`), but the protocol credits the attacker with the transferred amount.
-
-The OpenZeppelin SafeERC20 library (introduced 2020) was the primary ecosystem-level mitigation. SafeERC20 wraps `transfer` and `transferFrom` in low-level calls with return-data-length checks: if the token returns no data, the call is treated as successful (matching the USDT pattern); if the token returns `false`, the call is treated as a failure and SafeERC20 reverts. The library's widespread adoption closed the USDT non-return pattern for protocols that use it, but false-returning tokens — new tokens deployed after 2022 that return `false` instead of reverting on failed transfers, often due to non-standard token implementations or forked token codebases that inherit the bug — continue to cause integration vulnerabilities when the integrating protocol does not validate return values.
+This file documents a bug class that audits routinely flag. Whether specific real-world losses from it occurred in 2022-2025 is not established by the cited sources.
 
 ## Timeline (UTC)
 
-| When | Event | OAK ref |
-|---|---|---|
-| 2017 | USDT deploys on Ethereum with non-standard ERC-20 implementation — `transfer()` and `transferFrom()` do not return a `bool` | (standing T2.005 surface; the canonical non-conforming token) |
-| 2018–2019 | Early DeFi protocols (Uniswap V1, early lending markets) encounter USDT integration issues; per-protocol hardcoded USDT workarounds proliferate | T2.005 (metadata-behaviour mismatch) |
-| 2020 | OpenZeppelin releases SafeERC20 library — low-level `call` wrappers with return-data-length checks that handle both non-returning and false-returning tokens | (ecosystem-level mitigation) |
-| 2020–2022 | Widespread SafeERC20 adoption across DeFi; USDT non-return pattern is effectively mitigated for protocols using the library | (mitigation adoption) |
-| 2022–2025 | New tokens deployed with non-standard return values (false-returning on failure instead of reverting) cause integration bugs in protocols that do not validate return values | T2.005 (false-return sub-pattern); T9.004 (access-control integration failure) |
-| Continuing | The surface persists for protocols that integrate new tokens without return-value validation and do not use SafeERC20 or an equivalent wrapper | (ongoing surface at the token-integration layer) |
-
-## Realised extraction
-
-Aggregate across affected DeFi protocols in the seven figures. Individual protocol-level losses range from mid-five-figures (smaller lending-market integrations where a false-returning token was accepted as collateral without the transfer actually occurring) to low-seven-figures (larger protocols where the faulty integration persisted through multiple audits). The USDT non-return pattern was an integration-failure surface (protocols could not interact with USDT until they adopted SafeERC20) rather than a direct-extraction surface; the false-return sub-pattern is the direct-extraction surface where an attacker can trigger a failed transfer that the protocol treats as successful.
+The original dated timeline (2017 USDT deployment, 2018-2019 integration issues, 2020 SafeERC20 release, 2022-2025 false-returning tokens) was not supported by the cited sources and is removed. The audit findings cited below span 2021-2025.
 
 ## Public references
 
-- EIP-20: ERC-20 Token Standard — the return-value specification for `transfer()` and `transferFrom()` and the absence of EVM-level enforcement
-- USDT (Tether) Ethereum contract at `0xdAC17F958D2ee523a2206206994597C13D831ec7` — the canonical non-returning ERC-20 deployment
-- OpenZeppelin SafeERC20 library documentation and adoption history (2020–present)
-- Solidity changelog: return-value decoding changes from 0.4.22 onward
-- Various DeFi protocol post-mortems involving false-returning token integrations (2022–2025)
-- `[eip20standard]` — ERC-20 specification reference
-- `[openzeppelinsafeerc20]` — OpenZeppelin SafeERC20 documentation
-- `[usdtnonconforming]` — USDT ERC-20 non-compliance documentation
+- `[c4juicebox242]` — Code4rena, 2022-07 Juicebox findings, "Use a safe transfer helper library for ERC20 transfers" (issue 242): <https://github.com/code-423n4/2022-07-juicebox-findings/issues/242>
+- `[c4ens313]` — Code4rena, 2023-10 ENS findings, "Not checking return value in ERC20 transferFrom can funds being stolen" (issue 313): <https://github.com/code-423n4/2023-10-ens-findings/issues/313>
+- `[sherlockaave79]` — Sherlock, 2025-01 Aave v3.3 judging, "Unchecked Return Value of IERC20.safeTransferFrom" (issue 79): <https://github.com/sherlock-audit/2025-01-aave-v3-3-judging/issues/79>
+- `[sherlocklend579]` — Sherlock, 2025-05 Lend audit contest judging, "Silent Failure Due to Unchecked ERC20 transfer Return Values" (issue 579): <https://github.com/sherlock-audit/2025-05-lend-audit-contest-judging/issues/579>
+- `[eip20standard]` — ERC-20 specification reference (EIP-20).
+- `[openzeppelinsafeerc20]` — OpenZeppelin SafeERC20 documentation.
+- `[usdtnonconforming]` — USDT ERC-20 non-compliance documentation.

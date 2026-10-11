@@ -86,7 +86,6 @@ test_fixtures:
   positive:
     - 2021-10-anubisdao              # Tornado Cash 4-portion routing post-rug
     - 2022-03-ronin-bridge           # pre-OFAC Lazarus / Tornado canonical
-    - 2022-06-harmony-horizon        # Railgun continuation post-OFAC
     - 2025-02-bybit                  # eXch + cross-chain post-extraction
     - 2025-04-exch-shutdown          # eXch instant-exchange shutdown
   negative:

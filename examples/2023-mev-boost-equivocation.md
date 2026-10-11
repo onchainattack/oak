@@ -1,31 +1,31 @@
 # MEV-Boost relay equivocation attack surface — Ethereum — 2023
 
-**Loss:** **No realized extraction at scale from the equivocation surface at v0.1 cutoff.** The MEV-Boost relay equivocation attack surface was characterized by security researchers and the Flashbots team as a theoretical-to-operational threat class against the MEV-Boost relay infrastructure. Individual relay-equivocation incidents have been documented at the research-demonstration level; no relay-level equivocation event has produced a headline-grabbing extraction. The threat surface remains open as of v0.1.
-**OAK Techniques observed:** **OAK-T14.002** (MEV-Boost Relay Attack) — canonical anchor. The relay-equivocation surface is the load-bearing T14.002 sub-pattern: a malicious proposer or relay operator exploits the proposer-relay trust boundary to extract value.
-**Attribution:** **unattributed** — the attack surface is characterized in research literature but no specific attributed incident anchors the class at v0.1.
+**Loss:** Over \$20M profit to a malicious proposer, taken from a sandwiching searcher, in slot 6137846 on 2023-04-02 `[neuder2023]`. Other analyses cited in secondary coverage give figures between \$20M and \$30M and date it 2023-04-02 or 04-03; the Flashbots disclosure refers to "\$20m+" in losses for sandwich bots `[flashbots2023]`.
+**OAK Techniques observed:** **OAK-T14.002** (MEV-Boost Relay Attack) — canonical anchor. A malicious proposer exploited the proposer-relay trust boundary: the relay did not validate the proposer's signed header and returned the block body before it was published to the p2p layer, so the proposer could unbundle the searcher's transactions `[neuder2023]`.
+**Attribution:** **pseudonymous** — the discloser later identified themselves to Flashbots-linked researchers as "low carb crusader" and said they were responsible for the earlier equivocations `[flashbots2023]`; no real-world identity is stated in the cited sources.
+**Corrected 2026-10-11:** the file claimed no realized extraction and an unattributed, theoretical surface; sources document a realized attack in April 2023 (over \$20M) by a proposer who later self-identified pseudonymously, and a second strategy that was never used in production.
 
-**Key teaching point:** MEV-Boost's proposer-builder separation architecture introduces a relay trust boundary that did not exist in the base Ethereum protocol. The relay sees the builder's block body before the proposer commits to a head, creating an equivocation surface: a malicious relay operator or proposer can unbundle the builder's MEV extraction and extract the same value independently.
+**Key teaching point:** MEV-Boost's proposer-builder separation introduces a relay trust boundary that did not exist in the base Ethereum protocol. The relay sees the builder's block body before the proposer's commitment is final, creating an equivocation surface: a malicious proposer can sign a header, obtain the body, and publish a different block that extracts the same value. The 2023-04-02 attack was patched at the relay, but the authors note a more general equivocation attack remains possible `[neuder2023]`.
 
 ## Summary
 
-MEV-Boost is the dominant proposer-builder separation (PBS) architecture on Ethereum post-Merge. It introduces a relay layer between block builders (who construct MEV-optimized blocks) and block proposers (validators who propose blocks). The relay receives blocks from builders, withholds the block body, and sends the block header to the proposer for signing. After the proposer signs the header, the relay reveals the body and the proposer proposes the block.
+MEV-Boost is the dominant proposer-builder separation (PBS) architecture on Ethereum post-Merge. Builders construct blocks, relays withhold the block body and send the proposer a header, and after the proposer signs the header the relay reveals the body.
 
-The relay equivocation surface: the relay knows the builder's block contents (including MEV extraction transactions) before the proposer commits. A malicious relay could unbundle the builder's MEV and insert its own extraction, or collude with the proposer to do so. A malicious proposer could receive the header from the relay, sign it, but then propose a different block that extracts the same MEV without sharing with the builder — equivocating on the signed commitment.
+On 2023-04-02 (slot 6137846), a malicious proposer used the relay to unbundle a sandwiching searcher's transactions for a profit of over \$20M. Two relay weaknesses enabled it: the relay did not check that the proposer's signed header was valid, and it returned the block body to the proposer before publishing it to the p2p layer. Relay commits adding header-validity checks and reordering body release fixed the attack as executed `[neuder2023]`.
 
-The Flashbots team and independent security researchers characterized this surface in 2022–2023. Mitigations (relay reputation systems, proposer slashing for equivocation, builder-side relay selection diversity) have been discussed and partially deployed, but the surface is architectural — it arises from the trust model of the relay as a centralizing intermediary in the PBS pipeline.
+On 2023-04-21 the discloser ("low carb crusader") reported a second strategy: relays let proposers call getPayload before their slot began, letting a proposer see the block contents and race the relay's block (at the cost of being slashed). Flashbots deployed a patch to mainnet around 10:50 UTC on 2023-04-23, and its relay logs confirm the strategy was never used in production `[flashbots2023]`.
 
 ## Timeline (UTC)
 
 | When | Event | OAK ref |
 |---|---|---|
-| 2022-09 | Ethereum Merge activates proof-of-stake; MEV-Boost becomes the dominant PBS architecture | T14.002 (surface creation) |
-| 2022-10/12 | Security researchers characterize the relay trust model and equivocation surface; Flashbots publishes relay spec and trust assumptions | T14.002 (characterization) |
-| 2023 | Relay ecosystem diversifies (Flashbots, BloXroute, Eden, Ultrasound, others); proposer relay-selection and builder relay-selection strategies evolve | T14.002 (mitigation development) |
-| 2023 | Research demonstrations of equivocation-class attacks published; no production-scale extraction event confirms the surface at scale | (research) |
-| Continuing | The relay trust boundary remains an architectural T14.002 surface; relay reputation, proposer commitment enforcement, and builder relay-selection diversity are the load-bearing mitigations | (ongoing surface) |
+| 2023-04-02 | Malicious proposer unbundles a sandwiching searcher via the relay in slot 6137846; over \$20M profit `[neuder2023]` | T14.002 |
+| 2023-04-18 | Francesco d'Amato and Mike Neuder publish their analysis of the attack and the relay fixes `[neuder2023]` | (public analysis) |
+| 2023-04-21 | Discloser contacts Flashbots-linked researchers about a second equivocation strategy `[flashbots2023]` | T14.002 |
+| 2023-04-23 | Flashbots deploys the early-getPayload mitigation to mainnet; other relays follow over the next hours to days `[flashbots2023]` | (mitigation) |
 
 ## Public references
 
-- Flashbots MEV-Boost specification: relay architecture, trust model, and proposer commitment protocol.
-- Ethereum Foundation PBS research: proposer-builder separation trust assumptions and mitigation roadmap.
-- MEV research literature: academic characterization of relay equivocation and proposer-relay trust boundaries (2022–2023 vintage).
+- `[neuder2023]` — d'Amato and Neuder, "Analysis of equivocation attacks in Ethereum's mev-boost and ePBS systems" (2023-04-18): <https://notes.ethereum.org/@mikeneuder/B1VIDkXG2>
+- `[flashbots2023]` — Flashbots Collective, "Disclosure: mitigation of block equivocation strategy with early getPayload() calls for proposers": <https://collective.flashbots.net/t/disclosure-mitigation-of-block-equivocation-strategy-with-early-getpayload-calls-for-proposers/1705>
+- Cross-reference: `examples/2023-mev-boost-equivocation.md`.

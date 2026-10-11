@@ -156,7 +156,6 @@ test_fixtures:
     - "Delegate rotation during a documented multisig migration, announced and reflected in the expected-state artefact"
     - "Remote supply legitimately exceeding a single canonical lock during in-flight transfers — resolves within one reconcile interval"
     - 2026-08-allbridge-dormant-forged-cctp-attestation                  # NOT T10.009: no configuration role was captured; the verification predicate accepted a forged attestation (→ T10.002)
-    - 2023-09-stargate-layerzero-governance-relay-multisig               # NOT T10.009: a governance action relayed across chains (→ T10.006)
 
 false_positive_modes:
   - legitimate new-chain launches and multisig migrations change peer/delegate values — PATH A is only low-noise if the committed expected-state artefact is updated as part of the deployment runbook; treat a stale artefact as an operational defect, not a tuning problem

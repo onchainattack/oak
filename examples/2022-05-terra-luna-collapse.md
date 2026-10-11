@@ -1,10 +1,12 @@
 # Terra/Luna / UST algorithmic-stablecoin collapse — Terra — 2022-05-07 to 2022-05-13
 
-**Loss:** ~$40B–$60B in aggregate market-cap destruction across LUNA and UST; the single largest crypto-asset collapse event in dollar terms prior to the FTX November 2022 bankruptcy. LUNA declined from ~$80 to below $0.01 across the depeg week; UST declined from its $1.00 target to a low of ~$0.05. Terra 2.0 (Phoenix-1 chain) was launched on May 28, 2022 as a LUNA-airdrop-based restart excluding the UST stablecoin entirely.
+**Loss:** ~\$40B in aggregate market-cap destruction across LUNA and UST; the single largest crypto-asset collapse event in dollar terms prior to the FTX November 2022 bankruptcy. LUNA declined from ~$80 to below $0.01 across the depeg week; UST declined from its $1.00 target to a low of ~$0.05. Terra 2.0 (Phoenix-1 chain) was launched on May 28, 2022 as a LUNA-airdrop-based restart excluding the UST stablecoin entirely.
 
-**OAK Techniques observed:** **OAK-T9.001** (Oracle / Price-Manipulation Surface — primary in the structural sense; the mint-burn swap mechanism that maintained UST's peg relied on on-chain price feeds and the arbitrage path between LUNA market price and UST redemption value; the mechanism's failure mode is structurally a price-feed-arbitrage collapse). **OAK-T3.001** (Holder-Capture via Yield — Anchor Protocol's ~20% fixed yield on UST deposits was the dominant retail-acquisition surface that produced the UST holder base; the yield was sustained by Terraform Labs (TFL) treasury subsidies rather than by organic lending demand, making the Anchor-deposited UST a structurally encumbered liability). **OAK-T2.001** (Single-Sided Liquidity — the UST mint-burn swap constituted a single-sided liquidity surface: LUNA was minted to absorb UST redemptions, but the mint had no cap, converting a UST-depeg event into unbounded LUNA dilution). **OAK-T5.003** (Hidden-Mint / Supply Dilution — the LUNA supply expanded from ~345M pre-depeg to ~6.5T by May 13, 2022 as the mint-burn swap minted LUNA to absorb UST redemptions, diluting existing LUNA holders to near-zero). **OAK-T14.001** (Validator-Set Attack — the Terra validator set halted the chain at block 7603700 on May 12, 2022 after LUNA hyperinflation rendered on-chain governance and staking-security inoperable; the halt was an operational necessity but constitutes a validator-set-level intervention against the protocol's stated immutability). **OAK-T17** (Market Manipulation — structurally adjacent; post-collapse analyses alleged coordinated attack on the UST peg through Curve pool imbalance exploitation, though the dominant analytical consensus attributes the collapse to mechanism-design failure rather than to a single-attacker extraction; the "attack" framing is contested).
+**OAK Techniques observed:** **OAK-T9.001** (Oracle / Price-Manipulation Surface — primary in the structural sense; the mint-burn swap mechanism that maintained UST's peg relied on on-chain price feeds and the arbitrage path between LUNA market price and UST redemption value; the mechanism's failure mode is structurally a price-feed-arbitrage collapse). **OAK-T3.001** (Holder-Capture via Yield — Anchor Protocol's ~20% fixed yield on UST deposits was the dominant retail-acquisition surface that produced the UST holder base; the yield was sustained by Terraform Labs (TFL) treasury subsidies rather than by organic lending demand, making the Anchor-deposited UST a structurally encumbered liability). **OAK-T2.001** (Single-Sided Liquidity — the UST mint-burn swap constituted a single-sided liquidity surface: LUNA was minted to absorb UST redemptions, but the mint had no cap, converting a UST-depeg event into unbounded LUNA dilution). **OAK-T5.003** (Hidden-Mint / Supply Dilution — the LUNA supply expanded by orders of magnitude within days (sources cited here report figures from tens of billions to about one trillion; no single authoritative figure is relied on) as the mint-burn swap minted LUNA to absorb UST redemptions, diluting existing LUNA holders to near-zero). **OAK-T14.001** (Validator-Set Attack — the Terra validator set halted the chain at block 7603700 on May 12, 2022 after LUNA hyperinflation rendered on-chain governance and staking-security inoperable; the halt was an operational necessity but constitutes a validator-set-level intervention against the protocol's stated immutability). **OAK-T17** (Market Manipulation — structurally adjacent; post-collapse analyses alleged coordinated attack on the UST peg through Curve pool imbalance exploitation, though the dominant analytical consensus attributes the collapse to mechanism-design failure rather than to a single-attacker extraction; the "attack" framing is contested).
 
-**Attribution:** **unattributed** (Do Kwon, Terraform Labs CEO/co-founder, publicly identified throughout; Kwon was arrested in Montenegro on March 23, 2023 on falsified-travel-documents charges; U.S. SEC filed civil fraud charges against Kwon and TFL in February 2023; Kwon and TFL settled with the SEC in April 2025 for ~$4.5B in disgorgement and penalties; U.S. SDNY criminal charges remain pending at v0.1). The per-attacker extraction framing is structurally difficult for Terra/Luna because the collapse was predominantly a mechanism-design failure rather than a single-attacker extraction — the distinction matters for OAK classification.
+**Attribution:** **unattributed** (Do Kwon, Terraform Labs CEO/co-founder, publicly identified throughout; U.S. SEC filed civil fraud charges against Kwon and TFL in February 2023; Kwon and TFL agreed in June 2024 to a ~\$4.47B settlement with the SEC; Kwon was criminally charged in the U.S. in March 2023, pleaded guilty in August 2025 to wire fraud and conspiracy to defraud, and was sentenced on 2025-12-11 to 15 years [decryptkwon]; the details of his 2023 arrest in Montenegro are not sourced in this file). The per-attacker extraction framing is structurally difficult for Terra/Luna because the collapse was predominantly a mechanism-design failure rather than a single-attacker extraction — the distinction matters for OAK classification.
+
+**Corrected 2026-10-11:** Settlement date/amount corrected to June 2024 (~\$4.47B); Kwon's guilty plea and 15-year sentence added; unsupported 6.5T LUNA supply figure and Montenegro arrest details removed.
 
 **Key teaching point:** **An algorithmic stablecoin whose mint-burn redemption mechanism is uncapped and whose demand-side is sustained by subsidised yield rather than organic economic demand is a standing T9.001 surface.** The Terra/Luna collapse is the canonical mechanism-design-failure class — not a smart-contract exploit (no bug was exploited), not an access-control bypass (no admin key was stolen), but a design in which the mint-burn redemption path had no capacity limit, converting a loss-of-confidence depeg into a death spiral that the mechanism itself amplified.
 
@@ -25,7 +27,7 @@ The death spiral unfolded across May 9–12:
 - **May 9:** UST drops to ~$0.62; LUNA falls from ~$60 to ~$25.
 - **May 10:** UST drops to ~$0.30; LUNA falls below $5. LFG BTC reserves deployed to defend the peg; reserves exhausted without restoring parity.
 - **May 11:** LUNA falls below $0.50; LUNA supply triples from ~350M to ~1.1B.
-- **May 12:** UST at ~$0.05; LUNA supply exceeds 6.5T. Terra validators halt the chain at block 7603700. Major exchanges delist LUNA and UST pairs.
+- **May 12:** UST at ~$0.05; LUNA supply has ballooned (figures vary by source). Terra validators halt the chain at block 7603700. Major exchanges delist LUNA and UST pairs.
 - **May 13:** LUNA and UST trading suspended or restricted across most major exchanges. Terra 2.0 (Phoenix-1) governance proposal published.
 
 On May 28, 2022, Terra 2.0 launched as a LUNA-airdrop-based restart. UST was excluded entirely from the new chain — the algorithmic-stablecoin experiment was permanently abandoned across both Terra Classic and Terra 2.0.
@@ -39,12 +41,13 @@ On May 28, 2022, Terra 2.0 launched as a LUNA-airdrop-based restart. UST was exc
 | 2022-05-09 | UST ~$0.62; LUNA ~$25; LFG begins BTC reserve deployment | (death-spiral onset) |
 | 2022-05-10 | UST ~$0.30; LUNA < $5; LFG BTC reserves exhausted | (reserve exhaustion) |
 | 2022-05-11 | LUNA supply triples; LUNA < $0.50 | **T5.003 execution** (supply dilution) |
-| 2022-05-12 | LUNA supply exceeds 6.5T; Terra validators halt chain at block 7603700 | **T14.001** (validator-set intervention) |
+| 2022-05-12 | LUNA supply balloons; Terra validators halt chain at block 7603700 [coinbureauhalt] | **T14.001** (validator-set intervention) |
 | 2022-05-13 | Major exchanges delist LUNA and UST; Terra 2.0 governance proposal published | (exchange response) |
 | 2022-05-28 | Terra 2.0 launches (Phoenix-1); LUNA airdrop to pre-depeg and post-depeg holders; UST excluded | (restart) |
 | 2023-02 | SEC files civil fraud charges against Do Kwon and Terraform Labs | (regulatory action) |
-| 2023-03-23 | Do Kwon arrested in Montenegro on falsified-travel-documents charges | (law-enforcement) |
-| 2025-04 | Kwon and TFL settle with SEC for ~$4.5B in disgorgement and penalties | (settlement) |
+| 2023-03 | Do Kwon criminally charged in the U.S. (arrest in Montenegro; details unsourced here) | (law-enforcement) |
+| 2024-06 | Kwon and TFL agree to ~\$4.47B settlement with SEC [reutersbi] | (settlement) |
+| 2025-12-11 | Kwon sentenced to 15 years after August 2025 guilty plea [decryptkwon] | (criminal sentence) |
 
 ## What defenders observed
 
@@ -62,11 +65,14 @@ On May 28, 2022, Terra 2.0 launched as a LUNA-airdrop-based restart. UST was exc
 ## Public references
 
 - SEC v. Terraform Labs Pte. Ltd. and Do Hyeong Kwon. Complaint filed February 16, 2023, S.D.N.Y. Case No. 1:23-cv-01346.
-- SEC v. Terraform Labs Pte. Ltd. and Do Hyeong Kwon. Final judgment and settlement, April 2025 (~$4.5B in disgorgement, prejudgment interest, and civil penalties).
+- SEC v. Terraform Labs Pte. Ltd. and Do Hyeong Kwon. Settlement agreed June 2024 (~\$4.47B including disgorgement, interest and penalty; reports differ on the split).
 - Terra 2.0 governance proposal (Phoenix-1 chain launch). May 2022.
 - LFG (Luna Foundation Guard). LFG reserve deployment and post-depeg transparency reports. May 2022.
 - Nansen. *"On-Chain Data Reveals UST Depeg and LUNA Collapse."* May 2022.
 - Jump Crypto. *"Terra/Luna Post-Mortem."* 2022.
+- `[coinbureauhalt]` — Coin Bureau, "Terra Halts Blockchain Completely Following Massive Collapse" (2022-05-12): <https://www.coinbureau.com/news/terra-halts-blockchain-completely-following-massive-collapse/>
+- `[decryptkwon]` — Decrypt, "Do Kwon Sentenced to 15 Years in Prison Over \$40 Billion Terra Crypto Collapse" (2025-12-11): <https://decrypt.co/352066/do-kwon-sentenced-15-years-prison-40-billion-terra-crypto-collapse>
+- `[reutersbi]` — Business Insurance (Reuters), "SEC reaches \$4.47 billion settlement with bankrupt crypto firm Terraform" (2024-06-12): <https://www.businessinsurance.com/sec-reaches-447-billion-settlement-with-bankrupt-crypto-firm-terraform-labs/>
 - Cross-reference: T9.001 (Oracle / Price-Manipulation Surface) at `techniques/T9.001-oracle-price-manipulation.md`.
 - Cross-reference: T3.001 (Sybil-Bundled Launch / Holder Capture) at `techniques/T3.001-sybil-bundled-launch.md`.
 - Cross-reference: T5.003 (Hidden-Mint Dilution) at `techniques/T5.003-hidden-mint-dilution.md`.

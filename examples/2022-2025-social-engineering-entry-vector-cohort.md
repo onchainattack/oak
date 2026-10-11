@@ -3,7 +3,9 @@
 **OAK Techniques observed:** OAK-T3.005, OAK-T4.006, OAK-T15.006
 
 **Attribution:** **unattributed** (aggregate cohort).
-**Loss:** T3.005 aggregate undocumented at class level (per-campaign extractions typically in the hundreds-of-thousands to low millions, dispersed across victims); T4.006 ~$550K+ confirmed across the Google Play drainer campaign (~$70K, 150+ victims) and fake-MEV-bot multisig campaign (~$480K, 12 multisig wallets + 40+ individuals); T15.006 ~$5M+ across the Solana X-account compromise wave (February 2025) and BAYC Discord moderator compromise (~$3M+ in NFT losses, April 2022).
+**Loss:** T3.005 aggregate undocumented at class level (per-campaign extractions typically in the hundreds-of-thousands to low millions, dispersed across victims); T4.006 ~\$70K+ confirmed across the Google Play drainer campaign (\$70K+, 150+ victims, per Check Point; the earlier-listed fake-MEV-bot multisig campaign figures of ~\$480K are unverified and removed from this total); T15.006 ~\$3M of NFT losses in the April 2022 BAYC Instagram account hijack (Yuga Labs figure), plus the Solana X-account compromise wave (no aggregate loss figure sourced here).
+
+**Corrected 2026-10-11:** The ~\$3M BAYC loss was from the Instagram hijack (not Discord moderator accounts), the DogWifCoin compromise was November 2024, and unsourced loss totals for the fake-MEV-bot campaign were removed.
 
 **Key teaching point:** These three Techniques share a common structural feature — the attacker exploits a trust signal that the user reasonably relies on, but the trust signal is not cryptographically bound to the on-chain transaction the user ultimately signs. The staking frontend's domain (T3.005), the WalletConnect session's peer-dApp identity (T4.006), and the social platform's verification badge (T15.006) all serve as trust heuristics that the user's wallet cannot mechanically verify against the transaction payload.
 
@@ -11,7 +13,7 @@
 
 ## Timeline
 
-T3.005 from 2021–2022 (Lido stETH phishing campaigns); T4.006 systematic from 2023 onward (WalletConnect session-hijack phishing, mobile-app distribution campaigns at scale 2024); T15.006 systematic from 2022 onward (BAYC Discord April 2022, Solana X-account wave February 2025).
+T3.005 from 2021–2022 (Lido stETH phishing campaigns); T4.006 systematic from 2023 onward (WalletConnect session-hijack phishing, mobile-app distribution campaigns at scale 2024); T15.006 systematic from 2022 onward (BAYC Discord/Instagram April 2022, Solana X-account wave November 2024–February 2025).
 
 ## T3.005 — Fake-Validator Staking-Frontend Phishing
 
@@ -31,7 +33,7 @@ The victim is induced to establish a WalletConnect session with a malicious dApp
 
 Canonical cases:
 
-- **Google Play drainer campaign — 2024-09.** Fake "WalletConnect" mobile apps distributed via Google Play under impersonating names ("Mestox Calculator", "WalletConnect — DeFi & NFTs", "WalletConnect — Airdrop Wallet"), achieving 10,000+ downloads and ~$70K stolen across 150+ victims. See `examples/2024-09-walletconnect-google-play-drainer.md`.
+- **Google Play drainer campaign — published March 2024, reported by Check Point 2024-09.** Fake "WalletConnect" mobile apps distributed via Google Play under impersonating names ("Mestox Calculator", "WalletConnect — DeFi & NFTs", "WalletConnect — Airdrop Wallet"), achieving 10,000+ downloads and over \$70K stolen across 150+ victims; Check Point reported the app first listed as "Mestox Calculator" and delivering MS Drainer. See `examples/2024-09-walletconnect-google-play-drainer.md`.
 - **Browser and social-media WalletConnect phishing — 2023–2025.** Drainer-as-a-service ecosystem (Inferno, Pink, Angel, Pussy, Monkey Drainers) commercialised T4.006 at industrial scale. See `examples/2023-2025-walletconnect-phishing-campaigns-cohort.md`.
 
 ## T15.006 — Impersonation via Verified Social-Account Compromise
@@ -40,9 +42,9 @@ Compromise of a verified or officially-branded social media account (X gold/grey
 
 Canonical cases:
 
-- **Solana ecosystem verified X-account compromise wave — 2025-02.** Coordinated compromise of verified X accounts including Jupiter Exchange, Pump.fun, DogWifCoin, and others. The compromised accounts posted malicious contract addresses and wallet-connect links to combined follower bases of millions. See `examples/2025-02-solana-x-account-compromise-cohort.md`.
-- **BAYC Discord moderator verified-role compromise — 2022-04 / 2022-08.** Moderator accounts carrying Discord's "Moderator" role badge were compromised and used to post fake mint links in official BAYC channels. ~$3M+ in NFT losses (BAYC, MAYC, Otherdeed). See `examples/2022-04-bored-ape-discord-wave.md`.
-- **X verified-account phishing as a service — 2023–2025.** A liquid market for compromised verified X accounts emerged; attackers compromise verified accounts and sell access to phishing operators for single-campaign use.
+- **Solana ecosystem verified X-account compromise wave — 2025-02.** Compromises of X accounts including Jupiter (2025-02-05) and Pump.fun (2025-02-26), which ZachXBT tied on-chain to the earlier DogWifCoin account compromise (November 2024). The compromised accounts promoted fake tokens. See `examples/2025-02-solana-x-account-compromise-cohort.md`.
+- **BAYC Discord and Instagram compromises — 2022-04.** On 2022-04-01 the official BAYC Discord was compromised (a fake "stealth mint" stole one Mutant Ape, per PeckShield via The Block); on 2022-04-25 the BAYC Instagram account was hijacked to post a fake Otherside land-mint link, with about \$3M of NFTs stolen per Yuga Labs. The ~\$3M figure belongs to the Instagram incident, and the earlier text's "2022-08" Discord moderator-role compromise is unverified. See `examples/2022-04-bored-ape-discord-wave.md`.
+- **X verified-account phishing as a service — 2023–2025 (unverified in this pass).** A liquid market for compromised verified X accounts emerged; attackers compromise verified accounts and sell access to phishing operators for single-campaign use.
 
 The hardware-key MFA (FIDO2/WebAuthn) on every verified operator account is the highest-leverage mitigation — the dominant compromise vectors (SIM-swap, session-cookie theft) are both closed by hardware-key MFA.
 
@@ -53,3 +55,8 @@ The hardware-key MFA (FIDO2/WebAuthn) on every verified operator account is the 
 - `[solana2025xwave]` — Solana ecosystem X-account compromise wave (February 2025)
 - `[bayc2022discord]` — BAYC Discord compromise (April 2022)
 - `[scamsniffer2025]` — ScamSniffer phishing-feed advisories
+- `[wcchkpt]` — Check Point Research, "WalletConnect scam: a case study in crypto drainer tactics" (2024-09-26): <https://research.checkpoint.com/2024/walletconnect-scam-a-case-study-in-crypto-drainer-tactics/>
+- `[baycblock]` — The Block, "Bored Ape Yacht Club confirms its Discord was hacked" (2022-04-01): <https://www.theblock.co/post/140102/bored-ape-yacht-club-confirms-its-discord-was-hacked>
+- `[baycpymnts]` — PYMNTS, "Hackers Swipe Bored Ape Yacht Club NFTs After Crashing Discord and Instagram Accounts" (2022-04): <https://www.pymnts.com/cryptocurrency/2022/hackers-swipe-bored-ape-yacht-club-nfts-after-crashing-discord-and-instagram-accounts/>
+- `[pumpblock]` — The Block, "Pump.fun's X account hacked to promote fraudulent tokens" (2025-02-26): <https://www.theblock.co/post/343515/pump-funs-x-account-hacked-to-promote-fraudulent-tokens>
+- `[jupblock]` — The Block, "Solana DEX aggregator Jupiter's X account hacked, promotes fake memecoin" (2025-02-05): <https://www.theblock.co/post/339128/solana-dex-aggregator-jupiters-x-account-hacked-promotes-fake-memecoin>

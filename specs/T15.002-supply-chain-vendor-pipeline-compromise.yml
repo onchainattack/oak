@@ -101,7 +101,7 @@ test_fixtures:
   positive:
     - 2025-02-bybit                          # Safe{Wallet} build pipeline — $1.46B
     - 2023-06-atomic-wallet                  # wallet-vendor build pipeline
-    - 2023-12-ledger-connect-kit             # npm package compromise
+    - 2023-12-ledger-connect-kit-library-supply-chain-compromise             # npm package compromise
     - 2024-12-solana-web3js-npm-supply-chain # Solana web3.js npm
     - 2026-01-polymarket-trader-tooling-supply-chain   # npm + GitHub-org
   negative:

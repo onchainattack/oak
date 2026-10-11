@@ -21,7 +21,6 @@ Canonical data points:
 
 - **Chainalysis 2022 NFT Laundering Report.** 262 users identified selling NFTs to self-financed addresses more than 25 times in 2021; 110 of them collectively netted ~$8.9M in profit. Remaining 152 users did not net profit, indicating mixed laundering and wash-trading motives. NFT-specific money laundering remained <1% of total crypto-wide laundering (~$8.6B) in 2021.
 - **LooksRare / X2Y2 wash-trade rates — 2022–2023.** Platform-level wash-trade rates of ~94.5% (LooksRare) and ~84.2% (X2Y2) at peak, driven primarily by token-emission-farming incentives but providing on-chain cover for T7.004 laundering flows mixed into the same trace.
-- **Sudoswap AMM-pool wash-trade laundering — 2023.** Estimated $8-15M in laundering volume routed through self-financed Sudoswap liquidity pools, exploiting the AMM-pool intermediary as structural obscurity. See `examples/2023-05-sudoswap-wash-pools.md`.
 - **Blur airdrop incentive-wash cohort — 2022–2024.** On-chain trade patterns structurally indistinguishable from laundering-motive wash-trades, though dominant cohort motive was airdrop-farming. See `examples/2023-02-blur-airdrop-wash-cohort.md`.
 - **CryptoPunks / BAYC-class high-value wash trades — 2022.** Several high-value NFT trades exhibited self-financed counterparty signatures at headline-grabbing valuations during the 2022 bull-market peak.
 

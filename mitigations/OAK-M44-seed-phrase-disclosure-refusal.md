@@ -42,4 +42,3 @@ Finally, the rule is only load-bearing at the moment it is tested, which is a mo
 - See [`examples/2022-12-lastpass-vault-cohort.md`](../examples/2022-12-lastpass-vault-cohort.md) — the T11.006.001 canonical cohort; multi-year offline brute-force of exfiltrated vaults.
 - See [`examples/2022-04-icloud-metamask-seed-phrase-cohort.md`](../examples/2022-04-icloud-metamask-seed-phrase-cohort.md) — the T11.006.002 canonical case; default-on backup as the compromise path.
 - See [`examples/2025-2026-trezor-impersonating-physical-mail-campaign.md`](../examples/2025-2026-trezor-impersonating-physical-mail-campaign.md) — T11.007.003 via physical mail, addressed from a five-year-old vendor breach.
-- See [`examples/2023-2025-fake-revoke-cash-wallet-security-extension-phishing.md`](../examples/2023-2025-fake-revoke-cash-wallet-security-extension-phishing.md) — T4.010; the security-tool inversion.

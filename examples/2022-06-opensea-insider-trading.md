@@ -1,12 +1,14 @@
 # OpenSea insider trading — Nate Chastain — Ethereum — 2021-09 to 2022-06
 
-**Loss:** no direct dollar-loss quantification at the individual-victim level — the extraction was **information-advantage profit** captured by the insider, not a protocol-drain event. Chastain profited approximately **\$57,000 in ETH** across approximately 45 NFT flips (DOJ indictment figures). The structural loss is the erosion of marketplace-information-integrity — the platform's "featured NFT" curation signal, which buyers relied on as an editorial recommendation, was an insider-trading-exposed information channel.
+**Loss:** no direct dollar-loss quantification at the individual-victim level — the extraction was **information-advantage profit** captured by the insider, not a protocol-drain event. Chastain's trades across at least 45 NFTs totalled more than \$50,000 [artnews23] (earlier drafts said ~\$57,000 in ETH; that exact figure is not in the cited sources). The structural loss is the erosion of marketplace-information-integrity — the platform's "featured NFT" curation signal, which buyers relied on as an editorial recommendation, was an insider-trading-exposed information channel.
 
 **OAK Techniques observed:** **OAK-T6.001** (Source-Verification Mismatch — primary; the platform's "featured" curation signal was accepted by buyers as editorial content when it was insider-position-preceding signal). **OAK-T12** (NFT-Specific — structurally adjacent; NFT marketplaces' curation-visibility mechanisms are the T12 structural surface). **OAK-T9.003** (Governance / Information-Asymmetry Attack — structurally adjacent; the insider's access to the curation queue converted platform-operational information into a trading edge, structurally analogous to T16 governance-information asymmetry).
 
-**Attribution:** **confirmed** Chastain was arrested June 1, 2022 and charged with wire fraud and money laundering. He was convicted at trial on May 3, 2023 of wire fraud and money laundering. Sentenced to 3 months imprisonment plus 3 months home confinement and a \$50,000 fine plus forfeiture of the insider-trading ETH proceeds (~\$57K) on August 22, 2023. This is the **first federal insider-trading prosecution in the digital-asset space** — the DOJ's application of wire-fraud-as-insider-trading theory to NFT marketplace-curation information is precedential for the broader T6.001 / T12 intersection.
+**Attribution:** **confirmed** Chastain was arrested June 1, 2022 and charged with wire fraud and money laundering. He was convicted at trial in May 2023 of wire fraud and money laundering [tb25vacate], and sentenced in August 2023 to 3 months imprisonment plus 3 months home confinement and 3 years supervised release [artnews23] (fine and forfeiture figures previously stated here are unverified). **On 2025-07-31 the Second Circuit vacated the convictions** over flawed jury instructions, in a 2-1 ruling [tb25vacate]. At the time of charge this was described by the DOJ as the **first federal insider-trading prosecution in the digital-asset space** — the DOJ's application of wire-fraud-as-insider-trading theory to NFT marketplace-curation information is precedential for the broader T6.001 / T12 intersection.
 
 **Key teaching point:** **A platform's "curation" / "featured" signal — editorial placement on a marketplace homepage — is an information channel that platform employees can front-run for personal profit, and the user-side trust model ("this NFT was selected for editorial merit") is structurally indistinguishable from insider-trading-exposed information until the platform publishes curation-selection transparency.** The structural OAK lesson is that marketplace-curation information asymmetry is a T6.001 surface when the platform does not disclose curation criteria, selection timing, or employee-trading policy.
+
+**Corrected 2026-10-11:** The Second Circuit vacated the conviction on 2025-07-31 (added); profit restated as 'more than \$50,000' across at least 45 NFTs, and the unsourced ~11-wallet count, \$50K fine/forfeiture and 2021-09-15/16/17 OpenSea dates were removed.
 
 ## Summary
 
@@ -18,30 +20,29 @@ Chastain exploited his advance knowledge of the curation queue by:
 2. Selling those NFTs **after** the feature went live and the price rose, capturing the feature-announcement price bump.
 3. Routing the trading proceeds back to his identifiable accounts.
 
-Chastain executed approximately 45 NFT flips across approximately 11 anonymous wallets spanning June–September 2021. The trades were structured to obscure his identity — the wallets funded from a central Chastain-controlled wallet through intermediary hops — but the blockchain's transparency made the fund-flow reconstruction straightforward for the FBI / DOJ once OpenSea's internal investigation surfaced the trading pattern.
+Prosecutors said Chastain bought and sold at least 45 NFTs ahead of their featuring between June and September 2021 using anonymous accounts and wallets [decrypt22], [artnews23]. The trades were structured to obscure his identity — the wallets funded from a central Chastain-controlled wallet through intermediary hops — but the blockchain's transparency made the fund-flow reconstruction straightforward for the FBI / DOJ once OpenSea's internal investigation surfaced the trading pattern.
 
-OpenSea initiated an internal investigation in September 2021 after receiving public reports from community members who noticed that a wallet appeared to be front-running the featured-NFT queue. The internal investigation identified Chastain as the wallet controller. OpenSea publicly disclosed the investigation on September 15, 2021, announced Chastain's resignation on September 16, 2021, and published an employee-trading policy (prohibiting employees from trading NFTs while in possession of non-public curation information) on September 17, 2021.
+OpenSea discovered one of the wallets in September 2021; Chastain left the company about a week before the CEO commented publicly [decrypt22]. The exact disclosure, resignation and policy-publication dates stated in earlier drafts are not supported by the cited sources.
 
-The DOJ SDNY indictment (filed May 31, 2022, unsealed June 1, 2022) charged Chastain with one count of wire fraud and one count of money laundering. The case proceeded to trial (rather than a plea deal), and Chastain was convicted on both counts on May 3, 2023. Sentencing on August 22, 2023: 3 months imprisonment, 3 months home confinement, \$50,000 fine, forfeiture of ~\$57K in ETH proceeds. The conviction is the first federal insider-trading prosecution where the "inside information" was an NFT marketplace's curation queue rather than a securities issuer's material non-public information.
+The DOJ SDNY charges (announced June 1, 2022) covered Chastain with wire fraud and money laundering. The case proceeded to trial, and Chastain was convicted in May 2023. Sentenced in August 2023 to 3 months imprisonment and 3 months home confinement [artnews23]. The conviction was vacated by the Second Circuit on 2025-07-31 [tb25vacate]. The case was the first federal insider-trading prosecution where the "inside information" was an NFT marketplace's curation queue rather than a securities issuer's material non-public information.
 
 ## Timeline
 
 | When | Event | OAK ref |
 |---|---|---|
 | 2021-01 to 2021-09 | Chastain serves as OpenSea Head of Product; has advance knowledge of NFT homepage curation queue | (standing T6.001 surface) |
-| 2021-06 to 2021-09 | Chastain executes ~45 NFT flips across ~11 anonymous wallets, front-running the curation-feature price bump | **T6.001 execution** |
-| 2021-09-15 | OpenSea publicly discloses internal investigation into employee trading | (defender response) |
-| 2021-09-16 | Chastain resigns from OpenSea | (operator action) |
-| 2021-09-17 | OpenSea publishes employee-trading policy prohibiting trading on non-public curation information | (policy hardening) |
-| 2022-06-01 | Chastain arrested; DOJ SDNY indictment unsealed (wire fraud + money laundering) | **T6.001 attribution confirmed** |
-| 2023-05-03 | Chastain convicted at trial on both counts | (attribution confirmed) |
-| 2023-08-22 | Sentenced: 3 months imprisonment + 3 months home confinement + \$50K fine + forfeiture | (resolution) |
+| 2021-06 to 2021-09 | Chastain buys and sells at least 45 NFTs via anonymous wallets [artnews23], front-running the curation-feature price bump | **T6.001 execution** |
+| 2021-09 | OpenSea discovers a wallet; Chastain leaves the company [decrypt22] (exact day-level dates unverified) | (defender response) |
+| 2022-06-01 | Charges announced (wire fraud + money laundering) [decrypt22] | **T6.001 attribution confirmed** |
+| 2023-05 | Chastain convicted at trial on both counts [tb25vacate] | (attribution confirmed) |
+| 2023-08 | Sentenced: 3 months imprisonment + 3 months home confinement [artnews23] | (resolution) |
+| 2025-07-31 | Second Circuit vacates the convictions [tb25vacate] | (reversal) |
 
 ## What defenders observed
 
 - **Curation is an information channel.** NFT marketplace curation — which NFTs appear on the homepage, in what order, at what time — is a platform-operational information channel that conveys economic value to the selected NFTs. Platform employees with advance knowledge of the curation queue can convert that advance knowledge into a trading edge. The OpenSea insider-trading case established that this edge is prosecutable as wire fraud under existing federal insider-trading theory even where the underlying "security" (the NFT) may not satisfy Howey.
 - **Blockchain transparency enabled the forensic reconstruction.** Chastain's fund-flow from his identifiable wallets to the anonymous-flip wallets and back was reconstructed from on-chain transaction data by community analysts and later by the FBI / DOJ. The same transparency that makes on-chain insider trading forensically reconstructable also makes it detectable before federal action — the community analyst who first detected the pattern did so by observing that a specific wallet consistently purchased NFTs shortly before they were featured on the homepage.
-- **Employee-trading policy is a marketplace-information-integrity mitigation.** OpenSea's post-incident employee-trading policy (prohibiting employees from buying or selling NFTs while in possession of non-public curation information) is the canonical marketplace-side mitigation for the T6.001 curation-information-asymmetry surface. The policy was published three days after the investigation was disclosed — a reactive hardening pattern that recurs across the platform-economy incident corpus.
+- **Employee-trading policy is a marketplace-information-integrity mitigation.** OpenSea's post-incident employee-trading policy (prohibiting employees from buying or selling NFTs while in possession of non-public curation information) is the canonical marketplace-side mitigation for the T6.001 curation-information-asymmetry surface. The timing of the policy's publication is not verified here.
 
 ## What this example tells contributors writing future Technique pages
 
@@ -50,10 +51,7 @@ The DOJ SDNY indictment (filed May 31, 2022, unsealed June 1, 2022) charged Chas
 
 ## Public references
 
-- DOJ SDNY. *"Former Employee of NFT Marketplace Charged with Insider Trading Scheme."* June 1, 2022 — the charging document and press release establishing the first federal NFT insider-trading prosecution — `[dojchastain2022]`.
-- DOJ SDNY. *"Former Employee of NFT Marketplace Convicted of Insider Trading."* May 3, 2023 — trial conviction press release — `[dojchastainconviction2023]`.
-- DOJ SDNY. *"Former Employee of NFT Marketplace Sentenced to 3 Months in Prison."* August 22, 2023 — sentencing press release — `[dojchastainsentencing2023]`.
-- OpenSea. *"Employee Trading Policy."* September 17, 2021 — the canonical marketplace-side mitigation for curation-information-asymmetry.
+- DOJ SDNY press releases on the charge (2022-06-01) and sentencing (2023-08) exist but could not be retrieved in this pass; their specific figures are not relied on.
 - Cross-reference: T6.001 (Source-Verification Mismatch) at `techniques/T6.001-source-verification-mismatch.md` — marketplace-curation-as-information-channel is the T6.001 structural pattern.
 
 ### Proposed new BibTeX entries
@@ -83,3 +81,7 @@ The DOJ SDNY indictment (filed May 31, 2022, unsealed June 1, 2022) charged Chas
   note = {Sentence: 3 months imprisonment, 3 months home confinement, \$50K fine, ~\$57K forfeiture.},
 }
 ```
+
+- `[artnews23]` — The Art Newspaper, "Former OpenSea employee sentenced to three months in prison in first NFT insider trading case" (2023-08-25): <http://www.theartnewspaper.com/2023/08/25/former-opensea-employee-sentenced-three-months-prison-first-nft-insider-trading-case>
+- `[decrypt22]` — Decrypt, "DOJ charges former OpenSea exec in insider trading scheme" (2022-06-01): <https://decrypt.co/101827/doj-charges-former-opensea-exec-in-insider-trading-scheme>
+- `[tb25vacate]` — The Block, "US appeals court overturns OpenSea product manager Nathanial Chastain's wire fraud and money laundering conviction" (2025-07-31): <https://www.theblock.co/post/365052/us-appeals-court-overturns-opensea-product-manager-nathanial-chastains-wire-fraud-and-money-laundering-conviction>

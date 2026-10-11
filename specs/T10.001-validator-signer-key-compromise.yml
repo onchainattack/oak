@@ -82,7 +82,7 @@ output_alert: [oak_technique, detection_path, severity, chain,
 test_fixtures:
   positive:
     - 2022-03-ronin-bridge                    # 5/9 keys via LinkedIn fake-job-offer phishing
-    - 2022-06-harmony-horizon                 # 2/5 multisig, Lazarus
+    - 2022-06-harmony-horizon-bridge                 # 2/5 multisig, Lazarus
     - 2023-07-multichain                      # MPC key shares lost post-CEO arrest
     - 2025-09-shibarium-bridge                # T10.001 + T16.001 PoS-validator vote takeover
     - 2026-05-thorchain-router-exploit        # malicious validator extracted a vault key via GG20 leakage (864 failed rounds)

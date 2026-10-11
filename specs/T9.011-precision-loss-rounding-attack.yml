@@ -260,7 +260,7 @@ output_alert: [oak_technique, detection_path, severity, chain,
 
 test_fixtures:
   positive:
-    - 2023-04-hundred-finance                                         # Empty-market donation → zero shares
+    - 2023-hundred-finance-compound-v2-fork-cascade                                         # Empty-market donation → zero shares
     - 2024-05-sonne-finance                                           # Compound V2 fork, donation + rounding
     - 2024-09-onyx                                                    # Lending-market cToken T9.011
     - 2025-02-zklend                                                  # StarkNet — cross-VM demonstration

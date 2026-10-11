@@ -1,32 +1,24 @@
 # Kraken and Coinbase Staking-as-a-Service SEC Enforcement and Validator-Set Disruption — 2023–2025
 
-**Loss:** structural / regulatory-compliance cost — the SEC enforcement actions forced Kraken to shut down its US staking-as-a-service program (February 2023, $30M settlement) and targeted Coinbase's staking product (June 2023 lawsuit, ongoing at v0.1). The direct dollar cost was the settlement and legal fees; the validator-set impact was the forced exit of thousands of validators operated through Kraken's staking service, with their staked ETH unstaked and returned to customers, reducing validator-set diversity and concentrating staking among non-US-regulated operators.
+**Loss:** structural / regulatory-compliance cost — the SEC enforcement actions forced Kraken to shut down its US staking-as-a-service program (February 2023, \$30M settlement `[sec2023kraken]`) and targeted Coinbase's staking product (June 2023 lawsuit `[sec2023coinbase]`, dismissed with prejudice in February 2025 `[sec2025coinbase]`). The direct dollar cost was the settlement and legal fees. The cited sources do not quantify any validator-set impact; claims about the number of validators exited and their effect on diversity are unverified.
 **OAK Techniques observed:** **OAK-T14.005** (Builder/Relay Collusion / Censorship for MEV Extraction — broadly construed at the regulatory layer; the SEC's enforcement action coerced the shutdown of a staking service, effectively censoring a class of validator operators from the US market. The regulatory-action-as-censorship surface is structurally adjacent to the builder-level and relay-level censorship surfaces covered by T14.005's OFAC-compliance cases.) **OAK-T14.001** (Slashing Condition Exploit — structurally adjacent at the validator-exit layer; forced validator exits from Kraken's shutdown affected the validator set composition but did not involve slashing.)
-**Attribution:** **unattributed** — US Securities and Exchange Commission (SEC). Kraken settled without admitting or denying the SEC's allegations; Coinbase's staking product litigation was ongoing at v0.1.
+**Attribution:** **unattributed** — US Securities and Exchange Commission (SEC). Kraken settled without admitting or denying the SEC's allegations `[sec2023kraken]`; the SEC dismissed its Coinbase action in February 2025 `[sec2025coinbase]`.
+**Corrected 2026-10-11:** the Coinbase case was not ongoing; the SEC dismissed it with prejudice on 2025-02-27. The SEC release says Kraken agreed to stop offering staking services, not that it unstaked ETH or exited validators; those and the validator-diversity claims are marked unverified.
 
 **Key teaching point:** **Regulatory enforcement that coerces staking-service shutdowns is a T14.005-class validator-set disruption surface operating at the legal/policy layer rather than at the protocol/economic layer.** The SEC's theory — that staking-as-a-service constitutes an unregistered securities offering — forces US-facing staking services to either register with the SEC (which the SEC has not provided a compliant path for) or shut down their staking programs. The result is a regulatory-censorship surface: compliant US entities cannot operate staking validators as a service, reducing validator-set diversity, concentrating staking among non-US and DeFi-native operators, and creating a two-tier validator ecosystem (US-regulatory-compliant vs. non-US). The structural T14.005 lesson is that **censorship surfaces are not limited to the protocol/economic layer — regulatory action can coerce validator exits and validator-set reconfiguration at a scale comparable to a protocol-level attack.**
 
 ## Summary
 
-In February 2023, the SEC announced a settlement with Kraken over its US staking-as-a-service program. The SEC alleged that Kraken's staking program constituted an unregistered offer and sale of securities. Kraken agreed to:
+In February 2023, the SEC announced a settlement with Kraken over its US staking-as-a-service program. The SEC alleged that Kraken's staking program constituted an unregistered offer and sale of securities. Per the SEC, Kraken agreed to:
 
-- Shut down its US staking-as-a-service program immediately.
-- Pay $30 million in disgorgement, prejudgment interest, and civil penalties.
-- Unstake all customer ETH staked through the program and return it to customers.
+- Immediately stop offering or selling securities through crypto staking services or programs, and be permanently barred from doing so.
+- Pay $30 million covering disgorgement, prejudgment interest, and civil penalties.
 
-The forced shutdown required Kraken to exit thousands of Ethereum validators that had been staking on behalf of US customers. The validators entered the Ethereum exit queue, and the staked ETH was subject to the normal withdrawal-queue delay (hours to days depending on queue depth at the time). The ETH was returned to customers after the withdrawal period.
+The SEC alleged Kraken had offered the staking program since 2019, pooling investors' assets for advertised returns of up to 21 percent `[sec2023kraken]`. The cited release says nothing about unstaking customer ETH or exiting validators; earlier drafts of this file asserted both, and those assertions are unverified.
 
-In June 2023, the SEC filed a lawsuit against Coinbase, alleging (among other claims) that Coinbase's staking program constituted an unregistered securities offering. At v0.1 cutoff, the litigation was ongoing. Unlike Kraken (which settled and shut down), Coinbase contested the SEC's allegations while continuing to operate its staking program. The case represents a standing regulatory risk for all US-facing staking services.
+On 2023-06-06 the SEC sued Coinbase, alleging among other claims that it failed to register the offer and sale of its staking-as-a-service program `[sec2023coinbase]`. Unlike Kraken, Coinbase contested the allegations. On 2025-02-27 the SEC filed a joint stipulation dismissing the action with prejudice, stating the dismissal does not reflect a position on the merits `[sec2025coinbase]`.
 
-The validator-set impact of the Kraken shutdown was structurally significant:
-
-1. **Forced validator exits.** Thousands of validators were forcibly exited from the Ethereum Beacon Chain, reducing the active validator count and temporarily reducing the total staked ETH.
-
-2. **Staking concentration shift.** The exited validators' staked ETH was returned to customers, who could choose to restake through non-US or DeFi-native staking services (Lido, Rocket Pool, Coinbase — if Coinbase's staking survived the legal challenge) or to sell the ETH on the open market. The regulatory action effectively redirected staking flow from a regulated-US-entity operator to the broader staking market.
-
-3. **Validator diversity impact.** Kraken's validators represented a subset of the validator set with specific client, geographic, and infrastructure characteristics. Forcing their exit reduced validator-client diversity and geographic distribution, increasing the concentration of validators among the remaining operators.
-
-4. **Precedent for future staking-service enforcement.** The SEC's action against Kraken established a regulatory precedent that could be applied to any US-facing staking service. The chilling effect on US staking-service operators is a standing T14.005 surface: regulatory risk constrains who can operate validators in the US, shaping the validator set through legal/policy channels rather than through protocol/economic channels.
+The validator-set effects previously described in this section (forced exits of thousands of validators, loss of client/geographic diversity, redirection of stake) are not established by the cited sources and have been removed as unverified. The regulatory precedent for US-facing staking services is the part the sources support.
 
 The Kraken/Coinbase SEC enforcement is structurally distinct from the OFAC-compliance builder censorship cases already in the T14.005 corpus. The OFAC cases involve builders *choosing* to exclude sanctioned transactions; the SEC enforcement involves a regulator *coercing* validator exits. The common T14.005 thread is **external-pressure-induced censorship of blockchain infrastructure operators** — whether the pressure is regulatory (SEC) or sanctions-compliance (OFAC), the effect on the validator/operator set is structurally analogous.
 
@@ -35,17 +27,16 @@ The Kraken/Coinbase SEC enforcement is structurally distinct from the OFAC-compl
 | When | Event | OAK ref |
 |---|---|---|
 | 2022-09 | Ethereum Merge; staking-as-a-service programs (Kraken, Coinbase, Binance US) operate significant validator sets | (standing staking-service surface) |
-| 2023-02-09 | SEC announces Kraken settlement; Kraken shuts down US staking-as-a-service, pays $30M, exits thousands of validators | T14.005 (regulatory-censorship) |
-| 2023-06-06 | SEC files lawsuit against Coinbase; Coinbase staking product named in allegations; Coinbase contests, staking continues | T14.005 (standing regulatory surface) |
-| 2024–2025 | US regulatory landscape for staking-as-a-service remains uncertain; Coinbase litigation ongoing; no new staking-as-a-service programs launched by US-regulated entities | T14.005 (ongoing) |
+| 2023-02-09 | SEC announces Kraken settlement; Kraken agrees to stop offering staking services and pays $30M `[sec2023kraken]` | T14.005 (regulatory-censorship) |
+| 2023-06-06 | SEC files lawsuit against Coinbase; staking-as-a-service program named in allegations `[sec2023coinbase]` | T14.005 (standing regulatory surface) |
+| 2025-02-27 | SEC dismisses its Coinbase action with prejudice `[sec2025coinbase]` | T14.005 (surface eased) |
 | Continuing | Regulatory-action-as-validator-set-disruption surface persists through v0.1 | T14.005 (structurally open) |
 
 ## Public references
 
-- SEC vs Kraken settlement announcement (February 9, 2023) — SEC press release, Kraken blog post
-- SEC vs Coinbase complaint filing (June 6, 2023) — SDNY docket, SEC press release
-- Ethereum Beacon Chain validator exit queue data during Kraken forced-exit window (beaconcha.in, February 2023)
-- Coinbase staking program litigation status and public filings (2023–2025)
+- `[sec2023kraken]` — SEC, Press Release 2023-25, Kraken settlement (2023-02-09): <https://www.sec.gov/newsroom/press-releases/2023-25>
+- `[sec2023coinbase]` — SEC, Press Release 2023-102, SEC charges Coinbase (2023-06-06): <https://www.sec.gov/news/press-release/2023-102>
+- `[sec2025coinbase]` — SEC, Press Release 2025-47, dismissal of Coinbase action (2025-02-27): <https://sec.gov/newsroom/press-releases/2025-47>
 - See `techniques/T14.005-builder-censorship-mev-extraction.md` for Technique definition
 
 ## Discussion

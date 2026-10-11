@@ -24,6 +24,12 @@ The original text was written in the v0.1 bulk release while the LayerZero inves
 
 **`OAK-T10.008` is deprecated** (tombstone kept, ID never reused). Its only other example was quarantined in the 2026-10-11 source pass, so it had no confirmed anchor; the mechanism returns to TAXONOMY-GAPS as a candidate. The OAK incident report `investigations/2026-05-15-thorchain-router-exploit.md` is marked superseded and kept unedited as a record. Found independently by the 2026-10-11 source pass and by an external model reading the live `oak.json`.
 
+### Removed — second source pass (2022–2023): 28 quarantined, ~40 corrected, 9 more duplicates merged (2026-10-11)
+
+The same check over the 76 unsourced examples dated 2022–2023. Real incidents with wrong facts were corrected in place — among them Beanstalk (mechanism), Inverse Finance (the manipulated pool), Paraluni (reentrancy, not oracle manipulation), Agave (an Aave fork), CoinEx and AlphaPo (government/firm attributions that did not exist), JPEX (11 arrests, not 70+), Multichain, Terra (SEC settlement date) and Harmony. 28 had no credible record as described; nine of those are real incidents under a wrong mechanism (Akutars, Elephant Money, Rari Fuse, the ETHW replay, Atlantis Loans, Paribus, Snowdog, Balancer veBAL, two phishing cohorts) and are listed in `CORRECTIONS.md` as candidates for new, sourced entries. Duplicate incident files merged: Harmony (three files), Ankr, Hundred Finance 2023, MEV-Boost equivocation, Ledger Connect Kit, Socket, Loopring, Ronin 2024; withdrawn IDs resolve in `oak.json` as `merged` with `superseded_by`.
+
+Unsourced examples overall: 253 (34%) at the start of the day → 84 (12%). Examples: 662.
+
 ### Removed — 39 unsourceable worked examples quarantined; 43 corrected (2026-10-11)
 
 A source pass over the 93 examples dated 2024–2026 that cited nothing found: **11** confirmed as written, **43** real incidents with wrong facts (dates, amounts, mechanisms, attribution — corrected in place, each marked `**Corrected 2026-10-11:**`), and **39** for which no credible public record exists. Those 39 carried confident specifics — victim counts, dollar figures, package names, domains, named reports from real firms — that match nothing; 33 trace to the v0.1 bulk release (`f32645a`). They are moved to `quarantine/` (outside every tool and the site) rather than deleted, so any can be restored if a source turns up. Full list with findings: `CORRECTIONS.md`, 2026-10-11.

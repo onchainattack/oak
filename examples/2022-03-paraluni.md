@@ -1,37 +1,25 @@
-# Paraluni flash-loan exploit — BNB Chain — 2022-03-13
+# Paraluni MasterChef reentrancy exploit — BNB Chain — 2022-03-13
 
-**Loss:** approximately $1.7M extracted from Paraluni's masterChef contract via a price-calculation manipulation attack funded by flash loans.
-**OAK Techniques observed:** OAK-T9.001 (Oracle Price Manipulation — primary; the attacker exploited a price-calculation bug in Paraluni's masterChef contract, manipulating the liquidity-addition pricing through flash-loan-funded pool-state distortion). OAK-T9.002 (Flash-Loan-Funded Attack — structurally co-occurring; the attacker used flash loans to fund the capital base for the price-manipulation cycle).
-**Attribution:** **unattributed** pseudonymous; the attacker has not been publicly identified. No portion of the funds was returned.
-**Key teaching point:** A masterChef-style yield-farming contract that computes liquidity-addition prices from live pool state without TWAP smoothing or deviation breakers is a standing T9.001 surface — the masterChef pattern, widely deployed across BSC yield farms in the 2021-2022 period, inherits the same pool-state-as-oracle vulnerability that the lending-market oracle class (bZx, Harvest, Cream) made canonical on Ethereum.
+**Loss:** approximately \$1.7M drained across multiple transactions from Paraluni's MasterChef contract `[certikparaluni]`.
+**OAK Techniques observed:** OAK-T9.001 (Oracle Price Manipulation — original mapping, **not supported by the sources**; CertiK does not describe a price-oracle component). OAK-T9.002 (Flash-Loan-Funded Attack — the attacker borrowed about 157,000 USDT and 157,000 BUSD from PancakeSwap to fund the LP position `[certikparaluni]`).
+**Attribution:** **unattributed** pseudonymous; the attacker has not been publicly identified. Funds were not returned; CertiK reports 660 ETH deposited into Tornado Cash in 12 installments `[certikparaluni]`.
+**Corrected 2026-10-11:** the mechanism was an unvalidated pool ID combined with a reentrancy flaw via a malicious token, not pool-price/oracle manipulation; removed the unsourced post-mortem and analyst references.
+**Key teaching point:** A MasterChef-style contract entry point that accepts caller-supplied token addresses and pool IDs without checking that they match, and lacks reentrancy protection, lets an attacker-created token run code mid-deposit and get the same LP position credited twice.
 
 ## Summary
 
-Paraluni was a BNB Chain yield aggregator and farming protocol whose masterChef contract computed the exchange rate for liquidity-addition operations from live pool state. On 2022-03-13, an attacker used flash loans to borrow a large amount of the relevant trading pair, manipulated the pool's price, and then added liquidity through the masterChef contract at the distorted exchange rate — receiving a disproportionately large allocation of yield-farming rewards in exchange for a small genuine capital contribution. The attacker then extracted the over-allocated rewards and repaid the flash loan, netting approximately $1.7M in profit.
+On 2022-03-13 at 00:04:30 UTC the attacker exploited Paraluni's MasterChef contract. Per CertiK, two flaws combined: `depositByAddLiquidity()` did not validate that the `_pid` pool ID matched the supplied `_tokens`, and the contract lacked reentrancy protection `[certikparaluni]`. The attacker created two malicious tokens, UBT and UGT; UBT's `transferFrom()` called MasterChef's `deposit()` before internal state was updated, so the same 155,935 LP tokens were credited twice, creating two `userInfo` records, and the attacker withdrew through both paths `[certikparaluni]`.
 
-The price-calculation bug was a standard pool-state-as-oracle failure: the masterChef contract read the instantaneous pool reserve ratio as the canonical price, with no TWAP window, no deviation breaker, and no sanity-check against an external price reference. Flash-loan-funded price distortion across a single block was sufficient to push the reserve ratio to the attacker's chosen level, producing an inflated liquidity-addition exchange rate that the masterChef contract accepted as legitimate.
+The attacker borrowed about 157,000 USDT and 157,000 BUSD from PancakeSwap to build the LP position, then removed liquidity, repaid the flash loans and kept about 310,000 USDT and 310,000 BUSD. The proceeds were swapped to ETH, bridged from BSC to Ethereum and 660 ETH was deposited into Tornado Cash `[certikparaluni]`.
 
 ## Timeline (UTC)
 
-| When | Event | OAK ref |
-|---|---|---|
-| 2022-03-13 | Attacker takes flash loan from PancakeSwap (or equivalent BSC DEX) to fund the attack | T9.002 (capital sourcing) |
-| 2022-03-13 (same block) | Attacker manipulates the pool price to distort the reserve ratio | T9.001 (oracle input manipulation) |
-| 2022-03-13 (same block) | Attacker adds liquidity through Paraluni's masterChef contract at the manipulated exchange rate, receiving over-allocated rewards | T9.001 (extraction — inflated LP allocation) |
-| 2022-03-13 (same block) | Attacker extracts over-allocated rewards, repays flash loan, retains ~$1.7M profit | T9.001 (extraction complete) |
-| 2022-03-13 (post-event) | Paraluni team identifies the exploit; publishes post-mortem | (operator response) |
+| When | Event |
+|---|---|
+| 2022-03-13 00:04:30 | MasterChef exploit begins; about \$1.7M taken over several transactions `[certikparaluni]` |
+| After | Proceeds bridged to Ethereum; 660 ETH to Tornado Cash in 12 installments `[certikparaluni]` |
 
 ## Public references
 
-- Paraluni operator-side post-mortem, March 2022 — `[paralunipostmortem2022]`.
-- PeckShield on-chain trace — `[peckshieldparaluni2022]`.
-- SlowMist forensic analysis — `[slowmistparaluni2022]`.
-- Rekt News public-facing summary — `[rektparaluni2022]`.
-- Cross-reference: T9.001 (Oracle Price Manipulation) at `techniques/T9.001-oracle-price-manipulation.md`.
-- Cross-reference: T9.002 (Flash-Loan-Funded Attack) at `techniques/T9.002-flash-loan-funded-attack.md`.
-
-## Discussion
-
-Paraluni is the canonical BSC-yield-farm masterChef-price-manipulation worked example in the OAK record. The masterChef pattern — where a farming contract reads live pool state to determine deposit/reward exchange rates — recurs across numerous BSC yield-farm exploits in the 2021-2022 period (PancakeBunny May 2021, Bogged Finance May 2021, and the broader BSC yield-farm exploit cohort). Paraluni's specific contribution to the T9.001 chain is its masterChef-instant-pool-state-reading sub-pattern: unlike the lending-market oracle class where the manipulated price flows into a borrow/liquidate calculation, the masterChef class uses the manipulated price to inflate the attacker's yield-farm reward allocation, producing an extraction shape (over-allocated rewards vs. under-collateralised borrows) that is mechanically distinct from the Cream/Harvest/bZx subclass.
-
-The $1.7M loss magnitude places Paraluni in the mid-range of the BSC yield-farm exploit cohort and makes it a useful worked example for smaller-scale T9.001 + T9.002 incidents where the extraction mechanism is cleanly separable into "manipulate price" and "capture inflated reward allocation" — a structure that generalises to farming protocols beyond the masterChef variant.
+- `[certikparaluni]` — CertiK, "Paraluni Exploit" (2022-03): <https://www.certik.com/resources/blog/4mPLWLwyKG4xy30x65uLgw-paraluni-exploit>
+- Cross-reference: T9.002 at `techniques/T9.002-flash-loan-funded-attack.md`; T9.005 (Reentrancy) at `techniques/T9.005-reentrancy.md` is the better mechanism match.

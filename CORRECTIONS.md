@@ -117,3 +117,51 @@ A source pass over the 93 examples dated 2024–2026 that cited nothing (`tools/
 | `2024-01-socket-bungee-bridge` | `2024-01-socket-bungee` | Same incident filed twice (T9.005 vs T10.002); both mappings were wrong. Surviving entry re-mapped to T9.004 — unvalidated calldata spending users' approvals to SocketGateway. |
 | `2024-06-loopring` | `2024-06-loopring-smart-wallet` | Same incident filed twice; the retired copy cited nothing and repeated the ~200-wallet and third-party-2FA errors corrected in the survivor (58 wallets; Loopring's own 2FA servers). |
 | `2024-08-ronin-bridge-rescue` | `2024-08-ronin-bridge-upgrade` | Same incident filed twice; the retired copy cited nothing, kept the superseded ungated-upgradeTo / ~80-minute account corrected earlier today, and tagged the MEV bot's front-run as sandwiching (T5.004) and issuer-coordinated laundering (T7.008). |
+
+### 2026-10-11 — second source pass (2022–2023): 28 more examples quarantined
+
+The same check run over the 76 unsourced examples dated 2022–2023. About 40 were corrected or confirmed in place (marked `**Corrected 2026-10-11:**`); 28 had no credible record as described. Nine of those describe a real incident under a wrong mechanism — they are noted below as candidates for a new, sourced entry rather than rewritten to fit.
+
+| Quarantined file | Finding |
+|---|---|
+| `2023-09-stargate-layerzero-governance-relay-multisig` | No Stargate-specific audit or governance-relay finding; mitigation claims unsupported. |
+| `2023-11-pulsechain-fake-audit` | No CertiK or Hacken statement on PulseChain tokens; project counts and \$4–7M total unsourced. |
+| `2023-2024-argent-smart-wallet-escape-guardian-vulnerability` | No public "escape guardian" vulnerability; only a 2023 Consensys audit noting escape grace periods. |
+| `2023-2024-dao-proposal-snowballing-cohort` | No documented proposal-flood case; cited Tornado Cash and Audius cases were different mechanisms. |
+| `2023-2024-layerzero-governance-relay-misconfiguration-audit-cohort` | No Trail of Bits / OpenZeppelin / Spearbit advisories on LayerZero OFT governance relay misconfiguration. |
+| `2023-2025-cloud-doc-email-seed-storage-compromise-cohort` | Class is real (LastPass), but the cohort's figures and cited MetaMask/TRM/ZachXBT material are not. |
+| `2022-03-nft-proxy-upgrade-rug-cohort` | No named incident; no NFT-collection proxy-upgrade rug found; figures unsourced. |
+| `2023-2025-dprk-it-worker-exchange-account-farming` | DPRK IT-worker program is real; the exchange-account-farming specifics and the "Crypto Defenders Alliance" are not. |
+| `2023-2025-dprk-post-tornado-cash-aggregator-laundering` | No source that DPRK shifted to DEX aggregators; documented routes are Sinbad/YoMix, bridges, THORChain, eXch, OTC. |
+| `2023-05-sudoswap-wash-pools` | The Chainalysis and Elliptic reports it cites could not be found. |
+| `2023-09-gitcoin-dao-snapshot-governance-attack` | No record of a Sept 2023 Gitcoin Snapshot Sybil attack. |
+| `2022-2024-android-google-drive-wallet-backup-cohort` | Contradicted by Android docs (Drive backups are app-private and E2E-encrypted on Android 9+); no cohort found. |
+| `2022-2025-cross-chain-lock-spoof-named-cases` | Titled "named cases" but names none; no source for the pattern or the "low hundreds of millions". |
+| `2022-2025-ethereum-validator-ddos-extortion-campaigns` | No reports of DDoS extortion against Ethereum validators; demands, groups, botnets and case unsourced. |
+| `2022-09-snapshot-sybil-governance-cohort` | Essay with no named incident; disputes and hardening timeline unverified. |
+| `2022-2025-optimism-cross-chain-governance-relay-gap` | Premise contradicted (Optimism governance via Agora; Security Council dates wrong). |
+| `2023-01-ledger-donjon-side-channel` | No 2023 Donjon Nano S PIN-extraction research; Donjon's side-channel work was on Trezor. |
+| `2023-04-cross-chain-bridge-signature-replay-cohort` | Architecture essay with no named incident; aggregate unsupported. |
+| `2023-11-snowdog-dao-avalanche-cross-chain-lock-spoof` | The real SnowdogDAO incident was a ~\$30M Avalanche rug in Nov 2021 with no lock spoof; candidate for a new, sourced entry. |
+| `2023-2024-balancer-vebal-delegation-takeover` | No 2023–24 takeover; the documented case is the 2022 "Humpy" veBAL gauge capture — candidate for a new entry. |
+| `2022-02-akutar-nft-influencer-rug` | Real incident is different: April 2022 AkuDreams contract bug locked ~11,539 ETH (~\$34M); not an influencer rug — candidate for a new entry. |
+| `2022-04-elephant-money-flash-loan-governance-attack` | Real incident (2022-04-12, BNB Chain, ~\$11M) was price manipulation, not a governance attack — candidate for a new entry. |
+| `2022-04-rari-fuse-twap-oracle-window-manipulation` | Real incident (Fei Rari Fuse, 2022-04-30, ~\$80M) was reentrancy, not TWAP manipulation — candidate for a new entry. |
+| `2022-09-ethereum-pow-fork-replay-cohort` | ETHW used chain ID 10001 from launch; the real replay was the Omni bridge on ETHW — candidate for a new entry. |
+| `2023-06-atlantis-loans` | Real incident was a malicious governance proposal on an abandoned protocol spending lingering approvals, not router reentrancy — candidate for a new entry. |
+| `2023-04-paribus-diamond-facet-exploit` | Only source describes ~\$100K reentrancy in a forked Compound V2, not an unaudited diamond facet. |
+| `2023-2025-fake-crypto-wallet-google-play-app-store-phishing` | Specifics unsourced; documented cases differ (Kaspersky's App Store "FakeWallet", fake Ledger Live for macOS) — candidate for a new entry. |
+| `2023-2025-fake-revoke-cash-wallet-security-extension-phishing` | Premise false (Revoke.cash has an official extension); campaigns and \$3.5M+ unsourced; Okta's "ShieldGuard" is a real candidate. |
+
+### 2026-10-11 — further duplicates merged (found in the 2022–2023 pass)
+
+| Retired file | Surviving entry |
+|---|---|
+| `2022-06-harmony-horizon` | `2022-06-harmony-horizon-bridge` |
+| `2022-06-harmony-horizon-economic-incentive-gap` | `2022-06-harmony-horizon-bridge` |
+| `2022-12-ankr-abnbc-liquid-staking-exploit` | `2022-12-ankr` |
+| `2023-04-hundred-finance` | `2023-hundred-finance-compound-v2-fork-cascade` |
+| `2023-04-mev-boost-equivocation` | `2023-mev-boost-equivocation` |
+| `2023-12-ledger-connect-kit` | `2023-12-ledger-connect-kit-library-supply-chain-compromise` |
+
+Surviving entries re-mapped where the merge exposed a wrong primary: Harmony T10.005 → T10.001 (two of five multisig keys held by the attacker; FBI attribution to Lazarus); Ledger Connect Kit T11.006 → T15.004 (phished former employee's npm publishing access); Hundred Finance 2023 T9.004 → T9.011 (empty-market donation).
