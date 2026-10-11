@@ -33,6 +33,14 @@ Cold storage was untouched. Withdrawals were paused; deposits and trading contin
 - **Seven chains from one intrusion is the co-location signal, relocated.** T11.011's diagnostic — simultaneous outflows on unrelated chains — appears here without any key store being reached. The shared component was the pipeline that tells the signers what to sign.
 - **Hot/warm/cold tiering worked as designed and bounded the loss.** It is also why the number is \$351.6M rather than the exchange's balance sheet: the tier boundary is a blast-radius control, and it held.
 
+## Root-cause evidence
+
+- **Technique:** OAK-T11.001
+- **Source:** <https://www.coindesk.com/markets/2026/09/25/bitget-s-usd351-million-hack-happened-via-spoofed-transfers-not-private-keys-ceo-gray-chen-says>; <https://www.techflowpost.com/en-US/newsletter/138358>
+- **Source type:** operator
+- **Confidence:** confirmed
+- **Evidence:** Bitget's CEO: a compromised wallet backend spoofed transaction data into Bitget's own authorisation process; no keys stolen. SlowMist's preliminary findings trace entry to a third-party security-product zero-day (2026-08-31) and forged withdrawal parameters. Final report outstanding.
+
 ## Public references
 
 - `[techflowslowmistbitget2026]` — TechFlow, "SlowMist Releases Update on Bitget Incident Investigation: Malicious Activity Traced to Late August, Involves Third-Party Security Product" (2026-09-30): <https://www.techflowpost.com/en-US/newsletter/138358>

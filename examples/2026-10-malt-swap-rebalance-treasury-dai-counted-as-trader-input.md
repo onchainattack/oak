@@ -14,6 +14,14 @@
 
 On 2026-10-03 an attacker made small-input swaps on MALT that triggered rebalancing from the Capital Source; the treasury DAI returned to the pool was counted toward the swap's input check, letting the attacker take out more MALT than paid for. Losses were ~\$72K; the project patched and pledged compensation.
 
+## Root-cause evidence
+
+- **Technique:** OAK-T9.016
+- **Source:** <https://x.com/SlowMist_Team/status/2106418632041668784>
+- **Source type:** security-firm
+- **Confidence:** reported
+- **Evidence:** SlowMist: rebalancing inside a swap pulled DAI from the Capital Source into the pool and the swap's validity check counted it as trader input. The project acknowledged a fix but published no analysis.
+
 ## Public references
 
 - `[cryptonewsmalt2026]` — Cryptonews.net, "MALT Loses \$72K After Flawed Swap Lets Attacker Tap Treasury DAI" (2026-10-03): <https://cryptonews.net/news/security/33535167/>

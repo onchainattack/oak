@@ -14,6 +14,14 @@
 
 On 2026-10-04 an unidentified vault on Base (TransparentUpgradeableProxy `0xD1895f2019c2152FC2b9022D57f19198c4CFCABC`) lost ~1,783 wstETH. Its owner Safe whitelisted a freshly deployed contract, which borrowed aBaswstETH against the vault's Aave V3 position and forwarded it to `0xcdFE91301356da873562EF513828a60dba1F569d`; the attacker `0x0B5126e1bc27C0de77e02e97945760A674EdB034` redeemed it through Aave for wstETH. Blockaid flagged it at 09:20 UTC; PeckShield followed at 09:56 UTC.
 
+## Root-cause evidence
+
+- **Technique:** OAK-T11.003
+- **Source:** <https://www.cryptotimes.io/2026/10/04/base-vault-hack-6m-in-wsteth-drained-after-attacker-gains-whitelist-access/>; <https://blockfence.io/anonymous-base-vault-loses-6m-after-multisig-re-whitelists-attacker-contract/>
+- **Source type:** security-firm
+- **Confidence:** reported
+- **Evidence:** ExVul's trace shows the owner Safe removed and re-added the attacker contract to the whitelist one minute apart with three valid signatures each time. Whether keys were stolen or signers were misled is unknown; the operator has not identified itself. Both articles rest on the same firm's analysis.
+
 ## Public references
 
 - `[cryptotimesbasevault2026]` — The Crypto Times, "Base Vault Hack: \$6M in wstETH Drained After Attacker Gains Whitelist Access" (2026-10-04): <https://www.cryptotimes.io/2026/10/04/base-vault-hack-6m-in-wsteth-drained-after-attacker-gains-whitelist-access/>

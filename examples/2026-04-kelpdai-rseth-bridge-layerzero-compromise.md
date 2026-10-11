@@ -53,6 +53,14 @@ The attacker then **supplied the unbacked rsETH to Aave V3 as collateral and bor
 - **A custody reconciliation catches this at payment one, as it does for every other anchor in this class.** Release 116,500 rsETH only if the locked/issued invariant moved by 116,500. The invariant broke on the **first** release and nothing was reading it.
 - **The contagion path ran through the attacker's own deposit, not through price alone.** The attacker took the unbacked rsETH **into Aave V3 as collateral** and borrowed. That converts a bridge failure into a lending-market failure **immediately and deliberately**, without waiting for a depeg to propagate. Listing an asset whose supply integrity depends on a third party's off-chain verifier means **inheriting that verifier's failure modes onto your own balance sheet** — which is the argument for supply-attested collateral (proof of backing) rather than price-attested collateral.
 
+## Root-cause evidence
+
+- **Technique:** OAK-T10.002.001
+- **Source:** <https://layerzero.network/blog/layerzero-labs-kelpdao-incident-report>
+- **Source type:** operator
+- **Confidence:** confirmed
+- **Evidence:** LayerZero Labs' incident report attributes the loss to forged source-chain events fed to a single DVN, with no signing key stolen.
+
 ## Public references
 
 - `[layerzerokelpreport2026]` — LayerZero, "LayerZero Labs KelpDAO Incident Report" (2026-03-06 social engineering of a LayerZero Labs developer, session-key harvest, pivot into the RPC cloud environment; memory-patched internal nodes returning correct data to monitoring and tampered data to the DVN; DoS forcing DVN signing onto two compromised nodes; single-verifier OApp configuration; 116,500 rsETH / ~\$292M; **no keys stolen**; attribution to TraderTraitor / UNC4899 by Mandiant, CrowdStrike and zeroShadow; remediation: multiple DVN attestors as baseline, cloud rebuild, just-in-time privilege elevation): <https://layerzero.network/blog/layerzero-labs-kelpdao-incident-report>

@@ -14,6 +14,14 @@
 
 On 2026-10-07 the 79th Vault operator's hot wallet moved 2.01M 79AU out of a contract and sold it into the PancakeSwap 79AU/USDT pool in about 95 trades, draining ~\$11.3M of USDT and converting the proceeds to ~16,249 BNB. The team attributed it to a stolen operator key, repaired the affected permissions, and offered a settlement. On 2026-10-09 the attacker returned 15,000 BNB.
 
+## Root-cause evidence
+
+- **Technique:** OAK-T11.014
+- **Source:** <https://www.tokenpost.com/news/technology/28660>; <https://x.com/79thVault/status/2108244949963833685>
+- **Source type:** operator
+- **Confidence:** confirmed
+- **Evidence:** 79th Vault states an attacker obtained its operator's private key through a flaw in account-permission management and used it to move 79AU into the pool. Defimon's insider alternative is not excluded by the operator's account.
+
 ## Public references
 
 - `[tokenpost79thvault2026]` — TokenPost, "79th Vault Says Operator's Private Key Was Compromised in Attack" (2026-10-08): <https://www.tokenpost.com/news/technology/28660>

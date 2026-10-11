@@ -12,6 +12,14 @@
 
 On 2026-10-06 at 06:13 UTC an attacker passed a self-deployed module to an unauthenticated function of a 2020 MakerDAO liquidation keeper (proxy `0x9c05a05893Ada984FC20D0DA0c046De5Cc0e8273`). The keeper granted the module Vat delegation and called into it; the module settled four never-dealt Black Thursday auctions, moved their 200 ETH collateral out of the keeper's Vat balance, and exited it as WETH.
 
+## Root-cause evidence
+
+- **Technique:** OAK-T9.004
+- **Source:** <https://www.certik.com/blog/makerdao-legacy-auction-keeper-incident-analysis>; <https://x.com/DefimonAlerts/status/2107391959853600812>
+- **Source type:** security-firm
+- **Confidence:** corroborated
+- **Evidence:** CertiK's transaction-level analysis: keeper function 0x8804d1de lacked the ds-auth check, accepted any adapter, granted it Vat delegation and called it; the module settled four 2020 Flipper lots and exited 200 ETH. Defimon independently flagged the missing access check.
+
 ## Public references
 
 - `[certikmakerkeeper2026]` — CertiK, "MakerDAO Legacy Auction Keeper Incident Analysis": <https://www.certik.com/blog/makerdao-legacy-auction-keeper-incident-analysis>

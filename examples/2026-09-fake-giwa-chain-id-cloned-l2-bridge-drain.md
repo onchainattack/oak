@@ -22,6 +22,14 @@ On 2026-09-26 two funded wallets deployed a bridge contract on Ethereum (`0xbA99
 | 2026-09-27 07:29 | 766.25 ETH drained in one transaction | (extraction) |
 | 2026-09-27 → 28 | ~584.9 ETH to Tornado Cash | **T7.001** |
 
+## Root-cause evidence
+
+- **Technique:** OAK-T4.009
+- **Source:** <https://bitquery.io/investigations/fake-giwa-chain-bridge-drain>
+- **Source type:** security-firm
+- **Confidence:** reported
+- **Evidence:** Bitquery traces a bridge contract into a private chain using GIWA's chain ID 9134, deposits on a 'leaked RPC' rumour, and a single 766.25 ETH drain; GIWA confirmed mainnet was not live. Claims about the clone's internals come from GIWA and DYORSWAP posts.
+
 ## Public references
 
 - `[bitqueryfakegiwa2026]` — Bitquery, "Fake GIWA chain bridge drain" investigation: <https://bitquery.io/investigations/fake-giwa-chain-bridge-drain>

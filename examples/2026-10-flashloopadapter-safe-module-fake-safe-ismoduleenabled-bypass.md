@@ -12,6 +12,14 @@
 
 On 2026-10-01 an attacker deployed a contract that impersonated a Safe, called FlashLoopAdapter's `open()`/`close()` paths, and unwound two real Safes' leveraged Aave V3 positions with a Morpho flash loan, netting ~114 ETH. SlowMist flagged it.
 
+## Root-cause evidence
+
+- **Technique:** OAK-T9.004
+- **Source:** <https://x.com/SlowMist_Team/status/2105855276536725599>
+- **Source type:** security-firm
+- **Confidence:** reported
+- **Evidence:** SlowMist: open() and close() authorised callers via isModuleEnabled on msg.sender, so a fake Safe returning true passed. Press coverage relays SlowMist rather than independently confirming.
+
 ## Public references
 
 - `[cryptonewsflashloop2026]` — crypto.news, "FlashLoopAdapter exploit drains \$305K from Aave linked Safe wallets" (2026-10-02): <https://crypto.news/flashloopadapter-exploit-drains-305k-from-aave-linked-safe-wallets/>

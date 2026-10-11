@@ -12,6 +12,14 @@
 
 On 2026-10-01 Microsoft's official X account posted promotions for CLIPPY, an unofficial meme coin playing on Clippy and the MSFT ticker. The posts were removed; an apology appeared about 30 minutes later and was itself quickly deleted. Microsoft said the account was secured, that it never authorised use of its IP for a token, and that it would pursue removal of the token and its marketing.
 
+## Root-cause evidence
+
+- **Technique:** OAK-T15.006
+- **Source:** <https://news.bitcoin.com/crypto-news/microsoft-x-account-hijacked-promote-clippy-meme-coin/>
+- **Source type:** operator
+- **Confidence:** confirmed
+- **Evidence:** Microsoft confirmed 'unauthorized access to our account on X, including posts that did not come from Microsoft'. The access vector is undisclosed; the Technique records the account takeover, not how it happened.
+
 ## Public references
 
 - `[bitcoincommicrosoft2026]` — Bitcoin.com News, "Microsoft X account hijacked to promote Clippy meme coin" (2026-10-02): <https://news.bitcoin.com/crypto-news/microsoft-x-account-hijacked-promote-clippy-meme-coin/>

@@ -14,6 +14,14 @@
 
 On 2026-10-02 an attacker used GoldPesa's `GPXHooks.reBalance()` to mint positions without settling the matching currency deltas through the PositionManager, extracting ~\$114.9K. SlowMist flagged it; GPX trading volume fell to zero afterwards.
 
+## Root-cause evidence
+
+- **Technique:** OAK-T9.016
+- **Source:** <https://x.com/SlowMist_Team/status/2106415554492059872>
+- **Source type:** security-firm
+- **Confidence:** reported
+- **Evidence:** SlowMist alert, relayed in syndicated reporting: GPXHooks.reBalance() did not validate currency deltas against the shared PositionManager. No transaction-level analysis located.
+
 ## Public references
 
 - `[slowmistgoldpesa2026]` — SlowMist on X, GoldPesa alert (2026-10-02): <https://x.com/SlowMist_Team/status/2106415554492059872>

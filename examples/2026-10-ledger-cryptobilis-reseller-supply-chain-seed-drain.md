@@ -22,6 +22,14 @@ From the morning of 2026-10-09 (UTC), Ledger users in Southeast Asia reported em
 | 2026-10-09 13:32 | Ledger statement; CryptoBilis sales paused | (operator response) |
 | 2026-10-09 | USDT freeze reported; USDD swaps; ~430 ETH to Tornado Cash | **T7.001** |
 
+## Root-cause evidence
+
+- **Technique:** OAK-T11.007
+- **Source:** <https://protos.com/ledger-says-southeast-asia-reseller-linked-to-86m-draining/>; <https://cryptoticker.io/en/ledger-hack-cryptobilis-86-million-hardware-wallet>
+- **Source type:** operator
+- **Confidence:** disputed
+- **Evidence:** Ledger's statement establishes only that affected users bought from one reseller (CryptoBilis) and that Ledger's own infrastructure was not compromised. How seeds were obtained is contested: Karpelès claims an under-screen implant on a device he examined; Monahan sees no zero-day and points to phishing. Parent Technique only until a teardown is published.
+
 ## Public references
 
 - `[protosledgercryptobilis2026]` — Protos, "Ledger says Southeast Asia reseller linked to \$86M draining" (2026-10-09): <https://protos.com/ledger-says-southeast-asia-reseller-linked-to-86m-draining/>

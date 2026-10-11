@@ -42,6 +42,11 @@ Output schema (v2):
         {"id": "<slug>", "file": "<slug>.md", "title": "...",
          "date_prefix": "YYYY-MM", "techniques": ["OAK-Tn.NNN", ...],
          "attribution": "confirmed|inferred-strong|inferred-weak|pseudonymous|unattributed",
+         "root_cause_evidence": [
+           {"technique_id": "OAK-Tn.NNN", "sources": ["https://..."],
+            "source_type": "operator|government|security-firm|independent-researcher|news",
+            "confidence": "confirmed|corroborated|reported|disputed",
+            "evidence": "..."}],
          "source_file": "..."}
       ],
       "relationships": [
@@ -209,6 +214,7 @@ class Example:
     date_prefix: str = ""
     techniques: list[str] = field(default_factory=list)
     attribution: str = ""
+    root_cause_evidence: list[dict] = field(default_factory=list)
     source_file: str = ""
 
 
@@ -390,6 +396,22 @@ def parse_data_source(path: Path) -> DataSource:
     return ds
 
 
+def parse_root_cause_evidence(text: str) -> list[dict]:
+    """Parse the `## Root-cause evidence` section. Format and rules live in
+    tools/check_root_cause.py, which is the validator; this stays forgiving."""
+    from check_root_cause import parse_entries  # same parser as the validator
+    return [
+        {
+            "technique_id": e.get("technique", ""),
+            "sources": e.get("sources", []),
+            "source_type": e.get("source type", ""),
+            "confidence": e.get("confidence", ""),
+            "evidence": e.get("evidence", ""),
+        }
+        for e in parse_entries(text)
+    ]
+
+
 def parse_example(path: Path) -> Example:
     """Parse a worked example into its export shape.
 
@@ -414,6 +436,7 @@ def parse_example(path: Path) -> Example:
     if (mb := EXAMPLE_ATTR_BLOCK_RE.search(text)):
         if (ma := EXAMPLE_ATTR_RE.search(mb.group(1))):
             ex.attribution = ma.group(1).lower()
+    ex.root_cause_evidence = parse_root_cause_evidence(text)
     return ex
 
 

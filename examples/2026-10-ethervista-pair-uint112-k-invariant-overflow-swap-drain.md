@@ -14,6 +14,14 @@
 
 On 2026-10-09 an attacker registered its own contract as an EtherVista router and executed two crafted swaps whose overflowing K check passed despite a falling reserve product, draining ~\$18.6K of WETH and VISTA. SlowMist flagged it at 05:20 UTC.
 
+## Root-cause evidence
+
+- **Technique:** OAK-T9.016
+- **Source:** <https://x.com/SlowMist_Team/status/2108427455572918626>
+- **Source type:** security-firm
+- **Confidence:** reported
+- **Evidence:** SlowMist: EtherVistaPair.swap()'s K-invariant check on uint112 reserves could overflow and pass a falling reserve product; the attacker registered its own router first.
+
 ## Public references
 
 - `[cryptotimesbitbayethervista2026]` — The Crypto Times, "SlowMist Flags BitBay and EtherVista Hacks as Attackers Drain \$32,600 From DeFi Vault & Pool" (2026-10-09): <https://cryptotimes.io/2026/10/09/slowmist-flags-bitbay-and-ethervista-hacks-as-attackers-drain-32600-from-defi-vault-pool>

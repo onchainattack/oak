@@ -21,6 +21,22 @@ We accept PRs in any of the following categories:
 | **Tooling** | Improvements to `tools/` validators, exporters, or coverage-map generators. |
 | **Relationship-graph edge** | A new entry exposed via `tools/oak.json` (mitigates / uses / detects / targets edge between existing axis entries). |
 
+## Root-cause evidence on worked examples
+
+Every worked example dated 2026-10 or later must carry a `## Root-cause evidence` section saying **which source establishes the mechanism** behind its primary Technique, and how settled that is. It is exported to `oak.json` as `root_cause_evidence` and validated by `tools/check_root_cause.py` (part of `npm run check`).
+
+```markdown
+## Root-cause evidence
+
+- **Technique:** OAK-T10.001
+- **Source:** <https://...>; <https://...>
+- **Source type:** operator | government | security-firm | independent-researcher | news
+- **Confidence:** confirmed | corroborated | reported | disputed
+- **Evidence:** what the source says that establishes the mechanism.
+```
+
+`confirmed` needs the operator's own post-mortem or a government source that states the mechanism. `corroborated` needs two independent sources. One security firm's alert relayed by several outlets is `reported`, not `corroborated`. Use `disputed` when credible sources conflict, and say how. A same-day third-party analysis is never `confirmed`: OAK's KelpDAO and THORChain misclassifications both came from treating one as settled.
+
 ## Per-Technique template (defender's-eye-view)
 
 OAK is a **detection and defense** framework, not an offensive playbook. Every Technique page is written from the perspective of **what a defender, investigator, or risk team observes** — not as instructions for performing an action. Use this template:

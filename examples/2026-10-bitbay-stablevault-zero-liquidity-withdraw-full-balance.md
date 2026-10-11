@@ -14,6 +14,14 @@
 
 On 2026-10-09 an attacker called `reposition()` on BitBay's UsdcDaiV4Vault on Polygon to drive its liquidity to zero, then redeemed one minimal share and received the vault's full ~14,838 DAI balance. SlowMist flagged it at 03:28 UTC.
 
+## Root-cause evidence
+
+- **Technique:** OAK-T9.016
+- **Source:** <https://x.com/SlowMist_Team/status/2108399198035202138>
+- **Source type:** security-firm
+- **Confidence:** reported
+- **Evidence:** SlowMist: with liquidity driven to zero via reposition(), _withdraw() paid the whole contract balance for one share unit.
+
 ## Public references
 
 - `[cryptotimesbitbayethervista2026]` — The Crypto Times, "SlowMist Flags BitBay and EtherVista Hacks as Attackers Drain \$32,600 From DeFi Vault & Pool" (2026-10-09): <https://cryptotimes.io/2026/10/09/slowmist-flags-bitbay-and-ethervista-hacks-as-attackers-drain-32600-from-defi-vault-pool>
