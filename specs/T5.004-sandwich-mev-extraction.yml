@@ -79,7 +79,6 @@ output_alert: [oak_technique, detection_path, severity, chain, block,
 test_fixtures:
   positive:
     - 2023-jaredfromsubway-mev                           # canonical persistent operator at scale
-    - 2024-08-ronin-bridge-rescue                        # whitehat MEV-bot rescue, sandwich-pattern exploitation
   negative:
     - "Atomic two-leg arbitrage between two pools (no victim leg between brackets)"
     - "JIT liquidity provision (mint + swap + burn) without counter-direction outer pair"

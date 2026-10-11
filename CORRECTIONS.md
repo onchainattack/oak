@@ -116,3 +116,4 @@ A source pass over the 93 examples dated 2024–2026 that cited nothing (`tools/
 |---|---|---|
 | `2024-01-socket-bungee-bridge` | `2024-01-socket-bungee` | Same incident filed twice (T9.005 vs T10.002); both mappings were wrong. Surviving entry re-mapped to T9.004 — unvalidated calldata spending users' approvals to SocketGateway. |
 | `2024-06-loopring` | `2024-06-loopring-smart-wallet` | Same incident filed twice; the retired copy cited nothing and repeated the ~200-wallet and third-party-2FA errors corrected in the survivor (58 wallets; Loopring's own 2FA servers). |
+| `2024-08-ronin-bridge-rescue` | `2024-08-ronin-bridge-upgrade` | Same incident filed twice; the retired copy cited nothing, kept the superseded ungated-upgradeTo / ~80-minute account corrected earlier today, and tagged the MEV bot's front-run as sandwiching (T5.004) and issuer-coordinated laundering (T7.008). |

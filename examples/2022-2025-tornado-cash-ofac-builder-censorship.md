@@ -1,10 +1,12 @@
 # OFAC-compliance builder censorship of Tornado Cash transactions — Ethereum — 2022–2025 (ongoing)
 
-**Loss:** structural — ongoing censorship of Ethereum transactions interacting with OFAC-sanctioned addresses (primarily Tornado Cash contract addresses) by major Ethereum block builders. Through 2022–2025, approximately 30-40% of Ethereum blocks were produced by OFAC-compliant builders that excluded Tornado Cash-linked transactions, causing measurable inclusion delays for censored transactions. The loss is measured in delayed or excluded transactions rather than in direct dollar extraction — but the censorship represents a structural T14.005 surface where the block-construction layer systematically excludes specific transaction classes, reducing Ethereum's censorship-resistance guarantees.
+**Loss:** structural — ongoing censorship of Ethereum transactions interacting with OFAC-sanctioned addresses (primarily Tornado Cash contract addresses) by major Ethereum block builders. Through 2022–2025, the share of Ethereum blocks built by OFAC-compliant relays/builders peaked at roughly 79–80% of blocks around 2022-11-21 (MEV Watch data, per The Block and Cointelegraph) and fell to about 27% by May 2023 as non-censoring relays (Ultra Sound, Agnostic) gained over 60% of validators; later shares are not verified here that excluded Tornado Cash-linked transactions, causing measurable inclusion delays for censored transactions. The loss is measured in delayed or excluded transactions rather than in direct dollar extraction — but the censorship represents a structural T14.005 surface where the block-construction layer systematically excludes specific transaction classes, reducing Ethereum's censorship-resistance guarantees.
 
 **OAK Techniques observed:** **OAK-T14.005** (Builder Censorship MEV Extraction) — primary in the *OFAC-compliance censorship* sub-pattern. Ethereum block builders — the entities that construct execution-payload blocks under PBS — deliberately exclude transactions that interact with OFAC-sanctioned addresses (Tornado Cash contract addresses) from their block proposals. The censorship is builder-level: the builder decides what to include in the block, and the MEV-Boost relay delivers the builder's pre-filtered block to the proposer. The result is a bifurcated builder landscape where censored transactions experience longer inclusion delays (waiting for a non-censoring builder's slot) but are not permanently excluded. **OAK-T14.002** (MEV-Boost Relay Attack — structurally adjacent; relay-level censorship compounds the builder-level censorship when OFAC-compliant relays further filter blocks or refuse to deliver blocks containing censored transactions).
 
 **Attribution:** **unattributed** No individual builder operator is "the attacker" — the censorship is a systemic property of the PBS architecture where major builders (Flashbots Builder, and others operating under U.S. regulatory jurisdiction) comply with OFAC sanctions by filtering sanctioned addresses from their block templates. The builders are acting within their legal obligations, not as malicious actors. The T14.005 classification captures the *structural surface* — the PBS architecture enables builder-level censorship regardless of the builder's motivation (profit-driven or compliance-driven).
+
+**Corrected 2026-10-11:** the "30–40% of blocks through 2022–2025" figure had no source; replaced with the sourced trajectory (peak ~79–80% Nov 2022, ~27% May 2023).
 
 **Key teaching point:** **Builder-level censorship under PBS is a structural T14.005 surface regardless of the builder's motivation — profit-driven MEV censorship and regulatory-compliance censorship share the same infrastructure-layer mechanism (the builder's control over block-content selection) and produce the same defender-relevant outcome (transactions are excluded from blocks that would otherwise include them).** The Tornado Cash / OFAC-compliance case is the most extensively measured and quantitatively documented instance of builder-level censorship — it demonstrates that the PBS architecture's concentration of block-construction power in a small number of builders creates a censorship surface even when the builders are acting in good-faith compliance with legal obligations.
 
@@ -23,7 +25,7 @@ The result is a measurable inclusion-delay penalty for transactions interacting 
 
 Empirical measurement (Wahrstatter et al., 2023) documented:
 
-- Through 2022–2025, approximately 30-40% of Ethereum blocks were produced by OFAC-compliant relays/builders.
+- Through 2022–2025, the share of Ethereum blocks built by OFAC-compliant relays/builders peaked at roughly 79–80% of blocks around 2022-11-21 (MEV Watch data, per The Block and Cointelegraph) and fell to about 27% by May 2023 as non-censoring relays (Ultra Sound, Agnostic) gained over 60% of validators; later shares are not verified here.
 - Tornado Cash-linked transactions experienced a median inclusion delay of 2-3x the baseline for comparable-fee transactions.
 - The censored transaction pool's inclusion rate tracked the non-censoring builder share — when non-censoring builders had a higher slot share, inclusion was faster; when they had a lower share, inclusion was slower.
 
@@ -37,7 +39,7 @@ The censorship is structural, not incidental: it persists because the PBS archit
 | 2022-09 | Ethereum transitions to PoS (the Merge); MEV-Boost / PBS architecture becomes the dominant block-production pipeline; builder concentration emerges | T14.005 surface embedded in architecture |
 | 2022-10 – 2023 | OFAC-compliant builder share fluctuates; non-censoring builders (BeaverBuild, Titan, Rsync) gain share; censorship.pics and mevwatch.info launch to track builder/relay censorship rates | T14.005 surface measured |
 | 2023 | Wahrstatter et al. publish empirical measurement of Ethereum transaction censorship under OFAC-compliance builder policies; document median 2-3x inclusion delay for censored transactions | T14.005 quantified |
-| 2023–2025 | OFAC-compliant builder share stabilises around 30-40%; non-censoring builder share provides a censorship-resistance floor; transactions are delayed but not permanently excluded | T14.005 surface persistent |
+| 2023 | OFAC-compliant block share falls from ~79–80% (Nov 2022) to ~27% (May 2023); non-censoring builder share provides a censorship-resistance floor; transactions are delayed but not permanently excluded | T14.005 surface persistent |
 | 2024–2025 | Ethereum protocol-layer mitigation research: inclusion lists (EIP-7547), encrypted mempools, ePBS developments — all targeting the structural T14.005 surface at the protocol layer | T14.005 mitigation pipeline |
 | 2025 | Inclusion lists remain pre-deployment; builder censorship persists as a structural surface; the non-censoring builder share is the operational censorship-resistance metric | T14.005 surface ongoing |
 
@@ -65,6 +67,8 @@ The censorship is structural, not incidental: it persists because the PBS archit
 
 ## Public references
 
+- `[theblockofac2023]` — The Block, "Ethereum's OFAC-compliant blocks fall to 27%, marking a drop in potential for protocol-level censorship" (2023-05-10): <https://www.theblock.co/news/ecosystems/2023-05-10-ethereums-ofac-compliant-blocks-fall-to-27-marking-a-drop-in-protocol-level-censorship-230179>
+- `[cointelegraphofac2023]` — Cointelegraph, "OFAC-compliant blocks on Ethereum hits three-month low of 47%": <https://cointelegraph.com/news/ofac-compliant-blocks-on-ethereum-hits-three-month-low-of-47>
 - `[wahrstatter2023censorship]` — Wahrstatter et al., empirical measurement of Ethereum transaction censorship under OFAC-compliance builder policies (2023); canonical quantitative T14.005 anchor.
 - `[daian2019flashboys]` — Daian et al., "Flash Boys 2.0" (2019): foundational MEV characterisation including the builder/proposer/relay architecture.
 - censorship.pics and mevwatch.info — community-run builder-censorship dashboards measuring OFAC-compliance inclusion rates per builder and per relay.

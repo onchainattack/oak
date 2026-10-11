@@ -1,3 +1,7 @@
+> **MERGED 2026-10-11 into `examples/2024-08-ronin-bridge-upgrade.md`** — a duplicate entry for the same incident (it cited nothing, kept the superseded upgradeTo / ~80-minute account, and mis-tagged the bot's front-run as T5.004 sandwiching and T7.008). Not part of the OAK corpus; kept for the record.
+
+**Merged into:** 2024-08-ronin-bridge-upgrade
+
 # Ronin Bridge whitehat MEV-bot rescue — Ronin / Ethereum — 2024-08-06
 
 **Loss:** approximately \$12M temporarily extracted from the Ronin Bridge on 2024-08-06 by an MEV searcher / arbitrage bot that front-ran a real exploit transaction targeting a misconfigured bridge upgrade. The temporary outflow consisted of ~4,000 ETH and ~2M USDC. **Recovery:** approximately the full ~\$12M was returned to a Sky Mavis multisig within roughly 80 minutes of the public Sky Mavis acknowledgement, after the bot operator self-identified as a whitehat MEV searcher and accepted Sky Mavis's public rescue framing. This is one of the cleanest 2024 cases of a near-total recovery on an EVM bridge incident.

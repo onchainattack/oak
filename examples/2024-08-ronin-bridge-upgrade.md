@@ -1,6 +1,6 @@
 # Ronin Bridge upgrade initialization failure — Ronin / Ethereum — 2024-08-06
 
-**Loss:** approximately \$12M temporarily extracted from the Ronin Bridge on 2024-08-06 (The Block: ~\$11.8M; roughly 4,000 ETH and 2M USDC, the USDC amount being the per-transaction withdrawal maximum). **Recovery:** full — an MEV bot front-ran other actors' manual attempts to exploit the flaw and withdrew the funds first; its operators then returned them (ETH first, USDC a couple of hours later) and Ronin paid a \$500K bug bounty. The rescue is documented separately at `2024-08-ronin-bridge-rescue.md`; this example documents the underlying vulnerability.
+**Loss:** approximately \$12M temporarily extracted from the Ronin Bridge on 2024-08-06 (The Block: ~\$11.8M; roughly 4,000 ETH and 2M USDC, the USDC amount being the per-transaction withdrawal maximum). **Recovery:** full — an MEV bot front-ran other actors' manual attempts to exploit the flaw and withdrew the funds first; its operators then returned them (ETH first, USDC a couple of hours later) and Ronin paid a \$500K bug bounty. This entry covers both the vulnerability and the rescue (a duplicate rescue-only entry was merged into it on 2026-10-11).
 **OAK Techniques observed:** **OAK-T10.001** (Validator / Signer Configuration Compromise — the upgrade left the bridge's operator vote-weight threshold at zero, so the signature-verification control was effectively disabled). **OAK-T9.004** (retained as filed; the defect is better described as an upgrade/initialization error than a missing access-control check, see report note).
 **Attribution:** **pseudonymous.** The actors who withdrew the funds were an MEV bot whose operators behaved as white hats and returned the funds; the operators are not identified in the sources reviewed. No state-actor attribution.
 
@@ -34,7 +34,6 @@ An MEV bot front-ran other actors' manual attempts to exploit the flaw and withd
 ## What this example tells contributors writing future Technique pages
 
 - **Distinguish key compromise from verification-threshold failure.** Both end in forged or unapproved withdrawals, but the 2022 case required stolen keys and the 2024 case required no keys at all.
-- **Cross-reference the rescue file** (`2024-08-ronin-bridge-rescue.md`) for the MEV-rescue discussion.
 
 ## Public references
 
