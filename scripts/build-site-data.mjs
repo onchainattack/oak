@@ -441,7 +441,9 @@ const siteData = {
   generatedAt: new Date().toISOString(),
   stats: {
     tactics: tactics.length,
-    techniques: techniques.length,
+    // Active Techniques only; deprecated IDs are tombstones kept under the never-reuse rule.
+    techniques: techniques.filter((t) => t.maturity !== "deprecated").length,
+    deprecatedTechniques: techniques.filter((t) => t.maturity === "deprecated").length,
     mitigations: mitigations.length,
     software: software.length,
     examples: examples.length,
