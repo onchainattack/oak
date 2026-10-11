@@ -109,3 +109,10 @@ A source pass over the 93 examples dated 2024–2026 that cited nothing (`tools/
 | `2026-04-polymarket-uma-us-iran-ceasefire-vote-capture` | No such market; the real April–July 2026 Iran disputes are different markets with different figures. |
 | `2026-bybit-hack-laundering-continuation-thorchain-dprk` | No source for the 2026 laundering-balance estimates; contemporaneous sources show most funds moved within weeks of Feb 2025. |
 | `2026-q1-nft-marketplace-wash-trade-fake-mint-cohort` | Generic pattern; no 2026-Q1 incident found. |
+
+### 2026-10-11 — duplicate entries merged
+
+| Retired file | Surviving entry | Note |
+|---|---|---|
+| `2024-01-socket-bungee-bridge` | `2024-01-socket-bungee` | Same incident filed twice (T9.005 vs T10.002); both mappings were wrong. Surviving entry re-mapped to T9.004 — unvalidated calldata spending users' approvals to SocketGateway. |
+| `2024-06-loopring` | `2024-06-loopring-smart-wallet` | Same incident filed twice; the retired copy cited nothing and repeated the ~200-wallet and third-party-2FA errors corrected in the survivor (58 wallets; Loopring's own 2FA servers). |

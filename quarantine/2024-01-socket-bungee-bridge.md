@@ -1,3 +1,7 @@
+> **MERGED 2026-10-11 into `examples/2024-01-socket-bungee.md`** — a duplicate entry for the same incident. Not part of the OAK corpus; kept for the record. Read the surviving entry.
+
+**Merged into:** 2024-01-socket-bungee
+
 # Socket / Bungee bridge infinite-approval call-injection exploit — Ethereum — 2024-01-16
 
 **Corrected 2026-10-11:** victim count (~230 wallets, not ~200); the unsourced ~\$1.7M attacker return / \$1.6M net loss and "paused within 3 hours" claims removed; the new-route cause (added ~3 days earlier) added per CertiK.

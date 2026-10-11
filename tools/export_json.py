@@ -50,8 +50,9 @@ Output schema (v2):
          "source_file": "..."}
       ],
       "withdrawn_examples": [
-        {"id": "<slug>", "status": "quarantined", "withdrawn": "YYYY-MM-DD",
-         "title": "...", "reason": "...", "record": "CORRECTIONS.md#correction-log"}
+        {"id": "<slug>", "status": "quarantined|merged", "withdrawn": "YYYY-MM-DD",
+         "title": "...", "reason": "...", "record": "CORRECTIONS.md#correction-log",
+         "superseded_by": "<slug>  (merged only)"}
       ],
       "relationships": [
         {"type": "mitigates",       "source": "OAK-MNN",  "target": "OAK-Tn.NNN"},
@@ -437,14 +438,22 @@ def withdrawn_examples(root: Path) -> list[dict]:
             continue
         text = f.read_text(encoding="utf-8")
         mh = re.search(r"^#\s+(.+?)\s*$", text, re.M)
-        out.append({
+        mm = re.search(r"^\*\*Merged into:\*\*\s*(\S+)\s*$", text, re.M)
+        entry = {
             "id": f.stem,
-            "status": "quarantined",
+            "status": "merged" if mm else "quarantined",
             "withdrawn": "2026-10-11",
             "title": mh.group(1).strip() if mh else "",
-            "reason": findings.get(f.stem, "no credible public record found in the 2026-10-11 source pass"),
+            "reason": (
+                f"duplicate entry for the same incident; merged into {mm.group(1)}"
+                if mm
+                else findings.get(f.stem, "no credible public record found in the 2026-10-11 source pass")
+            ),
             "record": "CORRECTIONS.md#correction-log",
-        })
+        }
+        if mm:
+            entry["superseded_by"] = mm.group(1)
+        out.append(entry)
     return out
 
 

@@ -1,3 +1,7 @@
+> **MERGED 2026-10-11 into `examples/2024-06-loopring-smart-wallet.md`** — a duplicate entry for the same incident. Not part of the OAK corpus; kept for the record. Read the surviving entry.
+
+**Merged into:** 2024-06-loopring-smart-wallet
+
 # Loopring Smart Wallet 2FA-bypass guardian-recovery exploit — Ethereum — 2024-06-09
 
 **Loss:** approximately \$5M extracted from Loopring Smart Wallet users on Ethereum on 2024-06-09. Loopring's Smart Wallet is an account-abstraction-pattern smart-contract wallet that includes a guardian-based social-recovery flow as its principal account-recovery primitive. The drained set was a subset of Loopring Smart Wallet users that satisfied the specific account-state preconditions exploitable under the 2FA-bypass; not all Loopring Smart Wallet accounts were vulnerable, and the affected cohort was characterised in the post-incident reporting as the accounts whose guardian-recovery configuration matched the exploitable preconditions at the time of the attack.

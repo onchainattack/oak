@@ -1,5 +1,7 @@
 # Quarantine
 
+_Also holds duplicate entries merged into a surviving example; those carry a `**Merged into:**` line and are exported with `status: merged`._
+
 Files in this directory were worked examples that a source-verification pass on 2026-10-11 could not substantiate. They are **not part of the OAK corpus**: no tool reads this directory, nothing here counts toward statistics, coverage, specs or the published site, and no Technique page links here.
 
 ## Why they are here
