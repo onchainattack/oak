@@ -1,0 +1,85 @@
+oak_techniques: [OAK-T9.016]
+spec_id: oak-detection-T9.016
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect exploits in which a caller entitled to call a contract's public
+  entrypoints leaves the contract's own books wrong in the caller's favour:
+  missing solvency/health checks on a value-moving path, payout records not
+  cleared, reserves not updated, self-referential balance writes, miscomputed
+  or overflowing invariant checks, and degenerate-state branches in share math.
+  Detection operates on per-transaction balance-sheet deltas (the generic
+  signal), on repeated payout calls against one record, and on calls into
+  rarely-exercised branches.
+  Excludes: T9.004 (the caller, signer, account or counterparty should have been
+  rejected); T9.011 (rounding direction under integer division); T9.001 (an
+  external price was moved); T9.005 (re-entry during a state update).
+
+data_sources: [chain_calldata, contract_state_writes, token_transfer_events, protocol_balance_snapshots]
+
+detection_logic:
+  description: |
+    PATH A (balance-sheet delta): snapshot protocol assets and liabilities
+    before and after each transaction touching the protocol; flag when total
+    liabilities exceed assets afterwards, or when the caller's net claim rose by
+    more than the value the caller transferred in. PATH B (replayed payout):
+    flag a payout/claim entrypoint invoked more than once in one transaction by
+    the same caller against the same record identifier. PATH C (cold-branch
+    entry): flag value-moving calls through branches with little or no history
+    (emergency withdrawal, zero-leverage, empty-pool / zero-supply states,
+    from == to transfers), weighted by value moved.
+  pseudocode: |
+    for each tx T touching protocol P:
+      pre  ← balance_sheet(P, block=T.block-1)
+      post ← balance_sheet(P, after=T)
+      paid_in ← value_transferred_to(P, from=T.caller_cluster, tx=T)
+      gained  ← claim_value(T.caller_cluster, post) - claim_value(T.caller_cluster, pre)
+                + value_transferred_from(P, to=T.caller_cluster, tx=T)
+
+      # PATH A
+      if post.liabilities > post.assets * (1 + solvency_tolerance)
+         or gained - paid_in > excess_gain_threshold:
+        emit(PATH_A, protocol=P, tx=T, gained=gained, paid_in=paid_in, severity=critical)
+
+      # PATH B
+      for each record R in payout_records_touched(T):
+        if count_payouts(T, R) > 1:
+          emit(PATH_B, protocol=P, tx=T, record=R, severity=high)
+
+      # PATH C
+      for each call C in T.calls_to(P):
+        if branch_history_count(C.branch) < cold_branch_min and C.value_moved > cold_branch_value:
+          emit(PATH_C, protocol=P, tx=T, branch=C.branch, value=C.value_moved, severity=medium)
+
+parameters:
+  solvency_tolerance:    { type: number,  default: 0.001 }
+  excess_gain_threshold: { type: number,  default: 10000 }   # USD
+  cold_branch_min:       { type: integer, default: 5 }
+  cold_branch_value:     { type: number,  default: 50000 }   # USD
+
+output_alert: [oak_technique, detection_path, severity, chain, protocol, tx_hash,
+               caller, gained, paid_in, record, branch, evidence]
+
+test_fixtures:
+  positive:
+    - 2023-03-euler-finance                                      # donateToReserves skipped the health check
+    - 2026-09-doingud-dormant-diamond-acceptbid-bid-reuse-drain  # one bid accepted twice in one tx
+    - 2024-02-miner-erc-x-self-transfer-cached-balance-double-spend  # from == to minted balance
+  negative:
+    - "A large legitimate withdrawal fully backed by the caller's prior deposit — net gain ≈ 0"
+    - "A liquidation paying a published liquidation bonus — gain bounded by the protocol's stated incentive"
+    - "An unrestricted admin function called by an outsider — T9.004, not an accounting error"
+    - "A rounding-direction drain over many dust operations — T9.011"
+
+false_positive_modes:
+  - Liquidations, arbitrage and published incentives produce positive caller gain by design — whitelist known incentive paths and bound by their stated rate
+  - Balance-sheet snapshots are only as good as the protocol model; rebasing and fee-on-transfer tokens need explicit handling
+  - Cold branches are cold because they are rarely needed, not because they are wrong — PATH C is triage, not a finding
+
+mitigations: [OAK-M16, OAK-M11, OAK-M34]
+
+reference_implementations:
+  - { target: mg-detectors-rs, chain: cross-chain, url: "" }

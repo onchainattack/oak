@@ -196,6 +196,8 @@ vendors:
     coverage: gap
   - id: OAK-T9.015
     coverage: gap
+  - id: OAK-T9.016
+    coverage: gap
   - id: OAK-T10.001
     coverage: gap
   - id: OAK-T10.002
@@ -250,6 +252,8 @@ vendors:
     coverage: gap
   - id: OAK-T11.010
     coverage: documented
+  - id: OAK-T11.014
+    coverage: gap
   - id: OAK-T12.001
     coverage: gap
   - id: OAK-T12.002

@@ -2,7 +2,7 @@
 
 **Loss:** **74.31 BNB (~\$55,721)**, subsequently sent to Tornado Cash.
 
-**OAK Techniques observed:** **OAK-T9.004** (Access-Control Misconfiguration — *primary*, state-machine shape. In **`LikwidMarginPosition`**, the **`leverage = 0` path did not update pair reserves**, so repeated borrows each priced against the same, stale quote. See [`techniques/T9.004-access-control-misconfiguration.md`](../techniques/T9.004-access-control-misconfiguration.md)). **OAK-T9.001** (Oracle Price Manipulation — the attacker first **pumped a thin meme-token pool** to set the quote the loop then reused). **OAK-T7.001** (Mixer-Routed Hop — proceeds to Tornado Cash).
+**OAK Techniques observed:** **OAK-T9.016** (Contract Accounting / State-Invariant Flaw — *primary*, state-machine shape. In **`LikwidMarginPosition`**, the **`leverage = 0` path did not update pair reserves**, so repeated borrows each priced against the same, stale quote. See [`techniques/T9.016-contract-accounting-state-invariant-flaw.md`](../techniques/T9.016-contract-accounting-state-invariant-flaw.md)). **OAK-T9.001** (Oracle Price Manipulation — the attacker first **pumped a thin meme-token pool** to set the quote the loop then reused). **OAK-T7.001** (Mixer-Routed Hop — proceeds to Tornado Cash). *(Re-mapped 2026-10-11 from OAK-T9.004; see [`techniques/T9.016-contract-accounting-state-invariant-flaw.md`](../techniques/T9.016-contract-accounting-state-invariant-flaw.md).)*
 
 **Attribution:** **pseudonymous.**
 

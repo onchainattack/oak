@@ -2,7 +2,7 @@
 
 **Loss:** **~\$18.6K** in WETH and VISTA.
 
-**OAK Techniques observed:** **OAK-T9.011** (Precision Loss / Rounding Attack — *primary, arithmetic overflow*. **`EtherVistaPair.swap()`** checked the constant-product invariant on reserves stored as **uint112** in a way that could **wrap**, letting a post-swap product that had actually fallen pass the check. Two crafted swaps drained the pool. See [`techniques/T9.011-precision-loss-rounding-attack.md`](../techniques/T9.011-precision-loss-rounding-attack.md)). **OAK-T9.004** — the attacker first **registered its own contract as an authorised router**.
+**OAK Techniques observed:** **OAK-T9.016** (Contract Accounting / State-Invariant Flaw — *primary, arithmetic overflow*. **`EtherVistaPair.swap()`** checked the constant-product invariant on reserves stored as **uint112** in a way that could **wrap**, letting a post-swap product that had actually fallen pass the check. Two crafted swaps drained the pool. See [`techniques/T9.016-contract-accounting-state-invariant-flaw.md`](../techniques/T9.016-contract-accounting-state-invariant-flaw.md)). **OAK-T9.004** — the attacker first **registered its own contract as an authorised router**. *(Re-mapped 2026-10-11 from OAK-T9.011; see [`techniques/T9.016-contract-accounting-state-invariant-flaw.md`](../techniques/T9.016-contract-accounting-state-invariant-flaw.md).)*
 
 **Attribution:** **pseudonymous.**
 

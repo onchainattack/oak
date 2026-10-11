@@ -1,0 +1,86 @@
+oak_techniques: [OAK-T11.014]
+spec_id: oak-detection-T11.014
+version: 0.1.0
+maturity: draft
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect use of a stolen operator key: a privileged address (owner, proxy
+  admin, upgrader, minter, cross-chain delegate, treasury or operational hot
+  wallet) exercising its authority in a way inconsistent with the operator's
+  history, followed by extraction. The contract behaves correctly; the signal
+  is behavioural. Covers ownership transfer to fresh addresses, unannounced
+  upgrades, out-of-pattern mints, and privileged transfers followed by rapid
+  liquidation.
+  Excludes: T9.004 (an unprivileged caller reached a function it should not
+  have); T11.001 (honest key holder, substituted intent); T11.002 (malicious
+  wallet software distributed to users); T10.001 (bridge validator / signer
+  keys).
+
+data_sources: [chain_calldata, contract_state_writes, token_transfer_events, dex_swap_events, governance_records]
+
+detection_logic:
+  description: |
+    PATH A (privileged-call anomaly): every call from a registered privileged
+    address is scored against that address's history (function, size,
+    destination, time); out-of-pattern calls alert. PATH B (authority handoff):
+    ownership / admin / role transfer to an address with no prior relationship
+    to the protocol, then exercised within a short window. PATH C (unpublished
+    upgrade): proxy implementation changed to bytecode with no matching published
+    source or governance record. PATH D (privilege-to-liquidation): a privileged
+    mint or transfer whose beneficiary sells or bridges a large share of it
+    within a short window.
+  pseudocode: |
+    PRIV ← registry of privileged addresses per protocol (owner, admin, minter, upgrader, delegate, treasury)
+
+    for each call C from address A in PRIV:
+      # PATH A
+      if anomaly_score(A, C.function, C.amount, C.destination, C.time) > anomaly_threshold:
+        emit(PATH_A, protocol=C.protocol, caller=A, call=C, severity=high)
+
+    for each role_transfer E (role, from, to):
+      # PATH B
+      if not known_related(to, E.protocol) and exercised(to, E.role, within=handoff_window):
+        emit(PATH_B, protocol=E.protocol, role=E.role, new_holder=to, severity=critical)
+
+    for each upgrade U on proxy X:
+      # PATH C
+      if not published_source(U.implementation) and not governance_record(U):
+        emit(PATH_C, proxy=X, implementation=U.implementation, severity=critical)
+
+    for each privileged mint/transfer M to beneficiary B:
+      # PATH D
+      sold ← value_sold_or_bridged(B, within=liquidation_window)
+      if sold / M.value > liquidation_fraction:
+        emit(PATH_D, protocol=M.protocol, beneficiary=B, sold=sold, severity=critical)
+
+parameters:
+  anomaly_threshold:    { type: number,  default: 0.95 }
+  handoff_window:       { type: integer, default: 3600 }   # seconds
+  liquidation_window:   { type: integer, default: 1800 }   # seconds
+  liquidation_fraction: { type: number,  default: 0.5 }
+
+output_alert: [oak_technique, detection_path, severity, chain, protocol, privileged_address,
+               role, new_holder, implementation, beneficiary, sold, tx_hash, evidence]
+
+test_fixtures:
+  positive:
+    - 2024-06-holograph                               # minter key: out-of-pattern mint, immediate dump
+    - 2024-09-deltaprime                              # proxy admin upgraded to unpublished implementation
+    - 2026-10-79th-vault-operator-key-79au-pool-dump  # operator hot wallet moved 2.01M tokens, sold in ~95 trades
+  negative:
+    - "A scheduled, announced upgrade executed after its timelock with published source"
+    - "A treasury transfer to a known market maker matching prior pattern"
+    - "An outsider calling an unguarded mint function — T9.004"
+    - "A multisig signing a substituted transaction its signers believed was routine — T11.001"
+
+false_positive_modes:
+  - Legitimate emergency actions (pauses, rescue upgrades) are out-of-pattern by nature — cross-check against operator announcements
+  - Privileged-address registries go stale after migrations; PATH A on an unregistered new admin produces silence, not noise
+  - Market-making and treasury diversification can look like PATH D — require both size and speed
+
+mitigations: [OAK-M11, OAK-M16]
+
+reference_implementations:
+  - { target: mg-detectors-rs, chain: cross-chain, url: "" }

@@ -16,12 +16,25 @@ Recorded here rather than held to the next version bump because one item is a **
 
 The original text was written in the v0.1 bulk release while the LayerZero investigation was open, with a **references section containing no URLs**, and was never revisited after the facts landed in May 2026. Full correction record, including three further corrected facts (source chain was Unichain; the Aave cascade was initiated by the attacker depositing unbacked rsETH as collateral rather than by existing positions repricing; several unsourced figures replaced or dropped), is in that file's `Discussion`, per `CORRECTIONS.md`. `OAK-T10.001` carries a reciprocal boundary note.
 
+### Changed — taxonomy split: two new Techniques, 35 examples re-mapped (2026-10-11)
+
+OAK-T9.004 (Access-Control Misconfiguration) had become a catch-all: its own description called it "the residual category" for logic flaws, and it also held cases where nothing on-chain was wrong except that an operator key had been stolen. Both made the corpus's most-used smart-contract Technique mean three things and pointed defenders at code audits for problems that were not in the code.
+
+| Was | Read instead | Examples moved |
+|---|---|---|
+| `OAK-T9.004` (accounting / state / invariant bugs), `OAK-T9.011` (two non-rounding cases) | [`OAK-T9.016`](techniques/T9.016-contract-accounting-state-invariant-flaw.md) — Contract Accounting / State-Invariant Flaw | 17 (Euler, KyberSwap, Compound 2021, Platypus, Yearn, Cypher, Uranium, Miner ERC-X, Rhea, Lien, DoinGud, Dream Health, Likwid, MALT, GoldPesa, BitBay, EtherVista) |
+| `OAK-T9.004`, `OAK-T11.002` "broadly construed", `OAK-T11.001`, `OAK-T4.003`, `OAK-T15.004` (stolen operator keys) | [`OAK-T11.014`](techniques/T11.014-operator-privileged-key-compromise.md) — Operator Privileged-Key Compromise | 18 (DeltaPrime, Tapioca, Resolv, B², WEMIX\$, 79th Vault, EasyFi, Ankr, Steadefi, Concentric, Gala, Holograph, Nexera, Infini, ZKsync airdrop, Volo, Stake DAO, TesseraDAO) |
+
+T9.004 now asks one question — did the contract accept a caller, signer, account or counterparty it should have rejected — and keeps counterfeit-object acceptance (Cashio, Crema, Exactly, FlashLoopAdapter) as a named sub-pattern. Each moved example carries a *Re-mapped 2026-10-11 from …* note. Cohort files and secondary mentions were not re-audited in this pass.
+
 ### Changed — per-item maturity
 
 - **`OAK-T15.001` (Social Engineering of Operator Personnel): `emerging` → `stable`** (2026-09-27). Anchors were long sufficient (Ronin, DMM Bitcoin, Drift for the fake-recruiter sub-shape alone); the missing leg — multi-source attestation of the pattern — is supplied by the 2026-09-18 WaterPlum joint advisory. Scope unchanged.
 - **`OAK-T10.002.001` (Off-chain Observer Source-Event Forgery): `emerging` → `stable`** (2026-09-16). Five anchors across three sub-shapes — Across (2026-07, parse-level), Coreum–XRPL (2026-08, semantic), Chainflip (2026-09, semantic), KelpDAO / LayerZero (2026-04, infrastructure-level), Long (2026-09, infrastructure-level). Attestation leg carried by KelpDAO (LayerZero's two-part report, Chainalysis, Blockaid, plus Mandiant / CrowdStrike / zeroShadow attribution), read as in the T11.004 precedent. A third sub-shape, **(c) infrastructure-level source forgery**, is named on the Technique page: the observer's *data source* is subverted, so it parses and reasons correctly over events that never occurred. Recorded with the caveat that `stable` describes a settled class definition and **not** a mature detection surface — shape (c) has no reference implementation and its controls are integrator configuration decisions.
 
-### Added — worked examples (693 at 0.8.0 → 726)
+### Added — worked examples (693 at 0.8.0 → 738)
+
+Includes the 2026-09-27 → 10-11 sweep: **Ledger / CryptoBilis** (authorised-reseller drain, \$72M–~\$90M analyst range, mechanism unconfirmed), **79th Vault** (operator key, ~\$12.5M, 15,000 BNB returned), **anonymous Base vault** (Safe re-whitelisted attacker contract, ~\$6M), **NEAR Intents** (\$3.8M, returned), **Fake GIWA chain** (cloned L2 with real chain ID, 766 ETH), **MakerDAO legacy keeper** (Black Thursday lots, 200 ETH), plus FlashLoopAdapter, Microsoft X / CLIPPY, MALT, GoldPesa, BitBay, EtherVista. Bitget amended with SlowMist's preliminary entry vector.
 
 Includes the 2026-09-16 → 09-27 sweep: **Bitget** (wallet backend spoofed transfer data into the exchange's own approval process, \$351.6M), **Neutron proposal 9** (bought vote → `MsgUpdateAdmin` → Astroport / Drop drained, ~\$9.4M), **SingularityNET bridge** (authorizer key; signature did not bind recipient), **Nostra**, **Duelbits**, **Payy**, **Limit Break PP V2**, **Meter Passport**, **MultiversX**, **Flamincome**, **DoinGud**, **Likwid**; and the **WaterPlum / Contagious Interview** joint attribution (NPA, NCO, FBI, DC3, ASD's ACSC, BND, BfV — ≥30,000 PCs, >7,000 wallets, ≥¥1.7B).
 

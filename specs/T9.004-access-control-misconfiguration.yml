@@ -12,8 +12,10 @@ scope: |
   external-callable); misvalidated authorisation (Wormhole 2022 missing
   guardian-account validation; cross-refs T10.002); inter-contract
   privilege-boundary violation (Poly Network 2021 `EthCrossChainManager`
-  re-target); missing solvency / invariant check (Euler 2023
-  `donateToReserves`). Excludes: legitimate privileged operations from
+  re-target); counterfeit-object acceptance (FlashLoopAdapter 2026 fake
+  Safe). Excludes: T9.016 accounting / state-invariant flaws where the caller
+  was entitled to the call (Euler 2023 moved there 2026-10-11); T11.014
+  stolen operator keys; legitimate privileged operations from
   declared authority addresses (suppress via per-protocol authority set);
   T11.x off-chain key compromise (the on-chain consumption surface may
   be T9.004-adjacent — see Multichain Jul-2023 boundary case).
@@ -92,7 +94,7 @@ test_fixtures:
   positive:
     - 2022-02-wormhole                          # missing guardian-account validation (also T10.002)
     - 2021-08-poly-network                      # inter-contract privilege boundary
-    - 2023-03-euler-finance                     # missing solvency check (chained T9.002)
+    - 2026-10-flashloopadapter-safe-module-fake-safe-ismoduleenabled-bypass  # caller-answered isModuleEnabled check
     - 2025-04-kiloex                            # missing-modifier on _setPrices
   negative:
     - "OZ AccessControl-gated mint() called by a documented authority (allowlist hit)"
