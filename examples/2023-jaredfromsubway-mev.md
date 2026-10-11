@@ -27,4 +27,3 @@ The bot's operational characteristics — very high transaction frequency and he
 
 - `[eigenphi2023]` — EigenPhi, "Performance Appraisal of Jaredfromsubway.eth" (2023-05-10): <https://eigenphi.substack.com/p/performance-appraisal-of-jaredfromsubway-eth?open=false>
 - `[unchained2023]` — Unchained, "MEV sandwich attacks made 1 million in single day profit" (2023-04-20): <https://unchainedcrypto.com/mev-sandwich-attacks-made-1-million-in-single-day-profit/>
-- Cross-reference: `examples/2020-2025-mev-sandwich-attack-cohort.md` (combined T5.004/T9.013 cohort).

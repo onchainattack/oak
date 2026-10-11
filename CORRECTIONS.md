@@ -165,3 +165,20 @@ The same check run over the 76 unsourced examples dated 2022–2023. About 40 we
 | `2023-12-ledger-connect-kit` | `2023-12-ledger-connect-kit-library-supply-chain-compromise` |
 
 Surviving entries re-mapped where the merge exposed a wrong primary: Harmony T10.005 → T10.001 (two of five multisig keys held by the attacker; FBI attribution to Lazarus); Ledger Connect Kit T11.006 → T15.004 (phished former employee's npm publishing access); Hundred Finance 2023 T9.004 → T9.011 (empty-market donation).
+
+### 2026-10-11 — third source pass (2010–2021): 10 more examples quarantined
+
+The same check over the 84 unsourced examples dated 2010–2021. About 70 were corrected or confirmed in place; 10 had no credible record as described. Pickle Finance 2020 was not checked (search budget) and remains unsourced.
+
+| Quarantined file | Finding |
+|---|---|
+| `2020-2020-uniswap-honeypot-wave` | The six reports it cites (PeckShield, SlowMist, Mudit Gupta, Token Sniffer, Uniswap, CertiK) could not be found; aggregate and UI-warning dates unsupported. Honeypot tokens themselves are real. |
+| `2020-2021-uniswap-fake-token-impersonation-wave` | No source for the \$15–50M aggregate; attribution "confirmed" contradicted its own text. |
+| `2020-2025-initial-liquidity-sandwich-cohort` | Mechanism as described is not possible (no buy before liquidity exists); per-launch figures and history unsourced. |
+| `2020-2025-mev-sandwich-attack-cohort` | Aggregate and per-class claims unsourced; repeats the doubtful initial-liquidity mechanism. |
+| `2021-2025-pancakeswap-token-launch-mev-bsc` | BSC sandwiching is real, but no source for the per-launch ranges, launch counts or start date. |
+| `2021-bsc-pancakeswap-token-impersonation-wave` | No source for a 2021 token-impersonation wave, its losses or a June 2021 PancakeSwap UI warning; only phishing-domain waves found. |
+| `2021-12-visor-finance` | Real incident is different: 2021-12-21, a deposit() validation flaw in the vVISR rewards contract minted shares (~\$8.2M); not a Uniswap V3 TWAP manipulation — candidate for a new entry. |
+| `2011-07-bitcoinica-first-hack` | Impossible as dated: Bitcoinica launched 2011-09-08; the 43,000 BTC figure belongs to the March 2012 Linode loss. |
+| `2013-04-atlas-dns-bitcoin-hijack-phishing` | No record of an "Atlas DNS" hijack of blockchain.info or BTC Guild in April 2013 (the known blockchain.info DNS hijack was October 2016). |
+| `2015-01-localbitcoins` | No January 2015 LocalBitcoins help-desk incident; known events are a May 2014 server breach and a January 2019 forum phishing. |

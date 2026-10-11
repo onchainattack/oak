@@ -1,3 +1,5 @@
+> **QUARANTINED 2026-10-11 — not part of the OAK corpus.** A source-verification pass found no credible public record of this incident as described. It is kept here, outside `examples/`, so it can be restored if a source turns up. Do not cite it. See [`README.md`](README.md).
+
 # PancakeSwap token-impersonation wave — BSC — 2021
 
 **Loss:** **Distributed across hundreds of individual token-impersonation deployments.** Individual victim losses ranged from tens to thousands of USD-equivalent per counterfeit token. The aggregate loss across the 2021 impersonation wave on PancakeSwap (BSC) is estimated in the low tens of millions of USD but is not precisely quantified due to the distributed, per-token nature of the extraction and the absence of a centralized victim-reporting mechanism.

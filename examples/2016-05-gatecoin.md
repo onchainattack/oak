@@ -1,36 +1,34 @@
 # Gatecoin exchange hot-wallet compromise — Bitcoin / Ethereum — 2016-05-13
 
-**Loss:** approximately $2M (250 BTC and 185,000 ETH at then-prevailing exchange rates) stolen from Hong Kong-based exchange Gatecoin's hot wallets. The attacker compromised Gatecoin's hot-wallet server infrastructure and gained access to the exchange's hot-wallet signing keys across both Bitcoin and Ethereum hot wallets.
+**Loss:** about \$2M (250 BTC and 185,000 ETH), which Gatecoin put at 15% of its total crypto-asset deposits `[sa16]`. Per Gatecoin, an external attacker altered the system so that ETH and BTC deposits bypassed multi-signature cold storage and went to the hot wallet during the breach period `[sa16]`.
 **OAK Techniques observed:** **OAK-T11.001** (Third-Party Signing Vendor Compromise — primary; the exchange's hot-wallet server infrastructure was the signing surface; Gatecoin was the custodian, and the custodial hot-wallet operational security was the failure surface — multi-asset signing keys co-located on a single server). **OAK-T15.003** (Operator Endpoint / Infrastructure Compromise — the entry vector involved a compromised server hosting the hot-wallet signing keys for both Bitcoin and Ethereum).
-**Attribution:** **pseudonymous**. Gatecoin disclosed the incident as an external server compromise; no named individual or group was publicly identified. The incident shares structural methodology with the broader 2014-2016 exchange-hack cohort (Bitstamp 2015, Bter 2015, Bitfinex 2016) but predates the 2017-2020 DPRK exchange-compromise campaign.
-**Key teaching point:** **Gatecoin 2016 is the canonical worked example of a multi-asset exchange hot-wallet compromise in the pre-DPRK-campaign era — the attacker compromised one server and drained both Bitcoin and Ethereum hot wallets because the signing keys for both chains were co-located on the same infrastructure.** The co-location of multi-asset signing keys on a single server is the structural operational-security anti-pattern that the 2014-2016 exchange-hack cohort repeatedly demonstrates.
+**Attribution:** **pseudonymous**. Gatecoin described a "malicious external party" `[sa16]`; no named individual or group was publicly identified. The incident shares structural methodology with the broader 2014-2016 exchange-hack cohort (Bitstamp 2015, Bter 2015, Bitfinex 2016) but predates the 2017-2020 DPRK exchange-compromise campaign.
+**Corrected 2026-10-11:** replaced the claim of co-located signing keys stolen from a single server with Gatecoin's own account that deposits were redirected around multisig cold storage into hot wallets; CoinDesk reported the breach began earlier than 13 May; removed the unsourced 2019 banking-dispute reason (a court wound the company up in March 2019) and ETH price detail.
+**Key teaching point:** **Gatecoin 2016 is a worked example of an exchange whose deposit routing was altered so funds bypassed cold storage into hot wallets, exceeding its own 5% hot-wallet limit for ETH `[sa16]`.**
 
 ## Summary
 
-Gatecoin was a Hong Kong-based cryptocurrency exchange founded in 2015, notable as an early adopter of Ethereum and ERC-20 token trading. The exchange operated hot wallets for Bitcoin and Ethereum (plus ERC-20 tokens) to process customer withdrawals, with the hot-wallet signing infrastructure hosted on a server accessible to exchange operations staff.
+Gatecoin, a Hong Kong-based exchange, detected suspicious transactions on Friday night 13 May 2016 (HKT) and suspended services `[sa16]`. It reported losing about 185,000 ETH and 250 BTC (roughly \$2M), which it said was 15% of total crypto-asset deposits; 95% of BTC funds remained in cold wallets `[sa16]`. The company said an external attacker altered the system so that ETH and BTC deposits bypassed multi-signature cold storage and went directly to the hot wallet, pushing ETH losses past its 5% hot-wallet limit `[sa16]`. Another report says the breach began on 9 May and continued over three days `[gc16]`. The specific entry vector was not published.
 
-On 2016-05-13, an attacker compromised this server — the specific entry vector was not publicly detailed but was described by Gatecoin as an external server compromise. The server hosted the signing keys for both the Bitcoin hot wallet and the Ethereum hot wallet. The attacker extracted the keys and drained both hot wallets in a coordinated extraction: approximately 250 BTC and 185,000 ETH (the ETH was valued at approximately $10-12 per ETH at the time, making the total loss approximately $2M).
-
-The multi-asset co-location on a single server was the load-bearing operational security failure: the attacker had to compromise one server to access the signing keys for all assets. Post-2016, best practice evolved toward per-asset or per-wallet key segregation — Bitcoin hot-wallet keys on separate infrastructure from Ethereum hot-wallet keys — to ensure that a single server compromise could not drain the entire exchange's multi-asset hot-wallet inventory.
-
-Gatecoin survived the incident and continued operations for several more years, eventually winding down in 2019 after a banking dispute with a payment processor. The exchange was not a rug-pull or exit scam — it was a genuine operational exchange whose hot-wallet security was insufficient for the value it held.
+Gatecoin raised \$500,000 in equity from a Japanese listed investor in June 2016 `[fm16]`. In March 2019 a court granted a winding-up order against the company, and the 2016 theft was still unresolved `[tnw19]`. Earlier text here about key co-location on one server and per-asset key segregation as industry response was not in the cited sources and is removed.
 
 ## Timeline (UTC)
 
 | When | Event | OAK ref |
 |---|---|---|
-| 2015–2016 | Gatecoin operates as a Hong Kong-based Bitcoin and Ethereum/ERC-20 exchange; hot-wallet signing keys for both chains hosted on a single server | T8.001 (standing surface — multi-asset key co-location) |
-| 2016-05-13 | Attacker compromises Gatecoin's hot-wallet server; extracts Bitcoin and Ethereum hot-wallet signing keys | T15.003 (server compromise) + T8.001 (key co-location) |
-| 2016-05-13 T+hours | Attacker drains ~250 BTC and ~185,000 ETH from hot wallets; Gatecoin discloses incident | T11.001 (signing-infrastructure compromise) |
-| 2016-05 onward | Gatecoin continues operations; incident becomes part of the 2014-2016 exchange-hack public record driving cold-storage adoption | (industry learning) |
-| 2019 | Gatecoin winds down operations after banking dispute with payment processor | (unrelated wind-down) |
+| 2016-05-09 to 12 | Per CoinDesk, breach begins and continues (company said discovered 13 May) `[gc16]` | T15.003 |
+| 2016-05-13 | Suspicious transactions detected; services suspended `[sa16]` | T11.001 |
+| 2016-06 | \$500,000 equity investment `[fm16]` | |
+| 2019-03-13 | Winding-up order `[tnw19]` | |
 
 ## Realised extraction
 
-Approximately $2M (250 BTC + 185,000 ETH at May 2016 prices). No recovery reported.
+250 BTC and 185,000 ETH, about \$2M `[sa16]`. No recovery reported in the cited sources.
 
 ## Public references
 
-- Gatecoin incident disclosure, May 2016
-- CoinDesk / CoinTelegraph coverage (May 2016)
-- See `techniques/T11.001-third-party-signing-vendor-compromise.md`, `techniques/T8.001-*.md`, `techniques/T15.003-*.md`
+- `[sa16]` — SiliconANGLE, "Cryptocurrency exchange Gatecoin hacked: \$2M in bitcoin and ethereum stolen" (2016-05-17): <https://siliconangle.com/2016/05/17/cryptocurrency-exchange-gatecoin-hacked-2m-in-bitcoin-and-ethereum-stolen/>
+- `[gc16]` — CoinDesk, "Gatecoin Claims \$2 Million in Bitcoins and Ethers Lost in Security Breach" (2016-05-16; seen via search result, page not retrievable): <https://coindesk-coindesk-prod.cdn.arcpublishing.com/markets/2016/05/16/gatecoin-claims-2-million-in-bitcoins-and-ethers-lost-in-security-breach/>
+- `[fm16]` — Finance Magnates, "Gatecoin Raised \$500,000 to Recover from Ethereum Cyber Hack" (2016-06): <https://www.financemagnates.com/cryptocurrency/exchange/gatecoin-raised-500000-to-recover-from-ethereum-cyber-hack/>
+- `[tnw19]` — The Next Web, Gatecoin exchange shutdown (2019-03-14): <https://thenextweb.com/news/gatecoin-cryptocurrency-exchange-dead>
+- See `techniques/T11.001-third-party-signing-vendor-compromise.md`, `techniques/T15.003-*.md`

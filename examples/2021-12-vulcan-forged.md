@@ -1,35 +1,32 @@
 # Vulcan Forged wallet-server compromise — Polygon/Ethereum — December 2021
 
-**Loss:** approximately $140M across the PYR token market-cap impact and 148 affected NFT collector wallets. The attacker extracted 96 Venly-hosted wallet private keys from Vulcan Forged's centralised wallet server and drained the corresponding wallets of PYR tokens and Vulcan Forged NFT assets.
-**OAK Techniques observed:** OAK-T11.001 (Third-Party Signing Vendor Compromise) — primary; the attacker breached Vulcan Forged's centralised wallet server, extracting 96 Venly-hosted wallet private keys. OAK-T5.001 (Hard LP / Treasury Drain) — structurally co-occurring; the extracted keys allowed direct transfer of PYR tokens and NFTs from the 148 affected wallets.
-**Attribution:** **unattributed** pseudonymous; the attacker has not been publicly identified. Vulcan Forged refunded the affected users approximately $140M from its treasury within days of the incident.
-**Key teaching point:** Centralised wallet-server architectures where the protocol operator stores user wallet private keys in a single server-side database create a concentrated extraction surface — the compromise of a single server yields access to the full set of stored private keys, and the resulting extraction surfaces (wallet-held tokens, NFTs, staked positions) are uniformly drained in a single incident window. The Venly-as-custodian topology adds a shared-responsibility dimension: the Venly wallet infrastructure was not breached, but Venly-hosted private keys stored on Vulcan Forged's own server were the extraction target.
+**Loss:** approximately 4.5M PYR, worth about \$140M at the time of the attack (about 9% of total PYR supply), taken from 96 wallets whose private keys were stolen `[theblockvulcan]`. The PYR price fell from about \$31 to \$24 `[theblockvulcan]`.
+**OAK Techniques observed:** OAK-T11.001 (Third-Party Signing Vendor Compromise) — primary as classified in OAK; Vulcan Forged held user wallet private keys on its own infrastructure for wallets created through Venly, and Venly's CEO stated "Venly Servers or Solutions have not been compromised" `[theblockvulcan]`. OAK-T5.001 (Hard LP / Treasury Drain) — structurally co-occurring; the stolen keys allowed direct transfer of PYR (and possibly ETH and MATIC) out of the wallets.
+**Attribution:** **unattributed** pseudonymous; the attacker has not been publicly identified. Vulcan Forged said it would reimburse affected users from its treasury; about half had been reimbursed per The Block on 2021-12-13 `[theblockvulcan]`, and the company said it had refunded "a majority" by 2021-12-14 `[forkastvulcan]`.
+**Corrected 2026-10-11:** Wallet count is 96 (not 148); loss is 4.5M PYR (~\$140M at attack time, not a market-cap-impact figure); the claim of a full ~\$140M refund within days was replaced by the reported partial-refund status.
+**Key teaching point:** Semi-custodial wallet architectures in which the operator stores user private keys create a concentrated extraction surface — one breach exposed 96 wallets' keys and the corresponding PYR balances. The Venly-as-wallet-provider topology adds a shared-responsibility dimension: Venly said its systems were not compromised, and The Block reports the keys were stolen without describing how `[theblockvulcan]`. Vulcan Forged said it would remove the semi-custodial setup so users manage their own keys `[theblockvulcan]`.
 
 ## Summary
 
-In December 2021, an attacker compromised Vulcan Forged's centralised wallet server and extracted 96 Venly-hosted wallet private keys belonging to 148 NFT collector wallets. Vulcan Forged is a blockchain gaming and NFT platform operating across Polygon and Ethereum, and its user wallets were hosted via Venly (formerly Arkane Network), a wallet-as-a-service provider. The wallet server maintained a database of user wallet private keys on Vulcan Forged's own infrastructure — the Venly wallet infrastructure was not itself breached, but the keys hosted through Venly were stored in a server-side database under Vulcan Forged's direct operational control.
+On 2021-12-13, an attacker obtained the private keys for 96 Vulcan Forged user wallets and drained about 4.5M PYR (about \$140M at the time) `[theblockvulcan]` `[forkastvulcan]`. Vulcan Forged is a blockchain gaming and NFT platform; it created Ethereum, Polygon and VeChain wallets for users and held their private keys, using Venly (formerly Arkane Network) for wallet creation `[theblockvulcan]`. Venly's CEO said Venly's servers and solutions had not been compromised; the keys were stolen, but the sources consulted do not describe how `[theblockvulcan]`.
 
-The attacker drained the affected wallets of PYR tokens and NFT holdings with an aggregate value of approximately $140M at the time of the incident. The PYR token price dropped sharply on the news, contributing to the total loss figure. Vulcan Forged responded within days by refunding the full ~$140M to affected users from its treasury — one of the largest operator-side treasury-funded reimbursements in the 2021 DeFi/Gaming incident record.
+The PYR price fell roughly 22% on the news. Vulcan Forged said the project's treasury would send PYR and LAVA tokens to affected users via MetaMask accounts, with ETH/MATIC losses replaced in PYR; about half had been reimbursed at the time of The Block's report `[theblockvulcan]` and a majority by the next day per Forkast `[forkastvulcan]`.
 
 ## Timeline (UTC)
 
 | When | Event | OAK ref |
 |---|---|---|
-| 2021-12-13 (approx) | Attacker breaches Vulcan Forged's centralised wallet server; extracts 96 Venly-hosted private keys for 148 NFT collector wallets | T11.001 (initial access) |
-| 2021-12-13 | Attacker drains PYR tokens and NFT assets from the 148 affected wallets | T5.001 (extraction) |
-| 2021-12-13 | Vulcan Forged team identifies the breach; publicly discloses via official channels | (operator response) |
-| 2021-12-13 to 2021-12-15 | Vulcan Forged refunds ~$140M to affected users from its treasury | (recovery — treasury-funded reimbursement) |
+| 2021-12-13 | Attacker obtains private keys for 96 user wallets and drains ~4.5M PYR `[theblockvulcan]` | T11.001 / T5.001 |
+| 2021-12-13 | Vulcan Forged discloses; Venly states its systems were not compromised `[theblockvulcan]` | (operator response) |
+| 2021-12-13 to 2021-12-14 | Treasury-funded refunds begin: about half reimbursed on 12-13, "a majority" per 12-14 report `[theblockvulcan]` `[forkastvulcan]` | (recovery — treasury-funded reimbursement) |
 
 ## Public references
 
-- Vulcan Forged official incident statement and refund announcement, December 2021 — `[vulcanforgedpostmortem2021]`.
-- Rekt News public-facing summary — `[rektvulcanforged2021]`.
-- Venly (Arkane Network) wallet architecture documentation — `[venlywalletarch2021]`.
+- `[theblockvulcan]` — The Block, "96 private keys stolen from Vulcan Forged in \$140 million theft" (2021-12-13): <https://www.theblock.co/amp/post/127270/96-private-keys-stolen-from-vulcan-forged-in-140-million-theft>
+- `[forkastvulcan]` — Forkast, "Vulcan Forged replaces token stolen in hack" (2021-12-14): <https://forkast.news/vulcan-forged-replaces-token-stolen-hack/>
 - Cross-reference: T11.001 (Third-Party Signing Vendor Compromise) at `techniques/T11.001-third-party-signing-vendor-compromise.md`.
 - Cross-reference: T5.001 (Hard LP / Treasury Drain) at `techniques/T5.001-hard-lp-treasury-drain.md`.
 
 ## Discussion
 
-Vulcan Forged illustrates the T11.001 wallet-server concentration surface: a single server-side database containing private keys for a large user population creates a single-point-of-compromise extraction surface that an attacker converts into a multi-wallet simultaneous drain. The Venly-as-custodian topology is structurally interesting because it involves a third-party wallet provider whose infrastructure was not compromised — the keys were stored on Vulcan Forged's server, not Venly's, placing the security failure in the protocol-operator's infrastructure layer rather than the wallet-vendor layer.
-
-The treasury-funded refund (~$140M) is one of the largest operator-funded reimbursements in the 2021 incident record and establishes Vulcan Forged as a reference case for the "operator absorbs loss from treasury" recovery pattern, alongside EasyFi April 2021 (partial), bZx February 2020 (partial compensation pool), and Vee Finance September 2021 (revenue-funded compensation pool).
+Vulcan Forged illustrates the semi-custodial wallet-server concentration surface: an operator holding private keys for a user population converts one breach into a multi-wallet simultaneous drain. Because the sources indicate the keys were held by Vulcan Forged and Venly reported no compromise, the T11.001 "third-party vendor compromise" mapping is questionable; an operator-side key-storage compromise may fit better. The earlier comparisons to other named treasury-funded reimbursements (EasyFi, bZx, Vee Finance) and the claim of a full ~\$140M refund were unsourced and are removed.

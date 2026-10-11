@@ -33,4 +33,3 @@ T5.004 is the primary fit because the documented pattern is front-run and back-r
 ## Public references
 
 - `[heliussolmev2025]` — Helius, "Solana MEV Report: Trends, Insights, and Challenges" (2025-01): <https://www.helius.dev/blog/solana-mev-report> (sandwiching on Solana; 16 of top-20 sandwiched tokens were pump.fun launches; Vpe figures; Jito mempool suspension March 2024)
-- See `examples/2020-2025-initial-liquidity-sandwich-cohort.md` for the EVM T9.012 anchor.

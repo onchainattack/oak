@@ -1,3 +1,5 @@
+> **QUARANTINED 2026-10-11 — not part of the OAK corpus.** A source-verification pass found no credible public record of this incident as described. It is kept here, outside `examples/`, so it can be restored if a source turns up. Do not cite it. See [`README.md`](README.md).
+
 # Atlas DNS Bitcoin-domain hijack phishing campaign — Bitcoin — April 2013
 
 **Loss:** ~$200K+ in estimated aggregate losses across victims who entered credentials or wallet information into the phishing replicas served from hijacked Bitcoin-service domains. The figure is a lower-bound consensus estimate from contemporaneous industry reporting; the actual total is inherently uncertain because the phishing scheme harvested credentials rather than executing on-chain extraction that could be traced, and many victims may not have publicly reported individual losses. No recovery is recorded on the public record.

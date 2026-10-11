@@ -1,39 +1,38 @@
 # Bithumb exchange hack — Multi-asset (BTC, ETH, XRP, others) — 2018-06-20
 
-**Loss:** approximately \$31M in various cryptocurrencies from South Korea's largest exchange by volume. The attacker drained hot wallets across multiple assets in a coordinated single-event extraction.
-**OAK Techniques observed:** **OAK-T11.001** (Third-Party Signing-Vendor UI / Signing-Flow Compromise — broadly construed; the exchange's internal hot-wallet signing infrastructure was the compromise surface, enabling the multi-asset drain). **OAK-T7.001** (Mixer-Routed Laundering — the extracted assets were subsequently routed through mixing and exchange-based laundering infrastructure characteristic of the DPRK OAK-G01 tradecraft at the time).
+**Loss:** 35 billion won (about \$31.6M) in cryptocurrencies stolen from Bithumb between 2018-06-19 and 2018-06-20 (Security Affairs); Elliptic reports BTC, ether, Golem and other assets, with 1,993 BTC traced leaving Bithumb.
+**OAK Techniques observed:** **OAK-T11.001** (Third-Party Signing-Vendor UI / Signing-Flow Compromise — broadly construed; the exchange's internal hot-wallet signing infrastructure was the compromise surface, enabling the multi-asset drain). **OAK-T7.001** (Mixer-Routed Laundering — retained from the earlier draft; Elliptic's tracing shows the stolen BTC sat dormant for over a month and then moved to the YoBit exchange in 68 transactions on 2018-08-02 to 08-06, with no mixer mentioned, so exchange-based laundering fits better than a mixer hop).
 **OAK-Gnn:** [OAK-G01 Lazarus Group / DPRK-attributed](../actors/OAK-G01-lazarus.md).
-**Attribution:** **inferred-strong** The UN Panel of Experts and South Korean authorities attributed the June 2018 Bithumb breach to the DPRK's Lazarus Group as part of the sustained DPRK campaign targeting South Korean and Asian cryptocurrency exchanges throughout 2017-2019.
-**Key teaching point:** **The June 2018 Bithumb hack is the largest single DPRK-attributed exchange theft of the 2017-2018 wave and is the structural bridge between the pre-2018 small-exchange targets (Yapizon, Coincheck) and the post-2019 large-exchange multi-chain extraction pattern (Upbit, KuCoin, CoinEx).** Bithumb's survival — unlike Yapizon, which collapsed after two DPRK hacks — demonstrates the capitalisation threshold for surviving a state-aligned persistent threat actor: Bithumb's larger balance sheet and market position allowed it to absorb the \$31M loss without bankruptcy, a structural precondition for the multi-year Lazarus exchange-targeting campaign that followed.
+**Attribution:** **inferred-strong** A UN Panel of Experts report leaked in 2019 (reported by AP via Decrypt) lists the \$31M June 2018 Bithumb theft among North Korean thefts; Elliptic reports the theft was linked to Lazarus on the basis of AlienVault's finding that the malware and delivery method matched earlier Lazarus use, and itself calls this "linked" rather than confirmed. Bithumb's own initial assessment, per Security Affairs, was an "accident involving insiders". Claims of South Korean police attribution in the earlier draft are unsourced and removed.
+**Corrected 2026-10-11:** removed the unsourced ~\$14M recovery / ~\$17M net loss, the Korean-authority attribution, the "largest DPRK-attributed theft of 2017-18" claim (Coincheck was larger) and the Yapizon-collapse claim; laundering is documented as dormancy then YoBit, not mixers.
+
+**Key teaching point:** **The June 2018 Bithumb hack is a large hot-wallet theft, linked (not formally confirmed in the sources cited) to Lazarus, that shows two things: the same exchange was hit repeatedly (the UN panel report counts at least four Bithumb attacks, in 2017, 2018 and 2019), and the stolen funds were held dormant for weeks before being cashed through another exchange.** Bithumb said it would make up the lost coins from its own holdings and moved user assets to cold wallets (Security Affairs, Elliptic).
 
 ## Summary
 
-Bithumb, South Korea's largest cryptocurrency exchange by trading volume, suffered a hot-wallet compromise on 2018-06-20 in which approximately \$31M in various cryptocurrencies (including BTC, ETH, XRP, and other listed assets) was drained by an attacker. The breach was discovered and publicly disclosed by Bithumb within hours; the exchange immediately suspended all deposit and withdrawal services and transferred remaining hot-wallet assets to cold storage.
+Bithumb, a major South Korean exchange, confirmed that hackers stole 35 billion won (about \$31.6M) between 2018-06-19 and 2018-06-20. Elliptic reports deposits were suspended at about 00:53 UTC on 2018-06-20 and that Bithumb moved its assets to cold wallets. Elliptic separated the theft from normal withdrawals by an unusual pattern: about 400 transactions on June 19-20 with a fixed 0.1 BTC fee sent to a single 70-address wallet. The coins sat dormant for over a month; between 2018-08-02 and 2018-08-06 the full 1,993 BTC moved to the Russia-based YoBit exchange in 68 transactions.
 
-This was Bithumb's second major security incident: in June 2017, a separate breach compromised an employee's laptop containing customer personal data (documented at `examples/2017-06-bithumb.md`), which was used for follow-on phishing against Bithumb customers. The June 2018 incident was a direct financial extraction rather than a data-exfiltration operation, reflecting the evolution of DPRK tradecraft from intelligence-collection to direct asset extraction.
-
-Bithumb reported recovering approximately \$14M of the stolen assets through exchange coordination and blockchain analysis, reducing the net realised loss to approximately \$17M. The exchange resumed deposit and withdrawal services after a security overhaul, and has continued to operate as a major South Korean exchange.
+Bithumb said it would make up for the lost coins with its own and worked with other exchanges on recovery; Elliptic says it is unclear whether recovery succeeded for funds sent to YoBit, and Security Affairs reports no recovered funds.
 
 ## Timeline (UTC)
 
 | When | Event | OAK ref |
 |---|---|---|
-| 2018-06-19 to 2018-06-20 | Attacker compromises Bithumb hot-wallet signing infrastructure; multi-asset drain (~$31M) executed in a coordinated extraction | T11.001 (signing-flow compromise) |
-| 2018-06-20 | Bithumb discloses breach; suspends deposits and withdrawals; transfers remaining hot-wallet assets to cold storage | (defender response) |
-| 2018-06 to 2018-07 | Bithumb coordinates with exchanges and blockchain analytics firms; ~$14M recovered | T7.001 (laundering-tracking and recovery via exchange coordination) |
-| 2018-07 onward | Bithumb enhances security architecture; resumes full operations | (architectural remediation) |
+| 2018-06-19 to 2018-06-20 | Hot-wallet theft of ~35 billion won; ~400 transactions with a fixed 0.1 BTC fee to one 70-address wallet | T11.001 (signing-flow compromise; method not disclosed) |
+| 2018-06-20 | Deposits suspended ~00:53 UTC; remaining assets moved to cold wallets; theft disclosed | (defender response) |
+| 2018-08-02 to 2018-08-06 | 1,993 BTC moves to YoBit in 68 transactions | T7.001 (exchange-routed laundering; no mixer documented) |
+| 2019 | Leaked UN panel report lists the \$31M Bithumb 2018 theft among DPRK thefts | (attribution record) |
 
 ## Realised extraction
 
-Approximately \$31M initially drained; ~\$14M recovered via exchange coordination, leaving net realised loss of ~\$17M. Attributed to OAK-G01.
+About 35 billion won (~\$31.6M) stolen. Net recovery is not established in the sources cited; Security Affairs reports none and Elliptic calls it unclear. Bithumb said it would cover the loss from its own coins.
 
-## Distinction from June 2017 Bithumb incident
+## Distinction from earlier and later Bithumb incidents
 
-The June 2017 Bithumb incident (documented at `examples/2017-06-bithumb.md`) was a customer-data exfiltration from an employee laptop that enabled second-stage phishing against Bithumb users — a T15.003 employee-endpoint case without direct on-chain extraction by the initial attacker. The June 2018 incident is a direct hot-wallet financial extraction via signing-infrastructure compromise (T11.001 + T7.001). The two incidents are structurally distinct and should not be conflated.
+The earlier draft cited a June 2017 employee-laptop data breach (`examples/2017-06-bithumb.md`); that file's dating and scope are not verified here (the UN panel report counts attacks on Bithumb in 2017, 2018 and 2019). A separate March 2019 Bithumb theft of about \$20M in EOS and XRP, which Bithumb suspected was an insider job, is a different incident and should not be conflated with June 2018.
 
 ## Public references
 
-- Bithumb official breach disclosure and security announcements, June 2018
-- UN Panel of Experts report on DPRK cyber operations and cryptocurrency exchange targeting, 2019
-- Chainalysis and Elliptic DPRK-campaign wallet-cluster attribution reports
-- South Korean National Police Agency (NPA) Cyber Bureau investigation records, 2018
+- `[secaff2018bithumb]` — Security Affairs, "Hackers stole \$19 Million from Bithumb cryptocurrency exchange" (2019; background on Bithumb's repeated hacks and the 2018 \$31.6M figure): <https://securityaffairs.com/83091/hacking/bithumb-hack-2.html>
+- `[elliptic2018bithumb]` — Elliptic, "Following the money from the Bithumb hack" (2018-10-03): <https://www.elliptic.co/our-thinking/following-money-from-bithumb-hack>
+- `[decrypt2019unpanel]` — Decrypt, "North Korea denies expert UN report linking it to \$2 billion hacking campaign" (2019-09-02): <https://decrypt.co/8858/north-korea-denies-expert-un-report-linking-it-to-2-billion-hacking-campaign>

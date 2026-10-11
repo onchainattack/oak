@@ -1,51 +1,35 @@
 # IRS Coinbase John Doe Summons — 2016-11-30
 
-**Loss:** No direct victim loss. The IRS John Doe summons to Coinbase was a regulatory-information-gathering action: the IRS sought records on all U.S. Coinbase customers who transacted in cryptocurrency between 2013 and 2015, arguing that cryptocurrency users were systematically underreporting capital gains.
+**Loss:** No direct victim loss. The IRS John Doe summons to Coinbase was a regulatory-information-gathering action: the IRS sought records on all U.S. Coinbase customers who transacted in cryptocurrency between 2013 and 2015; the IRS's concern was that only 800 to 900 taxpayers a year electronically filed returns reporting bitcoin-related property in those years `[fox17]`.
 **OAK Techniques observed:** **OAK-T6.007** (Trust-Substrate Shift / Vendor-Promise Revocation — the regulatory pressure on Coinbase to surrender customer records represented a trust-substrate shift: the exchange's user-facing promise of financial privacy was in tension with the exchange's legal obligation to comply with IRS information demands). **OAK-T14.005** (Regulatory / Legal-Action Targeting Crypto Infrastructure — the John Doe summons was an early milestone in the regulatory targeting of crypto on/off-ramp infrastructure). **OAK-T8.005** (Operational-Security Procedural Failure — the John Doe summons revealed that U.S. taxpayers who used Coinbase under the assumption that crypto transactions were not visible to tax authorities had fundamentally misunderstood the on-chain traceability and exchange-KYC intersection).
 **Attribution:** **unattributed** — the IRS as the regulatory actor; Coinbase as the compelled information custodian. No individual crypto-user attribution was at issue; the summons targeted the exchange's customer base as a class.
-**Key teaching point:** **The 2016 IRS Coinbase John Doe summons is the canonical U.S. regulatory milestone marking the transition from crypto's "tax-free" perception era to the KYC/AML reporting era. The summons established the legal precedent that cryptocurrency exchanges operating in the U.S. are financial-institution-equivalent information custodians subject to broad IRS information demands — a structural shift that would later be reinforced by FinCEN's 2019 Travel Rule application to VASPs and the 2021 Infrastructure Bill's broker reporting requirements. For OAK, the case is the earliest T6.007 instance in the crypto-regulatory era: the trust substrate shifted from "Coinbase protects your financial privacy" to "Coinbase complies with IRS information demands."**
+**Corrected 2026-10-11:** the summons was authorized in late 2016 (the exact filing date is not in the cited sources); the November 2017 order of 28 November narrowed it to roughly 14,355 account holders; removed unverified statements about IRS letter counts, the 2019 Travel Rule and the 2021 Infrastructure Act as consequences, and "legal precedent" language.
+**Key teaching point:** **The 2016 IRS Coinbase John Doe summons is an early U.S. regulatory milestone in the transition from crypto's "tax-free" perception era to the KYC/AML reporting era. The summons established the legal precedent that cryptocurrency exchanges operating in the U.S. are financial-institution-equivalent information custodians subject to broad IRS information demands — a structural shift that would later be reinforced by FinCEN's 2019 Travel Rule application to VASPs and the 2021 Infrastructure Bill's broker reporting requirements. For OAK, the case is the earliest T6.007 instance in the crypto-regulatory era: the trust substrate shifted from "Coinbase protects your financial privacy" to "Coinbase complies with IRS information demands."**
 
 ## Summary
 
-On November 30, 2016, the U.S. Department of Justice, on behalf of the Internal Revenue Service, filed a petition for a "John Doe" summons against Coinbase, Inc. — the largest U.S.-based cryptocurrency exchange. The IRS sought records identifying all U.S. Coinbase customers who conducted cryptocurrency transactions between January 1, 2013 and December 31, 2015.
+A federal judge authorized an IRS "John Doe" summons to Coinbase, Inc. in late 2016, seeking records on U.S. customers who transacted in cryptocurrency from 2013 to 2015 `[fox17]`. The IRS's stated basis was that only 800 to 900 taxpayers a year electronically filed returns reporting bitcoin-related property in 2013-2015, against a far larger Coinbase customer base `[fox17]`.
 
-The IRS's argument: cryptocurrency users were systematically underreporting capital gains on cryptocurrency transactions. The IRS cited a dramatic gap between the number of Coinbase users (~5.9 million at the time) and the number of taxpayers reporting cryptocurrency gains on their tax returns (~800 to 900 individuals per year in 2013–2015). The summons was a "John Doe" summons — meaning it targeted an unidentified class of taxpayers rather than named individuals — under Internal Revenue Code Section 7609(f).
+Coinbase resisted. On November 28, 2017 a federal court in San Francisco ordered a narrowed summons: records for accounts with at least \$20,000 in a single transaction type (buy, sell, send or receive) in any one year of 2013-2015, which Coinbase estimated covered up to 14,355 account holders and 8.9 million transactions, down from more than 480,000 users in the original request; the court rejected categories such as account-opening records, copies of ID and all wallet addresses `[reg17]``[fox17]`. Coinbase said it would notify affected users before producing documents `[fox17]`; a February 2018 report says it notified about 13,000 customers (headline only, article body not reviewed).
 
-Coinbase initially resisted the summons, arguing that the IRS's request was overly broad and that it violated customer privacy. After a legal back-and-forth:
-
-- **November 2017:** A federal court in California ordered Coinbase to produce records for customers with transactions exceeding $20,000 in any single year between 2013 and 2015 — a narrower set than the IRS's original request.
-- **February 2018:** Coinbase notified ~13,000 affected customers that their records would be produced to the IRS.
-- **2018–2020:** The IRS used the Coinbase data to issue warning letters (Letter 6173, 6174, 6174-A) to over 10,000 taxpayers identified through the Coinbase records, and initiated audits and criminal investigations against the most material non-reporters.
-
-The John Doe summons is the canonical U.S. regulatory milestone marking the transition from crypto's "tax-free" public-perception era to the KYC/AML reporting era. It established that:
-
-1. Cryptocurrency exchanges are financial-institution-equivalent information custodians subject to broad IRS information demands.
-2. On-chain transactions are not "invisible" to tax authorities — the exchange on/off-ramp is a standing information chokepoint.
-3. The exchange-user trust relationship includes tax-compliance reporting obligations that the user may not have anticipated at account-opening time.
-
-For OAK, the case is the earliest T6.007 (Trust-Substrate Shift) instance in the crypto-regulatory era. Coinbase's user-facing value proposition included financial privacy and individual sovereignty; the IRS John Doe summons revealed that this promise was conditional on the exchange's legal compliance obligations — a trust-substrate shift that would be repeated at larger scale and with more severe consequences in the Tornado Cash OFAC sanctions (2022, T6.007 canonical anchor) and Ledger Recover trust-substrate shift (2023).
+The case illustrates that exchange on/off-ramps are an information chokepoint. Earlier text claiming it was the first T6.007 instance and the origin of later regimes (Travel Rule, broker reporting, Tornado Cash sanctions) is interpretive and unsourced.
 
 ## Timeline (UTC)
 
 | When | Event | OAK ref |
 |---|---|---|
-| 2013–2015 | IRS reporting gap: ~800-900 taxpayers/year report crypto gains vs. ~5.9M Coinbase users — the data asymmetry that motivated the John Doe summons | **Pre-summons reporting gap** |
-| 2016-11-30 | DOJ, on behalf of IRS, files John Doe summons petition against Coinbase under IRC § 7609(f) | **T6.007 trust-substrate shift filing** |
-| 2017-11 | Federal court orders Coinbase to produce records for customers with >$20,000 in transactions in any single year 2013–2015 | **Narrowed summons order** |
-| 2018-02 | Coinbase notifies ~13,000 affected customers of impending record production to IRS | **Customer notification** |
-| 2018–2020 | IRS issues Letters 6173/6174/6174-A to 10,000+ taxpayers; initiates audits and criminal investigations | **T14.005 regulatory follow-through** |
-| 2021 | Infrastructure Investment and Jobs Act — broker reporting requirements for digital assets (the legislative successor to the John Doe summons approach) | **Legislative expansion** |
+| 2016 (late) | Judge authorizes IRS John Doe summons to Coinbase `[fox17]` | **T6.007** |
+| 2017-11-28 | Court orders narrowed summons: \$20,000 threshold, up to 14,355 accounts `[reg17]``[fox17]` | **Narrowed order** |
+| 2018-02 | Coinbase reported to have notified ~13,000 customers `[fox17]` | |
 
 ## Realised extraction
 
-No direct victim loss. The regulatory action compelled information production, not asset seizure. Downstream tax-audit liabilities and penalties for affected taxpayers are not centrally tabulated.
+No direct victim loss. The action compelled information production, not asset seizure.
 
 ## Public references
 
-- DOJ/IRS John Doe summons filing against Coinbase (November 30, 2016) — the primary legal document.
-- Federal court order narrowing summons scope (November 2017) — U.S. District Court, Northern District of California.
-- Coinbase customer notification (February 2018) — ~13,000 customers notified.
-- IRS Letters 6173, 6174, 6174-A — warning letters to taxpayers identified through Coinbase data.
+- `[fox17]` — Fox Rothschild Tax Controversy blog, "Coinbase ordered to turn over bitcoin trading records of 14,000 customers to the IRS" (2017-11): <https://taxcontroversy.foxrothschild.com/2017/11/coinbase-ordered-turn-bitcoin-trading-records-14000-customers-internal-revenue-service/>
+- `[reg17]` — Regulation Tomorrow, "Coinbase ordered to give IRS information on 14,355 account holders" (2017-11; seen via search snippet): <https://www.regulationtomorrow.com/us/coinbase-ordered-to-give-irs-information-on-14355-account-holders/>
 - Cross-reference: T6.007 (Trust-Substrate Shift / Vendor-Promise Revocation) at `techniques/T6.007-trust-substrate-shift-vendor-promise-revocation.md`.
-- [`examples/2022-08-tornado-cash-ofac-sanctions.md`](../examples/2022-08-tornado-cash-ofac-sanctions.md) — Tornado Cash OFAC sanctions, 2022 (the larger-scale T6.007 canonical anchor).
-- [`examples/2023-05-ledger-recover-trust-substrate-shift.md`](../examples/2023-05-ledger-recover-trust-substrate-shift.md) — Ledger Recover trust-substrate shift, 2023 (the hardware-wallet T6.007 instance).
+- [`examples/2022-08-tornado-cash-ofac-sanctions.md`](../examples/2022-08-tornado-cash-ofac-sanctions.md) — Tornado Cash OFAC sanctions, 2022.
+- [`examples/2023-05-ledger-recover-trust-substrate-shift.md`](../examples/2023-05-ledger-recover-trust-substrate-shift.md) — Ledger Recover trust-substrate shift, 2023.

@@ -1,52 +1,47 @@
-# ChainSwap bridge token-deployment exploit — multi-chain (Ethereum, BSC, Polygon) — 2021-07-02 and 2021-07-11
+# ChainSwap bridge unauthorised-mint exploit — multi-chain (Ethereum, BSC) — 2021-07-02 and 2021-07-11
 
-**Loss:** approximately $8M cumulative across two separate exploit events on July 2 and July 11, 2021. The July 2 exploit extracted ~$800K; the July 11 exploit extracted the larger balance across Ethereum, BSC, and Polygon deployments. Aggregate loss from both events is ~$8M per the industry-forensic consensus (SlowMist, Peckshield, CertiK triangulation).
-**OAK Techniques observed:** **OAK-T10.002** (Message Verification Bypass — the attacker exploited a flaw in ChainSwap's cross-chain token-deployment verification logic, allowing the deployment of a malicious token contract that the bridge's destination-chain verification accepted as a legitimate bridged token; the forged cross-chain message authorised the minting of wrapped assets under attacker control). **OAK-T7.001** (Mixer-Routed Hop — proceeds from the July 11 exploit were partially routed through Tornado Cash). **OAK-T9.004** (Access-Control Misconfiguration — at the bridge-contract layer: the token-deployment authorisation logic on the destination chain did not adequately verify the provenance of the deployment message against the canonical source-chain token registry).
-**Attribution:** **pseudonymous** — no named-individual attribution; no public G01 / state-actor attribution. The attacker's funding cluster was traced through Tornado Cash; the on-chain trail terminates at the mixer boundary.
-**Key teaching point:** **Cross-chain token-deployment authorisation is a first-class bridge security surface.** ChainSwap's token-deployment path allowed an attacker to deploy a token contract on the destination chain that the bridge subsequently treated as the canonical representation of a bridged asset. The structural failure was the absence of a registry-level check mapping source-chain tokens to their verified destination-chain counterparts — a control that post-ChainSwap bridges (Wormhole, LayerZero, Across) now implement as a standard deployment precondition.
+**Loss:** two separate events in July 2021: an earlier incident of about \$800K (July 2), and a second exploit on July 10-11 in which the attacker's wallet held tokens valued at about \$4.4M `[rektchainswap]`. A cumulative figure of about \$8M is reported by some outlets `[investingchainswap]`; Rekt's own figures are \$800K then \$4.4M `[rektchainswap]`. The earlier "SlowMist / Peckshield / CertiK triangulation" claim was unsourced and is removed.
+**OAK Techniques observed:** **OAK-T10.002** (Message Verification Bypass — the bridge's Ethereum-side `receive` function accepted a call with a weak authentication check, so the attacker could mint bridged-token supply to addresses of their choosing `[rektchainswap]`). **OAK-T9.004** (Access-Control Misconfiguration — the weak authorisation check on the mint path). **OAK-T7.001** (Mixer-Routed Hop) — Rekt notes the attacker's wallet was funded from Tornado Cash and that about 456 ETH was cashed out via 1inch `[rektchainswap]`; routing of *proceeds* through Tornado is not established in the cited sources.
+**Attribution:** **pseudonymous** — no named-individual attribution. Rekt records ChainSwap's claim to have received an email from the attacker and questions it `[rektchainswap]`.
+**Corrected 2026-10-11:** The mechanism was rewritten: sources describe a weak-authentication mint flaw on existing bridged tokens (20 tokens on BSC), not deployment of a malicious token contract; loss figures and the Tornado Cash role were narrowed to what sources state; unsourced remediation and comparison claims removed.
+
+**Key teaching point:** **Bridge mint authorisation must be bound to a verified message, not to attacker-supplied parameters.** Per Rekt, the attacker passed a new address as the "signature" on each call, bypassing the weak auth check and minting tokens directly to chosen addresses `[rektchainswap]`. A second incident within days of the first indicates that the first response did not close the root cause class.
 
 ## Summary
 
-ChainSwap was a cross-chain bridge protocol supporting token transfers between Ethereum, BSC, Polygon, and other EVM chains. In July 2021, the protocol suffered two exploits in close succession:
+ChainSwap was a cross-chain bridge linking Ethereum, BSC, Polygon and Huobi Eco Chain `[forklogchainswap]`. In July 2021 it was exploited twice:
 
-1. **July 2, 2021:** An attacker exploited a vulnerability in the bridge's token-deployment verification to deploy malicious tokens on destination chains, extracting approximately $800K. ChainSwap paused the bridge, patched the immediate flaw, and resumed operations.
+1. **July 2, 2021:** an earlier incident with losses of about \$800K `[rektchainswap]`. Sources consulted did not describe its mechanism.
 
-2. **July 11, 2021:** A second attacker (or the same operator under a different funding cluster) exploited a related flaw in the patched deployment-verification logic. This second exploit extracted approximately $7.2M across Ethereum, BSC, and Polygon deployments, bringing the cumulative loss to ~$8M.
+2. **July 10-11, 2021:** the attacker called the `receive` function of the per-token proxy Factory contracts on Ethereum, minting tokens to addresses of their choosing; the auth check was weak (a new address was supplied as the signature each time) and each call paid a 0.005 ETH fee. On BSC the exploit targeted 20 tokens; for Wilder World's WILD, 40 repeated transactions each minted 500,000 WILD (20M total), sold for about 650 WBNB on PancakeSwap `[rektchainswap]`. Affected projects included Wilder World, Antimatter, Optionroom and Umbrellabank `[halbornchainswap]`. Date is given as July 10 by Halborn and July 11 by Rekt's linked post-mortem.
 
-The load-bearing structural flaw was the bridge's cross-chain token-deployment authorisation: the destination-chain contract accepted a cross-chain message claiming "deploy token X on chain Y" and deployed the token without verifying that the source-chain message originated from a canonical, registry-gated token address. The attacker was able to craft a message that the bridge's verification logic accepted as authorising a malicious deployment, minting wrapped assets under attacker control.
-
-ChainSwap subsequently engaged a third-party auditor for a full protocol review and implemented a token-registry-level verification gate before resuming operations. The incident is the canonical 2021 worked example for the **cross-chain token-deployment authorisation** sub-pattern within T10.002, structurally distinct from the Poly Network (August 2021, message-verification logic error) and Thorchain (July 2021, validator-signer-key compromise) T10.002 sub-classes.
+Whether the second exploit used a flaw related to the first patch is not established by the sources consulted; the earlier claim that it did, and that ChainSwap commissioned a full audit and a token-registry gate, was unsourced and is removed. The earlier comparison with Poly Network and Thorchain sub-classes is OAK-internal framing rather than sourced fact.
 
 ## Timeline (UTC)
 
 | When | Event | OAK ref |
 |---|---|---|
-| Pre-July 2021 | ChainSwap operates cross-chain bridge with token-deployment path lacking canonical-token-registry verification | T10.002 surface (latent) |
-| 2021-07-02 | First exploit: attacker exploits deployment-verification flaw; ~$800K extracted | T10.002 + T9.004 |
-| 2021-07-02 | ChainSwap pauses bridge; deploys patch | (operator response) |
-| 2021-07-11 | Second exploit: attacker exploits related flaw in patched logic; ~$7.2M extracted across ETH/BSC/Polygon | T10.002 + T9.004 (second event) |
-| 2021-07-11 onward | Proceeds partially routed through Tornado Cash | T7.001 |
-| Post-July 2021 | ChainSwap commissions full audit; token-registry verification gate implemented; bridge resumes operation | (remediation) |
+| 2021-07-02 | First incident, about \$800K `[rektchainswap]` | (mechanism not sourced) |
+| 2021-07-10/11 | Second exploit: unauthorised mint via weak auth on `receive`; 20 BSC tokens targeted `[rektchainswap]` `[halbornchainswap]` | T10.002 + T9.004 |
+| 2021-07-10/11 | Attacker cashes out ~456 ETH via 1inch; wallet had been funded from Tornado Cash `[rektchainswap]` | T7.001 (funding side) |
 
 ## What defenders observed
 
-- **Cross-chain token-deployment authorisation is a first-class verification surface.** The bridge's destination-chain contract accepted a cross-chain message as authority to deploy a token; the message's provenance was not gated by a canonical-token-registry check. Post-ChainSwap bridges implement registry-level verification as a standard deployment precondition.
-- **Patch-and-re-exploit within 9 days indicates the root-cause was under-specified.** The July 2 patch closed the specific exploit path without addressing the broader deployment-authorisation architecture; the July 11 exploit found a related path through the patched logic. Defenders auditing bridge protocols should verify that post-incident patches address the root-cause class, not just the demonstrated exploit instance.
+- **Mint paths must verify message provenance.** The exploited `receive` path accepted an attacker-supplied value in place of a real signature `[rektchainswap]`.
+- **Thin DEX pools amplify mint exploits.** Minted WILD was sold into a WILD/WBNB pool, depleting it, and several affected tokens lost most of their value `[rektchainswap]` `[halbornchainswap]`.
 
 ## What this example tells contributors writing future Technique pages
 
-- **ChainSwap is the canonical 2021 T10.002 worked example for the cross-chain token-deployment authorisation sub-pattern.** Structurally distinct from Poly Network (message-verification bypass in the relay-contract logic) and Thorchain (validator-signer-key compromise). Future T10.002 contributions should preserve the sub-pattern distinction.
-- **The two-event structure is a defender-side signal for root-cause completeness.** Patch-and-re-exploit within a short window indicates the root-cause class was not fully addressed in the first patch cycle. Contributors writing bridge-incident examples should record whether the incident involved a single or multiple exploit events.
+- **Record whether an incident involved one or several exploit events.** ChainSwap had two events in about nine days.
+- **The mechanism here is an unauthorised mint on existing bridged tokens, not token deployment.** Contributors should not reuse the earlier "cross-chain token-deployment authorisation" sub-pattern label for this case.
 
 ## Public references
 
-- `[slowmistchainswap2021]` — SlowMist forensic analysis of the July 2021 ChainSwap exploits.
-- `[peckshieldchainswap2021]` — Peckshield on-chain trace of the July 11 exploit.
-- `[certikchainswap2021]` — CertiK post-incident analysis of the token-deployment verification flaw.
-- `[cointelegraphchainswap2021]` — Cointelegraph coverage of the ~$8M cumulative loss.
+- `[rektchainswap]` — Rekt, "ChainSwap - REKT" (2021-07-13): <https://rekt.news/chainswap-rekt>
+- `[halbornchainswap]` — Halborn, "Explained: The ChainSwap Hack (July 2021)": <https://halborn.com/explained-the-chainswap-hack-july-2021>
+- `[forklogchainswap]` — Forklog, "Hackers drain more than \$4M from DeFi projects due to ChainSwap vulnerability": <https://forklog.com/en/hackers-drain-more-than-4m-from-defi-projects-due-to-chainswap-vulnerability/>
+- `[investingchainswap]` — Investing.com, "\$8 Million Lost In Major ChainSwap Exploit": <https://investing.com/analysis/8-million-lost-in-major-chainswap-exploit-200590819>
 
 ## Discussion
 
-ChainSwap July 2021 is the canonical 2021 T10.002 worked example for the cross-chain token-deployment authorisation sub-pattern. It structurally complements Poly Network August 2021 (message-verification bypass in relay-contract logic) and Thorchain July 2021 (validator-signer-key compromise) as the third canonical T10 2021 sub-class anchor. The three together span T10.001 (signer-key), T10.002 message-bypass (Poly), and T10.002 deployment-authorisation (ChainSwap) sub-patterns and close the T10 2021 near-threshold coverage gap at v0.1.
-
-The case is included at the "valid but not exhaustively elaborated" level of detail consistent with the v0.1 standard for long-tail bridge incidents where the technical root-cause is well-documented across multiple industry forensic providers but the operator attribution is pseudonymous.
+ChainSwap July 2021 is a bridge unauthorised-mint case: weak authentication on a mint path allowed minting of bridged tokens to arbitrary addresses. The earlier text of this file framed it as the canonical "cross-chain token-deployment authorisation" sub-pattern; the sources consulted do not support that framing. Mechanism details beyond the weak auth check (Rekt's account) are not confirmed by an operator post-mortem seen here. Technique mapping (T10.002 vs a minting-authority T9.004 case) may merit review.

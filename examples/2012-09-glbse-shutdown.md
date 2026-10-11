@@ -1,9 +1,10 @@
 # GLBSE (Global Bitcoin Stock Exchange) operator shutdown — Bitcoin — 2012-09
 
-**Loss:** ~$1M+ in user assets (BTC-denominated; exact BTC figure not centrally tabulated). GLBSE was the first Bitcoin securities exchange — it listed Bitcoin-denominated equities including mining-company shares (S.MPOE, ASICMINER), pass-through securities (BTCS&T/Pirateat40's Ponzi, which was the largest listing), and other early Bitcoin-economy assets. The operator ("Nefario," later identified as James McCarthy) unilaterally shut down the exchange in September 2012, freezing all user assets in custody. **Recovery:** partial — Nefario reportedly returned some assets to some users over an extended period, but a material fraction of user funds was never returned. No public enforcement action or criminal prosecution resulted.
+**Loss:** Not tabulated. Shareholder Theymos estimated about 8,000 BTC in deposits at stake at the time of the shutdown (per Bitcoin Magazine, 2012-10-10); the earlier \$1M+ figure in this file was unsourced. GLBSE was the first Bitcoin securities exchange; it listed Bitcoin-denominated securities including the Pirateat40 / Bitcoin Savings & Trust pass-through securities. The operator ("Nefario", James McCarthy) shut the exchange in early October 2012 citing regulatory (AML) exposure and said all deposits would be returned to users. **Recovery:** unconfirmed in the sources cited; closing accounts required users to submit an email and BTC address, and the operator said he was processing 800+ closed accounts in batches.
 **OAK Techniques observed:** **OAK-T11.005** (Operator-Side / Fake-Platform Fraud — the exchange was presented as a legitimate, going-concern trading venue; the shutdown-and-withhold pattern is operator-side extraction). **OAK-T6.007** (Trust-Substrate Shift — the operator's unilateral shutdown revoked the trust claim that GLBSE was a reliable custody-and-trading venue, accelerating the Bitcoin community's shift toward decentralized exchange models). **OAK-T15.003** (Operator-Endpoint Compromise — broadly construed; the exchange operator's control over the platform's custody infrastructure was the endpoint through which user funds were withheld).
-**Attribution:** **confirmed**. The operator was publicly known by pseudonym throughout GLBSE's operation; the real-name identification emerged in the years following the shutdown through community investigation. No criminal charges or civil enforcement action were brought against McCarthy in connection with the GLBSE shutdown.
-**Key teaching point:** GLBSE is the first documented exchange-operator-shutdown-and-asset-withholding event in the cryptocurrency economy. It prefigures the Mt. Gox collapse (2014) and every subsequent centralized-exchange insolvency or operator-exit event. The pattern — exchange operator controls custody infrastructure, operator shuts down platform, user assets are frozen or withheld, and recovery is either partial or zero through ad-hoc operator restitution — was demonstrated and operationalized at GLBSE more than a year before Mt. Gox collapsed. The absence of law-enforcement resolution in the GLBSE case is structurally significant: it established the precedent that an exchange operator could shut down a Bitcoin-denominated venue, withhold user assets, and face no criminal consequences, which informed the calculus of every subsequent exchange-operator exit-scam.
+**Attribution:** **confirmed**. The operator was publicly known by pseudonym; contemporaneous press named him as James McCarthy (Nefario). This file's earlier statement that no enforcement action was brought against McCarthy is not verified by the cited sources.
+**Corrected 2026-10-11:** Shutdown was early October 2012 (not a September withholding event); the operator cited AML/regulatory problems and said deposits would be returned; the \$1M+ loss figure and the "material fraction never returned" claim are unsourced and the exit-scam framing is not supported by the cited reporting.
+**Key teaching point:** GLBSE is an early case of a custodial Bitcoin venue closing abruptly under regulatory pressure, with users dependent on the operator's cooperation to recover deposits and shares. The operator controlled custody, there was no independent trustee, and recovery depended on a manual, operator-run process that required users to hand over contact details. The cited reporting does not show that funds were withheld or that the shutdown was an exit scam; the earlier framing of it as a withholding precedent for Mt. Gox and later exits is this file's inference and is not sourced.
 
 ## Summary
 
@@ -11,9 +12,9 @@ GLBSE (the Global Bitcoin Stock Exchange) was launched in 2011 by James McCarthy
 
 The GLBSE platform architecture was fundamentally custodial: users deposited BTC into GLBSE-controlled wallets, and the exchange maintained internal ledgers of user balances and equity holdings. The operator — Nefario — held full administrative control over the platform's web server, database, and Bitcoin wallet infrastructure. There was no multi-signature custody, no independent trustee or auditor, and no mechanism for users to reclaim their assets without the operator's cooperation.
 
-In September 2012, Nefario unilaterally shut down GLBSE without prior notice to users. User assets — both BTC balances and equity positions — were frozen. The shutdown occurred in the aftermath of the Pirateat40 / Bitcoin Savings & Trust Ponzi collapse (August 2012), which had been GLBSE's most heavily traded listing and had exposed the exchange to significant reputational and potential legal risk. Nefario initially cited the Pirateat40 fallout and legal concerns as the reason for the shutdown.
+In early October 2012 (Bitcoin Magazine, 2012-10-10, reported it "last Thursday"), Nefario shut down GLBSE. Most user value was held as shares whose issuer relationships GLBSE only recorded. The shutdown occurred in the aftermath of the Pirateat40 / Bitcoin Savings & Trust Ponzi collapse (August 2012), which had been GLBSE's most heavily traded listing and had exposed the exchange to significant reputational and potential legal risk. Nefario said his problems were AML, tax and regulation, in that order, and told Bitcoin Magazine regulators had told him GLBSE was performing a regulated activity without adequate AML controls. He also said about 2,500 BTC had been stolen from the site, which he later recovered. The link to the Pirateat40 collapse as a cause is this file's inference, not stated by Nefario in the cited sources.
 
-In the months following the shutdown, Nefario engaged in a selective, ad-hoc restitution process — some users reported receiving partial returns of their assets, while others reported receiving nothing. There was no formal claims process, no independent administrator, and no public accounting of assets returned versus assets withheld. The total loss to users has never been centrally tabulated, but the Bitcoin-denominated value of assets frozen and not returned is estimated at well over $1M in contemporaneous USD terms.
+After the shutdown Nefario said all deposits would be returned and ran a manual closing-account process in batches. Whether every user was made whole is not established by the sources cited here; the claim in earlier drafts that a material fraction was never returned is unverified.
 
 The GLBSE shutdown reverberated through the 2012 Bitcoin community: it was the first exchange-operator-default event of the cryptocurrency era, and it demonstrated that centralized Bitcoin-denominated venues operated by pseudonymous or semi-pseudonymous individuals carried inherent custody risk that no amount of community trust could mitigate. The incident accelerated interest in decentralized exchange models and non-custodial trading infrastructure.
 
@@ -24,14 +25,13 @@ The GLBSE shutdown reverberated through the 2012 Bitcoin community: it was the f
 | 2011 | GLBSE launches as the first Bitcoin securities exchange under operator "Nefario" (James McCarthy) | |
 | 2011–2012 | GLBSE becomes the dominant secondary market for Bitcoin-economy assets; Pirateat40 / BTCS&T Ponzi listed as largest equity | T11.005 first observed |
 | 2012-08 | Bitcoin Savings & Trust Ponzi collapses; GLBSE's largest listing evaporates | T11.005.002 + T5.005 |
-| 2012-09 | Nefario unilaterally shuts down GLBSE; user assets frozen | T11.005 + T6.007 |
-| 2012-09 to 2013 | Ad-hoc, partial restitution to some users; no formal process | |
+| 2012-10 (early) | Nefario shuts down GLBSE citing AML/regulatory exposure; says deposits will be returned | T6.007 |
+| 2012-10 | Manual account-closing process; 800+ closed accounts being processed in batches | |
 | 2013 onward | James McCarthy ("Nefario") identified; no criminal charges | T8.005 (opsec failure — pseudonym-to-real-name linkage) |
 
 ## Realised Extraction
 
-- User assets frozen by operator shutdown; estimated >$1M+ in BTC-denominated value at contemporaneous exchange rates
-- Partial ad-hoc recovery for some users; no centralized accounting; material fraction never returned
+- Not established. Deposits at stake estimated ~8,000 BTC by a shareholder (`[btcmaggblse]`); operator said all would be returned (`[btcmaggblse]`, `[btcmagnefario]`).
 
 ## Public References
 
@@ -40,3 +40,7 @@ The GLBSE shutdown reverberated through the 2012 Bitcoin community: it was the f
 - Industry retrospectives on early Bitcoin exchange infrastructure and centralized-custody risk (various, 2014 onward)
 
 ## Public references
+
+- `[btcmaggblse]` — Bitcoin Magazine, "Global Bitcoin Stock Exchange Shuts Down For Good" (2012-10-10): <https://bitcoinmagazine.com/markets/global-bitcoin-stock-exchange-shuts-down-for-good-1349879479>
+- `[btcmagnefario]` — Bitcoin Magazine, "Interview with GLBSE's Nefario": <https://bitcoinmagazine.com/culture/interview-with-glbses-nefario-1350319173>
+- `[p2pglbse]` — P2P Foundation blog, "Monitoring Bitcoin – Bitcoin Foundation, GLBSE Closure, and the ASIC Arms Race": <https://blog.p2pfoundation.net/monitoring-bitcoin-bitcoin-foundation-glbse-closure-and-the-asic-arms-race/>

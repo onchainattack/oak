@@ -24,6 +24,14 @@ The original text was written in the v0.1 bulk release while the LayerZero inves
 
 **`OAK-T10.008` is deprecated** (tombstone kept, ID never reused). Its only other example was quarantined in the 2026-10-11 source pass, so it had no confirmed anchor; the mechanism returns to TAXONOMY-GAPS as a candidate. The OAK incident report `investigations/2026-05-15-thorchain-router-exploit.md` is marked superseded and kept unedited as a record. Found independently by the 2026-10-11 source pass and by an external model reading the live `oak.json`.
 
+### Removed — third source pass (2010–2021): 10 quarantined, ~70 corrected (2026-10-11)
+
+The last 84 unsourced examples. Early-history entries were as unreliable as recent ones: a "July 2011 Bitcoinica hack" two months before Bitcoinica existed; the March 2012 Bitcoinica loss misattributed to Mt. Gox API keys (it was the Linode breach); Bitfloor, Poloniex 2014, Flexcoin, Gatecoin, Cryptsy, Coin.mx, Welcome to Video, Silk Road, BTC-e, Bithumb 2018, Zaif, QuadrigaCX and the 2020 DeFi exploits (Bancor, Yam, Eminence, Warp, Furucombo, Uranium, Meerkat) all carried wrong dates, mechanisms, figures or legal outcomes and were corrected. Bogged Finance re-mapped T16.001 → T9.016 (it was a staking-reward mint, not a vote). Binance 2019 hot-wallet: Lazarus link removed (no source). Zaif 2018: attribution "confirmed" → unattributed.
+
+**OAK-T9.012 (Initial Liquidity Sandwich) now has no confirmed example** — its anchors were withdrawn and their mechanism as written is not possible. Marked "no public anchor"; retitle-or-deprecate decision pending.
+
+Unsourced examples: 253 (34%) at the start of the day → 1 (Pickle Finance 2020, not reached). Examples: 652.
+
 ### Removed — second source pass (2022–2023): 28 quarantined, ~40 corrected, 9 more duplicates merged (2026-10-11)
 
 The same check over the 76 unsourced examples dated 2022–2023. Real incidents with wrong facts were corrected in place — among them Beanstalk (mechanism), Inverse Finance (the manipulated pool), Paraluni (reentrancy, not oracle manipulation), Agave (an Aave fork), CoinEx and AlphaPo (government/firm attributions that did not exist), JPEX (11 arrests, not 70+), Multichain, Terra (SEC settlement date) and Harmony. 28 had no credible record as described; nine of those are real incidents under a wrong mechanism (Akutars, Elephant Money, Rari Fuse, the ETHW replay, Atlantis Loans, Paribus, Snowdog, Balancer veBAL, two phishing cohorts) and are listed in `CORRECTIONS.md` as candidates for new, sourced entries. Duplicate incident files merged: Harmony (three files), Ankr, Hundred Finance 2023, MEV-Boost equivocation, Ledger Connect Kit, Socket, Loopring, Ronin 2024; withdrawn IDs resolve in `oak.json` as `merged` with `superseded_by`.

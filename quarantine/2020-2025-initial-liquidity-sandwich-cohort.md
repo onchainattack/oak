@@ -1,3 +1,5 @@
+> **QUARANTINED 2026-10-11 — not part of the OAK corpus.** A source-verification pass found no credible public record of this incident as described. It is kept here, outside `examples/`, so it can be restored if a source turns up. Do not cite it. See [`README.md`](README.md).
+
 # Initial liquidity sandwich MEV cohort — EVM / multi-chain — 2020–2025 (ongoing)
 
 **Loss:** no single headline-grabbing loss figure; individual sandwich extractions are modest per launch (tens to low hundreds of ETH-equivalent) but the aggregate extraction across tens of thousands of token launches since 2020 is material. MEV searchers operating as sandwich bots (e.g., jaredfromsubway.eth and equivalents on Ethereum mainnet) routinely monitor the public mempool for `addLiquidity` transactions on newly created pools and execute the sandwich: front-run buy at pre-liquidity price, back-run sell at post-liquidity price.

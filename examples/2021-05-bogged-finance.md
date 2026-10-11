@@ -1,38 +1,28 @@
-# Bogged Finance flash-loan governance attack — BNB Chain — 2021-05-22
+# Bogged Finance flash-loan staking-reward mint exploit — BNB Chain — 2021-05 (reported 2021-05-24)
 
-**Loss:** approximately $3.6M extracted from Bogged Finance's BOG token liquidity pools via a flash-loan-funded governance vote takeover on BNB Chain on 2021-05-22. The attacker borrowed sufficient BOG tokens via flash loan to acquire majority voting power in a single block, passed a malicious governance proposal, and drained the protocol's liquidity pools.
-**OAK Techniques observed:** **OAK-T9.002** (Flash-Loan-Enabled Exploit — the attacker flash-borrowed sufficient BOG tokens to acquire majority voting power) + **OAK-T16.001** (Vote Takeover via Flash-Loan — the attacker used a flash-loaned majority of BOG voting tokens to pass a malicious proposal that granted the attacker authority to drain protocol liquidity pools; the canonical 2021 BNB Chain case of T16.001, a structural precursor to the larger Beanstalk April 2022 case on Ethereum). **OAK-T5.001** (Hard LP Drain — the attacker drained the protocol's liquidity pools in a single transaction post-governance-takeover). **OAK-T7.001** (Mixer-Routed Hop — proceeds were partially routed through Tornado Cash on BNB Chain).
-**Attribution:** **pseudonymous** — no public named-individual attribution at OAK v0.1 cutoff. The on-chain forensic record (PeckShield, SlowMist) documents the flash-loan-to-vote-to-drain chain but does not identify the operator.
-**Key teaching point:** **Flash-loan governance attacks were operationally demonstrated on BNB Chain in May 2021, eleven months before the Beanstalk governance attack on Ethereum (April 2022).** Bogged Finance is the canonical 2021 BNB Chain precursor case for T16.001; the structural pattern (flash-loan voting-power acquisition, single-block proposal passage, pool drain) is identical to Beanstalk's, and the Bogged Finance case demonstrates that the vulnerability class was publicly instantiated at scale nearly a year before Beanstalk.
+**Loss:** approximately \$3M (PeckShield put it at \$3.62M) drained from liquidity after the attacker minted 15M BOG; BOG fell from \$8.50 to \$0.15 `[coindeskbogged]`, `[cryptoslatebogged]`.
+**OAK Techniques observed:** **OAK-T9.016** (Contract Accounting / State-Invariant Flaw — *primary*. Per CoinDesk, a flaw in the staking-reward / fee logic let the attacker mint ~15M BOG with a flash-loaned position and sell it, collapsing the price from ~\$8.50 to ~\$0.15 `[coindeskbogged]`). **OAK-T9.002** (Flash-Loan-Enabled Exploit — capital source). **Not T16.001:** there was no governance vote; the earlier "vote takeover" framing had no source.
+
+**Re-mapped 2026-10-11:** primary Technique moved from T16.001 to [`T9.016-contract-accounting-state-invariant-flaw`](../techniques/T9.016-contract-accounting-state-invariant-flaw.md).
+**Attribution:** **pseudonymous** — no attacker identified in the sources consulted.
+**Corrected 2026-10-11:** The incident was a flash-loan exploit of a contract flaw that manipulated staking rewards and minted 15M BOG, not a governance vote takeover; removed the unsourced Tornado Cash routing, snapshot-voting relaunch and Beanstalk-precursor framing. Exact exploit date is not stated in the sources (CoinDesk reported on 2021-05-24).
+**Key teaching point:** A flash-loan-funded exploit of reward-accounting logic can mint a large supply of a protocol's own token and drain liquidity within seconds; CoinDesk reports mitigation took about 45 seconds, long enough for roughly \$3M in liquidity to be taken `[coindeskbogged]`.
 
 ## Summary
 
-Bogged Finance was a BNB Chain DeFi protocol offering limit-order and stop-loss functionality with a BOG governance token. On May 22, 2021, an attacker exploited the protocol's governance mechanism by flash-loaning a majority of BOG tokens, acquiring sufficient voting power within a single transaction to pass a malicious proposal. The proposal granted the attacker authority to drain the protocol's liquidity pools, extracting approximately $3.6M.
+Bogged Finance was a BNB Chain (then Binance Smart Chain) DeFi platform offering limit-order and related tools with a BOG token. CoinDesk reported on 2021-05-24 that the attacker used flash loans to exploit a flaw in the smart contract and manipulate staking rewards, causing 15 million BOG to be minted; the attack was stopped after about 45 seconds `[coindeskbogged]`. BOG's price fell from \$8.50 to \$0.15, over 98% `[coindeskbogged]`. CryptoSlate described it as the third flash-loan-related attack on BSC at the time `[cryptoslatebogged]`.
 
-The Bogged Finance team paused the protocol and subsequently relaunched under a revised governance architecture with flash-loan-resistant voting-power computation (snapshot-based rather than same-block balance). The case is the canonical 2021 T16.001 worked example on BNB Chain and the structural precursor to Beanstalk April 2022 on Ethereum.
+Bogged said it would migrate liquidity to a new contract (using the same exploit path as the attacker), burn about 7.5M tokens, airdrop liquidity tokens back to owners and return legitimately owned BOG `[coindeskbogged]`. The sources consulted do not say whether that migration was completed or whether funds were recovered.
 
-## Timeline (UTC)
+## Timeline
 
 | When | Event | OAK ref |
 |---|---|---|
-| Pre-2021-05-22 | Bogged Finance operates on BNB Chain with governance voting-power computed from same-block BOG balances | T16.001 surface (latent) |
-| 2021-05-22 | Attacker flash-loans majority of BOG tokens; acquires >50% voting power in a single transaction | **T16.001** (setup) |
-| 2021-05-22 (same tx) | Attacker passes malicious governance proposal granting drain authority | **T16.001** (execution) |
-| 2021-05-22 (same tx) | Attacker drains ~$3.6M from protocol liquidity pools | **T5.001** (extraction) |
-| 2021-05-22 onward | Proceeds partially routed through Tornado Cash on BNB Chain | T7.001 |
-| Post-incident | Bogged Finance relaunches with snapshot-based voting-power computation | (remediation) |
-
-## What defenders observed
-
-- **Same-block voting-power computation is the load-bearing vulnerability.** Bogged Finance's governance computed voting power from same-block BOG balances, making flash-loan voting-power acquisition trivially executable in a single atomic transaction. The mitigation — snapshot-based voting-power computation — was deployed post-incident.
-- **The flash-loan-to-governance chain was publicly demonstrated in May 2021.** The Beanstalk April 2022 incident ($182M) repeated the identical structural pattern at larger scale nearly a year later. The Bogged Finance case is evidence that the vulnerability class was known and publicly instantiated well before the canonical Beanstalk case.
+| ~2021-05-22/23 (date not stated) | Attacker flash-borrows funds and exploits the contract to manipulate staking rewards, minting 15M BOG `[coindeskbogged]` | T9.002 |
+| same event | Minted BOG sold into liquidity pools; about \$3M taken in ~45 seconds `[coindeskbogged]` | (extraction) |
+| 2021-05-24 | CoinDesk reports; Bogged blog post (a Sunday) outlines liquidity migration `[coindeskbogged]` | (operator response) |
 
 ## Public references
 
-- `[peckshieldbogged2021]` — PeckShield on-chain trace of the Bogged Finance flash-loan governance attack.
-- `[slowmistbogged2021]` — SlowMist incident analysis.
-- `[cointelegraphbogged2021]` — Cointelegraph coverage of the $3.6M Bogged Finance exploit.
-
-## Discussion
-
-Bogged Finance May 2021 is the canonical BNB Chain T16.001 worked example and the structural precursor to Beanstalk April 2022. The two cases together demonstrate that flash-loan governance attacks were a known vulnerability class across chains (BNB Chain in 2021, Ethereum in 2022) and that the mitigation surface (snapshot-based voting-power computation) was available but not universally deployed. The case closes the T16×2021 near-threshold gap at v0.1 and provides the 2021 anchor for the T16.001 technique chain.
+- `[coindeskbogged]` — CoinDesk, "BSC-Based Bogged Finance Suffers \$3M Exploit" (2021-05-24): <https://www.coindesk.com/ja/markets/2021/05/24/bsc-based-bogged-finance-suffers-3m-exploit>
+- `[cryptoslatebogged]` — CryptoSlate, "DeFi tool 'Bogged Finance' sees \$3 million hack, prices plunge 98%": <https://cryptoslate.com/defi-tool-bogged-finance-sees-3-million-hack-prices-plunge-98/>

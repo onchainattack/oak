@@ -75,8 +75,6 @@ output_alert: [oak_technique, detection_path, severity, chain,
 
 test_fixtures:
   positive:
-    - 2020-2021-uniswap-fake-token-impersonation-wave                    # Uniswap V2 fake USDT/USDC wave
-    - 2021-bsc-pancakeswap-token-impersonation-wave                     # BSC PancakeSwap fake-token wave
   negative:
     - "Token with unique name/symbol not matching any canonical registry entry — not impersonating, legitimate new token deployment"
     - "Token whose name/symbol coincidentally matches but with a clearly distinct address on a different chain — cross-chain deployments, not impersonation"

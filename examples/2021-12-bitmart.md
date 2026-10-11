@@ -1,41 +1,35 @@
 # BitMart hot-wallet compromise — Ethereum/BNB Chain — 2021-12-05
 
-**Loss:** approximately $196M (~$100M extracted from BitMart's Ethereum hot wallet, ~$96M extracted from BitMart's BSC hot wallet). The attacker extracted the hot-wallet private key, likely via a 1Password or operational-security compromise at the BitMart operator side.
-**OAK Techniques observed:** OAK-T11.001 (Third-Party Signing Vendor Compromise — primary; the likely attack vector was a compromise of BitMart's 1Password vault or operator-side credential store, yielding the hot-wallet private key). OAK-T7.001 (Mixer-Routed Hop — the attacker routed stolen assets through 1inch aggregation swaps into Tornado Cash for laundering). OAK-T5.001 (Hard LP / Treasury Drain — the compromised hot-wallet authority enabled direct extraction of assets from BitMart's hot wallets across two chains).
-**Attribution:** **unattributed** pseudonymous; the attacker has not been publicly identified. BitMart CEO Sheldon Xia confirmed the breach and the hot-wallet private-key extraction vector. Partial funds were frozen across exchanges.
-**Key teaching point:** A centralised exchange's hot-wallet private-key compromise via an operator-side credential store (1Password, password manager, or equivalent operational-secret management layer) converts an off-chain operational-security failure into a multi-chain on-chain extraction surface. The 1Password-as-attack-vector pattern is distinct from a smart-contract-level T11.001 failure, because the signing-vendor being compromised is the *operator-side secret-management tooling*, not a blockchain-specific custodian — but the Technique classification is structurally identical: signing-authority compromise via a third-party credential vendor.
+**Loss:** BitMart's CEO put the withdrawn assets at approximately \$150M; PeckShield estimated about \$196M, roughly \$100M in ERC-20 tokens (Ethereum hot wallet) and \$96M in BEP-2/BEP-20 tokens (BSC hot wallet) `[forklogbitmart]` `[fxempirebitmart]`. The attacker used a stolen hot-wallet private key; how the key was obtained was not stated by BitMart `[forklogbitmart]` `[bankinfobitmart]`.
+**OAK Techniques observed:** OAK-T11.001 (Third-Party Signing Vendor Compromise — as classified in OAK; the cited sources establish a stolen hot-wallet private key but not a third-party vendor or credential-store compromise). OAK-T7.001 (Mixer-Routed Hop — the attacker swapped tokens for ETH through the 1inch aggregator and sent funds via an intermediate address to Tornado Cash `[forklogbitmart]`). OAK-T5.001 (Hard LP / Treasury Drain — direct extraction from two exchange hot wallets across two chains).
+**Attribution:** **unattributed** pseudonymous; the attacker has not been publicly identified. BitMart CEO Sheldon Xia confirmed the breach and said it "was mainly caused by a stolen private key that had two of our hot wallets compromised" `[forklogbitmart]`.
+**Corrected 2026-10-11:** Removed the unsupported 1Password / credential-vault attack vector and the "partial funds frozen" claim; loss now shows BitMart's \$150M and PeckShield's \$196M estimates; BitMart said it would compensate users from its own funds.
+**Key teaching point:** A centralised exchange's hot-wallet private-key compromise converts a single key-custody failure into a multi-chain on-chain extraction: one stolen key compromised an Ethereum and a BSC hot wallet. The root cause of the key theft was not disclosed in the sources consulted, so any specific vector (credential store, phishing, endpoint compromise) is speculation.
 
 ## Summary
 
-On 2021-12-05, an attacker extracted BitMart's hot-wallet private key — likely via a compromise of the exchange operator's 1Password vault or an equivalent operational credential store — and used the compromised private key to drain approximately $196M in assets from BitMart's Ethereum and BSC hot wallets simultaneously. The Ethereum-side extraction was approximately $100M; the BSC-side extraction was approximately $96M. The attacker then routed stolen assets through 1inch aggregation swaps into Tornado Cash, mixing the proceeds through standard mixer-hop chains.
+On 2021-12-05, an attacker used a stolen private key to drain BitMart's Ethereum and BSC hot wallets. PeckShield's estimate was about \$196M (about \$100M ERC-20 and about \$96M BEP-2/BEP-20); BitMart's CEO put the total at about \$150M `[forklogbitmart]`. Attackers swapped the tokens for ETH using 1inch, moved the ETH to an intermediate address, and then sent funds to Tornado Cash `[forklogbitmart]`.
 
-BitMart CEO Sheldon Xia publicly confirmed the breach and identified the hot-wallet private-key compromise as the root cause. The 1Password compromise vector was widely reported in forensic analyses and industry post-mortems of the period, though BitMart's official statements did not confirm the specific credential-store product. The laundering pattern (1inch → Tornado Cash) was the dominant mixing pathway of the Q4 2021 incident cohort.
-
-BitMart continued operating after the incident, with the exchange absorbing the loss and restructuring its hot-wallet custody architecture. Partial funds were frozen across cooperating exchanges, though the bulk of the extracted proceeds were successfully laundered through Tornado Cash.
+BitMart initially described the outflows as routine withdrawals and the CEO confirmed the breach hours later `[fxempirebitmart]`. In his December 6 update, Sheldon Xia attributed the breach to a stolen private key affecting one ETH and one BSC hot wallet, said users would be compensated from BitMart's own funds, and said deposits and withdrawals would resume gradually from December 7 `[forklogbitmart]`. No source consulted says how the key was stolen; the 1Password vector previously asserted here has no support in the sources consulted and is removed.
 
 ## Timeline (UTC)
 
 | When | Event | OAK ref |
 |---|---|---|
-| 2021-12-04 to 2021-12-05 (pre-event) | Attacker gains access to BitMart's 1Password vault or operational credential store, extracting the Ethereum and BSC hot-wallet private keys | T11.001 (initial access — signing-vendor compromise) |
-| 2021-12-05 | Attacker drains ~$100M from BitMart's Ethereum hot wallet | T5.001 (extraction — chain 1) |
-| 2021-12-05 | Attacker drains ~$96M from BitMart's BSC hot wallet | T5.001 (extraction — chain 2) |
-| 2021-12-05 (within hours) | Attacker routes stolen assets through 1inch aggregation swaps into Tornado Cash | T7.001 (mixer-routed hop) |
-| 2021-12-05 | BitMart CEO Sheldon Xia publicly confirms the breach; exchange suspends withdrawals | (operator response) |
-| 2021-12-05 onward | Partial fund freezes across cooperating exchanges; BitMart restructures hot-wallet custody architecture | (recovery — partial freeze) |
+| 2021-12-04 to 2021-12-05 | Reported outflows from an Ethereum and a BSC hot wallet (date range per `[forklogbitmart]`) | T11.001 / T5.001 (extraction) |
+| 2021-12-05 | Attacker swaps tokens via 1inch to ETH, then moves funds toward Tornado Cash `[forklogbitmart]` | T7.001 |
+| 2021-12-05 | BitMart CEO confirms breach; withdrawals paused `[forklogbitmart]` | (operator response) |
+| 2021-12-06 | CEO attributes breach to a stolen private key; promises compensation from BitMart funds `[forklogbitmart]` | (operator response) |
 
 ## Public references
 
-- BitMart official incident statement via CEO Sheldon Xia, December 2021 — `[bitmartpostmortem2021]`.
-- PeckShield on-chain trace of the Ethereum and BSC extraction transactions — `[peckshieldbitmart2021]`.
-- SlowMist forensic analysis of the 1Password-to-Tornado-Cash attack chain — `[slowmistbitmart2021]`.
-- Rekt News public-facing summary — `[rektbitmart2021]`.
+- `[forklogbitmart]` — Forklog, "Hackers siphoned more than \$150 million from BitMart hot wallets" (2021-12-06): <https://forklog.com/en/hackers-siphoned-more-than-150-million-from-bitmart-hot-wallets/>
+- `[fxempirebitmart]` — FXEmpire, "BitMart Losses \$196 Million to Hacker": <https://amp.fxempire.com/en/bitmart-losses-196-million-to-hacker/831404>
+- `[bankinfobitmart]` — BankInfoSecurity, "Nearly \$200 Million Stolen in BitMart Crypto Exchange Hack": <https://www.bankinfosecurity.com/nearly-200-million-stolen-in-bitmart-crypto-exchange-hack-a-18068>
 - Cross-reference: T11.001 (Third-Party Signing Vendor Compromise) at `techniques/T11.001-third-party-signing-vendor-compromise.md`.
 - Cross-reference: T7.001 (Mixer-Routed Hop) at `techniques/T7.001-mixer-routed-hop.md`.
 - Cross-reference: T5.001 (Hard LP / Treasury Drain) at `techniques/T5.001-hard-lp-treasury-drain.md`.
 
 ## Discussion
 
-BitMart is the largest recorded 1Password / credential-store-compromise incident in the crypto exchange sector and is the canonical worked example for the operator-side-credential-vendor T11.001 sub-pattern — distinct from blockchain-custodian compromise (e.g., Fireblocks, Copper) and wallet-infrastructure compromise (e.g., Venly / Vulcan Forged). The classification as T11.001 is structurally correct because the load-bearing primitives are identical: signing-authority compromise via a third-party credential vendor, with the resulting on-chain extraction being a downstream consequence of the off-chain secret-theft.
-
-The $196M magnitude makes BitMart the second-largest centralised exchange hot-wallet compromise in the 2021 record by dollar value, behind only Poly Network ($611M, though Poly Network was a cross-chain bridge operator, not a CEX). The 1inch → Tornado Cash laundering pathway is the dominant Q4 2021 mixer-hop pattern and recurs across multiple incidents in the same quarter (BadgerDAO December 2021, AscendEX December 2021, Cream Finance October 2021).
+BitMart is a hot-wallet private-key compromise at a centralised exchange. The earlier version of this file called it the canonical 1Password / operator-side-credential-vendor T11.001 example; no source consulted supports a 1Password or vendor vector, so the T11.001 mapping rests on OAK's classification of stolen-key incidents and may merit review (a plain key-compromise technique may fit better). The earlier claims that it was the second-largest 2021 CEX hot-wallet compromise and that the 1inch → Tornado Cash pathway recurred across named Q4 2021 incidents were unsourced and are removed.

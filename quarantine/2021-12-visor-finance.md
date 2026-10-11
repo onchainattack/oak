@@ -1,3 +1,5 @@
+> **QUARANTINED 2026-10-11 — not part of the OAK corpus.** A source-verification pass found no credible public record of this incident as described. It is kept here, outside `examples/`, so it can be restored if a source turns up. Do not cite it. See [`README.md`](README.md).
+
 # Visor Finance Uniswap V3 TWAP oracle manipulation — Ethereum — 2021-12-21
 
 **Loss:** ~$500K (~193 ETH) extracted from Visor Finance's GAMMA/ETH staking reward contract via a Uniswap V3 TWAP-oracle thin-window manipulation combined with a deposit-redeem arbitrage.

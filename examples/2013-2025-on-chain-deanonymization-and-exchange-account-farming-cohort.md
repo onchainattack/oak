@@ -5,7 +5,8 @@
 **Attribution:** **unattributed** (aggregate cohort).
 **Loss:** T8.003 is a dual-use surface — the same graph-analysis techniques that compliance vendors use to attribute illicit activity are used by adversaries to identify high-value targets. Loss attributable specifically to T8.003 deanonymization is embedded in the downstream extraction events that follow target identification. T8.004 aggregate loss undocumented at class level; the technique converts KYC from a detection surface into a scaling surface — each account individually passes KYC, and the per-account withdrawal limits are the structural constraint being circumvented.
 
-**Key teaching point:** Both T8.003 and T8.004 are operational-security failure surfaces that operate at the *identity layer* rather than the *transaction layer*. T8.003 collapses the pseudonymous-address-per-transaction privacy model through transaction-graph clustering; T8.004 collapses the per-account KYC barrier through synthetic-identity scaling. Both surfaces are load-bearing for the blockchain forensics industry — Chainalysis, Elliptic, TRM Labs, and CipherTrace were all founded on T8.003 primitives — and are simultaneously exploited by adversaries for target identification and compliance circumvention.
+**Corrected 2026-10-11:** Only the multi-input and change-address heuristics are sourced to Meiklejohn et al.; the account-farming (T8.004) material, the BTC-e framing and the "five heuristics" list are conceptual OAK content with no source found.
+**Key teaching point:** Both T8.003 and T8.004 are operational-security failure surfaces that operate at the *identity layer* rather than the *transaction layer*. T8.003 collapses the pseudonymous-address-per-transaction privacy model through transaction-graph clustering; T8.004 collapses the per-account KYC barrier through synthetic-identity scaling. Both surfaces are load-bearing for the blockchain forensics industry — Chainalysis (2014), Elliptic (2013) and CipherTrace (2015) were founded in the clustering era (`[wikichainalysiscohort]`, `[ellipticcohort]`); that they were "founded on T8.003 primitives" and the inclusion of TRM Labs are OAK commentary not verified here — and are simultaneously exploited by adversaries for target identification and compliance circumvention.
 
 ## Summary
 
@@ -15,7 +16,7 @@ T8.003 from 2013–2015 (Chainalysis/Elliptic/CipherTrace founding era; academic
 
 ## T8.003 — On-Chain Transaction Graph De-Anonymization
 
-Five canonical clustering heuristics:
+Clustering heuristics (the first two are those of Meiklejohn et al. 2013, `[acolyercohort]`; the rest are OAK's own list and not verified here):
 
 - **Co-spend heuristic (multi-input clustering).** Multiple input addresses in a single transaction are controlled by the same entity — the foundational UTXO-model heuristic.
 - **Change-address detection.** The output address receiving "change" back from a spend is controlled by the sender.
@@ -46,3 +47,6 @@ Detection requires cross-layer correlation: a single on-chain deposit-source clu
 - `[elliptic2023forensics]` — Elliptic Navigator forensic attribution methodology
 - `[trm2024forensics]` — TRM Labs forensics platform
 - `[btce2017indictment]` — BTC-e indictment (account-farming infrastructure documentation)
+- `[acolyercohort]` — The Morning Paper, "A fistful of bitcoins" (2017-02-20): <https://blog.acolyer.org/2017/02/20/a-fistful-of-bitcoins-characterizing-payments-among-men-with-no-names/>
+- `[wikichainalysiscohort]` — Wikipedia, "Chainalysis": <https://en.wikipedia.org/wiki/Chainalysis>
+- `[ellipticcohort]` — Wikipedia, "Elliptic (company)": <https://en.wikipedia.org/wiki/Elliptic_(company)>

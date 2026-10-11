@@ -1,3 +1,5 @@
+> **QUARANTINED 2026-10-11 — not part of the OAK corpus.** A source-verification pass found no credible public record of this incident as described. It is kept here, outside `examples/`, so it can be restored if a source turns up. Do not cite it. See [`README.md`](README.md).
+
 # PancakeSwap token-launch MEV sandwich cohort — BSC — 2021–2025
 
 **Loss:** **Distributed across thousands of token launches.** Individual sandwich extractions range from tens to low hundreds of BNB-equivalent per launch; the aggregate extraction across all PancakeSwap new-pool launches from 2021 to 2025 is material but distributed. No single headline-grabbing loss figure anchors the class because the extraction is per-launch modest and spread across thousands of token-deployment events.

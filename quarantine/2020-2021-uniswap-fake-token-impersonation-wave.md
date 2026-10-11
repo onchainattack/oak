@@ -1,3 +1,5 @@
+> **QUARANTINED 2026-10-11 — not part of the OAK corpus.** A source-verification pass found no credible public record of this incident as described. It is kept here, outside `examples/`, so it can be restored if a source turns up. Do not cite it. See [`README.md`](README.md).
+
 # Uniswap V2/V3 fake-token impersonation wave — Ethereum — 2020-2021
 
 **Loss:** cumulative estimate across the impersonation-wave cohort: low-confidence interval ~\$15M, high-confidence interval ~\$50M (no per-incident aggregation authority at the time; the figure is a retrospective lower-bound estimate from community-tracking efforts and DEX-volume-anomaly reconstruction).

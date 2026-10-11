@@ -1,3 +1,5 @@
+> **QUARANTINED 2026-10-11 — not part of the OAK corpus.** A source-verification pass found no credible public record of this incident as described. It is kept here, outside `examples/`, so it can be restored if a source turns up. Do not cite it. See [`README.md`](README.md).
+
 # Bitcoinica First Server-Side Hot-Wallet Compromise — 2011-07-29
 
 **Loss:** ~$500K (~43,000 BTC at ~$11.50/BTC in July 2011). The first material Bitcoinica breach — predating the March 2012 Linode-compromise breach (~43,554 BTC) and the May 2012 breach (~$90K) — and the first major Bitcoin exchange hack by notional value at the time.

@@ -1,3 +1,5 @@
+> **QUARANTINED 2026-10-11 — not part of the OAK corpus.** A source-verification pass found no credible public record of this incident as described. It is kept here, outside `examples/`, so it can be restored if a source turns up. Do not cite it. See [`README.md`](README.md).
+
 # MEV Sandwich Attack Cohort — 2020–2025
 
 **OAK Techniques observed:** OAK-T9.012, OAK-T9.013, OAK-T17.005

@@ -1,38 +1,37 @@
 # Bitpoint exchange hack — Multi-asset (BTC, ETH, XRP, LTC, BCH) — 2019-07-11
 
-**Loss:** approximately \$32M (~2.3 billion Japanese yen) from Japanese exchange Bitpoint. Both hot and cold wallets were affected: the attacker leveraged hot-wallet signing access to partially drain cold-wallet funds that had signing capability exposed through the hot-wallet infrastructure.
-**OAK Techniques observed:** **OAK-T11.001** (Third-Party Signing-Vendor UI / Signing-Flow Compromise — broadly construed; the exchange's hot-wallet signing infrastructure was compromised, and because the cold wallet had signing capability accessible through the same compromised infrastructure, both hot and cold funds were exposed). **OAK-T8.001** (Common-Funder Cluster Reuse — the attacker's operational tradecraft displayed cluster-reuse signals: the hot-to-cold signing-access lateral movement and the subsequent laundering pattern reused infrastructure and counterparty clusters traceable across the extraction and laundering phases).
+**Loss:** approximately \$32M (~3.5 billion Japanese yen) from Japanese exchange Bitpoint, of which about 2.5 billion yen was customer funds. Reports disagree on whether cold wallets were touched; the access path was not described in the contemporaneous coverage cited here.
+**OAK Techniques observed:** **OAK-T11.001** (Third-Party Signing-Vendor UI / Signing-Flow Compromise — broadly construed; the exchange's signing infrastructure was compromised). **OAK-T8.001** (Common-Funder Cluster Reuse — laundering-phase pattern; not independently sourced in the references below).
 **Attribution:** **confirmed** Japanese authorities investigated but did not publicly attribute the breach to a specific threat actor.
-**Key teaching point:** **The Bitpoint incident is the canonical "cold wallet is not cold when signing access traverses the hot-wallet surface" case: the exchange's cold-wallet funds were partially drained not because cold-storage keys were directly compromised, but because the cold wallet's signing authority was reachable from the compromised hot-wallet infrastructure — an architectural anti-pattern that defeats the purpose of cold-storage segmentation.** The case is a textbook illustration of why cold-wallet signing authority must be air-gapped from hot-wallet operational infrastructure, not merely stored on a separate key.
+**Key teaching point:** **Exchange hot-wallet signing paths are a single point of failure: Bitpoint lost customer and house funds across five assets at once, and the mechanism was never described in public detail.** Whether cold-wallet funds were also reachable is disputed between early and later reports, so the "cold storage is not cold when signing authority is reachable from the hot surface" lesson should be read as a hypothesis, not an established finding of this case.
+
+**Corrected 2026-10-11:** Yen figure corrected from ~2.3B to ~3.5B (about 3.02B net of recovered funds); the claimed cold-wallet segmentation mechanism, 2019 FSA order and remediation steps are unsupported by sources and were removed or marked unverified.
 
 ## Summary
 
-Bitpoint, a Japanese cryptocurrency exchange operated by Remixpoint, Inc. (a Tokyo Stock Exchange-listed company), suffered a hot-wallet compromise on 2019-07-11. The attacker gained access to Bitpoint's hot-wallet signing infrastructure and drained approximately \$32M (~2.3 billion yen) across five cryptocurrencies: Bitcoin (BTC), Ethereum (ETH), XRP, Litecoin (LTC), and Bitcoin Cash (BCH).
+Bitpoint, a Japanese cryptocurrency exchange operated by Remixpoint, Inc. (a Tokyo Stock Exchange-listed company), lost roughly 3.5 billion yen (~\$32M) in a theft on 2019-07-11/12 `[cointelegraph1]``[decrypt1]`. Funds were taken in Bitcoin, Ethereum, XRP, Litecoin and Bitcoin Cash `[decrypt1]`. About 2.5 billion yen belonged to customers and about 1 billion yen to the exchange `[cointelegraph1]`.
 
-The structural significance of the Bitpoint incident is that both hot and cold wallets were affected. The cold wallet was not directly compromised at the key-storage layer; rather, the cold wallet's signing capability was accessible through the same operator infrastructure that managed the hot wallet. Once the attacker controlled the hot-wallet signing surface, they could also exercise signing authority over cold-wallet funds — a violation of the fundamental segmentation that "cold storage" is supposed to provide.
+Early company statements said the funds came from hot wallets and that cold wallets were not affected `[cointelegraph1]`; a later Remixpoint document was reported as saying both hot and cold wallets were hit. This file does not resolve that conflict, and no source cited here describes how the attacker obtained signing access.
 
-Bitpoint suspended all services (deposits, withdrawals, trading, and new account openings) immediately upon discovering the breach. Remixpoint, the publicly listed parent company, disclosed the loss to the Tokyo Stock Exchange and committed to reimbursing affected users. The Japan FSA conducted an on-site inspection and issued a business-improvement order.
+Bitpoint suspended services and Remixpoint's shares fell 19% to the daily limit `[cointelegraph1]`. Bitpoint later reported finding over 250 million yen in stolen crypto on overseas exchanges using a Bitpoint-provided trading system, reducing the net loss to about 3.02 billion yen `[cointelegraph1]`.
 
 ## Timeline (UTC)
 
 | When | Event | OAK ref |
 |---|---|---|
-| 2019-07-11 | Attacker compromises Bitpoint hot-wallet signing infrastructure; drains ~$32M across BTC, ETH, XRP, LTC, BCH — including partial cold-wallet funds reachable through the hot-wallet signing surface | T11.001 (signing-flow compromise) + T8.001 (cluster-reuse pattern across extraction and laundering) |
-| 2019-07-12 | Bitpoint discloses breach; suspends all services; Remixpoint discloses to Tokyo Stock Exchange | (defender / listed-parent disclosure) |
-| 2019-07 to 2019-08 | Japan FSA on-site inspection; business-improvement order issued | (regulatory response) |
-| 2019-08 onward | Remixpoint commits to user reimbursement; Bitpoint implements cold-wallet segmentation fix | (remediation) |
+| 2019-07-11/12 | Theft of ~3.5B yen across BTC, ETH, XRP, LTC, BCH (sources give 11 or 12 July) | T11.001 (signing-flow compromise, mechanism unverified) |
+| 2019-07-12 | Bitpoint discloses; suspends services; Remixpoint shares fall 19% | (defender / listed-parent disclosure) |
+| 2019-07-14 | Over 250M yen found on overseas exchanges; net loss ~3.02B yen | (partial recovery) |
 
 ## Realised extraction
 
-Approximately \$32M (~2.3B yen) across five cryptocurrencies. Remixpoint committed to reimbursing users; no confirmed recovery of the stolen assets reported at v0.1.
+About 3.5B yen (~\$32M), reduced to ~3.02B yen (~\$28M) after the partial recovery above `[cointelegraph1]`.
 
-## Cold-wallet segmentation anti-pattern
+## Cold-wallet segmentation (unverified)
 
-The architectural failure at Bitpoint — cold-wallet signing authority reachable from hot-wallet operational infrastructure — is the reference anti-pattern for OAK-M19 (Air-Gap Cold-Wallet Signing). The case demonstrates that key-material separation alone is insufficient: the signing *authority path* must also be segmented. A cold wallet whose signing ceremony is initiated from or routed through the hot-wallet operational surface is not operationally cold. This case is the canonical worked example for the distinction between "cold storage of keys" and "cold signing authority."
+The original draft of this file presented Bitpoint as the reference anti-pattern for OAK-M19 (Air-Gap Cold-Wallet Signing), on the claim that cold-wallet signing authority was reachable from hot-wallet infrastructure. The cited coverage does not establish that; treat the cold-wallet segmentation lesson as a general design principle rather than a documented finding of this case.
 
 ## Public references
 
-- Remixpoint, Inc. Tokyo Stock Exchange disclosure, July 2019
-- Japan Financial Services Agency (FSA) on-site inspection and business-improvement order, 2019
-- Bitpoint exchange service-suspension and security-incident announcements, July 2019
-- Japanese cryptocurrency exchange regulatory framework and FSA enforcement actions, 2019
+- `[cointelegraph1]` — Cointelegraph, "Hacked Bitpoint Exchange Finds \$2.3M in Stolen Crypto" (2019-07-14): <https://cointelegraph.com/news/hacked-bitpoint-exchange-finds-23m-in-stolen-crypto>
+- `[decrypt1]` — Decrypt, "Japan's Bitpoint Crypto Exchange Hacked for \$32 Million" (2019-07-12): <https://decrypt.co/7850/japans-bitpoint-crypto-exchange-hacked-for-32-million>

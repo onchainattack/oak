@@ -1,45 +1,37 @@
-# GBL Bitcoin Exchange Ponzi / Exit Scam — 2013-12
+# GBL Bitcoin Exchange fraud / exit — 2013-10 to 2013-12
 
-**Loss:** ~$5M (~9,640 BTC at late-2013 BTC price of ~$520). Global Bond Limited (GBL) was marketed as a Bitcoin exchange and mining-contract platform; it was in fact a Ponzi scheme that collapsed in December 2013 when the operator ceased withdrawals and deleted the platform's web presence.
+**Loss:** about \$4.1 million (roughly 25 million yuan) in customer funds per press reports, with over 500 to 1,000+ affected users, mostly in mainland China; estimates vary widely (`[slashdotgbl]`, `[hnsgbl]`). The earlier 9,640 BTC / ~\$5M figure is unsourced. Global Bond Limited (GBL) was a Chinese Bitcoin exchange launched in May 2013; its site went offline on 2013-10-26 and its Hong Kong approval claim and offices proved bogus (`[hnsgbl]`, `[slashdotgbl]`).
 **OAK Techniques observed:** **OAK-T11.005.001** (Fake-CEX / Pig-Butchering Platform — the GBL platform was a fake exchange with no real trading backend; balance displays were operator-controlled fictions). **OAK-T6.001** (Source-Verification Mismatch — GBL's claimed corporate registration in Hong Kong was either fabricated or unverifiable). **OAK-T5.001** (Hard LP Drain — the operator swept deposited BTC in a single-event exit when the scheme collapsed). **OAK-T8.005** (Operational-Security Procedural Failure — the operator's registration / hosting / identity trail was insufficiently verified by depositors).
-**Attribution:** **pseudonymous** — the GBL operator(s) were not publicly identified or prosecuted. The platform's claimed operator identity and Hong Kong corporate registration could not be independently verified. The case remains unsolved.
-**Key teaching point:** **GBL is the canonical early-Bitcoin-era fake-exchange Ponzi — the structural predecessor to the T11.005.001 pig-butchering class. The template — fake platform UI, fictitious trading returns, unverifiable corporate registration, single-event exit — was established at GBL in 2013 and has since scaled to the $5.8B+ annual-loss pig-butchering industry documented by the FBI IC3 in 2024. The GBL case also established the jurisdictional-investigation gap that persists in fake-exchange fraud: operators register in permissive jurisdictions (Hong Kong, Panama, Seychelles) and victims' local law enforcement cannot obtain the operator identity from the claimed registration jurisdiction.**
+**Attribution:** **pseudonymous** in OAK's sense, but Chinese police detained three men in connection with GBL (surnamed Liu, Jin and Huang, aged 29, 24 and 33, per Xinhua as relayed by press); they reportedly denied wrongdoing, and the outcome is not established here (`[hnsarrest]`). The earlier statement that no arrest resulted was wrong.
+**Corrected 2026-10-11:** Collapse was late October 2013 (not December), loss ~\$4.1M (not 9,640 BTC / \$5M), Chinese police did detain three suspects, and no cited source calls it a Ponzi scheme with 1-2% daily returns; those details are removed as unsourced.
+**Key teaching point:** **GBL is an early fake-approval Bitcoin exchange case: a mainland-China service claiming Hong Kong approval and offices that did not exist, which went dark in October 2013. The comparison to the T11.005.001 pig-butchering class and to JPEX is OAK's own analogy, not sourced here.**
 
 ## Summary
 
-Global Bond Limited (GBL) launched in 2013, marketing itself as a Bitcoin exchange and cloud-mining investment platform. The platform claimed a Hong Kong corporate registration and offered guaranteed returns on Bitcoin deposits through "Bitcoin trading" and "mining contract" products. Depositors were shown a web-based dashboard displaying fictitious balance growth and trading profits.
+Global Bond Limited (GBL) was a Chinese Bitcoin exchange launched in May 2013. It claimed Hong Kong government approval, but press reported the approval claim and contact information were bogus, its Hong Kong offices did not exist, and its servers were in Beijing (`[slashdotgbl]`, `[hnsgbl]`). Users first noticed a problem on 2013-10-26 when the site went offline; November 2013 reporting put losses around \$4.1 million (about 25 million yuan) (`[hnsgbl]`, `[slashdotgbl]`).
 
-GBL employed the classic Ponzi feeder mechanics:
+Chinese police later detained three men in connection with GBL, identified by surname as Liu (29, said to have launched operations in May), Jin (24, daily operations) and Huang (33, finances); they reportedly denied committing a crime (`[hnsarrest]`).
 
-- **Guaranteed returns:** ~1-2% daily returns claimed from "Bitcoin arbitrage trading" — a structurally impossible return profile that should have been flagged by any depositor performing basic verification.
-- **Affiliate/referral programme:** Existing depositors were incentivised to recruit new depositors through a multi-level referral commission structure — the standard Ponzi fuel-injection mechanism.
-- **Fictitious dashboard:** The platform's balance display was a database fiction; no real exchange backend or mining infrastructure existed.
-
-In December 2013, as the BTC price was approaching its 2013 peak (~$1,100), the GBL operator ceased processing withdrawals. The platform's website was taken offline. Depositors who attempted to contact the operator through previously used communication channels received no response. The operator swept the remaining deposited BTC (~9,640 BTC, ~$5M at contemporaneous prices) in a single-exit event.
-
-The GBL case received significant attention in the early Bitcoin community and was covered by CoinDesk and other early crypto-news outlets. Chinese law enforcement investigated the case (many victims were based in China) but no public arrest or prosecution resulted. The operator's identity was never publicly confirmed, and the Hong Kong corporate registration was either fabricated or a shell entity with no traceable beneficial owner.
-
-The GBL template — fake exchange UI, fictitious returns, Ponzi feeder mechanics, jurisdictional shell-game registration, single-event exit — is structurally identical to the modern pig-butchering platform class (T11.005.001). The 2013 GBL case and the 2023 JPEX Hong Kong case ($200M, 2,600+ victims) share the same operational DNA, separated by a decade of scale growth and UI sophistication improvement. The jurisdictional-investigation gap — Hong Kong as a registration jurisdiction that does not reliably respond to foreign-victim law-enforcement inquiries — was as operational at GBL in 2013 as it was at JPEX in 2023.
+The earlier version of this file described guaranteed 1-2% daily returns, a multi-level referral programme, a fictitious dashboard, and a December 2013 sweep of ~9,640 BTC. None of those details appears in the cited sources and they are removed. The comparison to the 2023 JPEX case is OAK's own analogy.
 
 ## Timeline (UTC)
 
 | When | Event | OAK ref |
-|---|---|---|
-| 2013 | GBL platform launches; marketed as a Bitcoin exchange and cloud-mining investment platform with guaranteed ~1-2% daily returns; Hong Kong corporate registration claimed | **T11.005.001 platform creation** |
-| 2013 | Depositors fund platform accounts with BTC; fictitious dashboard displays balance growth; affiliate referral programme drives depositor growth | **Ponzi feeder mechanics** |
-| 2013-12 | GBL operator ceases withdrawals; platform website taken offline; ~9,640 BTC swept in single-exit event | **T5.001 exit extraction** |
-| 2013-12 to 2014 | Chinese law enforcement investigation; no public arrest or prosecution; operator identity remains unconfirmed | **Jurisdictional investigation gap** |
-| 2023-09 | JPEX Hong Kong enforcement action (~$200M, 2,600+ victims) — the same fake-CEX template, same registration jurisdiction, same structural mechanics, a decade later | **T11.005.001 class persistence** |
+|------|-------|---------|
+| 2013-05 | GBL launches as a Chinese Bitcoin exchange (`[slashdotgbl]`) | T11.005.001 platform creation |
+| 2013-10-26 | Site goes offline; users cannot withdraw (`[hnsgbl]`) | T5.001 exit extraction |
+| 2013-11 | Press reports ~\$4.1M missing; Hong Kong approval claim found bogus (`[slashdotgbl]`) | |
+| 2013-12 | Chinese police detain three suspects (`[hnsarrest]`) | |
 
 ## Realised extraction
 
-~9,640 BTC (~$5M at late-2013 BTC prices). No public recovery. Case unsolved.
+About \$4.1M (~25 million yuan) per press reports; estimates vary. Recovery not established.
 
 ## Public references
 
-- CoinDesk early reporting on GBL collapse (December 2013) — the primary English-language contemporaneous source.
-- BitcoinTalk forum threads (December 2013–January 2014) — contemporaneous victim and community discussion.
-- Chinese law-enforcement investigation reports (2014) — limited public documentation.
+- `[slashdotgbl]` — Slashdot, "Chinese Bitcoin Exchange Vanishes, Taking \$2.5M of Coins With It" (2013-11-12): <https://yro.slashdot.org/story/13/11/12/1553216/chinese-bitcoin-exchange-vanishes-taking-25m-of-coins-with-it>
+- `[hnsgbl]` — Help Net Security, "Chinese bitcoin exchange vanishes along with \$4.1m in bitcoins": <https://www.helpnetsecurity.com/?p=36273>
+- `[hnsarrest]` — Help Net Security, "Police arrests Chinese Bitcoin exchange owners suspected of fraud": <https://www.helpnetsecurity.com/?p=36386>
 - Cross-reference: T11.005.001 (Fake-CEX / Pig-Butchering Platform) at `techniques/T11.005.001-fake-cex-pig-butchering-platform.md`.
-- [`examples/2023-09-jpex-hong-kong.md`](../examples/2023-09-jpex-hong-kong.md) — JPEX Hong Kong, 2023 (the same T11.005.001 template at 40x scale, same registration jurisdiction).
-- [`examples/2024-2025-doj-sec-pig-butchering-enforcement-cohort.md`](../examples/2024-2025-doj-sec-pig-butchering-enforcement-cohort.md) — DOJ/SEC enforcement cohort, 2024–2025 (the modern pig-butchering enforcement wave).
+- [`examples/2023-09-jpex-hong-kong.md`](../examples/2023-09-jpex-hong-kong.md) — JPEX Hong Kong, 2023.
+- [`examples/2024-2025-doj-sec-pig-butchering-enforcement-cohort.md`](../examples/2024-2025-doj-sec-pig-butchering-enforcement-cohort.md) — DOJ/SEC enforcement cohort, 2024–2025.
