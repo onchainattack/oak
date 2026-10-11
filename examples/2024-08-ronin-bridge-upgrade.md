@@ -1,7 +1,9 @@
 # Ronin Bridge upgrade initialization failure — Ronin / Ethereum — 2024-08-06
 
 **Loss:** approximately \$12M temporarily extracted from the Ronin Bridge on 2024-08-06 (The Block: ~\$11.8M; roughly 4,000 ETH and 2M USDC, the USDC amount being the per-transaction withdrawal maximum). **Recovery:** full — an MEV bot front-ran other actors' manual attempts to exploit the flaw and withdrew the funds first; its operators then returned them (ETH first, USDC a couple of hours later) and Ronin paid a \$500K bug bounty. This entry covers both the vulnerability and the rescue (a duplicate rescue-only entry was merged into it on 2026-10-11).
-**OAK Techniques observed:** **OAK-T10.001** (Validator / Signer Configuration Compromise — the upgrade left the bridge's operator vote-weight threshold at zero, so the signature-verification control was effectively disabled). **OAK-T9.004** (retained as filed; the defect is better described as an upgrade/initialization error than a missing access-control check, see report note).
+**OAK Techniques observed:** **OAK-T9.004** (Access-Control Misconfiguration — *primary*. The 2024-08-06 upgrade skipped `initializeV3`, leaving `_totalOperatorWeight` and `minimumVoteWeight` at zero, so the bridge's withdrawal authorisation check accepted any signature set (Halborn). The predicate existed and ran; it was evaluated against an uninitialised threshold. See [`techniques/T9.004-access-control-misconfiguration.md`](../techniques/T9.004-access-control-misconfiguration.md)). **Not T10.001:** no validator or signer key was compromised.
+
+**Re-mapped 2026-10-11:** primary Technique moved from T10.001 (no key was compromised) to [`T9.004-access-control-misconfiguration`](../techniques/T9.004-access-control-misconfiguration.md).
 **Attribution:** **pseudonymous.** The actors who withdrew the funds were an MEV bot whose operators behaved as white hats and returned the funds; the operators are not identified in the sources reviewed. No state-actor attribution.
 
 **Corrected 2026-10-11:** Mechanism corrected from an un-gated `upgradeTo`/malicious implementation to a skipped `initializeV3` call that left `minimumVoteWeight` at 0 (Halborn); per-transaction cap and \$500K bounty added; the unverified "~80 minutes" return window and unsourced third-party write-ups removed.
@@ -18,8 +20,8 @@ An MEV bot front-ran other actors' manual attempts to exploit the flaw and withd
 
 | When | Event | OAK ref |
 |---|---|---|
-| 2024-08-06 (before) | Bridge contract upgrade deployed; v3 initializer not called, leaving vote-weight threshold at 0 | **T10.001 surface created (latent)** |
-| 2024-08-06 09:37 | First transfer of ~3,996 ETH out of the bridge (The Block) | **T10.001 exploitation** |
+| 2024-08-06 (before) | Bridge contract upgrade deployed; v3 initializer not called, leaving vote-weight threshold at 0 | **T9.004 surface created (latent)** |
+| 2024-08-06 09:37 | First transfer of ~3,996 ETH out of the bridge (The Block) | **T9.004 exploitation** |
 | 2024-08-06 10:11 | Nearly \$2M in USDC transferred (The Block) | (extraction) |
 | 2024-08-06 10:15 | Bridge paused (The Block) | (operator response) |
 | 2024-08-06 (afternoon) | ETH returned; remaining USDC confirmed received a couple of hours later | recovery |

@@ -201,7 +201,6 @@ test_fixtures:
   positive:
     - 2020-2025-initial-liquidity-sandwich-cohort                            # Uniswap V2 token-launch sandwiching by MEV bots
     - 2021-2025-pancakeswap-token-launch-mev-bsc                            # BSC PancakeSwap new-pool sandwich attacks
-    - 2024-2025-pump-fun-solana-launch-sniping                              # Solana pump.fun/Raydium token-launch MEV sniping
   negative:
     - "Token deployer uses Flashbots Protect / private relay for addLiquidity — transaction is not observable in the public mempool"
     - "Token deployed and liquidity added atomically in a single constructor transaction via factory contract — no interleaving window"

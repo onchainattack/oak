@@ -1,7 +1,9 @@
 # Curio DAO MakerDAO fork-chain governance exploit — Ethereum — 2024-03-23
 
 **Loss:** ~\$16M. The attacker exploited a voting-power flaw in Curio's DSChief-derived governance contract to give themselves elevated privileges, then minted ~1 billion CGT tokens through a delegatecall to a malicious contract registered as the project's exec library. The loss was the attacker's unauthorised CGT issuance and the value extracted from it, not collateral drained from vaults.
-**OAK Techniques observed:** **OAK-T9.007** (Fork Substrate Vulnerability Not Mitigated) — primary. Curio forked MakerDAO's multi-collateral DAI (MCD) infrastructure including the governance-gated collateral-addition and liquidation-parameter logic, inheriting the upstream's vulnerability surface without MakerDAO's governance-process mitigations. **OAK-T9.003** (Governance Attack) — co-occurring within the T9.007 surface: the fork's governance contract was the specific vulnerable substrate. **OAK-T16.002** (Hostile Vote Treasury Drain) — the extraction mechanism was a governance-proposal path (plot/exec) abused to run attacker-controlled code with the contract's authority. Mapping note: the verified mechanism is a governance-contract access-control/voting-power flaw leading to unauthorised minting, which may fit T9.004 or a mint-authority technique better than a hostile vote treasury drain.
+**OAK Techniques observed:** **OAK-T9.003** (Governance Attack — *primary*. A flaw in how Curio's DSChief counted voting power let the attacker gain executive authority with a small CGT stake, then use the governance path (`plot` / `exec`) to run attacker code that minted ~1B CGT (The Block, Halborn). See [`techniques/T9.003-governance-attack.md`](../techniques/T9.003-governance-attack.md)). **OAK-T16.002** (Hostile Vote Treasury Drain — the captured governance authority was used to mint and sell rather than to move an existing treasury). **OAK-T9.007** (Fork Substrate Vulnerability Not Mitigated — Curio ran forked MakerDAO governance contracts without the stake depth that makes the same design costly to capture on Maker).
+
+**Re-mapped 2026-10-11:** primary Technique moved from T9.007 to [`T9.003-governance-attack`](../techniques/T9.003-governance-attack.md) — the mechanism is governance capture; the fork is the context.
 **Attribution:** **pseudonymous** — attacker address identified on-chain.
 
 **Key teaching point:** Forking MakerDAO's MCD infrastructure is structurally riskier than forking a simple AMM or lending market — MakerDAO's governance model includes collateral-onboarding, liquidation-parameter-setting, and emergency-shutdown paths that are secured by a large, distributed governance process in the upstream deployment. A fork inherits the technical surface of these governance functions without the social-layer governance process that secures the upstream deployment against governance-capture attacks.
@@ -18,7 +20,7 @@ The attacker exploited the gap between the technical governance surface (identic
 
 | When | Event | OAK ref |
 |---|---|---|
-| 2024-03-23 | Attacker abuses the voting-power flaw in Curio's governance contract, plots a malicious exec library and mints ~1B CGT via delegatecall; ~\$16M reported loss | T9.007 + T9.003 + T16.002 |
+| 2024-03-23 | Attacker abuses the voting-power flaw in Curio's governance contract, plots a malicious exec library and mints ~1B CGT via delegatecall; ~\$16M reported loss | **T9.003** + T16.002 (on a T9.007 fork substrate) |
 
 ## Public references
 
