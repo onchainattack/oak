@@ -16,6 +16,14 @@ Recorded here rather than held to the next version bump because one item is a **
 
 The original text was written in the v0.1 bulk release while the LayerZero investigation was open, with a **references section containing no URLs**, and was never revisited after the facts landed in May 2026. Full correction record, including three further corrected facts (source chain was Unichain; the Aave cascade was initiated by the attacker depositing unbacked rsETH as collateral rather than by existing positions repricing; several unsourced figures replaced or dropped), is in that file's `Discussion`, per `CORRECTIONS.md`. `OAK-T10.001` carries a reciprocal boundary note.
 
+### Changed — classification correction: THORChain 2026-05-15, and OAK-T10.008 deprecated (2026-10-11)
+
+| Was | Read instead | Why |
+|---|---|---|
+| `OAK-T10.008` — Bridge Observer Signature Scope Truncation | [`OAK-T10.001`](techniques/T10.001-validator-signer-key-compromise.md) — Validator / Signer Key Compromise (+ T11.013) | THORChain's Exploit Report #2 (2026-07-03): a validator admitted two days earlier extracted a vault's private key through three GG20 implementation weaknesses over 864 failed signing rounds. The observer-wrapper mechanism came from a same-day third-party analysis and is not in the operator's report. |
+
+**`OAK-T10.008` is deprecated** (tombstone kept, ID never reused). Its only other example was quarantined in the 2026-10-11 source pass, so it had no confirmed anchor; the mechanism returns to TAXONOMY-GAPS as a candidate. The OAK incident report `investigations/2026-05-15-thorchain-router-exploit.md` is marked superseded and kept unedited as a record. Found independently by the 2026-10-11 source pass and by an external model reading the live `oak.json`.
+
 ### Removed — 39 unsourceable worked examples quarantined; 43 corrected (2026-10-11)
 
 A source pass over the 93 examples dated 2024–2026 that cited nothing found: **11** confirmed as written, **43** real incidents with wrong facts (dates, amounts, mechanisms, attribution — corrected in place, each marked `**Corrected 2026-10-11:**`), and **39** for which no credible public record exists. Those 39 carried confident specifics — victim counts, dollar figures, package names, domains, named reports from real firms — that match nothing; 33 trace to the v0.1 bulk release (`f32645a`). They are moved to `quarantine/` (outside every tool and the site) rather than deleted, so any can be restored if a source turns up. Full list with findings: `CORRECTIONS.md`, 2026-10-11.

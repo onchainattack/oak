@@ -1,11 +1,14 @@
 oak_techniques: [OAK-T10.008]
 spec_id: oak-detection-T10.008
 version: 0.2.0
-maturity: emerging
+maturity: deprecated
 maintainer: "@iZonex"
 license: Apache-2.0
 
 scope: |
+  DEPRECATED 2026-10-11: no confirmed exploitation of this mechanism is on record.
+  The THORChain 2026-05-15 incident this spec was written from was a GG20
+  key-extraction attack (OAK-T10.001). Kept for reference; see the Technique tombstone.
   Detect attacks where a bridge observer/relayer's signing function
   (`GetSignablePayload()` or equivalent) covers only the inner transaction
   data while semantically-meaningful wrapper fields — direction flags,
@@ -231,7 +234,6 @@ output_alert: [oak_technique, detection_path, severity, chain,
 
 test_fixtures:
   positive:
-    - 2026-05-thorchain-router-exploit                               # Bifrost GetSignablePayload() truncated to inner Tx only; unsigned direction flag flipped inbound→outbound; proposer forged migration observation → $7.4M drained
   negative:
     - "Bridge observer protocol where GetSignablePayload() covers the full ObservedTx struct including direction, destination, chain, and memo fields"
     - "Legitimate vault migration where the destination address is cryptographically derivable from the bridge TSS pubkey"

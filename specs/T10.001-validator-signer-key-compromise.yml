@@ -85,10 +85,10 @@ test_fixtures:
     - 2022-06-harmony-horizon                 # 2/5 multisig, Lazarus
     - 2023-07-multichain                      # MPC key shares lost post-CEO arrest
     - 2025-09-shibarium-bridge                # T10.001 + T16.001 PoS-validator vote takeover
+    - 2026-05-thorchain-router-exploit        # malicious validator extracted a vault key via GG20 leakage (864 failed rounds)
   negative:
     - "Bridge with high threshold (≥7-of-N) and routine signing pattern, normal volumes"
     - "Custody-rotation event by a multisig+timelock-gated governance flow"
-    - 2026-05-thorchain-router-exploit      # NOT T10.001: TSS not compromised; vault-churn address resolution poisoned (→ T10.008)
 
 false_positive_modes:
   - planned validator-set rotations (new composition is documented operator practice) — calibrate composition_window from operator's published cadence
