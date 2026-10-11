@@ -786,7 +786,7 @@ Ingestion:
 
 ### 2.17 `mempool_transaction`
 
-**Used by T5.004, T9.012, T9.013 (MEV/sandwich detection).**
+**Used by T5.004, T9.013 (MEV/sandwich detection).**
 
 Schema (per pending transaction):
 
@@ -833,7 +833,7 @@ Ingestion:
 
 ### 2.18 `bundle_data`
 
-**Used by T9.012, T9.013 (MEV bundle analysis).** Same providers as `mev_relay_feed`.
+**Used by T9.013 (MEV bundle analysis).** Same providers as `mev_relay_feed`.
 Often consumed together.
 
 Schema: Same as `mev_relay_feed.bundles[]`, but accessed at the bundle level

@@ -24,6 +24,10 @@ The original text was written in the v0.1 bulk release while the LayerZero inves
 
 **`OAK-T10.008` is deprecated** (tombstone kept, ID never reused). Its only other example was quarantined in the 2026-10-11 source pass, so it had no confirmed anchor; the mechanism returns to TAXONOMY-GAPS as a candidate. The OAK incident report `investigations/2026-05-15-thorchain-router-exploit.md` is marked superseded and kept unedited as a record. Found independently by the 2026-10-11 source pass and by an external model reading the live `oak.json`.
 
+### Changed — OAK-T9.012 deprecated (2026-10-11)
+
+**`OAK-T9.012` (Initial Liquidity Sandwich Attack) is deprecated** (tombstone kept, ID never reused). Its mechanism as written — buying from a pool before its liquidity exists — is not possible, and all three of its worked examples were quarantined in the source passes for citing reports that do not exist. Two real token-launch patterns (launch sniping; pool pre-creation at a skewed ratio) move to TAXONOMY-GAPS as candidates. Ordinary sandwiching of swaps in new tokens remains `OAK-T5.004`. Active Techniques 153 → 152.
+
 ### Removed — third source pass (2010–2021): 10 quarantined, ~70 corrected (2026-10-11)
 
 The last 84 unsourced examples. Early-history entries were as unreliable as recent ones: a "July 2011 Bitcoinica hack" two months before Bitcoinica existed; the March 2012 Bitcoinica loss misattributed to Mt. Gox API keys (it was the Linode breach); Bitfloor, Poloniex 2014, Flexcoin, Gatecoin, Cryptsy, Coin.mx, Welcome to Video, Silk Road, BTC-e, Bithumb 2018, Zaif, QuadrigaCX and the 2020 DeFi exploits (Bancor, Yam, Eminence, Warp, Furucombo, Uranium, Meerkat) all carried wrong dates, mechanisms, figures or legal outcomes and were corrected. Bogged Finance re-mapped T16.001 → T9.016 (it was a staking-reward mint, not a vote). Binance 2019 hot-wallet: Lazarus link removed (no source). Zaif 2018: attribution "confirmed" → unattributed.

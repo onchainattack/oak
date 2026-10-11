@@ -1,11 +1,14 @@
 oak_techniques: [OAK-T9.012]
 spec_id: oak-detection-T9.012
 version: 0.2.0
-maturity: emerging
+maturity: deprecated
 maintainer: "@iZonex"
 license: Apache-2.0
 
 scope: |
+  DEPRECATED 2026-10-11: the mechanism as written (buying from a pool before its
+  liquidity exists) is not possible and no incident is documented. Kept for reference;
+  see the Technique tombstone and the TAXONOMY-GAPS sniping / pool-pre-creation candidates.
   Detect initial-liquidity sandwich attacks where an attacker sandwiches a
   token deployer's addLiquidity transaction — front-running with a token
   purchase at the pre-liquidity price and back-running with a sale at the

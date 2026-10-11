@@ -23,7 +23,7 @@ scope: |
   campaign correlation layers. Excludes: T9.001 (oracle price manipulation —
   no oracle involved); T9.002 (flash-loan-enabled — flash loans are a tool,
   not the exploit primitive, though they frequently compose); T9.005
-  (reentrancy — no re-entry); T9.012 (initial-liquidity sandwich — liquidity-
+  (reentrancy — no re-entry); T9.012 (deprecated — initial-liquidity sandwich — liquidity-
   addition sequencing, not vault-share rounding).
 
 data_sources: [dex_trades, contract_storage, contract_events,

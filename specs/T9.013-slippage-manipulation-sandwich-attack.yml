@@ -17,7 +17,7 @@ scope: |
   parameter monitoring, wallet-side pre-trade simulation, MEV-bundle analysis,
   post-trade execution analysis, and cross-DEX slippage-arbitrage correlation
   layers. Excludes: T5.004 (sandwich MEV — profits from the bid-ask spread,
-  not from the authorized slippage band); T9.012 (initial-liquidity sandwich —
+  not from the authorized slippage band); T9.012 (deprecated — initial-liquidity sandwich —
   exploits liquidity-addition sequencing, not the victim's slippage parameter).
 
 data_sources: [tx_call_trace, dex_trades, contract_events, contract_bytecode,
