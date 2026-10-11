@@ -201,7 +201,6 @@ test_fixtures:
   positive:
     - 2022-10-market-xyz-curve-lp-oracle-read-only-reentrancy                # Market.xyz stale get_virtual_price() read during Curve remove_liquidity callback (Polygon, ~$220K)
     - 2023-04-sentiment                        # Sentiment Protocol stale Balancer LP-token price read
-    - 2024-03-cygnus-finance-read-only-reentrancy                           # Cygnus Finance LP-token oracle stale-read (~$200K)
   negative:
     - "DEX aggregator reading pool reserves during a multi-hop route computation in-flight — legitimate composability, no economic action against stale read"
     - "Staticcall to a target whose outermost call frame has returned in the current transaction — the read is against settled state"

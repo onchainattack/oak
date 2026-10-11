@@ -36,12 +36,7 @@ unreviewed	2023-12-ledger-connect-kit.md	2023-12-ledger-connect-kit-library-supp
 unreviewed	2024-01-socket-bungee.md	2024-01-socket-bungee-bridge.md	# one incident, T10.002 vs T9.005 framing; facts not cross-verified
 distinct	2024-03-ether-fi-profanity-entropy-cohort.md	2022-09-wintermute-profanity-cohort.md	# same Profanity root cause, different victim cohorts and windows
 unreviewed	2024-06-loopring.md	2024-06-loopring-smart-wallet.md	# one incident, T11.002 vs T13.003 framing; facts not cross-verified
-distinct	2024-08-rocket-pool-validator-downtime-outage.md	2023-03-rocket-pool-validator-slashing.md	# infrastructure outage vs slashing event
-distinct	2024-08-ronin-bridge-upgrade.md	2022-03-ronin-bridge.md	# 2024 upgrade misconfiguration vs the 2022 key compromise
 unreviewed	2024-2026-nft-marketplace-insider-trading-wash-trading.md	2022-2025-nft-marketplace-wash-trading-and-royalty-bypass-infrastructure.md	# overlapping cohort windows on the same surface; scope boundary not reviewed
-distinct	2024-chainalysis-laundering-report-issuer-selection.md	2024-chainalysis-laundering-report-aggregator-cohort.md	# two findings from one report, filed separately by mechanism
 distinct	2024-eigenlayer-restaking-airdrop.md	2024-2025-eigenlayer-airdrop-staking-frontend-phishing-cohort.md	# the airdrop's slashing/cascading-risk context vs the phishing cohort that targeted it
 distinct	2025-08-btcturk.md	2024-06-btcturk.md	# same venue, two separate drains fourteen months apart
 distinct	2026-03-polymarket-iran-strike-journalist-coercion.md	2026-02-polymarket-iran-strike-idf-reservist-insider.md	# same market, different mechanisms: coercion of a resolution source vs operational-insider trading
-unreviewed	2026-q1-nft-marketplace-wash-trade-fake-mint-cohort.md	2022-2025-nft-marketplace-wash-trading-and-royalty-bypass-infrastructure.md	# overlapping cohort windows; scope boundary not reviewed
-unreviewed	2026-q1-nft-marketplace-wash-trade-fake-mint-cohort.md	2024-2026-nft-marketplace-insider-trading-wash-trading.md	# overlapping cohort windows; scope boundary not reviewed

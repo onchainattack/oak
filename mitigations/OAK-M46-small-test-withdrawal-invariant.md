@@ -44,4 +44,3 @@ Finally: the mitigation OAK's own T11.005 credits with the largest realised prev
 - See [`techniques/T11.005-operator-side-fake-platform-fraud.md`](../techniques/T11.005-operator-side-fake-platform-fraud.md) — names the small-test-withdrawal-before-deposit invariant as the canonical user-side mitigation, and records the Mitigation-mapping gap this entry fills.
 - See [`examples/2023-09-jpex-hong-kong.md`](../examples/2023-09-jpex-hong-kong.md) — ~\$200M, 2,600+ victims; subway advertising and KOL endorsement as the credibility layer; 70+ arrests, almost all promoters.
 - See [`examples/2024-01-kk-park-compound-takedown.md`](../examples/2024-01-kk-park-compound-takedown.md) — compound-scale operation; runs recovery services against the victims of its own fraud.
-- See [`examples/2025-01-huione-guarantee-fake-cex.md`](../examples/2025-01-huione-guarantee-fake-cex.md) — the escrow/settlement layer beneath the compound ecosystem.

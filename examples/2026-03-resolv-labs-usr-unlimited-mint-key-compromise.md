@@ -48,6 +48,9 @@ Resolv Labs acknowledged the exploit and paused protocol operations. The recover
 - On-chain forensic analysis of the mint transaction and DEX dump pattern
 - USR/USDC and USR/DAI pool analytics showing price collapse and extraction volume
 - See `techniques/T9.004-access-control-misconfiguration.md` and `techniques/T11` custody techniques for Technique definitions
+- `[resolvlabsx2026]` — Resolv Labs, incident notice on X (2026-03-22): <https://x.com/ResolvLabs/status/2035830314799599616>
+- `[sentoraresolv2026]` — Sentora Research, "The Resolv Hack: \$25M From a Single Compromised Key" (2026-03-27): <https://sentora.com/research/articles/the-resolv-hack-25m-from-a-single-compromised-key>
+- `[gizmodoresolv2026]` — Gizmodo, "Attacker Exploits Crypto Stablecoin for a \$25 Million Payday" (2026-03): <https://gizmodo.com/attacker-exploits-crypto-stablecoin-for-a-25-million-payday-2000736927>
 
 ## Discussion
 

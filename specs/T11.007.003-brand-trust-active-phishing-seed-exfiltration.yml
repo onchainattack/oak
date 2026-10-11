@@ -174,9 +174,7 @@ output_alert: [oak_technique, detection_path, severity, chain,
 test_fixtures:
   positive:
     - 2023-2026-fake-firmware-update-phishing-cohort                             # Ledger-data-breach-leveraged email phishing; Kaspersky spring 2023 (85K+ emails)
-    - 2024-01-fake-trezor-suite-download                                         # Fake Trezor Suite download campaign (~$3.2M, ~80+ victims)
     - 2025-2026-trezor-impersonating-physical-mail-campaign                      # Physical letters with QR codes to typosquat domains
-    - 2024-01-fake-metamask-extension-chrome-store                               # Fake MetaMask extension seed-phrase solicitation
     - 2023-2025-fake-revoke-cash-wallet-security-extension-phishing             # Counterfeit security-tool extension seed-phrase capture
   negative:
     - "Communication from the vendor that mentions seed-phrase security in an advisory context (e.g., 'never share your seed phrase') but does NOT solicit it — legitimate security advisory"

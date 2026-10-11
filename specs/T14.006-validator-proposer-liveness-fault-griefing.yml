@@ -86,7 +86,6 @@ output_alert: [oak_technique, detection_path, severity, chain,
 test_fixtures:
   positive:
     - 2022-2025-ethereum-validator-ddos-extortion-campaigns              # Active adversary DDoS against validators
-    - 2024-08-rocket-pool-validator-downtime-outage                      # Passive correlated liveness fault
     - 2022-2025-ethereum-beacon-chain-inactivity-leak-griefing           # Inactivity-leak economic analysis
   negative:
     - "Single validator missing 1–2 attestations per epoch — normal operational noise, not a liveness-fault event"

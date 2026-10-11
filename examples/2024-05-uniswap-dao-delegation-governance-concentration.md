@@ -25,8 +25,9 @@ The Uniswap case extends the T16.003 structural-concentration sub-pattern from E
 
 ## Public references
 
-- `[uniswapdao2020]` *(proposed)* — Uniswap DAO governance launch and UNI token delegation architecture.
-- `[tallyuniswap]` *(proposed)* — Tally governance dashboard for Uniswap DAO; delegation-graph visualisation and top-delegate voting-weight distribution.
+- `[bubblemapsuni2024]` — Bubblemaps, "Exposing a16z's Hidden Control in Uniswap's Governance" (2024-09-27): <https://blog.bubblemaps.io/exposing-a16zs-hidden-control-in-uniswaps-governance/>
+- `[bongaertsdelegation2025]` — Bongaerts, Lambert, Liebau, Roosenboom, "Vote Delegation in DeFi Governance," arXiv:2503.11940 (2025-03-15): <https://arxiv.org/abs/2503.11940v1>
+- `[dlnewsuniloan2026]` — DL News, "Uniswap DAO votes to take back \$42m of governance tokens loaned to delegates" (2026-05-05): <https://www.dlnews.com/articles/defi/uniswap-dao-votes-to-take-back-loaned-uni-tokens/>
 
 ## Discussion
 

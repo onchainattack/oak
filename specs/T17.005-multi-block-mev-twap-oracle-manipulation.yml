@@ -89,7 +89,6 @@ test_fixtures:
   positive:
     - 2022-04-inverse-finance-twap                                     # Multi-block TWAP execution pattern
     - 2023-2025-multi-block-mev-twap-oracle-grinding-cohort            # Post-Merge builder-concentration cohort
-    - 2024-2025-jupiter-dca-solana-twap-oracle-manipulation            # Solana deterministic leader schedule
   negative:
     - "Routine builder concentration in post-Merge PBS (single builder proposing 2-3 consecutive blocks without correlated TWAP deviation)"
     - "Legitimate TWAP deviation during high-volatility market events without proposer concentration"

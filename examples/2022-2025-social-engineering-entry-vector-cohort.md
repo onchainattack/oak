@@ -32,7 +32,6 @@ The victim is induced to establish a WalletConnect session with a malicious dApp
 Canonical cases:
 
 - **Google Play drainer campaign — 2024-09.** Fake "WalletConnect" mobile apps distributed via Google Play under impersonating names ("Mestox Calculator", "WalletConnect — DeFi & NFTs", "WalletConnect — Airdrop Wallet"), achieving 10,000+ downloads and ~$70K stolen across 150+ victims. See `examples/2024-09-walletconnect-google-play-drainer.md`.
-- **Fake MEV-bot multisig drain — 2024-06.** ~$480K drained from 12 multisig wallets and 40+ individuals via Inferno Drainer backend, targeting technically-sophisticated users through fake developer-tooling framing. See `examples/2024-06-walletconnect-multisig-drain.md`.
 - **Browser and social-media WalletConnect phishing — 2023–2025.** Drainer-as-a-service ecosystem (Inferno, Pink, Angel, Pussy, Monkey Drainers) commercialised T4.006 at industrial scale. See `examples/2023-2025-walletconnect-phishing-campaigns-cohort.md`.
 
 ## T15.006 — Impersonation via Verified Social-Account Compromise

@@ -197,7 +197,6 @@ test_fixtures:
   positive:
     - 2021-2025-slippage-manipulation-sandwich-cohort                        # Uniswap V2/V3 high-slippage swap sandwiching by MEV bots
     - 2023-2024-squeeth-volatility-auction-slippage-sandwich                # Squeeth auction settlement slippage-band sandwich
-    - 2024-05-eigenlayer-withdrawal-sandwich                                # EigenLayer withdrawal event slippage sandwich
   negative:
     - "Swap executed via private transaction relay — the slippage parameter is not observable in the public mempool"
     - "Swap with 0.1% slippage tolerance on a deep liquidity pair — the sandwich extraction at this band is below gas cost"

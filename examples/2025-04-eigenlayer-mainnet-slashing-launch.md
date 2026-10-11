@@ -42,11 +42,7 @@ The launch did not cause a mass-slashing event (none occurred on the launch date
 
 ## Public references
 
-- EigenCloud blog, "Slashing Goes Live on Mainnet" (2025-04-17) — slashing-enablement announcement and Unique Stake Allocation documentation
-- EigenLayer protocol documentation: slashing-condition specification, Unique Stake Allocation design, and operator-set slashing-exposure mechanics
-- LRT issuer (Renzo, Ether.fi, Kelp, Puffer) NAV methodology updates post-slashing-enablement
-- Lending-market (Morpho, Gearbox, Aave) LRT collateral-parameter recalibration post-slashing-enablement
-- See `techniques/T14.001-slashing-condition-exploit.md`, `techniques/T14.003-restaking-cascading-risk.md`, `techniques/T14.004-liquid-restaking-token-pricing-manipulation.md` for Technique definitions
+- `[eigenslashinglive2025]` — EigenCloud blog, "Slashing Goes Live on Mainnet: Powering a New Era of Verifiable Applications with Economic Enforcement" (2025-04-17): <https://www.eigenlabs.org/blog/slashing-goes-live/>
 
 ## Discussion
 

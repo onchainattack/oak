@@ -105,4 +105,3 @@ reference_implementations:
   - { target: phylum,                 chain: cross-chain, url: "" }
   - { target: stepsecurity,           chain: cross-chain, url: "" }
   - { target: snyk-supply-chain,      chain: cross-chain, url: "" }
-  - { target: cyb3rhawk-disclosures,  chain: cross-chain, url: "" }

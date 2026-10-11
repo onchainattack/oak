@@ -1,14 +1,16 @@
 # Onyx Protocol year-plus fork-vulnerability exposure — Ethereum — 2024
 
-**Loss:** ~$3.8M drained from Onyx Protocol on Ethereum (November 2024 incident). Additional historical exploit on Onyx in October 2023 (~$2.1M) via a related Compound V2 fork vulnerability. Aggregate losses across multiple Onyx exploits exceed $5M.
-**OAK Techniques observed:** **OAK-T9.007** (Fork Substrate Vulnerability Not Mitigated) — the Onyx Protocol operated as a Compound V2 fork with known, publicly-documented vulnerability classes that remained unpatched across multiple exploit events spanning over a year. **OAK-T9.004** (Access-Control Misconfiguration) — the November 2024 exploit used a governance-parameter manipulation vector inherited from the Compound V2 codebase.
+**Loss:** ~$3.8M drained from Onyx Protocol on Ethereum (2024-09-26 incident). Earlier exploit on Onyx on 2023-10-31 (~\$2.1M) via the same Compound V2 empty-market vulnerability. Aggregate losses across multiple Onyx exploits exceed $5M.
+**OAK Techniques observed:** **OAK-T9.007** (Fork Substrate Vulnerability Not Mitigated) — the Onyx Protocol operated as a Compound V2 fork with known, publicly-documented vulnerability classes that remained unpatched across multiple exploit events spanning over a year. **OAK-T9.004** (Access-Control Misconfiguration) — the 2024 exploit is reported by ForkLog as an empty-market precision issue in the forked Compound V2 code, while Onyx itself attributed it to a flaw in its NFT-liquidation contract that failed to validate input. Mapping note: neither account describes governance-parameter manipulation, so the T9.004 label is not supported by the sources and a T9.007-only mapping (or a smart-contract-logic technique for the NFT-liquidation flaw) would fit better.
 **Attribution:** **pseudonymous** — attacker addresses identified on-chain.
 
 **Key teaching point:** Onyx demonstrates the multi-exploit fork pattern: the same protocol forking the same upstream codebase was exploited multiple times across more than a year because the fork operator addressed the specific exploit rather than the underlying vulnerability class. Each post-exploit remediation was point-fix rather than class-fix, leaving sibling attack surfaces unpatched.
 
+**Corrected 2026-10-11:** 2024 exploit date changed from November to 2024-09-26 and its mechanism restated (empty-market precision issue / NFT-liquidation flaw, not governance-parameter manipulation); 2023 exploit details clarified.
+
 ## Summary
 
-Onyx Protocol was a lending protocol on Ethereum forked from Compound Finance V2. The protocol was exploited in October 2023 (~$2.1M) via a Compound V2 fork vulnerability. The Onyx team applied a point-fix for the specific exploited vector but did not comprehensively audit the remaining Compound V2 vulnerability surface. In November 2024, a second attacker exploited a related but distinct Compound V2 fork vulnerability — the governance-parameter manipulation vector — draining ~$3.8M.
+Onyx Protocol was a lending protocol on Ethereum forked from Compound Finance V2. The protocol was exploited on 2023-10-31 (~\$2.1M); rekt reports the attacker abused the newly added PEPE market (listed via Onyx governance Proposal 22) using the Compound V2 empty-market donation/rounding bug. The Onyx team applied a point-fix for the specific exploited vector but did not comprehensively audit the remaining Compound V2 vulnerability surface. On 2024-09-26 a second attack drained ~\$3.8M (VUSD, XCN, DAI, WBTC, USDT). ForkLog describes it as the known Compound V2 precision issue with a near-empty market; Onyx said the exploit stemmed from its NFT-liquidation contract, which did not properly validate input and allowed an inflated self-liquidation reward. Sources differ on the exact vector; neither involves governance-parameter manipulation.
 
 The multi-exploit pattern across the same fork is the structural T9.007 signal: if the fork operator treats each exploit as an isolated incident rather than as evidence that the entire forked-vulnerability surface requires class-level remediation, subsequent exploits against different vectors on the same fork are likely.
 
@@ -16,12 +18,13 @@ The multi-exploit pattern across the same fork is the structural T9.007 signal: 
 
 | When | Event | OAK ref |
 |---|---|---|
-| 2023-10 | Onyx Protocol exploited via Compound V2 fork vulnerability; ~$2.1M drained | T9.007 (first exploit) |
-| 2023-10 - 2024-11 | Year-plus window: Onyx applies point-fix for the October 2023 vector but does not remediate the full Compound V2 vulnerability surface | T9.007 (unpatched) |
-| 2024-11 | Second attacker exploits a different Compound V2 fork vulnerability (governance-parameter manipulation); ~$3.8M drained | T9.007 (second exploit) |
+| 2023-10-31 | Onyx Protocol exploited via the Compound V2 empty-market bug on the new PEPE market (Proposal 22); ~\$2.1M drained | T9.007 (first exploit) |
+| 2023-11 - 2024-09 | Year-plus window: Onyx applies point-fix for the October 2023 vector but does not remediate the full Compound V2 vulnerability surface | T9.007 (unpatched) |
+| 2024-09-26 | Second exploit (empty-market precision issue per ForkLog; NFT-liquidation contract flaw per Onyx); ~\$3.8M drained | T9.007 (second exploit) |
 
 ## Public references
 
-- Onyx Protocol post-mortems (October 2023, November 2024).
-- Compound V2 vulnerability disclosure history.
-- On-chain transaction data on Etherscan.
+- `[rektonyx2023]` — rekt.news, "Onyx Protocol - REKT" (2023-11-02): <https://rekt.news/onyx-protocol-rekt> (the ~\$2.1M 2023 empty-market exploit)
+- `[hackenonyx2023]` — Hacken, "Onyx Protocol hack" (2023-11): <https://hacken.io/discover/onyx-protocol-hack/> (Proposal 22 PEPE market; 2023 exploit)
+- `[w3iggonyx2024]` — Web3 is Going Just Great, "Onyx hacked for \$3.8 million via the same exploit used against them less than a year ago" (2024-09-26): <https://web3isgoinggreat.com/single/onyx-hack-2>
+- `[forklogonyx2024]` — ForkLog, "Hackers exploit old vulnerability to breach Onyx for \$3.8 million" (2024-09-26): <https://forklog.com/en/hackers-exploit-old-vulnerability-to-breach-onyx-for-3-8-million>

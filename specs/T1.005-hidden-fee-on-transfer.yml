@@ -85,7 +85,7 @@ output_alert: [oak_technique, detection_path, severity, contract_address,
 
 test_fixtures:
   positive:
-    - 2024-Q4-honeypot-token-cohort-cross-chain   # T1.005 contributing primitive across the cohort
+    - 2024-02-honeypot-token-cohort-cross-chain   # conditional sell-side fee in honeypot tokens
   negative:
     - "Uniform 0.3% fee-on-transfer token (single branch, no conditional gating)"
     - "Anti-bot token with hard-coded short grace window (< N blocks, fee permanently zero thereafter — calibrate via post_grace simulation cell)"

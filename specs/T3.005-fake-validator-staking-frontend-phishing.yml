@@ -78,7 +78,6 @@ test_fixtures:
   positive:
     - 2022-2023-lido-steth-staking-phishing-cohort                        # Lido stETH staking-interface phishing
     - 2024-2025-eigenlayer-airdrop-staking-frontend-phishing-cohort       # EigenLayer restaking phishing
-    - 2024-2025-rocket-pool-rpl-staking-phishing-cohort                   # Rocket Pool node-operator phishing
   negative:
     - "Staking deposit to canonical Lido contract from lido.fi — legitimate deposit, not T3.005"
     - "Domain with similar name registered years before the protocol existed — coincidental typosquat, not phishing"

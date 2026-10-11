@@ -77,7 +77,6 @@ test_fixtures:
   positive:
     - 2020-2021-uniswap-fake-token-impersonation-wave                    # Uniswap V2 fake USDT/USDC wave
     - 2021-bsc-pancakeswap-token-impersonation-wave                     # BSC PancakeSwap fake-token wave
-    - 2024-06-bera-chain-fake-airdrop-token-metadata-spoofing           # Pre-mainnet impersonator tokens
   negative:
     - "Token with unique name/symbol not matching any canonical registry entry — not impersonating, legitimate new token deployment"
     - "Token whose name/symbol coincidentally matches but with a clearly distinct address on a different chain — cross-chain deployments, not impersonation"

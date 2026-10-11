@@ -2,11 +2,13 @@
 
 **Loss:** structural / market-integrity — the NFT market from 2024 through 2026 experienced a sustained contraction in volume and cultural relevance, but the insider-trading and wash-trading infrastructure that characterised the 2021–2022 NFT boom persisted in residual form. Insider trading — marketplace employees or collaborators trading on foreknowledge of feature drops, homepage placements, or collection verifications — and wash trading — coordinated buy-sell cycles to inflate volume metrics and collection rankings — continued at reduced scale through 2026, with the structural surface unchanged from the peak-NFT period.
 
-**OAK Techniques observed:** **OAK-T12.001** (NFT Insider Trading — marketplace employees and team members traded on foreknowledge of collection promotions, homepage curation, and verification announcements, using the same information-asymmetry primitives that characterised the OpenSea insider-trading prosecutions of 2022–2023.) **OAK-T12.003** (NFT Wash Trading / Volume Inflation — coordinated trading rings used self-dealing transactions to inflate collection volume metrics, gaming marketplace ranking algorithms and creating a false appearance of demand and liquidity.)
+**OAK Techniques observed:** **OAK-T12.001** (NFT Insider Trading — marketplace employees and team members traded on foreknowledge of collection promotions, homepage curation, and verification announcements, using the same information-asymmetry primitives alleged in the 2022 OpenSea insider-trading prosecution, whose conviction was later vacated.) **OAK-T12.003** (NFT Wash Trading / Volume Inflation — coordinated trading rings used self-dealing transactions to inflate collection volume metrics, gaming marketplace ranking algorithms and creating a false appearance of demand and liquidity.)
 
 **Attribution:** **unattributed** — the insider-trading and wash-trading surfaces are properties of the NFT marketplace architecture, not of any single adversary. The 2024–2026 period did not produce headline-grabbing NFT insider-trading prosecutions at the scale of the 2022 OpenSea case, but the surface persisted.
 
 **Key teaching point:** **The NFT insider-trading and wash-trading surfaces did not disappear when the NFT market contracted — they persisted at reduced scale, demonstrating that marketplace information-asymmetry and volume-gaming are structural properties of the NFT marketplace design, not cyclical properties of market activity.** The structural lesson is that **any marketplace where (a) employees have foreknowledge of promotional actions that affect asset prices, (b) volume metrics determine visibility and ranking, and (c) self-dealing transactions are indistinguishable from organic trades has a standing T12.001/T12.003 surface, regardless of market conditions.**
+
+**Corrected 2026-10-11:** The Chastain conviction is now described as vacated by the Second Circuit (2025-07-31) rather than standing precedent, and the unsupported SEC action and 2024–25 Chainalysis report claims were removed.
 
 ## Summary
 
@@ -20,23 +22,24 @@ However, the structural surfaces that enabled the 2021–2022 wave of NFT inside
 
 3. **Wash-trading-as-a-service infrastructure.** The wash-trading tooling and bot infrastructure developed during the 2021–2022 boom remained operational, available for rent, and adaptable to any NFT marketplace with volume-based ranking.
 
-The 2024–2026 period produced no headline prosecution at the scale of the 2022 OpenSea insider-trading case (Nate Chastain, convicted May 2023), but the absence of prosecutions reflected reduced enforcement attention and reduced market volume rather than the elimination of the underlying surface. The T12.001/T12.003 surfaces are structural properties of the NFT marketplace design; they persist as long as the marketplace architecture that enables them persists, regardless of market volume.
+The 2024–2026 period produced no headline prosecution at the scale of the 2022 OpenSea insider-trading case (Nate Chastain, convicted May 2023; the Second Circuit vacated that conviction on 2025-07-31), but the absence of prosecutions reflected reduced enforcement attention and reduced market volume rather than the elimination of the underlying surface. The T12.001/T12.003 surfaces are structural properties of the NFT marketplace design; they persist as long as the marketplace architecture that enables them persists, regardless of market volume.
 
 ## Timeline (UTC)
 
 | When | Event | OAK ref |
 |---|---|---|
 | 2021–2022 | NFT market peak; OpenSea and other marketplaces experience wave of insider-trading and wash-trading incidents | T12.001 + T12.003 |
-| 2022–2023 | OpenSea insider-trading prosecution (Nate Chastain); DOJ and SEC enforcement actions establish legal precedent | T12.001 |
+| 2022–2023 | OpenSea insider-trading prosecution (Nate Chastain); convicted May 2023, conviction vacated by the Second Circuit on 2025-07-31 (so it does not stand as precedent). No SEC action was found | T12.001 |
 | 2024–2026 | NFT market contracts; marketplace volumes decline >90% from peak; insider-trading and wash-trading surfaces persist at reduced scale | T12.001 + T12.003 (persistent surface) |
 | Continuing | NFT marketplace architecture that enables insider trading and wash trading remains structurally open through v0.1 | T12.001 + T12.003 |
 
 ## Public references
 
-- OpenSea insider-trading case: US v. Nathaniel Chastain (SDNY, 2022–2023, conviction May 2023)
+- OpenSea insider-trading case: US v. Nathaniel Chastain (SDNY, 2022–2023, conviction May 2023, vacated on appeal 2025-07-31)
 - NFT marketplace volume data: Dune Analytics, The Block, DappRadar (2021–2026)
-- Wash-trading detection heuristics: Footprint Analytics, Chainalysis NFT wash-trading reports
+- Wash-trading detection heuristics: Footprint Analytics; Chainalysis published an NFT wash-trading analysis in 2022 (no 2024–2025 edition was found)
 - See `techniques/T12.001` and `techniques/T12.003` for Technique definitions
+- `[theblockchastain2025]` — The Block, "US appeals court overturns OpenSea product manager Nathanial Chastain's wire fraud and money laundering conviction" (2025-07-31): <https://theblock.co/news/web3/2025-07-31-us-appeals-court-overturns-opensea-product-manager-nathanial-chastains-wire-fraud-and-money-laundering-conviction-365052> (May 2023 conviction later vacated)
 
 ## Discussion
 

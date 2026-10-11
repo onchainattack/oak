@@ -198,7 +198,6 @@ output_alert: [oak_technique, detection_path, severity, chain,
 test_fixtures:
   positive:
     - 2023-08-exactly-reinitialization                                       # Exactly Protocol DebtManager reinitialization (~$7.3M)
-    - 2024-01-astaria-reinitialization                                       # Astaria reinitialization (pre-deployment audit finding)
   negative:
     - "Legitimate proxy upgrade calling a new initializer version with governance-approved version number via OpenZeppelin reinitializer modifier"
     - "Contract whose initialize function performs no external calls before setting the initialized flag — not vulnerable to T9.009"

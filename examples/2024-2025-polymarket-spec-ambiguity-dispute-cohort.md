@@ -41,3 +41,5 @@ Varies by market. Zelenskyy-suit at ~$237M is the largest; smaller markets in th
 - Decrypt, CoinDesk ("This Isn't Decentralized"), The Defiant — Zelenskyy-suit market coverage.
 - Polymarket market-listing guidelines — resolution-spec language standards (pre- and post-Zelenskyy).
 - UMA DVM documentation — voter discretion in subjective-oracle resolution.
+- `[decryptpolyzel2025]` — Decrypt, "Polymarket Rules 'No' on \$237M Controversial Bet Over Zelenskyy's Suit" (2025-07-09): <https://decrypt.co/329210/polymarket-rules-no-237m-bet-zelenskyys> (market, volume, UMA 'credible reporting consensus' ruling)
+- `[defiantpolyzel2025]` — The Defiant, "Polymarket Controversy Heats Up After the Zelenskyy Suit Market Resolves" (2025-07): <https://thedefiant.io/news/nfts-and-web3/polymarket-controversy-heats-up-after-the-zelenskyy-suit-market-resolves>

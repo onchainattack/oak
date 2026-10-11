@@ -33,4 +33,3 @@ The attack exploited the gap between permissionless token deployment (anyone can
 - PancakeSwap token list: community-maintained token-verification repository on GitHub.
 - BscScan: token-contract metadata verification and impersonation detection via "Similar Contracts" and token-name clustering.
 - GoPlus Token Security: automated honeypot and impersonation-detection heuristics covering PancakeSwap tokens.
-- Cross-reference: `examples/2024-Q4-honeypot-token-cohort-cross-chain.md` (cross-chain honeypot cohort, Q4 2024 — T1.004/T1.005/T1.006 anchor).

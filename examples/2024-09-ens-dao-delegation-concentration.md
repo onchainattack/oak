@@ -36,6 +36,8 @@ The ENS case is the fourth T16.003 worked example and anchors the structural-con
 
 ## Public references
 
+- `[ensforumstate2024]` — ENS DAO forum, "An Introduction on the Decentralized State of ENS DAO" (undated): <https://discuss.ens.domains/t/an-introduction-on-the-decentralized-state-of-ens-dao/21709>
+- `[ensforumdash]` — ENS DAO forum, "ENS DAO Governance Dashboard" (undated): <https://discuss.ens.domains/t/ens-dao-governance-dashboard/17591>
 - `[ensdao2021]` *(proposed)* — ENS DAO launch and governance documentation; the Governor Bravo delegation architecture.
 - `[tallyens]` *(proposed)* — Tally governance dashboard for ENS DAO; delegation-graph visualisation and top-delegate voting-weight distribution.
 

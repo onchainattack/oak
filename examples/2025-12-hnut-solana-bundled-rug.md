@@ -44,9 +44,10 @@ PeckShield flagged the incident as a bundled rug pull. The token's price fell fr
 
 ## Public references
 
-- `[beincryptohnut2025]` — BeInCrypto, "99% Nuke on This Meme Coin Raises Fresh Rug Pull Concerns" (2025-12-30).
 - `[peckshieldhnut2025]` — PeckShield, X post flagging HNUT 99% collapse as bundled rug pull (2025-12-30).
 - `[cryptoscamhunterhnut2025]` — Crypto Scam Hunter, X scam alert pre-collapse flagging bundled behavior and supply concentration (2025-12-29).
+- `[beincryptohnut2025]` — BeInCrypto, "99% Nuke on This Meme Coin Raises Fresh Rug Pull Concerns" (2025-12-30): <https://beincrypto.com/solana-hnut-meme-coin-collapse/>
+- `[yahoohnut2025]` — Yahoo Finance (BeInCrypto syndication), "HNUT Meme Coin Collapses 99% on Solana, PeckShield Flags Bundled Rug Pull" (2025-12-30): <https://finance.yahoo.com/news/hnut-meme-coin-collapses-99-103900867.html>
 
 ## Citations
 

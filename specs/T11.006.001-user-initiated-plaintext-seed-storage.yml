@@ -152,7 +152,6 @@ output_alert: [oak_technique, detection_path, severity, chain,
 test_fixtures:
   positive:
     - 2022-12-lastpass-vault-cohort                                                # LastPass vault exfiltration → 2023–2025 drain (~$35M+ across ~150+ victims; ~$150M Larsen heist)
-    - 2024-01-1password-encrypted-note-seed-storage-cohort                          # 1Password encrypted-note seed-storage (~$8.2M, ~45+ victims)
     - 2023-2025-cloud-doc-email-seed-storage-compromise-cohort                      # Google Docs/OneNote/email-draft seed storage compromise
   negative:
     - "Seed phrase stored exclusively on physical media (paper, metal) with no digital copy in any third-party service — not T11.006.001"

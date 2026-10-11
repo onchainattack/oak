@@ -1,11 +1,13 @@
-# Q1–Q2 2026 Flash-Loan, Approval and Slippage Exploit Cohort — Matcha, Cyrus Finance, YO Protocol, Aperture LM — Aggregate ~$24.4M
+# Q1–Q2 2026 Flash-Loan, Approval and Slippage Exploit Cohort — Matcha/SwapNet, Cyrus Finance, Aperture, and the YO Protocol keeper mis-swap — Aggregate ~$17.6M across three exploits
 
 **OAK Techniques observed:** OAK-T9.002, OAK-T9.004
 
 **Attribution:** **unattributed** (aggregate cohort).
-**Loss:** Matcha ~$13.43M (unlimited-approval exploit across Base and Ethereum — attacker leveraged pre-existing unlimited ERC-20 approvals to drain approved tokens); Cyrus Finance ~$5M (flash-loan pool-shares exploit on BSC); YO Protocol ~$3.73M (slippage exploit on Ethereum — missing or misconfigured slippage guard enabled value extraction); Aperture LM ~$3.2M (unclassified protocol-logic exploit across Ethereum, Base, and BSC). Aggregate ~$24.4M across four incidents, January–March 2026.
+**Loss:** Matcha/SwapNet ~\$13.43M (Jan 25; a third-party SwapNet arbitrary-call exploit hitting ~18–20 users who had disabled Matcha's default One-Time Approval — Matcha's own contracts were not compromised); Aperture ~\$3.67M (Jan 25; arbitrary-call bug across Ethereum, Arbitrum, Base and BSC); Cyrus Finance ~\$512K (BNB Chain, Mar 23; flash-loan manipulation of `slot0()` spot price in `withdrawUSDTFromAny()`). Aggregate of the three exploits ~\$17.6M. **YO Protocol (Jan 12) is not an exploit:** an erroneous automated stkGHO swap (~\$3.71M in, ~\$112K USDC back) from a missing slippage guard on YO's own keeper via Odos; no attacker, and YO's multisig covered the loss. It is kept here as a documented non-attack contrast and is excluded from the aggregate.
 
-**Key teaching point:** Four incidents in Q1–Q2 2026 exploit structural gaps in the DeFi transaction-authorisation pipeline: unlimited approvals that outlive their intended use (Matcha), flash-loan-capitalised share-price manipulation (Cyrus Finance), missing slippage bounds that turn every trade into a value-extraction opportunity (YO Protocol), and multi-chain deployment surfaces where a logic gap on one chain propagates across the deployment footprint (Aperture LM). The common thread is **a value-transfer path that the protocol authorised once and never re-validated — or never constrained in the first place.**
+**Key teaching point:** Three exploits and one self-inflicted loss in Q1–Q2 2026 show gaps in the DeFi transaction-authorisation pipeline: standing token approvals reachable through a third-party arbitrary-call bug (SwapNet/Matcha users, Aperture), flash-loan manipulation of a spot price (Cyrus Finance: ~\$512K, Mar 23, `slot0()` manipulation), and a missing slippage bound on a protocol's own automated keeper (YO Protocol, not an attack). The common thread is **a value-transfer path that was authorised once and never re-validated — or never constrained in the first place.**
+
+**Corrected 2026-10-11:** Matcha/SwapNet is a third-party arbitrary-call exploit (~18–20 users who disabled One-Time Approval), Aperture is \$3.67M, Cyrus Finance is ~\$512K on Mar 23 via `slot0()` flash-loan manipulation, and YO Protocol (Jan 12) is an erroneous keeper swap with no attacker, excluded from the aggregate (now ~\$17.6M).
 
 ## Summary
 
@@ -13,55 +15,51 @@
 
 | When | Event | OAK ref |
 |---|---|---|
-| 2026-01-13 | YO Protocol: slippage exploit on Ethereum drains ~$3.73M; missing or misconfigured `minAmountOut` parameter enables the attacker to extract value from every swap | **T9.004** (missing slippage guard — a parameter-validation access-control gap) |
-| 2026-01-25 | Matcha: unlimited-approval exploit across Base and Ethereum; ~$13.43M extracted from users who had granted infinite ERC-20 approvals to Matcha's contract; attacker exploits the standing-approval surface | **T9.004** (unlimited-approval anti-pattern — standing token approval without revocation mechanism) |
-| 2026-01-25 | Aperture LM: unclassified protocol-logic exploit across Ethereum, Base, and BSC; ~$3.2M extracted; multi-chain deployment surface amplifies the loss | **T9.004** (protocol-logic access-control gap) |
-| 2026-03-22 | Cyrus Finance: flash-loan pool-shares exploit on BSC drains ~$5M; attacker uses flash-loan capital to manipulate pool-share accounting, then extracts against the distorted share price | **T9.002** (flash-loan capital acquisition), **T9.011** (pool-share accounting manipulation) |
+| 2026-01-12 | YO Protocol: not an exploit — YO's own automated harvesting keeper executed a swap via Odos with broken parameters (~97% slippage): ~\$3.71M stkGHO in, ~\$112K USDC back; multisig covered the loss; no attacker | (not an attack; operator error — missing slippage guard) |
+| 2026-01-25 | Matcha/SwapNet: ~\$13.43M drained from ~18–20 users who had disabled One-Time Approval and granted direct allowances to SwapNet contracts, via an unvalidated low-level call (arbitrary `transferFrom`); Matcha's own contracts not compromised | **T9.004** (arbitrary call over standing approvals in a third-party contract) |
+| 2026-01-25 | Aperture: arbitrary-call bug in minting (unvalidated target and calldata) drains approved ERC-20s and Uniswap V3 position NFTs; ~\$3.67M across Ethereum, Arbitrum, Base, BSC | **T9.004** (arbitrary call over standing approvals) |
+| 2026-03-23 | Cyrus Finance: ~1,798 ETH flash loan from a PancakeSwap V3 pool shifts the `slot0()` spot price used by `withdrawUSDTFromAny()`; `exit()` on CYRP position #15505 releases excess USDT; ~\$512K | **T9.002** (flash-loan capital); price-oracle manipulation of a spot price (T9.011 not supported) |
 
-## Matcha — Unlimited-Approval Standing Surface
+## Matcha / SwapNet — Arbitrary Call over Direct Allowances
 
-On January 25, 2026, Matcha — a DEX aggregator operating on Base and Ethereum — was exploited for ~$13.43M via an unlimited-approval exploit. Users who had granted infinite (or excessively high) ERC-20 token approvals to Matcha's smart contracts had their approved tokens drained. The attacker did not exploit a smart-contract bug in the traditional sense; they exploited the **standing-approval surface** — the aggregate of all unlimited ERC-20 approvals that users had granted to Matcha's contracts over months or years of normal usage.
+On January 25, 2026, SwapNet (a third-party contract used by Matcha Meta) was exploited for ~\$13.4M (Matcha's confirmed figure: \$13.43M, ~\$13.34M of it from one user). BlockSec: `0x87395540()` lacked validation, so the attacker could substitute a token address for the expected router, making the contract execute a low-level call with attacker calldata and issue `transferFrom` on previously approved assets. About 20 users who had turned off Matcha's default One-Time Approval and granted direct allowances to SwapNet were affected; users who kept One-Time Approval (routed through 0x's AllowanceHolder) were not. Matcha said its own contracts and 0x's AllowanceHolder/Settler were not compromised. Earlier text describing an "unlimited-approval exploit on Matcha's contracts" is corrected.
 
-The incident is structurally identical to the TrustedVolumes pre-existing-approval drain (May 2026, T9.004) but at DEX-aggregator scale: the protocol's contracts held transfer authority over user tokens via the ERC-20 approval mechanism, and an attacker who gained control of the contract (or exploited a path that invoked `transferFrom` with attacker-controlled parameters) could drain every approved token in a single transaction.
+**OAK mapping:** T9.004 (arbitrary call over standing approvals; the standing-approval surface is the exposure, an unvalidated call target is the bug).
 
-The defender lesson is that **the ERC-20 approval model is a standing-access-control surface**: every `approve(spender, type(uint256).max)` call creates a permanent value-transfer path from the user's wallet to the spender contract. The approval is not use-limited, time-limited, or context-limited — it is a blanket authorisation that persists until explicitly revoked.
+## Cyrus Finance — Flash-Loan Spot-Price Manipulation
 
-**OAK mapping:** T9.004 (unlimited-approval anti-pattern — standing ERC-20 approval surface without time-bound, use-bound, or revocable constraints).
+On March 23, 2026, Cyrus Finance on BNB Chain (a PancakeSwap V3 liquidity manager) lost ~\$512K (BlockSec; earlier text said ~\$5M on Mar 22). `CyrusTreasury.withdrawUSDTFromAny()` read the pool's spot price from `slot0()` to value the position, which a single transaction can move. The attacker took a ~1,798 ETH flash loan, swapped ETH→USDT to shift price and tick, called `exit()` on CYRP position #15505 to release excess USDT, restored the pool and repaid.
 
-## Cyrus Finance — Flash-Loan Pool-Shares Exploit
+**OAK mapping:** T9.002 (flash-loan-enabled) with spot-price manipulation; the earlier T9.011 pool-share-accounting claim is not supported by the BlockSec write-up.
 
-On March 22, 2026, Cyrus Finance on BSC was exploited for ~$5M via a flash-loan-enabled pool-shares exploit. The attacker acquired flash-loan capital, used it to manipulate the pool's share-price accounting, and extracted value against the distorted share price in a single atomic transaction. The exploit combines T9.002 (flash loan for capital acquisition) with a share-price manipulation primitive structurally similar to T9.011 — the pool's share-accounting formula was distorted by the sudden capital injection, and the distortion favoured the attacker.
+## YO Protocol — Erroneous Keeper Swap (Not an Attack)
 
-**OAK mapping:** T9.002 (flash-loan-enabled capital acquisition) + T9.011 (pool-share accounting manipulation via sudden capital injection).
+On January 12, 2026, YO Protocol's automated harvesting system executed a swap via the Odos aggregator with broken parameters (a bad output quote effectively disabled slippage protection; the Odos route carried a slippage parameter of 17,872,058). About \$3.71M of stkGHO was swapped and ~\$112K USDC returned to the vault (~97% slippage). Rekt: "No exploit. No hack. No malicious code." YO's post-mortem said the harvester ran without guardrails applied to its other trading systems. YO's multisig bought ~3.71M GHO via CoW Swap and redeposited stkGHO to backstop the loss, paused the Pendle yoUSD market and asked LPs who received proceeds to return 90%. There was no attacker. It stays in this cohort only as the contrast case: the missing slippage guard was on the protocol's own keeper.
 
-## YO Protocol — Missing Slippage Guard
+**OAK mapping:** none — not an attack. (The earlier T9.004 tag for a "missing slippage guard" was incorrect.)
 
-On January 13, 2026, YO Protocol on Ethereum was exploited for ~$3.73M via a slippage exploit. The protocol's swap path lacked a `minAmountOut` constraint (or the constraint was misconfigured to allow unbounded slippage), enabling the attacker to extract value from every trade by setting the output amount to the attacker's favour. A missing slippage guard is a T9.004 sub-pattern: the `minAmountOut` parameter is an access-control boundary on the acceptable extraction per trade, and omitting it is a parameter-validation access-control gap.
+## Aperture — Arbitrary Call in Minting
 
-**OAK mapping:** T9.004 (missing slippage guard — parameter-validation access-control gap on `minAmountOut`).
+On January 25, 2026, Aperture Finance lost ~\$3.67M across Ethereum, Arbitrum, Base and BSC (BlockSec; earlier text said ~\$3.2M). During minting via `0x67b34120()`, internal function `0x1d33()` made a low-level call with user-supplied calldata and an unvalidated target, letting attackers drain approved ERC-20 tokens and approved Uniswap V3 position NFTs. A balance check passed because the attacker set the swap output value. Root cause is the same as SwapNet: insufficient input validation on user-controlled low-level calls in contracts holding token approvals.
 
-## Aperture LM — Multi-Chain Protocol-Logic Exploit
-
-On January 25, 2026, Aperture LM — deployed across Ethereum, Base, and BSC — was exploited for ~$3.2M. The DeFiLlama classification lists no specific technique, suggesting a protocol-logic access-control gap rather than an oracle, flash-loan, or reentrancy exploit. The multi-chain deployment surface (three chains) amplified the loss: a logic gap in the shared contract codebase was exploitable on every chain where the contract was deployed.
-
-**OAK mapping:** T9.004 (protocol-logic access-control gap, multi-chain propagation).
+**OAK mapping:** T9.004 (arbitrary call over standing approvals).
 
 ## Public references
 
-- Matcha: DeFiLlama classification as "Unlimited Approval Exploit" on Base/Ethereum
-- Cyrus Finance: DeFiLlama classification as "Flashloan Pool Shares Exploit" on BSC
-- YO Protocol: DeFiLlama classification as "Slippage Exploit" on Ethereum
-- Aperture LM: DeFiLlama classification as unclassified protocol-logic exploit across Ethereum, Base, BSC
+- `[theblockmatcha2026]` — The Block, "Matcha Meta users hit in \$13.4 million SwapNet contract exploit" (2026-01-26): <https://www.theblock.co/post/386986/matcha-meta-swapnet-incident> (Matcha/SwapNet: \$13.43M, ~20 users with direct allowances, Matcha contracts not compromised)
+- `[blocksecaperture2026]` — BlockSec, "\$17M Closed-Source Smart Contract Exploit: Arbitrary-Call Vulnerability in SwapNet and Aperture Finance" (2026-01-28): <https://blocksec.com/blog/17m-closed-source-smart-contract-exploit-arbitrary-call-swapnet-aperture> (SwapNet \$13.41M and Aperture \$3.67M, Jan 25 arbitrary-call bugs)
+- `[rektyo2026]` — rekt.news, "Yo Protocol's Slippage Bomb" (2026-01-14): <https://rekt.news/yo-protocols-slippage-bomb> (YO Protocol: erroneous keeper swap, not an exploit)
+- `[blocksecweeklymar2026]` — BlockSec, "Weekly Web3 Security Incident Roundup | Mar 23 – Mar 29, 2026" (2026-04-02): <https://blocksec.com/blog/weekly-web3-security-incident-roundup-mar-23-mar-29-2026> (Cyrus Finance: ~\$512K, Mar 23, `slot0()` manipulation)
 - Cross-reference: T9.002 at `techniques/T9.002-flash-loan-enabled-exploit.md`; T9.004 at `techniques/T9.004-access-control-misconfiguration.md`; T9.011 at `techniques/T9.011-precision-loss-rounding-attack.md`
 
 ## Discussion
 
-The Q1–Q2 2026 flash-loan, approval, and slippage cohort illustrates three distinct but related DeFi authorisation failures:
+The Q1–Q2 2026 cohort shows related but distinct authorisation failures:
 
-**Matcha's unlimited-approval drain is the highest-loss incident in the cohort ($13.43M) and the most structurally difficult to defend against** because the vulnerability is not in the protocol's code but in the ERC-20 approval model itself. Every DEX aggregator, lending protocol, and yield vault accumulates a standing-approval surface over time — the sum of all user-granted `approve(max)` calls. This surface is invisible to the user (wallets display it as "approved" with no dollar value), grows with every new user, and cannot be revoked at scale without per-token, per-spender transactions. ERC-20 Permit (EIP-2612) and transient approvals are partial mitigations but require protocol adoption; the standing-approval surface of existing deployments will persist until the approval model is deprecated at the standard layer.
+**SwapNet/Matcha and Aperture share one root cause: an unvalidated low-level call in a contract that holds user token approvals.** Matcha's \$13.43M loss fell on the ~20 users who had opted out of One-Time Approval; those who kept it were not exposed, which is the clearest evidence that scoping approvals per transaction contains this class. The standing-approval surface is the exposure; the arbitrary call is the bug.
 
-**Cyrus Finance is the canonical 2026 T9.002 + T9.011 combination**: flash-loan capital acquisition (T9.002) enables the pool-share accounting manipulation (T9.011). The two Techniques are operationally coupled — the flash loan provides the capital to distort the share price; the accounting manipulation converts the distortion into extractable value. The Cyrus case is structurally similar to the Venus Protocol supply-cap donation attack (March 2026) but targets pool-share accounting rather than lending-market exchange rates.
+**Cyrus Finance is a spot-price manipulation:** a flash loan moved `slot0()` and the treasury trusted it. The fix is a TWAP or external oracle.
 
-**YO Protocol's missing slippage guard is the simplest fix with the highest leverage**: adding a `minAmountOut` parameter to the swap path would have closed the exploit entirely. The fact that a slippage-guard omission caused a $3.73M loss in January 2026 — nearly six years after the first AMM slippage exploits — suggests that the DEX-deployment checklist (slippage guard, deadline, recipient validation) is not systematically enforced at the audit or deployment-review layer.
+**YO Protocol is a control failure on the operator's own automation, not an attack.** Adding a `minAmountOut` guard to the keeper path would have prevented it, and the multisig covered the loss. Filing it as an exploit would overstate the adversary count; it is retained as a contrast case for what a missing slippage guard costs when no attacker is needed.
 
-**Aperture LM's multi-chain surface** reinforces a pattern seen across the 2026 cohort: protocols that deploy the same contract codebase to multiple chains multiply their exploit surface. A logic gap that is exploitable on one chain is exploitable on all of them, and the attacker can drain all chains in parallel or in sequence before detection propagates across chains.
+Multi-chain deployment, as with Aperture, multiplies exposure: the same unvalidated call was exploitable on every chain the contract was deployed to.

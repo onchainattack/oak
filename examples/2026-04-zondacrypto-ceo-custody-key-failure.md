@@ -37,9 +37,9 @@ The incident is the exchange-custody analogue of the QuadrigaCX collapse (2019, 
 
 ## Public references
 
-- New CEO public statements regarding wallet-key non-transfer, previous CEO's disappearance, and alleged Russian mafia takeover (April 2026)
-- Exchange user reports and community documentation of deposit-inaccessibility timeline
-- Polish and EU regulatory filings related to Zondacrypto's ownership transition and operational status
+- `[coindeskzonda2026]` — CoinDesk, "Zondacrypto under fire as Donald Tusk links exchange to legislative interference" (2026-04-18): <https://www.coindesk.com/business/2026/04/18/zondacrypto-under-fire-as-poland-s-prime-minister-links-exchange-to-legislative-interference>
+- `[cryptopolitanzonda2026]` — Cryptopolitan, "Zondacrypto collapses as executives vanish and users lose access to funds" (2026-04-30): <https://www.cryptopolitan.com/zondacrypto-collapses-as-executives-vanish-and-users-lose-access-to-funds/>
+- `[balkaninsightzonda2026]` — Balkan Insight, "Dead Man's Key: The Crypto Scandal Putting Poland's President on the Spot" (2026-05-13): <https://balkaninsight.com/2026/05/13/dead-mans-key-the-crypto-scandal-putting-polands-president-on-the-spot/rd/>
 - QuadrigaCX (2019) as the canonical single-individual-custody-failure precedent
 - See `techniques/T11` custody and signing infrastructure techniques for Technique definition
 

@@ -80,8 +80,6 @@ Operationally, Lazarus's modern crypto-theft playbook combines social engineerin
 - [`examples/2024-01-coinspaid-lazarus-endpoint-compromise.md`](../examples/2024-01-coinspaid-lazarus-endpoint-compromise.md) — CoinsPaid Lazarus endpoint compromise (January 2024)
 - [`examples/2024-01-dprk-chain-hop-laundering.md`](../examples/2024-01-dprk-chain-hop-laundering.md) — DPRK chain-hop laundering pattern (January 2024)
 - [`examples/2024-08-dprk-it-worker-infiltration.md`](../examples/2024-08-dprk-it-worker-infiltration.md) — DPRK IT worker infiltration into crypto companies (August 2024)
-- [`examples/2024-2026-solana-npm-trader-key-exfiltration.md`](../examples/2024-2026-solana-npm-trader-key-exfiltration.md) — Solana npm trader-tooling supply-chain key exfiltration cohort
-- [`examples/2024-post-tornado-defi-yield-laundering.md`](../examples/2024-post-tornado-defi-yield-laundering.md) — Post-Tornado-Cash DeFi yield-protocol laundering shift (T7.006 pattern case)
 - [`examples/2026-04-drift-protocol-durable-nonces-dprk.md`](../examples/2026-04-drift-protocol-durable-nonces-dprk.md) — Drift Protocol durable nonces DPRK exploitation
 
 ## Citations

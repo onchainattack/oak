@@ -103,7 +103,6 @@ output_alert: [oak_technique, detection_path, severity, chain,
 
 test_fixtures:
   positive:
-    - "2024-post-tornado-defi-yield-laundering"
   negative:
     - "Legitimate yield user with multi-month duration and yield-claim events"
     - "Position with active rebalancing tracked against APY changes"

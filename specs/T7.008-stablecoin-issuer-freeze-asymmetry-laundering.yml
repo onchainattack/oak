@@ -89,7 +89,6 @@ output_alert: [oak_technique, detection_path, severity, chain,
 test_fixtures:
   positive:
     - 2022-post-tornado-cash-usdc-usdt-freeze-asymmetry                  # Foundational freeze-asymmetry event
-    - 2024-chainalysis-laundering-report-issuer-selection                # Cohort-level issuer-preference documentation
   negative:
     - "Cluster holding USDT predominantly since inception without freeze-correlated shift — stable preference, not T7.008"
     - "Legitimate user preferring USDT for CEX deposit compatibility — no watchlisted-cluster attribution"

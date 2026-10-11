@@ -1,20 +1,22 @@
-# Hypervault Finance exit scam via fake-audit-claims — Hyperliquid / Ethereum — 2025-08
+# Hypervault Finance exit scam via fake-audit-claims — Hyperliquid / Ethereum — 2025-09-25
 
-**Loss:** approximately **$3.6 million** drained from over 1,100 depositors across the Hypervault auto-compounding vault platform. The platform held approximately $5.91M in total value locked (TVL) at the time of the incident per DeFiLlama. Approximately 752 ETH (~$3M) was bridged from Hyperliquid to Ethereum and routed through Tornado Cash.
+**Loss:** **\$3.6 million** per PeckShield/The Block (2025-09-26), or **\$4.64 million** per rekt (1,126.72 ETH bridged via deBridge to two Ethereum addresses). DefiLlama showed \$4.97M TVL on 2025-09-24 (the project's own claimed TVL reached \$5.8M, which rekt calls likely inflated). PeckShield/The Block reported ~752 ETH (~\$3M) deposited into Tornado Cash; rekt reports most of the 1,126 ETH went into Tornado Cash over 3-4 days.
 
-**OAK Techniques observed:** **OAK-T6.002** (Fake Audit-Claim — primary; the project claimed audits underway with Spearbit, Pashov, and Code4rena; Pashov publicly denied any knowledge of Hypervault, and Code4rena listed no pending audits for the protocol) + **OAK-T6.004** (Audit-Pending Marketing Claim — the "audits underway" framing was a forward-looking pending-audit claim with no engagement artefact at any named firm; Pashov's public denial and Code4rena's zero-record confirmation are the canonical PATH_B detection signal per the T6.004 spec) + **OAK-T2.001** (Single-Sided Liquidity Plant — the Hypervault auto-compounding vaults were structurally operator-controlled deposit traps from deployment; the vaults collected over $5.91M in user-deposited assets with the operator retaining unilateral withdrawal authority through the vault contracts; the "auto-compounding" branding and fake audit claims were the trust substrate that drove deposit velocity into the operator-controlled deposit surface) + **OAK-T5.001** (Hard LP Drain — the operator collected user deposits into vaults they controlled, then drained the pooled funds and disappeared) + **OAK-T7.001** (Mixer-Routed Hop — 752 ETH routed through Tornado Cash after bridging from Hyperliquid to Ethereum) + **OAK-T6.001** (Source-Verification Mismatch — the platform presented as a legitimate, audited DeFi protocol; the claimed audit affiliations were fabricated).
+**OAK Techniques observed:** **OAK-T6.002** (Fake Audit-Claim — primary; the project claimed audits underway with Spearbit, Pashov, and Code4rena; Pashov publicly denied any knowledge of Hypervault, and Code4rena listed no pending audits for the protocol) + **OAK-T6.004** (Audit-Pending Marketing Claim — the "audits underway" framing was a forward-looking pending-audit claim with no engagement artefact at any named firm; Pashov's public denial and Code4rena's zero-record confirmation are the canonical PATH_B detection signal per the T6.004 spec) + **OAK-T2.001** (Single-Sided Liquidity Plant — the Hypervault auto-compounding vaults were structurally operator-controlled deposit traps from deployment; the vaults collected roughly \$5M in user-deposited assets with the operator retaining unilateral withdrawal authority through the vault contracts; the "auto-compounding" branding and fake audit claims were the trust substrate that drove deposit velocity into the operator-controlled deposit surface) + **OAK-T5.001** (Hard LP Drain — the operator collected user deposits into vaults they controlled, then drained the pooled funds and disappeared) + **OAK-T7.001** (Mixer-Routed Hop — ~752 ETH (PeckShield; rekt reports most of 1,126 ETH) routed through Tornado Cash after bridging from Hyperliquid to Ethereum) + **OAK-T6.001** (Source-Verification Mismatch — the platform presented as a legitimate, audited DeFi protocol; the claimed audit affiliations were fabricated).
 
 **Attribution:** **pseudonymous** — the Hypervault team operated under completely unknown identities. The website, X account (@hypervaultfi), and Discord were all deleted simultaneously at the exit moment. No named individuals have been publicly linked to the operation at v0.1.
 
 **Key teaching point:** Hypervault is the 2025 anchor for the **fake-audit-claim-as-rug-pull-entry-vector** sub-pattern. The operator did not need to exploit a smart-contract vulnerability or bypass a security control — they fabricated audit affiliations with three recognised firms, used those claims to establish depositor trust, collected deposits into operator-controlled vaults over a sustained window, then deleted all surfaces and routed the funds through Tornado Cash. The structural lesson is that **any DeFi vault platform whose audit claims cannot be independently verified at the named firm's audit registry is T6.002-exposed by construction** — the depositor's verification burden is one registry lookup, but the UX layer that mediates that lookup is not yet standardised across wallet and aggregator surfaces.
 
+**Corrected 2026-10-11:** Date moved from August to 2025-09-25/26; loss given as both \$3.6M (PeckShield/The Block) and \$4.64M (rekt, 1,126.72 ETH via deBridge) against \$4.97M TVL on 09-24 (not \$5.91M); Zenith audit timeline added; unsupported depositor count removed; citation keys mapped to defined references.
+
 ## Summary
 
-Hypervault Finance launched on Hyperliquid in mid-2025 as an "unmanaged" auto-compounding vault system, promising annual yields of up to 76% on stablecoins and 95% for HYPE liquidity pools. The platform marketed itself as a long-term project, sharing plans to lower yields for sustainability and to launch a native token later in the year. Developers claimed an audit was underway with well-known security firms Spearbit, Pashov, and Code4rena — a claim that was later contradicted by the named firms.
+Hypervault Finance launched on Hyperliquid in mid-2025 as an "unmanaged" auto-compounding vault system, promising annual yields of up to 76% on stablecoins and 95% for HYPE liquidity pools. The platform marketed itself as a long-term project, sharing plans to lower yields for sustainability and to launch a native token later in the year. Developers claimed an audit was underway with well-known security firms Spearbit, Pashov, and Code4rena — a claim that was later contradicted by the named firms. On 2025-09-14 the project announced it was starting an audit with Zenith; Zenith delivered a private draft on 2025-09-24 listing 42 vulnerabilities (6 High, 10 Medium) and recommending a full re-audit, and the draft was never published (rekt).
 
-In approximately August 2025, the Hypervault team simultaneously deleted the project's website, X account (@hypervaultfi), and Discord server. Approximately $3.6 million in user-deposited funds was drained from the platform. On-chain analysis by PeckShield documented the funds being bridged from Hyperliquid to Ethereum, swapped for ETH, and approximately 752 ETH (~$3M) routed through Tornado Cash. The remaining TVL (~$2.3M of the pre-incident $5.91M) was also unrecoverable.
+Rekt reports the owner reportedly set the staking contract to an EOA on 2025-09-25 and began mass withdrawals from nine vaults; the website and X account (@hypervaultfi) were then deleted (The Block, 2025-09-26). Loss figures differ: PeckShield/The Block reported about \$3.6 million in outflows, while rekt's trace is \$4.64 million (1,126.72 ETH via deBridge) against \$4.97M TVL on 2025-09-24. PeckShield documented the funds being bridged from Hyperliquid to Ethereum, swapped for ETH, and ~752 ETH (~\$3M) deposited into Tornado Cash; rekt says most of the 1,126 ETH followed over 3-4 days.
 
-Prior to the incident, community members had raised red flags. When contacted, Pashov replied that they had never heard of Hypervault. Code4rena's website listed no pending audits for the protocol. The crypto researcher HypingBull publicly called the project's actions "shady" and withdrew funds before the platform went offline. Despite these warnings, Hypervault continued to operate normally until the final hours, encouraging users to explore other HyperEVM protocols and suggesting an imminent official audit.
+Prior to the incident, community members had raised red flags (HypingBull's first warning is dated 2025-09-04). When contacted, Pashov replied that they had never heard of Hypervault. Code4rena's website listed no pending audits for the protocol. The crypto researcher HypingBull publicly called the project's actions "shady" and withdrew funds before the platform went offline. Despite these warnings, Hypervault continued to operate normally until the final hours, encouraging users to explore other HyperEVM protocols and suggesting an imminent official audit.
 
 The abrupt shutdown and untraceable transfers followed the classic exit-scam pattern: collect deposits into operator-controlled vaults, fabricate legitimacy signals (audit claims, roadmap, token launch plans), then delete all surfaces and route funds through a mixer. The case is structurally similar to Yfdexf.Finance (September 2020, $20M) but distinguished by the Hyperliquid/EVM cross-chain surface, the explicit fake-audit-claim vector as the primary depositor-trust mechanism, and the Tornado Cash routing tail.
 
@@ -24,11 +26,12 @@ The case is one of the larger exit scams of 2025 and is the cleanest 2025 anchor
 
 | When | Event | OAK ref |
 |---|---|---|
-| Mid-2025 | Hypervault Finance launches on Hyperliquid as auto-compounding vault platform; claims Spearbit, Pashov, and Code4rena audits underway; ~$5.91M TVL accumulated across >1,100 depositors | T6.002 (fake-audit-claims as trust substrate) |
-| Pre-August 2025 | Community members contact named audit firms; Pashov denies knowledge; Code4rena shows no pending audit; HypingBull publicly flags project as "shady" | T6.002 (audit-firm denial — canonical detection signal) |
-| 2025-08 (approximate) | Team simultaneously deletes website, X account, Discord; ~$3.6M drained from vaults | **T5.001 execution** (Hard LP Drain) |
-| 2025-08 (post-exit) | Funds bridged Hyperliquid → Ethereum, swapped for ETH; ~752 ETH routed through Tornado Cash | T7.001 (Mixer-Routed Hop) |
-| 2025-08 onward | PeckShield publishes on-chain analysis; no operator attribution established | (attribution gap) |
+| Mid-2025 | Hypervault Finance launches on Hyperliquid as auto-compounding vault platform; claims Spearbit, Pashov, and Code4rena audits pending; TVL grows to ~\$5M | T6.002 (fake-audit-claims as trust substrate) |
+| 2025-09-04 | Community members contact named audit firms; Pashov denies knowledge; Code4rena shows no pending audit; HypingBull publicly flags project as "shady" | T6.002 (audit-firm denial — canonical detection signal) |
+| 2025-09-14 / 09-24 | Project announces a Zenith audit (09-14); Zenith privately delivers a draft with 42 vulnerabilities (09-24); TVL \$4.97M on 09-24, zero the next day | T6.002 |
+| 2025-09-25 / 09-26 | Staking contract set to an EOA and vaults emptied; website and X account deleted; \$3.6M (PeckShield) to \$4.64M (rekt) drained | **T5.001 execution** (Hard LP Drain) |
+| 2025-09-26 onward | Funds bridged Hyperliquid → Ethereum (deBridge), swapped for ETH; ~752 ETH (PeckShield) up to most of 1,126 ETH (rekt) routed through Tornado Cash | T7.001 (Mixer-Routed Hop) |
+| 2025-09-26 onward | PeckShield publishes on-chain analysis; no operator attribution established | (attribution gap) |
 
 ## What defenders observed
 
@@ -46,14 +49,14 @@ The case is one of the larger exit scams of 2025 and is the cleanest 2025 anchor
 
 ## Public references
 
-- `[coinspeakerhypervault2025]` — Coinspeaker, "Hypervault Vanishes With $3.6M — DeFi Rug Pull Exposed" (2025-08).
-- `[peckshieldhypervault2025]` — PeckShield, X thread on Hypervault drain and Tornado Cash routing (2025-08).
-- `[mexchypervault2025]` — MEXC, "Hypervault Finance Loses $3.6 Million in Suspected Rug Pull" (2025-08).
+- `[theblockhypervault2025]` — The Block, "DeFi protocol Hypervault vanishes after \$3.6 million suspected rugpull" (2025-09-26): <https://www.theblock.co/post/372497/defi-protocol-hypervault-vanishes-after-3-6-million-suspected-rugpull>
+- `[rekthypervault2025]` — rekt.news, "Hypervault - Rugged" (2025-09-30): <https://rekt.news/hypervault-rugged> (\$4.64M / 1,126.72 ETH via deBridge; Zenith audit timeline; HypingBull 09-04 warning; Pashov and Code4rena denials)
+- `[peckshieldhypervault2025]` — PeckShield outflow alert (\$3.6M, ~752 ETH to Tornado Cash) as reported in The Block above; the alert itself was not retrieved directly.
 
 ## Citations
 
-- `[coinspeakerhypervault2025]` — primary contemporaneous press; $3.6M figure, fake-audit-claim mechanism, Pashov/Code4rena denial, HypingBull pre-event warning, Tornado Cash routing.
-- `[peckshieldhypervault2025]` — on-chain analysis; bridge path Hyperliquid → Ethereum, 752 ETH Tornado Cash deposit.
+- `[theblockhypervault2025]` — \$3.6M PeckShield figure, bridge path Hyperliquid → Ethereum, ~752 ETH Tornado Cash deposit.
+- `[rekthypervault2025]` — \$4.64M trace, Zenith audit timeline, fake-audit-claim denials by Pashov and Code4rena, HypingBull pre-event warning.
 
 ## Discussion
 

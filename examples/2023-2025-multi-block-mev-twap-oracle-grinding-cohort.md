@@ -43,7 +43,6 @@ Aggregate mid-seven-figures USD across the cohort (2023–2025). Per-incident ex
 - beaconcha.in — beacon chain proposer-assignment data; fee-recipient attribution
 - Cross-reference: T17.005 at `techniques/T17.005-multi-block-mev-twap-oracle-manipulation.md`
 - Cross-reference: `examples/2021-2025-multi-block-mev-twap-cohort.md` — Multi-block MEV TWAP oracle manipulation cohort (2021–2025)
-- Cross-reference: `examples/2024-2025-jupiter-dca-solana-twap-oracle-manipulation.md` — Jupiter DCA TWAP oracle manipulation on Solana (2024–2025)
 - Cross-reference: `examples/2022-04-inverse-finance-twap.md` — Inverse Finance TWAP manipulation (~$15.6M; T17.004 + T17.005 adjacent)
 - `[daian2020flashboys]` — Daian et al. 2020, "Flash Boys 2.0" — foundational MEV characterisation
 - `[zhou2023sok]` — Zhou et al. 2023, academic taxonomy including TWAP-manipulation classification

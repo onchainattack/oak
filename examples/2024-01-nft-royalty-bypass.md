@@ -19,8 +19,10 @@ Through 2022-2024, NFT marketplace royalty enforcement transitioned from near-un
 
 ## Public references
 
-- `[openseaoperatorfilter2023]` — OpenSea operator-filter sunset announcement (August 2023).
-- `[blurroyalty2022]` — Blur royalty-optional model launch coverage.
+- `[theblockopensea2023]` — The Block, "OpenSea disables royalty enforcement tool, makes creator fees optional" (2023-08-17): <https://www.theblock.co/post/246095/opensea-disables-royalty-enforcement-tool-makes-creator-fees-optional>
+- `[cointelegraphopensea2023]` — Cointelegraph, "OpenSea to disable on-chain royalty enforcement tool" (2023-08-17): <https://cointelegraph.com/news/opensea-disable-on-chain-royalty-enforcement-tool>
+- `[forklogopensea2023]` — ForkLog, "OpenSea overhauls royalty model amid stand-off with Blur" (2023-02-17): <https://forklog.com/en/news/opensea-overhauls-royalty-model-amid-stand-off-with-blur>
+- `[fortuneblur2023]` — Fortune, "NFT marketplace Blur vs. OpenSea trading" (2023-02-26): <https://fortune.com/2023/02/26/nft-marketplace-blur-opensea-trading>
 
 ## Discussion
 

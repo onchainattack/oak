@@ -77,7 +77,6 @@ output_alert: [oak_technique, detection_path, severity, chain,
 test_fixtures:
   positive:
     - 2022-2025-fake-browser-extension-phishing-cohort                    # Fake MetaMask, Ledger Live, Rabby, Phantom extensions
-    - 2024-01-fake-metamask-extension-chrome-store                       # "MetaMask Labs" typosquat, 30K+ installs
     - 2023-2025-fake-revoke-cash-wallet-security-extension-phishing      # Counterfeit security-tool extensions
   negative:
     - "Legitimate MetaMask extension installed from the verified Chrome Web Store publisher — canonical extension, not T4.010"

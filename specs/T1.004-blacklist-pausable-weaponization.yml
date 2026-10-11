@@ -92,7 +92,7 @@ output_alert: [oak_technique, detection_path, severity, contract_address,
 
 test_fixtures:
   positive:
-    - 2024-Q4-honeypot-token-cohort-cross-chain          # GoPlus 67,241 mints + Snibbb + Feb-2024 9-honeypot operator
+    - 2024-02-honeypot-token-cohort-cross-chain   # sell-side blacklist / pause gating on honeypot tokens
   negative:
     - "USDC / USDT — pausable + freeze authority, vetted-issuer-allowlisted, must not flag"
     - "OZ Pausable applied to a multisig+timelock-gated emergency control with non-trivial delay"

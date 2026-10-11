@@ -25,7 +25,6 @@ Canonical incidents:
 
 - **2025-04 — ERC-4337 paymaster exploitation incident.** See `examples/2025-04-erc4337-paymaster.md`.
 - **2025-09 — EntryPoint v0.9 griefing-vector disclosure.** See `examples/2025-09-erc4337-entrypoint-v09-griefing-disclosure.md`.
-- **2026-04 — Mass bundler-DoS via paymaster griefing.** See `examples/2026-04-erc4337-paymaster-griefing-mass-bundler-dos.md`.
 
 Detection primitives: paymaster-fund-balance monitoring (drawdown rate exceeding expected sponsorship-throughput envelope); sponsored-UserOp gas-limit anomaly detection (spikes in `verificationGasLimit`/`callGasLimit`/`paymasterPostOpGasLimit`); bundler-reputation-score monitoring at major bundlers (Pimlico, Stackup, Alchemy, Biconomy).
 

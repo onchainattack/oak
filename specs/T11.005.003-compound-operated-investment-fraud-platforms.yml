@@ -150,7 +150,6 @@ test_fixtures:
   positive:
     - 2025-10-huione-compound-fraud-cohort                                      # Huione Group / Prince Group ($15B Bitcoin forfeiture, $225M USDT seizure)
     - 2024-01-kk-park-compound-takedown                                         # KK Park Myanmar/Thailand (~6,000–7,000 trafficked workers)
-    - 2025-01-huione-guarantee-fake-cex                                         # Huione Guarantee fake-CEX as compound-laundering infrastructure
   negative:
     - "Single-operator fake-platform fraud with no compound infrastructure, no trafficked-worker cohort, no multi-language victim clusters, and no multi-layer fraud stacking — per-platform T11.005.001, not T11.005.003"
     - "Legitimate Southeast Asian exchange with verifiable regulatory registration and no link to OFAC-designated entities or forced-labour compounds"

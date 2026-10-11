@@ -38,3 +38,6 @@ The T9.006.003 class is structurally generalisable: any prediction market whose 
 - Washington Post — independent corroboration of Fabian coercion case (March 17, 2026).
 - Haaretz — independent corroboration of Fabian coercion case (March 2026).
 - Journalist threat-model guidance — prediction-market exposure as an emerging journalist-safety concern (2026).
+- `[theblockfabian2026]` — The Block, "Polymarket bettors send death threats to reporter over missile report tied to \$14 million prediction market pool" (2026-03-16): <https://www.theblock.co/post/393790/polymarket-bettors-death-threats-reporter-missile-report-prediction-market>
+- `[wapofabian2026]` — The Washington Post, "War reporter says Polymarket bettors pressured him to change article" (2026-03-17): <https://www.washingtonpost.com/technology/2026/03/17/israel-journalist-polymarket-iran-strike/>
+- `[toipolymarket2026]` — The Times of Israel, "Polymarket betting site condemns threats against Times of Israel reporter" (2026-03): <https://www.timesofisrael.com/liveblog_entry/polymarket-betting-site-condemns-threats-against-times-of-israel-reporter/>

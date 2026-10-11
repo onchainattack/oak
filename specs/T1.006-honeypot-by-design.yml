@@ -96,7 +96,6 @@ output_alert: [oak_technique, detection_path, severity, contract_address,
 
 test_fixtures:
   positive:
-    - 2024-Q4-honeypot-token-cohort-cross-chain   # 67k mints + Snibbb + CertiK 9-honeypot + 979-EOA fan-out
   negative:
     - "Standard ERC-20 with symmetric fee paths and no sell-side revert"
     - "Uniswap-router-routable token where buy and sell both succeed across the matrix"

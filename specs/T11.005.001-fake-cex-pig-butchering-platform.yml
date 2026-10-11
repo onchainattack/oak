@@ -142,7 +142,6 @@ test_fixtures:
     - 2023-09-jpex-hong-kong                                                   # JPEX unlicensed-exchange fraud (~$200M, ~2,600+ victims)
     - 2024-2025-doj-sec-pig-butchering-enforcement-cohort                      # DOJ Operation Token Mirrors, SEC v. NanoBit ($5.8B U.S. 2024)
     - 2013-12-gbl-bitcoin-exchange-scam                                        # GBL Bitcoin Exchange Ponzi (~$5M, ~9,640 BTC)
-    - 2025-01-huione-guarantee-fake-cex                                        # Huione Guarantee fake-CEX ($1.2B+ aggregate)
     - 2014-10-moolah-alex-green-fraud                                          # Moolah / Alex Green exchange fraud (~$4M+)
   negative:
     - "Licensed exchange appearing in claimed jurisdiction's VASP registry with verifiable proof-of-reserves and >50% trading-outflow ratio to known exchange hot wallets"

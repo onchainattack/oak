@@ -1,6 +1,6 @@
 # Pepe Creator (Matt Furie) NFT contract hijack via fake-IT-worker social engineering — Ethereum — 2025-06-18 to 2025-06-25
 
-**Loss:** approximately **$1 million** in extracted NFT sale proceeds across five collections. **~$310,000** from ChainSaw-incubated projects Replicandy and Peplicator (contract ownership transferred June 18, 2025). **>$680,000** from Favrr (contract compromised June 25, 2025). Hedz and Zogz contracts also compromised in the same window on June 23. Floor prices across affected collections crashed to near-zero after the unauthorized mint-and-sell operation.
+**Loss:** approximately **$1 million** in extracted NFT sale proceeds across five collections. **>\$310,000** (ZachXBT estimate) from the ChainSaw-incubated projects: Replicandy first (June 18, 2025), then Peplicator, Hedz and Zogz (June 23); the single figure is not broken down per contract. **>\$680,000** from Favrr (June 25, 2025). Floor prices across affected collections crashed to near-zero after the unauthorized mint-and-sell operation.
 
 **OAK Techniques observed:** **OAK-T15.001** (Social Engineering of Operator Personnel — primary entry vector; the attacker posed as a legitimate IT worker/developer, passed a hiring process, and was granted smart-contract ownership or administrative access as part of the developer role) + **OAK-T9.004** (Access-Control Misconfiguration — the smart-contract ownership model allowed a single EOA to control mint functions without timelock or multisig; once the fake IT worker's EOA held ownership, the mint-and-sell extraction was unconstrained) + **OAK-T12.002** (Fake-Mint/Counterfeit Collection — adjacent; the attacker produced unauthorized NFTs under the genuine collection contract using the hijacked mint function, functionally equivalent to a counterfeit mint from the buyer's perspective: the buyer purchased an NFT that was economically unauthorized, produced by an attacker-controlled wallet using the genuine contract's mint function rather than a counterfeit contract) + **OAK-T12** broadly construed — the extraction surface was NFT-collection contract ownership hijack, a structural NFT-specific pattern that sits between T12.002 (the genuine contract produced unauthorized mints equivalent to counterfeits) and a proposed T12.x sub-technique for genuine-contract hijack with unauthorized mint + **OAK-T7.001** (Mixer-Routed Hop — partial; funds from ChainSaw projects moved through three intermediary wallets before reaching MEXC and Gate.io deposit addresses).
 
@@ -8,11 +8,13 @@
 
 **Key teaching point:** The Pepe NFT contract hijack is the canonical 2025 anchor for the **fake-IT-worker-as-NFT-contract-hijack-entry-vector** sub-pattern. The attacker did not exploit a smart-contract bug, compromise a private key, or phish a signing surface — they passed a hiring process, gained legitimate administrative access to NFT smart contracts as a "developer," then used the contract's own mint function to generate and sell NFTs. The structural lesson is that **NFT project teams that grant sole-EOA contract ownership to developers without timelock or multisig are T15.001-exposed by construction** — the hiring process is the access-control surface, and the contract's ownership model is the blast-radius amplifier.
 
+**Corrected 2026-10-11:** Reconciled the June 23 compromise to Peplicator, Hedz and Zogz (Replicandy alone on June 18) per CryptoSlate, stated the >\$310K ChainSaw figure as a combined ZachXBT estimate, and mapped the Citations section to defined references.
+
 ## Summary
 
 In June 2025, at least two North Korean IT workers (per ZachXBT's on-chain attribution) were hired as developers by NFT projects associated with Matt Furie, the creator of the Pepe the Frog character. The projects — Replicandy, Peplicator (both under the ChainSaw incubator), Hedz, Zogz, and Favrr — granted the "developers" smart-contract ownership or administrative access as part of their developer role.
 
-On June 18, 2025, the Replicandy contract's ownership was transferred to an attacker EOA. The attacker used the contract's mint function to generate new NFTs and immediately sold them into existing collection bids, extracting approximately $310,000 from Replicandy and Peplicator combined. On June 23, the same address (or a linked address) seized control of Hedz and Zogz contracts using the same method. On June 25, the Favrr contract was compromised, with over $680,000 extracted through unauthorized mint-and-sell operations.
+On June 18, 2025, the Replicandy contract's ownership was transferred to an attacker EOA. The attacker used the contract's mint function to generate new NFTs and immediately sold them into existing collection bids. On June 23, the Peplicator, Hedz and Zogz contracts were seized using the same method (per CryptoSlate). ZachXBT's estimate for the ChainSaw collections is more than \$310,000 combined. On June 25, the Favrr contract was compromised, with over $680,000 extracted through unauthorized mint-and-sell operations.
 
 The unauthorized mints crashed floor prices across all affected collections to near-zero. The funds from ChainSaw projects were routed through three intermediary wallets, with portions converted to stablecoins and sent to deposit addresses at MEXC and Gate.io. ZachXBT's investigation identified GitHub accounts linked to the attackers with Korean language settings, Astral VPN usage, and activity patterns consistent with the Asia/Russia timezone — the canonical DPRK IT-worker fingerprint.
 
@@ -23,8 +25,8 @@ The case is the first publicly-documented instance of the DPRK IT-worker infrast
 | When | Event | OAK ref |
 |---|---|---|
 | Pre-June 2025 | At least two DPRK IT workers hired as developers by Matt Furie-affiliated NFT projects (ChainSaw/Replicandy/Peplicator, Favrr); granted contract ownership or administrative access | T15.001 (social-engineering entry — fake-developer hiring) |
-| 2025-06-18 | Replicandy contract ownership transferred to attacker EOA; unauthorized mint-and-sell begins; ~$310K extracted from Replicandy + Peplicator | T9.004 (sole-EOA ownership model); T12 (NFT extraction surface) |
-| 2025-06-23 | Hedz and Zogz contracts compromised by same/linked attacker address | T9.004 (ownership seizure) |
+| 2025-06-18 | Replicandy contract ownership transferred to attacker EOA; unauthorized mint-and-sell begins | T9.004 (sole-EOA ownership model); T12 (NFT extraction surface) |
+| 2025-06-23 | Peplicator, Hedz and Zogz contracts compromised; ChainSaw total >\$310K (ZachXBT estimate) | T9.004 (ownership seizure) |
 | 2025-06-25 | Favrr contract compromised; >$680K extracted via unauthorized mint-and-sell; floor prices crash to near-zero | T12 (extraction peak) |
 | 2025-06-25 onward | ZachXBT publishes on-chain attribution thread linking the operation to DPRK IT workers; Matt Furie and ChainSaw delete community warning without explanation | T15.001 (attribution) |
 | 2025-06 onward | Funds routed through MEXC and Gate.io deposit addresses; most ChainSaw exploit funds remain unmoved at v0.1 cutoff | T7.001 (laundering tail) |
@@ -44,15 +46,17 @@ The case is the first publicly-documented instance of the DPRK IT-worker infrast
 
 ## Public references
 
-- `[zachxbtpepenft2025]` — ZachXBT, X thread on Pepe creator NFT contract hijack and DPRK IT-worker attribution (2025-06).
-- `[cryptoslatepepenft2025]` — CryptoSlate, "Pepe NFT Creator's Projects Drained of $1M in Contract Hijacking Heist" (2025-06).
-- `[benzingapepenft2025]` — Benzinga, "Pepe Creator Projects Hit by $1M Exploit Linked to North Korea IT Workers: ZachXBT" (2025-06).
-- `[coincupepenft2025]` — CoinCu, "Hackers Exploit Matt Furie's NFT Projects with Over $1 Million Loss" (2025-06).
+- `[cryptoslatepepenft2025]` — CryptoSlate, "Pepe meme creator's NFT projects hit for \$1 million as contract hijackers drain collections" (2025-06-27): <https://cryptoslate.com/pepe-meme-creators-nft-projects-hit-for-1-million-as-contract-hijackers-drain-collections/>
+- `[benzingapepenft2025]` — Benzinga, "Pepe Creator Projects Hit by \$1M Exploit Linked to North Korea IT Workers: ZachXBT" (2025-06-27): <https://www.benzinga.com/content/46147930/pepe-creator-projects-hit-by-1m-exploit-linked-to-north-korea-it-workers-zachxbt>
+- `[cryptonewspepenft2025]` — Cryptonews, "Pepe Creator Projects Hit by \$1M Exploit Linked to North Korea IT Workers: ZachXBT" (2025-06-27): <https://cryptonews.com/news/pepe-creator-matt-furie-1m-exploit-chainsaw-favrr/>
 
 ## Citations
 
-- `[zachxbtpepenft2025]` — primary on-chain attribution; MEXC deposit address, GitHub fingerprinting, DPRK IT-worker cluster identification, wallet routing analysis.
-- `[benzingapepenft2025]` — contemporaneous reporting; per-project loss breakdown (~$310K ChainSaw, >$680K Favrr), contract ownership transfer mechanism, "Alex Hong" deletion of LinkedIn.
+- `[cryptoslatepepenft2025]` — per-date project breakdown (06-18 Replicandy; 06-23 Peplicator, Hedz, Zogz; 06-25 Favrr), ZachXBT's >\$310K and Favrr's >\$680K figures.
+- `[benzingapepenft2025]` — contemporaneous reporting of ZachXBT's attribution (MEXC deposit address, GitHub fingerprinting, DPRK IT-worker cluster, wallet routing), the ownership-transfer mechanism, and "Alex Hong" deleting his LinkedIn.
+- `[cryptonewspepenft2025]` — second contemporaneous report of the same findings.
+
+ZachXBT's original post was not retrieved directly; his findings are cited through the reports above.
 
 ## Discussion
 
