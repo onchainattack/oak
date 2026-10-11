@@ -29,6 +29,7 @@ _Excluded from this section: 2 deprecated Technique(s) with zero referencing exa
 Tactics where the documented incident count for an active year falls below the target threshold (see `COVERAGE-TARGETS.md`).
 
 - **T1 × 2026** (Token Genesis) — 4 / target ≥5
+- **T4 × 2021** (Access Acquisition) — 3 / target ≥4
 - **T12 × 2026** (NFT-Specific) — 1 / target ≥2
 - **T13 × 2026** (Account Abstraction) — 2 / target ≥3
 

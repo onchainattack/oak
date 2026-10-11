@@ -2,7 +2,9 @@
 
 **Loss:** **~14,838 DAI (~\$14K).**
 
-**OAK Techniques observed:** **OAK-T9.016** (Contract Accounting / State-Invariant Flaw — *primary, edge-case accounting*. When the vault's liquidity was zero, **`_withdraw()`** paid the caller the contract's **entire token balance** instead of a pro-rata share. The attacker called **`reposition()`** to drive liquidity to zero, then redeemed a single minimal share unit. See [`techniques/T9.016-contract-accounting-state-invariant-flaw.md`](../techniques/T9.016-contract-accounting-state-invariant-flaw.md)). **OAK-T9.004** — `reposition()` was callable by the attacker. *(Re-mapped 2026-10-11 from OAK-T9.011; see [`techniques/T9.016-contract-accounting-state-invariant-flaw.md`](../techniques/T9.016-contract-accounting-state-invariant-flaw.md).)*
+**OAK Techniques observed:** **OAK-T9.016** (Contract Accounting / State-Invariant Flaw — *primary, edge-case accounting*. When the vault's liquidity was zero, **`_withdraw()`** paid the caller the contract's **entire token balance** instead of a pro-rata share. The attacker called **`reposition()`** to drive liquidity to zero, then redeemed a single minimal share unit. See [`techniques/T9.016-contract-accounting-state-invariant-flaw.md`](../techniques/T9.016-contract-accounting-state-invariant-flaw.md)). **OAK-T9.004** — `reposition()` was callable by the attacker.
+
+**Re-mapped 2026-10-11:** primary Technique moved from T9.011 to [`T9.016-contract-accounting-state-invariant-flaw`](../techniques/T9.016-contract-accounting-state-invariant-flaw.md).
 
 **Attribution:** **pseudonymous.**
 

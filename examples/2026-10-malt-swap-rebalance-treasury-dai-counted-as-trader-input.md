@@ -2,7 +2,9 @@
 
 **Loss:** **~\$72K.** The project says the flaw is fixed and affected users will be compensated.
 
-**OAK Techniques observed:** **OAK-T9.016** (Contract Accounting / State-Invariant Flaw — *primary*, per SlowMist. During a swap, rebalancing withdrew DAI from MALT's **Capital Source** and returned it to the pool; the swap's invariant check then read **post-hook balances** and treated that treasury DAI as caller-supplied input, so a small input bought out-sized MALT. See [`techniques/T9.016-contract-accounting-state-invariant-flaw.md`](../techniques/T9.016-contract-accounting-state-invariant-flaw.md)). *(Re-mapped 2026-10-11 from OAK-T9.004; see [`techniques/T9.016-contract-accounting-state-invariant-flaw.md`](../techniques/T9.016-contract-accounting-state-invariant-flaw.md).)*
+**OAK Techniques observed:** **OAK-T9.016** (Contract Accounting / State-Invariant Flaw — *primary*, per SlowMist. During a swap, rebalancing withdrew DAI from MALT's **Capital Source** and returned it to the pool; the swap's invariant check then read **post-hook balances** and treated that treasury DAI as caller-supplied input, so a small input bought out-sized MALT. See [`techniques/T9.016-contract-accounting-state-invariant-flaw.md`](../techniques/T9.016-contract-accounting-state-invariant-flaw.md)).
+
+**Re-mapped 2026-10-11:** primary Technique moved from T9.004 to [`T9.016-contract-accounting-state-invariant-flaw`](../techniques/T9.016-contract-accounting-state-invariant-flaw.md).
 
 **Attribution:** **pseudonymous.**
 

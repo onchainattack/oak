@@ -1,6 +1,8 @@
 # Volo Admin-Key Social-Engineering Compromise — Sui — 2026-04-21
 
-**OAK Techniques observed:** **OAK-T11.014**, OAK-T15.001, OAK-T9.004 *(Re-mapped 2026-10-11 from OAK-T11.001; see [`techniques/T11.014-operator-privileged-key-compromise.md`](../techniques/T11.014-operator-privileged-key-compromise.md).)*
+**OAK Techniques observed:** **OAK-T11.014**, OAK-T15.001, OAK-T9.004
+
+**Re-mapped 2026-10-11:** primary Technique moved from T11.001 to [`T11.014-operator-privileged-key-compromise`](../techniques/T11.014-operator-privileged-key-compromise.md).
 
 **Attribution:** **unattributed** (aggregate cohort).
 **Loss:** ~$3.5M drained across three vaults (WBTC, XAUm, USDC); ~$3.44M recovered via rapid ecosystem coordination (WBTC intercept on LayerZero bridge, XAUm return via Sui Foundation, 90% of stolen funds recovered in ETH and converted back to stablecoins); **net loss ~$60K**, covered from Volo's treasury with zero passed to users.

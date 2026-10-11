@@ -2,7 +2,9 @@
 
 **Loss:** **~\$35,486 USDC.e** — effectively the contract's balance.
 
-**OAK Techniques observed:** **OAK-T9.016** (Contract Accounting / State-Invariant Flaw — *primary*. DoinGud's Diamond bidding facet's **`acceptBid` paid out but never cleared the bid record**, so one bid could be accepted repeatedly. See [`techniques/T9.016-contract-accounting-state-invariant-flaw.md`](../techniques/T9.016-contract-accounting-state-invariant-flaw.md)). **OAK-T9.002** (Flash-Loan-Enabled Exploit — the attacker **flash-loaned USDC equal to the contract balance**, **bid on their own item**, and **accepted the bid twice**, collecting the second payout from other users' escrowed funds). **OAK-T9.008** does not apply: nothing indicates a facet was left out of audit scope. *(Re-mapped 2026-10-11 from OAK-T9.004; see [`techniques/T9.016-contract-accounting-state-invariant-flaw.md`](../techniques/T9.016-contract-accounting-state-invariant-flaw.md).)*
+**OAK Techniques observed:** **OAK-T9.016** (Contract Accounting / State-Invariant Flaw — *primary*. DoinGud's Diamond bidding facet's **`acceptBid` paid out but never cleared the bid record**, so one bid could be accepted repeatedly. See [`techniques/T9.016-contract-accounting-state-invariant-flaw.md`](../techniques/T9.016-contract-accounting-state-invariant-flaw.md)). **OAK-T9.002** (Flash-Loan-Enabled Exploit — the attacker **flash-loaned USDC equal to the contract balance**, **bid on their own item**, and **accepted the bid twice**, collecting the second payout from other users' escrowed funds). **OAK-T9.008** does not apply: nothing indicates a facet was left out of audit scope.
+
+**Re-mapped 2026-10-11:** primary Technique moved from T9.004 to [`T9.016-contract-accounting-state-invariant-flaw`](../techniques/T9.016-contract-accounting-state-invariant-flaw.md).
 
 **Attribution:** **pseudonymous.**
 
