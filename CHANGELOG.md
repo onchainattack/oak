@@ -30,7 +30,7 @@ The last 84 unsourced examples. Early-history entries were as unreliable as rece
 
 **OAK-T9.012 (Initial Liquidity Sandwich) now has no confirmed example** — its anchors were withdrawn and their mechanism as written is not possible. Marked "no public anchor"; retitle-or-deprecate decision pending.
 
-Unsourced examples: 253 (34%) at the start of the day → 1 (Pickle Finance 2020, not reached). Examples: 652.
+Unsourced examples: 253 (34%) at the start of the day → **0**; refs-hollow 5 → 0. Pickle Finance rewritten from SlowMist / Halborn / ForkLog (controller jar-swap input validation, not a strategy-pointer change); one more example quarantined (Optimism Goerli replay). `tools/check_sourcing.py --ci --max 0` is now part of `npm run check`: a new example without a citable source fails the build. Examples: 651.
 
 ### Removed — second source pass (2022–2023): 28 quarantined, ~40 corrected, 9 more duplicates merged (2026-10-11)
 

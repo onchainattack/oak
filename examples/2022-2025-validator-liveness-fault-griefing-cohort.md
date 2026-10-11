@@ -1,9 +1,11 @@
 # Validator liveness-fault griefing cohort — Ethereum L1 (primary), Solana, Cosmos — 2022–2025
 
-**Loss:** **Passive griefing (cloud-provider outages):** unquantified aggregate of inactivity-leak penalties and forfeited proposal/MEV rewards across affected validators during major cloud-provider outage events. A single Ethereum validator with a 32 ETH effective balance that is offline for 36 hours during an inactivity-leak period incurs an approximate penalty of 0.5–1 ETH-equivalent (varying with the duration of the non-finality period and the validator's effective balance); thousands of validators affected simultaneously during a cloud-provider outage multiply the aggregate. **Active griefing (DDoS/eclipse):** no publicly documented incident with a quantified loss figure as of v0.1; the surface is characterised in consensus research and Ethereum R&D forums.
+**Loss:** **Passive griefing (cloud-provider outages):** unquantified aggregate of forfeited rewards across validators taken offline by provider events; the Solana/Hetzner event (2022-11) is reported as lost rewards for delinquent stake, not slashing (`[theblockhetzner]`). No per-validator penalty figure is asserted here. **Active griefing (DDoS/eclipse):** no publicly documented incident with a quantified loss figure as of v0.1; the surface is characterised in consensus research and Ethereum R&D forums.
 **OAK Techniques observed:** **OAK-T14.006** (Validator/Proposer Liveness-Fault Griefing) — canonical anchor case. Distinct from **OAK-T14.001** (Slashing-Condition Exploit) at the *penalty-mechanism* level: T14.001 triggers a one-time slash of the validator's stake via a slashable offence (double-signing, surround-voting); T14.006 triggers a continuous inactivity-leak penalty that grows quadratically with offline duration without requiring a slashable offence. Distinct from **OAK-T14.005** (Builder Censorship MEV): T14.005 targets specific transactions for MEV profit; T14.006 targets the validator itself.
-**Attribution:** **unattributed** Cloud-provider outages (AWS, Hetzner, Google Cloud) are the attributed cause of the passive-griefing edge case — the "adversary" is the infrastructure-provider outage, not a malicious actor. **Active: no publicly attributed adversary as of v0.1.** Active DDoS-induced liveness-fault events are discussed in consensus research but lack a named-perpetrator public incident.
+**Attribution:** **unattributed** Provider events (the sourced example is Hetzner's 2022 block on Solana validators) are the attributed cause of the passive-griefing edge case — the "adversary" is the infrastructure-provider outage, not a malicious actor. **Active: no publicly attributed adversary as of v0.1.** Active DDoS-induced liveness-fault events are discussed in consensus research but lack a named-perpetrator public incident.
 **Key teaching point:** The liveness-fault surface is a **standing economic risk** for Proof-of-Stake validators that materialises when the validator's infrastructure fails — whether due to an active adversary (DDoS, network partition) or a passive infrastructure event (cloud-provider outage, data-centre power loss). The distinction between active and passive griefing is forensically meaningful but economically irrelevant to the validator: the inactivity-leak penalty is identical regardless of cause. Infrastructure diversity (multi-cloud, multi-region, multi-ISP) and validator-client failover architecture are the load-bearing mitigations.
+
+**Corrected 2026-10-11:** replaced unsourced Hetzner/AWS outage, Lido, SSV and per-validator penalty claims with the sourced Hetzner/Solana 2022 event; no sourced active-griefing incident exists.
 
 ## Summary
 
@@ -16,25 +18,25 @@ The griefing surface has four distinguishable sub-classes:
 3. **Correlation-penalty multiplier exploitation (active).** The adversary induces simultaneous downtime across multiple validators operated by the same entity, amplifying the penalty through Ethereum's correlation-penalty multiplier.
 4. **Operator-side infrastructure failure (passive).** Cloud-provider outages, data-centre power loss, or networking-fabric failures cause liveness faults without an active adversary.
 
-The passive-griefing edge case is the most extensively documented sub-class: major cloud-provider outages (Hetzner data-centre incidents, AWS regional failures) have caused mass liveness faults across the Ethereum validator set. A material fraction of Ethereum validators are hosted on Hetzner bare-metal servers; a single Hetzner data-centre outage can affect thousands of validators simultaneously.
+The passive-griefing edge case is the most extensively documented sub-class: the sourced instance is Hetzner's November 2022 block of Solana activity, which took over 1,000 Solana validators offline (`[theblockhetzner]`); in August 2022 Hetzner was reportedly considering a ban on crypto node operators, at which time it hosted about 12–16% of Ethereum nodes (`[theblockhetzner]`). Claims of Hetzner data-centre or AWS outages causing mass Ethereum liveness faults were in earlier drafts and have no source found here.
 
 ## Timeline (UTC)
 
 | When | Event | OAK ref |
 |---|---|---|
 | 2020–2022 | Ethereum Beacon Chain liveness-fault penalties (inactivity leak, correlation penalty) characterised in consensus research; validator-downtime griefing discussed in Ethereum R&D forums | T14.006 (consensus-layer surface) |
-| 2022–2025 | Multiple cloud-provider outage events (Hetzner data-centre incidents, AWS us-east-1 outages, Google Cloud regional failures) cause mass liveness faults across Ethereum validators; the passive-griefing edge case is the most extensively documented sub-class | T14.006 (passive griefing) |
-| 2022–2025 | Lido node-operator diversity program expands — deliberate diversification across cloud providers, geographies, and client implementations to mitigate the correlated-liveness-fault risk that would concentrate in a single-operator staking pool | (defender-side architectural response) |
-| 2025 | SSV Network / DVT operator-side correlated downtime incidents — multiple operators in a single validator's DVT cluster experience simultaneous downtime due to shared cloud-provider infrastructure or coordinated maintenance windows | T14.006 (DVT correlation surface) |
+| 2022-11 | Hetzner, whose terms prohibit crypto activity, blocks Solana activity on its servers; over 1,000 Solana validators go offline, delinquent stake reaching 22% per `[theblockhetzner]`. This was a provider policy action rather than an outage or an attack | T14.006 (passive, infrastructure-concentration) |
 | Continuing | Active DDoS-induced liveness-fault events remain rarer in the public record than passive infrastructure-failure events; the surface is characterised in consensus research but lacks a named-perpetrator public incident as of v0.1 | (ongoing surface) |
 
 ## Realised extraction
 
-**Passive griefing (cloud-provider outages):** unquantified aggregate of inactivity-leak penalties and forfeited proposal/MEV rewards across thousands of affected validators during major cloud-provider outage events. Per-validator penalty: a validator offline for 36 hours during an inactivity-leak period incurs an approximate penalty of 0.5–1 ETH-equivalent, scaling with the offline duration (quadratic penalty) and the validator's effective balance. **Active griefing (DDoS/eclipse):** no publicly documented incident with a quantified loss figure as of v0.1.
+**Passive griefing (cloud-provider outages):** unquantified aggregate of inactivity-leak penalties and forfeited proposal/MEV rewards across thousands of affected validators during major cloud-provider outage events. No per-validator penalty figure is asserted (earlier draft figure removed as unsourced). **Active griefing (DDoS/eclipse):** no publicly documented incident with a quantified loss figure as of v0.1.
 
 ## Public references
 
-See citations in corresponding technique file.
+- `[theblockhetzner]` — The Block, "1,000 Solana validators go offline as Hetzner blocks server access" (2022-11-02): <https://www.theblock.co/news/ecosystems/2022-11-02-1000-solana-validators-go-offline-as-hetzner-blocks-server-access-182283>
+- `[flashbotsliveness]` — Flashbots, "Understanding mev-boost liveness risks" (active-griefing and missed-slot surface): <https://writings.flashbots.net/understanding-mev-boost-liveness-risks>
+- `[flashbotspm2023]` — Flashbots, "Post mortem: April 3rd, 2023 mev-boost relay incident and related timing issue": <https://collective.flashbots.net/t/post-mortem-april-3rd-2023-mev-boost-relay-incident-and-related-timing-issue/1540>
 
 ## What this example tells contributors writing future Technique pages
 
@@ -47,7 +49,5 @@ See citations in corresponding technique file.
 - Ethereum Beacon Chain specification (ethereum/consensus-specs): inactivity-leak mechanism, correlation-penalty multiplier, offline-slashing parameters.
 - Beaconcha.in validator-participation-rate data and inactivity-leak tracking.
 - Rated Network validator-performance analytics (liveness-fault rate and infrastructure-concentration metrics).
-- SSV Network DVT documentation and operator-set liveness-fault post-mortems (2025).
-- Lido node-operator diversity program documentation and cloud-provider-outage incident post-mortems (2022–2025).
 - `[daian2019flashboys]` — foundational consensus-layer characterisation.
 - `[zhou2023sok]` — academic taxonomy covering consensus-layer liveness-fault surfaces.

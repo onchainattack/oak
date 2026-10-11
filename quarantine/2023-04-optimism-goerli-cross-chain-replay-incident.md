@@ -1,3 +1,5 @@
+> **QUARANTINED 2026-10-11 — not part of the OAK corpus.** A source-verification pass found no credible public record of this incident as described. Kept here so it can be restored if a source turns up. Do not cite it. See [`README.md`](README.md).
+
 # Optimism Goerli Testnet Governance Replay — Optimism — 2023-04
 
 **Loss:** limited direct financial extraction from this specific incident (the attacker replayed a benign governance transaction rather than a value-transfer message), but the incident demonstrated a live cross-chain replay surface between Optimism Goerli testnet and Optimism mainnet — a structurally generalisable vulnerability class. The incident's significance lies in its architectural implications rather than its dollar extraction figure.

@@ -182,3 +182,4 @@ The same check over the 84 unsourced examples dated 2010–2021. About 70 were c
 | `2011-07-bitcoinica-first-hack` | Impossible as dated: Bitcoinica launched 2011-09-08; the 43,000 BTC figure belongs to the March 2012 Linode loss. |
 | `2013-04-atlas-dns-bitcoin-hijack-phishing` | No record of an "Atlas DNS" hijack of blockchain.info or BTC Guild in April 2013 (the known blockchain.info DNS hijack was October 2016). |
 | `2015-01-localbitcoins` | No January 2015 LocalBitcoins help-desk incident; known events are a May 2014 server breach and a January 2019 forum phishing. |
+| `2023-04-optimism-goerli-cross-chain-replay-incident` | No record of an April 2023 Optimism Goerli transaction replayed on mainnet; OP Mainnet and Goerli used different chain IDs, contradicting the file's premise. |

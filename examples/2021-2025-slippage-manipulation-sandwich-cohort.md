@@ -1,9 +1,11 @@
 # Slippage-manipulation sandwich MEV cohort — EVM (primary), Solana — 2021–2025
 
-**Loss:** **Unquantified per-sandwich aggregate.** Individual sandwich extractions range from tens to hundreds of ETH-equivalent for large high-slippage swaps on Uniswap V2/V3 and PancakeSwap; the per-sandwich extraction scales with the victim's authorised slippage band — a 5% slippage tolerance on a $100K swap authorises up to $5K of value to be extracted by an attacker who pushes the pool price to the `amountOutMin` boundary. No single headline-grabbing loss figure anchors the class because the extraction is distributed across thousands of individual sandwiches rather than concentrated in a single incident. EigenPhi bundle-level data records the per-sandwich extraction amounts across the MEV ecosystem.
+**Loss:** **Unquantified per-sandwich aggregate.** The per-sandwich extraction scales with the victim's authorised slippage band — a 5% slippage tolerance on a $100K swap authorises up to $5K of value to be extracted by an attacker who pushes the pool price to the `amountOutMin` boundary. No single headline-grabbing loss figure anchors the class because the extraction is distributed across thousands of individual sandwiches rather than concentrated in a single incident. EigenPhi publishes bundle-level sandwich data (`[eigenphijared]`, `[cteigenphi2025]`); no per-sandwich range is asserted here.
 **OAK Techniques observed:** **OAK-T9.013** (Slippage-Manipulation Sandwich Attack) — canonical anchor case. Distinct from **OAK-T5.004** (Sandwich MEV Extraction) at the *profit-mechanism* level: T5.004 profits from the bid-ask spread of the sandwiched trade; T9.013 profits from the victim's slippage-tolerance parameter — the victim's `amountOutMin` is the attacker's profit boundary. The two Techniques co-occur in practice; the distinguishing signal for T9.013-specific extraction is whether the victim's output amount exactly equals the `amountOutMin` (boundary reached — T9.013) versus exceeding it marginally (standard spread-only sandwich — T5.004).
 **Attribution:** **pseudonymous** Known MEV bot addresses (jaredfromsubway.eth and equivalents on Ethereum mainnet) execute slippage-manipulation sandwiches; the bot addresses are on-chain attributable and the sandwich bundles are identifiable at the block-builder layer. The human operator behind the bot address is typically not identified.
 **Key teaching point:** The slippage-tolerance parameter — intended as a *protection* against adverse price movement — is the attacker's profit surface. The user who sets a wide slippage tolerance to ensure their trade executes under volatile conditions inadvertently authorises the MEV searcher to extract up to the full slippage band. The wallet-side default-slippage setting and the user-education surface ("your slippage tolerance of X% allows up to Y ETH in extraction") are the load-bearing mitigations for T9.013.
+
+**Corrected 2026-10-11:** removed an unsourced per-sandwich ETH range and unsourced Solana/wallet-warning timeline claims; bot activity dated from February 2023, not 2021.
 
 ## Summary
 
@@ -18,10 +20,9 @@ The pattern is operationally prevalent across Uniswap V2/V3 (Ethereum), PancakeS
 | When | Event | OAK ref |
 |---|---|---|
 | 2020–2021 | MEV sandwich literature characterises the slippage-parameter-as-attack-surface dimension; Uniswap V2 token-deployment wave creates the first operational slippage-manipulation sandwich surface | T9.013 (slippage-band surface) |
-| 2021–2025 | jaredfromsubway.eth and equivalent MEV bots execute slippage-manipulation sandwiches on Uniswap V2/V3 at scale; EigenPhi bundle-level data records per-sandwich extraction amounts | T9.013 + T5.004 (spread + band) |
+| 2023–2025 | jaredfromsubway.eth (first active February 2023 per `[eigenphijared]`) and equivalent MEV bots execute slippage-manipulation sandwiches on Uniswap V2/V3 at scale; EigenPhi bundle-level data records per-sandwich extraction amounts | T9.013 + T5.004 (spread + band) |
 | 2021–2025 | PancakeSwap high-slippage sandwiching on BSC; BSC's transparent mempool and short block times make high-slippage swaps economically attractive targets | T9.013 (BSC surface) |
-| 2023–2025 | Solana Jupiter DCA/limit-order slippage surface exploited; MEV searchers target wide-slippage Jupiter orders on Solana; the absence of a public mempool shifts observation to the leader-scheduling layer | T9.013 (Solana surface) |
-| 2024–2025 | Wallet-side slippage warnings begin to deploy (MetaMask, Rabby, Phantom); auto-slippage calculation based on pool depth is discussed but not yet standard | (defender-side maturation) |
+| 2023–2025 | Solana surface: asserted in earlier drafts of this file with no source found; treat as unverified | T9.013 (Solana surface, unverified) |
 | Continuing | Slippage-manipulation sandwiches remain an operational MEV extraction pattern across all major AMM chains; wallet-side default-slippage reduction is the highest-leverage per-user mitigation | (ongoing surface) |
 
 ## Realised extraction
@@ -30,7 +31,8 @@ The pattern is operationally prevalent across Uniswap V2/V3 (Ethereum), PancakeS
 
 ## Public references
 
-See citations in corresponding technique file.
+- `[eigenphijared]` — EigenPhi, "Performance Appraisal of Jaredfromsubway.eth": <https://eigenphi.substack.com/p/performance-appraisal-of-jaredfromsubway-eth>
+- `[cteigenphi2025]` — Cointelegraph Research, "Exclusive data from EigenPhi reveals that sandwich attacks on Ethereum have waned": <https://cointelegraph.com/research/exclusive-data-from-eigenphi-reveals-that-sandwich-attacks-on-ethereum-have-waned>
 
 ## What this example tells contributors writing future Technique pages
 

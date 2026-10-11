@@ -1,39 +1,35 @@
-# Pickle Finance Evil Jar exploit — Ethereum — 2020-11-21
+# Pickle Finance "Evil Jar" exploit — the controller swapped between any two "jars" the caller named, including fake ones — Ethereum — 2020-11-21
 
-**Loss:** approximately $20M drained from Pickle Finance's DAI PickleJar (pJar 0.99d). The attacker deployed a malicious "Evil Jar" strategy contract, swapped PickleJar funds into the malicious contract, and extracted the DAI.
-**OAK Techniques observed:** OAK-T9.004 (Access-Control Misconfiguration — primary; the attacker was able to swap PickleJar's strategy contract to an attacker-controlled "Evil Jar" without timelock or multi-sig governance delay, converting the strategy-contract-pointer authority into a full treasury-extraction surface). OAK-T5.001 (Hard LP / Treasury Drain — structurally co-occurring; the replaced strategy contract allowed direct extraction of the PickleJar's deposited DAI).
-**Attribution:** **unattributed** pseudonymous; the attacker has not been publicly identified. Partial funds were tracked through Tornado Cash. Pickle Finance recovered via a token-migration-based compensation plan (CORNICHON → DILL token migration).
-**Key teaching point:** A yield-aggregator strategy-contract pointer that can be swapped without timelock, multi-sig, or governance delay is a single-transaction treasury-extraction surface. The "Evil Jar" pattern — deploy a malicious strategy contract, swap the live vault's strategy pointer to the malicious contract, drain the vault — requires only the strategy-swap authority, not the vault's direct asset-transfer authority, making it a stealthier access-control misconfiguration than a direct upgrade-proxy compromise.
+**Loss:** **~\$19.76M** in DAI (held as Compound cDAI by the DAI pJar's strategy) `[forklogpickle2020]` `[halbornpickle2020]`. SlowMist dates the attack to 2020-11-22 (UTC+8 reporting); Pickle's own disclosure and ForkLog give 2020-11-21. The attacker did not use a flash loan `[forklogpickle2020]`. PICKLE fell about 57% `[forklogpickle2020]`.
+
+**OAK Techniques observed:** **OAK-T9.004** (Access-Control Misconfiguration — *primary*. `ControllerV4.swapExactJarForJar` accepted two arbitrary jar addresses from the caller and never checked that they were real Pickle jars `[slowmistpickle2020]` `[halbornpickle2020]`. The attacker deployed fake "evil jars", passed them to the swap, and — in a second call using a fake jar as both source and destination — had the controller execute attacker-controlled calls with its own authority over the DAI strategy, moving the funds out. See [`techniques/T9.004-access-control-misconfiguration.md`](../techniques/T9.004-access-control-misconfiguration.md)). **OAK-T5.001** (Hard LP / Treasury Drain — the extraction).
+
+**Corrected 2026-10-11:** the earlier text described an attacker "swapping the jar's strategy pointer to an Evil Jar without a timelock". The sources describe an unvalidated-input / arbitrary-call flaw in the controller's jar-swap function, not a strategy-pointer change by someone holding that authority. The Tornado Cash routing and the CORNICHON → DILL compensation narrative had no source and were removed.
+
+**Attribution:** **pseudonymous.** The attacker has not been publicly identified.
+
+**Key teaching point:** **A function that moves funds between "jars" must know what a jar is.** `swapExactJarForJar` trusted the caller to name legitimate jars; any contract that answered the jar interface could be named, and the controller then acted on its behalf. The control is an allowlist of jar addresses checked inside the function — the same shape as the Gondi, BonfireSwap and FlashLoopAdapter cases, where a periphery contract trusted caller-supplied counterparties.
 
 ## Summary
 
-Pickle Finance was an Ethereum yield-aggregation protocol that operated PickleJars (pJars) — vaults that deposited user funds into yield-generating DeFi strategies. Each pJar had a strategy-contract pointer that determined where vault funds were deployed. On 2020-11-21, an attacker deployed a malicious "Evil Jar" strategy contract and, exploiting the fact that strategy-contract swaps were not gated by timelock or multi-sig governance, swapped the DAI PickleJar's strategy pointer to the malicious contract. Once the strategy pointer was redirected, the malicious strategy contract was able to extract the full DAI balance of the pJar — approximately $20M.
-
-The attack surface was the strategy-contract-swap authority: the function that allowed the protocol operator to change the pJar's destination strategy contract was not protected by a timelock delay, multi-signature quorum, or governance vote. A single attacker with access to the operator's EOA — or, as in this case, the ability to call the swap function through available permissions — could redirect the entire vault's funds to an attacker-controlled contract in a single transaction. The access-control surface was structurally similar to the proxy-upgrade-compromise pattern (a single pointer mutation redirects all funds) but was stealthier because strategy-contract swaps were a normal operational function rather than an exceptional governance action, and monitoring for strategy-swap events was less common than monitoring for proxy-upgrade events at the time.
-
-Pickle Finance responded by migrating the protocol's token economy (CORNICHON → DILL token migration) and implementing a compensation plan for affected users. The migration preserved the protocol's operational continuity, and Pickle Finance continued operating post-incident.
+On 2020-11-21 an attacker exploited Pickle Finance's ControllerV4. Its `swapExactJarForJar` function took the addresses of a source and a destination jar as parameters without validating them. The attacker deployed fake jars and used the function to have the controller withdraw the DAI pJar's position (held as cDAI) and route it through attacker-controlled contracts, netting ~\$19.76M. Pickle disclosed the incident the same day.
 
 ## Timeline (UTC)
 
 | When | Event | OAK ref |
 |---|---|---|
-| 2020-11-21 | Attacker deploys malicious "Evil Jar" strategy contract | T9.004 (setup) |
-| 2020-11-21 (same transaction or close) | Attacker swaps DAI PickleJar (pJar 0.99d) strategy pointer to the malicious contract — no timelock, no multi-sig, no governance delay | T9.004 (access-control abuse — strategy-pointer mutation) |
-| 2020-11-21 (same window) | Malicious strategy contract extracts ~$20M in DAI from the PickleJar | T5.001 (extraction) |
-| 2020-11-21 (post-event) | Pickle Finance team identifies the exploit; publicly discloses | (operator response) |
-| 2020-11-21 onward | Partial funds tracked through Tornado Cash; no negotiated return | (post-event trace) |
-| 2020-Q4 to 2021-Q1 | Pickle Finance executes CORNICHON → DILL token migration with compensation framework for affected depositors | (recovery — token-migration-based compensation) |
+| 2020-11-21 | Attacker deploys fake "evil jar" contracts | (setup) |
+| 2020-11-21 | `swapExactJarForJar` called with the fake jars; controller withdraws the DAI pJar's cDAI position and executes attacker-controlled calls | **T9.004** |
+| 2020-11-21 | ~\$19.76M DAI leaves the protocol | **T5.001** |
+| 2020-11-21 / 22 | Pickle discloses; SlowMist publishes an analysis | (response) |
 
 ## Public references
 
-- Pickle Finance operator-side post-mortem, November 2020 — `[picklefinancepostmortem2020]`.
-- PeckShield on-chain trace — `[peckshieldpickle2020]`.
-- Rekt News public-facing summary — `[rektepickle2020]`.
-- Cross-reference: T9.004 (Access-Control Misconfiguration) at `techniques/T9.004-access-control-misconfiguration.md`.
-- Cross-reference: T5.001 (Hard LP / Treasury Drain) at `techniques/T5.001-hard-lp-treasury-drain.md`.
+- `[slowmistpickle2020]` — SlowMist, "Reveal the process of Pickle Finance being hacked": <https://slowmist.medium.com/slowmist-a981b3a2a3dc>
+- `[halbornpickle2020]` — Halborn, "Explained: The DeFi Protocol Pickle Finance Hack (Nov 2020)": <https://www.halborn.com/blog/post/explained-the-defi-protocol-pickle-finance-hack-nov-2020>
+- `[forklogpickle2020]` — ForkLog, "DeFi project Pickle Finance lost nearly \$20 million in hack": <https://forklog.com/en/defi-project-pickle-finance-lost-nearly-20-million-in-hack/>
+- `[decryptpickle2020]` — Decrypt, "Pickle Finance hack": <https://decrypt.co/49149/pickle-finance-hack>
 
 ## Discussion
 
-Pickle Finance is the canonical "Evil Jar" / strategy-pointer-compromise worked example and is structurally adjacent to the proxy-upgrade-compromise subclass of T9.004. The distinction between strategy-pointer mutation and proxy-upgrade mutation is architecturally significant for defender portfolios: a strategy-contract swap is a normal operational function in yield-aggregator architectures, making it harder to monitor than a proxy-upgrade event (which is typically an exceptional governance action with fewer legitimate invocations). The defender lesson is that any pointer that redirects significant treasury value (strategy contracts, price-oracle sources, keeper-authority lists) must be treated with the same access-control discipline as a proxy upgrade — timelock, multi-sig, and governance-delay gates.
-
-The $20M loss magnitude places Pickle Finance in the mid-to-large range of the Q4 2020 DeFi exploit cohort and makes it one of the three anchor cases for the access-control-misconfiguration class in 2020, alongside Origin Dollar (November 2020, stablecoin rebase misconfiguration) and Cover Protocol (December 2020, Blacksmith mint misconfiguration). The token-migration recovery pattern (CORNICHON → DILL) is a structurally interesting resolution shape that preserves protocol continuity while compensating affected users through a restructured token economy.
+Pickle is an early, large instance of the periphery-contract pattern OAK tracks as candidate T9.004.001: a contract with authority over user funds acts on counterparties the caller supplies. In 2020 the counterparty was a "jar"; in later cases it is a market (Exactly 2023), a bundle (Gondi 2026), a Safe (FlashLoopAdapter 2026) or a `from` address (BonfireSwap 2026). The fix is the same in each: derive what may be acted on from state the contract controls, not from parameters.
