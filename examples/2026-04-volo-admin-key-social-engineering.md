@@ -15,7 +15,7 @@
 
 | When | Event | OAK ref |
 |---|---|---|
-| 2026-04-21 | Attacker uses compromised admin key to drain three Volo vaults on Sui: WBTC, XAUm (tokenised gold), USDC — ~$3.5M total | T11.001 (key compromise), T9.004 (single admin key, no multisig/timelock) |
+| 2026-04-21 | Attacker uses compromised admin key to drain three Volo vaults on Sui: WBTC, XAUm (tokenised gold), USDC — ~$3.5M total | T11.014 (key compromise), T9.004 (single admin key, no multisig/timelock) |
 | 2026-04-21 (within hours) | Volo self-discloses the breach on X before any security researcher or alert bot flags it; freezes remaining vaults; notifies Sui Foundation | (incident response) |
 | 2026-04-21 (within 30 min of disclosure) | $500K in stolen assets frozen through ecosystem partner coordination | (recovery phase 1) |
 | 2026-04-21 (within hours) | Attacker moves ~$1.55M USDC off Sui to Ethereum via Circle CCTP; 19.6 WBTC (~$2.1M) intercepted on LayerZero bridge — blocked and no longer under attacker control | (exit attempt + intercept) |
@@ -39,6 +39,6 @@
 
 ## Discussion
 
-Volo is the 2026 canonical case for **admin-key social-engineering compromise on a non-EVM chain** (Sui). The protocol had undergone three audits and maintained a bug bounty program for over two years — none of which mattered because the security model reduced to a single admin key, and that key was obtained via social engineering of a team member. The incident reinforces the T11.001 / T9.004 intersection: a third-party-signing-vendor-like compromise (T11.001) where the "vendor" is the team member whose key was targeted, and an access-control misconfiguration (T9.004) where the absence of multisig or timelock made a single key the entire security model.
+Volo is the 2026 canonical case for **admin-key social-engineering compromise on a non-EVM chain** (Sui). The protocol had undergone three audits and maintained a bug bounty program for over two years — none of which mattered because the security model reduced to a single admin key, and that key was obtained via social engineering of a team member. The incident is filed as T11.014: an operator's admin key, obtained by social engineering of a team member (T15.001), was used as designed. T9.004 is the secondary mapping, where the absence of multisig or timelock made a single key the entire security model.
 
 Volo's incident response — self-disclosure before detection, ecosystem coordination within hours, 98% recovery — is the benchmark for the admin-key-compromise class. The contrast with incidents where operators go silent or delay disclosure (see Zondacrypto 2026-04, Drift 2026-04) is instructive.

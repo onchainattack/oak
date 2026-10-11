@@ -1,11 +1,11 @@
 # DMM Bitcoin exchange hack — Bitcoin — 2024-05-31
 
-**Corrected 2026-10-11:** formal attribution added (FBI + DC3 + Japan NPA named TraderTraitor, a Lazarus subgroup, on 2024-12-24) replacing "suspected / no formal attribution"; analytics credit corrected from Chainalysis to ZachXBT and Elliptic; entry path (Ginco recruiter lure) added.
+**Corrected 2026-10-11:** formal attribution added (FBI + DC3 + Japan NPA named TraderTraitor, a Lazarus subgroup, on 2024-12-23 (US time; 12-24 in Japan)) replacing "suspected / no formal attribution"; analytics credit corrected from Chainalysis to ZachXBT and Elliptic; entry path (Ginco recruiter lure) added.
 
 **Loss:** approximately \$305M (4,502.9 BTC) from Japanese exchange DMM Bitcoin — the second-largest exchange theft of 2024 by dollar value at the time (behind only the WazirX July 2024 incident, and subsequently behind the Bybit February 2025 \$1.46B event). Single-block Bitcoin extraction from DMM Bitcoin's hot wallet.
 **OAK Techniques observed:** **OAK-T11.001** (Third-Party Signing-Vendor UI / Signing-Flow Compromise — broadly construed; the exchange's hot-wallet signing infrastructure was compromised, enabling the single-transaction 4,502.9 BTC drain). **OAK-T7.001** (Mixer-Routed Laundering — the extracted Bitcoin was subsequently routed through laundering infrastructure, with blockchain analytics firms tracing flow patterns characteristic of organised laundering operations).
-**OAK-Gnn:** [OAK-G01 Lazarus Group / DPRK-attributed](../actors/OAK-G01-lazarus.md) (formally attributed by the FBI, DC3 and Japan's NPA on 2024-12-24 to TraderTraitor, a DPRK/Lazarus-linked subgroup).
-**Attribution:** **confirmed** On-chain analysts (ZachXBT, Elliptic) linked the extraction and laundering to Lazarus-pattern activity in mid-2024, and on 2024-12-24 the FBI, DoD Cyber Crime Center (DC3) and Japan's National Police Agency jointly attributed the theft (about \$308M) to TraderTraitor, a Lazarus subgroup. Per the FBI, the intrusion began in late March 2024 when a purported LinkedIn recruiter approached a Ginco employee with a malicious GitHub-hosted pre-employment test; in late May the actors used that access to manipulate a legitimate DMM transaction request.
+**OAK-Gnn:** [OAK-G01 Lazarus Group / DPRK-attributed](../actors/OAK-G01-lazarus.md) (formally attributed by the FBI, DC3 and Japan's NPA on 2024-12-23 (US time; 12-24 in Japan) to TraderTraitor, a DPRK/Lazarus-linked subgroup).
+**Attribution:** **confirmed** On-chain analysts (ZachXBT, Elliptic) linked the extraction and laundering to Lazarus-pattern activity in mid-2024, and on 2024-12-23 (US time; 12-24 in Japan) the FBI, DoD Cyber Crime Center (DC3) and Japan's National Police Agency jointly attributed the theft (about \$308M) to TraderTraitor, a Lazarus subgroup. Per the FBI, the intrusion began in late March 2024 when a purported LinkedIn recruiter approached a Ginco employee with a malicious GitHub-hosted pre-employment test; in late May the actors used that access to manipulate a legitimate DMM transaction request.
 **Key teaching point:** **DMM Bitcoin is the canonical 2024 Japanese-exchange "Ginco-wallet-as-signing-vendor" case: DMM Bitcoin used the Ginco wallet platform for custody operations, and the compromise surface was the wallet vendor's infrastructure rather than DMM Bitcoin's own internal systems — making this a structural Japanese precursor to the Safe{Wallet} / Bybit 2025 T11.001 UI-substitution pattern, in which the signing-vendor (not the exchange) was the proximate compromise surface.** The DMM Bitcoin parent company committed to reimbursing users, raising approximately \$320M (55 billion yen) through a capital increase to cover the loss — a model consistent with the Japanese "parent-company-as-backstop" remediation pattern established by Fisco (Zaif) and Remixpoint (Bitpoint).
 
 ## Summary
@@ -16,7 +16,7 @@ The structural significance of the DMM Bitcoin case is the signing-vendor surfac
 
 DMM Group, the publicly listed parent company, disclosed the loss and committed to reimbursing all affected users. DMM Bitcoin raised approximately 55 billion yen (~\$320M) through a capital increase to cover the loss and maintain exchange solvency. The Japan FSA conducted an investigation and issued administrative guidance. DMM Bitcoin subsequently announced it would cease operations and transfer customer accounts to SBI VC Trade by early 2025, effectively winding down the exchange brand.
 
-Blockchain analysts (ZachXBT, Elliptic) traced the extracted Bitcoin through laundering infrastructure consistent with OAK-G01 tradecraft, and the FBI, DC3 and Japan's NPA formally attributed the theft to TraderTraitor on 2024-12-24.
+Blockchain analysts (ZachXBT, Elliptic) traced the extracted Bitcoin through laundering infrastructure consistent with OAK-G01 tradecraft, and the FBI, DC3 and Japan's NPA formally attributed the theft to TraderTraitor on 2024-12-23 (US time; 12-24 in Japan).
 
 ## Timeline (UTC)
 
@@ -27,12 +27,12 @@ Blockchain analysts (ZachXBT, Elliptic) traced the extracted Bitcoin through lau
 | 2024-05-31 T+hours | DMM Bitcoin discloses breach; DMM Group commits to full user reimbursement | (defender / parent-company response) |
 | 2024-06 | DMM Group raises ~55B yen (~$320M) via capital increase to cover loss; FSA investigation begins | (financial remediation + regulatory response) |
 | 2024-06 to 2024-12 | Extracted BTC routed through laundering infrastructure; analysts (ZachXBT, Elliptic) link flows to Lazarus-pattern laundering | T7.001 (laundering tracking) |
-| 2024-12-24 | FBI, DC3 and Japan NPA formally attribute the theft to TraderTraitor (Lazarus subgroup) | (formal government attribution) |
+| 2024-12-23 (US) / 12-24 (Japan) | FBI, DC3 and Japan NPA formally attribute the theft to TraderTraitor (Lazarus subgroup) | (formal government attribution) |
 | 2024-12 | DMM Bitcoin announces wind-down; customer accounts to be transferred to SBI VC Trade by early 2025 | (structural remediation — exchange wind-down) |
 
 ## Realised extraction
 
-4,502.9 BTC (~\$305M at extraction date; ~\$435M at 2024-12 BTC prices). OAK-G01 attribution formally confirmed by FBI / DC3 / NPA (TraderTraitor) on 2024-12-24. DMM Group covered the loss via capital increase; users reimbursed.
+4,502.9 BTC (~\$305M at extraction date; ~\$435M at 2024-12 BTC prices). OAK-G01 attribution formally confirmed by FBI / DC3 / NPA (TraderTraitor) on 2024-12-23 (US time; 12-24 in Japan). DMM Group covered the loss via capital increase; users reimbursed.
 
 ## Signing-vendor surface: Ginco / DMM Bitcoin as Bybit precursor
 

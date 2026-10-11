@@ -26,9 +26,9 @@ In **February 2024** an attacker used it. They initiated a **Uniswap V3 swap of 
 
 | When | Event | OAK ref |
 |---|---|---|
-| (standing) | `_update` checks `from`/`to` against the zero address but **not against each other**; recipient balance written from a **cached pre-debit value** | (latent T9.004 defect) |
+| (standing) | `_update` checks `from`/`to` against the zero address but **not against each other**; recipient balance written from a **cached pre-debit value** | (latent T9.016 defect) |
 | T+0 | Attacker initiates a **Uniswap V3 swap**, ~1,000 MINER for WETH | (control-flow entry) |
-| inside the swap callback | **Repeated self-transfers** inflate the attacker's MINER balance | **T9.004 exploitation via T9.005 window** |
+| inside the swap callback | **Repeated self-transfers** inflate the attacker's MINER balance | **T9.016 exploitation via T9.005 window** |
 | same transaction | Swap settles against the inflated balance; **entire WETH side of the pool taken — 168.8 ETH (~\$460–470K)** | (extraction) |
 | after | MINER trades down approximately **88%** | (market impact) |
 

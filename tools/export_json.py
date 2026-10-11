@@ -49,6 +49,10 @@ Output schema (v2):
             "evidence": "..."}],
          "source_file": "..."}
       ],
+      "withdrawn_examples": [
+        {"id": "<slug>", "status": "quarantined", "withdrawn": "YYYY-MM-DD",
+         "title": "...", "reason": "...", "record": "CORRECTIONS.md#correction-log"}
+      ],
       "relationships": [
         {"type": "mitigates",       "source": "OAK-MNN",  "target": "OAK-Tn.NNN"},
         {"type": "uses",            "source": "OAK-SNN",  "target": "OAK-Tn.NNN"},
@@ -412,6 +416,38 @@ def parse_root_cause_evidence(text: str) -> list[dict]:
     ]
 
 
+def withdrawn_examples(root: Path) -> list[dict]:
+    """Example IDs that were removed from the corpus, with the reason.
+
+    An agent that remembers or is handed an old example ID should learn it was
+    withdrawn and why, not find nothing. Source: files in quarantine/ plus the
+    per-file finding recorded in CORRECTIONS.md's correction log.
+    """
+    qdir = root / "quarantine"
+    if not qdir.is_dir():
+        return []
+    findings: dict[str, str] = {}
+    corr = root / "CORRECTIONS.md"
+    if corr.is_file():
+        for m in re.finditer(r"^\| `([^`]+)` \| (.+?) \|\s*$", corr.read_text(encoding="utf-8"), re.M):
+            findings[m.group(1)] = m.group(2).replace("\\$", "$").strip()
+    out = []
+    for f in sorted(qdir.glob("*.md")):
+        if f.name == "README.md":
+            continue
+        text = f.read_text(encoding="utf-8")
+        mh = re.search(r"^#\s+(.+?)\s*$", text, re.M)
+        out.append({
+            "id": f.stem,
+            "status": "quarantined",
+            "withdrawn": "2026-10-11",
+            "title": mh.group(1).strip() if mh else "",
+            "reason": findings.get(f.stem, "no credible public record found in the 2026-10-11 source pass"),
+            "record": "CORRECTIONS.md#correction-log",
+        })
+    return out
+
+
 def parse_example(path: Path) -> Example:
     """Parse a worked example into its export shape.
 
@@ -638,6 +674,7 @@ def main(argv: list[str]) -> int:
         "groups": [g.__dict__ for g in groups],
         "data_sources": [d.__dict__ for d in data_sources],
         "examples": [e.__dict__ for e in examples],
+        "withdrawn_examples": withdrawn_examples(root),
         "relationships": relationships,
     }
 

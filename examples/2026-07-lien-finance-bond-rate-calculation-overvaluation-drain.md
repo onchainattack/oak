@@ -22,9 +22,9 @@ No external oracle or price feed was involved: the mispricing arose entirely wit
 
 | When | Event | OAK ref |
 |---|---|---|
-| (standing) | `_calcRateBondToErc20` computes bond redemption value internally, with no enforced invariant bounding payout by recorded collateral | (standing T9.004 surface) |
-| 2026-07-24 | Attacker constructs bonds whose parameters the rate function overvalues relative to their collateral backing | **T9.004 setup** |
-| 2026-07-24 | Redemption honoured at the inflated valuation; \$542,144 USDC paid out | **T9.004 exploitation** |
+| (standing) | `_calcRateBondToErc20` computes bond redemption value internally, with no enforced invariant bounding payout by recorded collateral | (standing T9.016 surface) |
+| 2026-07-24 | Attacker constructs bonds whose parameters the rate function overvalues relative to their collateral backing | **T9.016 setup** |
+| 2026-07-24 | Redemption honoured at the inflated valuation; \$542,144 USDC paid out | **T9.016 exploitation** |
 
 ## What defenders observed
 

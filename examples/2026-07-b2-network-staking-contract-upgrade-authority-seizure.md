@@ -26,9 +26,9 @@ The incident fell inside a roughly six-hour window on 2026-07-22/23 that also co
 
 | When | Event | OAK ref |
 |---|---|---|
-| (standing) | B2 token staking contract is upgradeable; upgrade authority is a single administrative control with no publicly-described timelock or threshold | (standing T9.004 / T6.005 surface) |
-| (undisclosed, prior) | Upgrade authority comes under attacker control; method not publicly disclosed | **T9.004 pre-positioning** |
-| 2026-07-23 | Attacker uses the upgrade authority to alter the staking contract's logic and extracts 8.59M B2 (~\$3.86M) | **T9.004 / T6.005 exploitation** |
+| (standing) | B2 token staking contract is upgradeable; upgrade authority is a single administrative control with no publicly-described timelock or threshold | (standing single-authority upgrade surface; T6.005) |
+| (undisclosed, prior) | Upgrade authority comes under attacker control; method not publicly disclosed | **T11.014 pre-positioning** |
+| 2026-07-23 | Attacker uses the upgrade authority to alter the staking contract's logic and extracts 8.59M B2 (~\$3.86M) | **T11.014 / T6.005 exploitation** |
 | 2026-07-23 | Full position sold for 5,409 BNB (~\$3.01M) | **T7.007** |
 | 2026-07-23 | Proceeds bridged to Ethereum, swapped to ETH and USDT, deposited into NEAR Intents and HOT Protocol | **T7.003 / T7.007** |
 | 2026-07-23 | B² Network discloses publicly, suspends B2 staking, states the issue is contained and all affected users will be fully compensated; offers legal immunity for return of ≥10% within 24 hours | (operator response) |

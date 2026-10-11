@@ -38,9 +38,9 @@ Resolv Labs acknowledged the exploit and paused protocol operations. The recover
 
 | When | Event | OAK ref |
 |---|---|---|
-| pre-2026-03 | Resolv Labs USR token deployed; mint function lacks oracle check and mint-cap limit; privileged mint-authority key held by protocol operators | T9.004 + T11 (standing vulnerability) |
-| 2026-03-22 | Attacker compromises mint-authority private key; calls mint function; creates ~80M USR tokens | T9.004 + T11 |
-| 2026-03-22 | Attacker dumps minted USR on DEX pools; extracts ~$25M in USDC, DAI, ETH; USR price collapses from ~$1.00 to near-zero | T9.004 (unlimited-mint price collapse) |
+| pre-2026-03 | Resolv Labs USR token deployed; mint function lacks oracle check and mint-cap limit; privileged mint-authority key held by protocol operators | T11.014 (standing vulnerability: single mint key, no blast-radius limiters) |
+| 2026-03-22 | Attacker compromises mint-authority private key; calls mint function; creates ~80M USR tokens | T11.014 |
+| 2026-03-22 | Attacker dumps minted USR on DEX pools; extracts ~$25M in USDC, DAI, ETH; USR price collapses from ~$1.00 to near-zero | T11.014 (unlimited-mint price collapse) |
 | 2026-03-22 | Resolv Labs detects exploit; pauses protocol operations; announces recovery plan | (incident response) |
 | 2026-03 onward | Investigation into key-compromise vector ongoing; protocol considers reissuance with added oracle-check and mint-cap safety mechanisms | (remediation) |
 
@@ -49,17 +49,17 @@ Resolv Labs acknowledged the exploit and paused protocol operations. The recover
 - Resolv Labs official incident announcement and post-mortem (March 2026)
 - On-chain forensic analysis of the mint transaction and DEX dump pattern
 - USR/USDC and USR/DAI pool analytics showing price collapse and extraction volume
-- See `techniques/T9.004-access-control-misconfiguration.md` and `techniques/T11` custody techniques for Technique definitions
+- See `techniques/T11.014-operator-privileged-key-compromise.md` and the other `techniques/T11` custody techniques for Technique definitions
 - `[resolvlabsx2026]` — Resolv Labs, incident notice on X (2026-03-22): <https://x.com/ResolvLabs/status/2035830314799599616>
 - `[sentoraresolv2026]` — Sentora Research, "The Resolv Hack: \$25M From a Single Compromised Key" (2026-03-27): <https://sentora.com/research/articles/the-resolv-hack-25m-from-a-single-compromised-key>
 - `[gizmodoresolv2026]` — Gizmodo, "Attacker Exploits Crypto Stablecoin for a \$25 Million Payday" (2026-03): <https://gizmodo.com/attacker-exploits-crypto-stablecoin-for-a-25-million-payday-2000736927>
 
 ## Discussion
 
-The Resolv Labs exploit is the canonical "single-key compromise with no blast-radius limiters" case in the T9.004/T11 intersection. The attack is structurally simple — gain a key, call a function, dump on DEX — but the design-level failure (no oracle check, no mint cap) amplified the key compromise from a contained incident (the attacker mints a limited amount based on collateral verification) to an unlimited-extraction event.
+The Resolv Labs exploit is the canonical "single-key compromise with no blast-radius limiters" case, filed under T11.014. The attack is structurally simple — gain a key, call a function, dump on DEX — but the design-level failure (no oracle check, no mint cap) amplified the key compromise from a contained incident (the attacker mints a limited amount based on collateral verification) to an unlimited-extraction event.
 
 The dual-absence pattern (no oracle check AND no mint cap) is instructive for defender risk assessment: each missing mechanism is independently a vulnerability, but their combination is multiplicative. A mint function with an oracle check but no cap would limit the attacker to minting against deposited collateral — the attacker could still extract value but only up to the collateral amount. A mint function with a cap but no oracle check would limit the attacker to the cap — the extraction is bounded even without collateral verification. A mint function with neither is unbounded extraction — the attacker mints everything the DEX will buy.
 
-The operator-key management failure (T11) is the load-bearing root cause: the attacker gained access to a privileged key. The protocol's T11 surface (how the mint-authority key was stored, who had access, whether it was in a multisig or a single-key wallet, whether it was online/hot or offline/cold) determines the likelihood of key compromise. The T9.004 surface (whether the mint function had secondary safety mechanisms) determines the blast radius once a compromise occurs. The combined T11 + T9.004 surface is the defender's risk equation: `expected_loss = P(key_compromise) × extraction_volume_per_compromise`. Reducing P(key_compromise) is a T11 mitigation (multisig, cold storage, access controls); reducing extraction_volume_per_compromise is a T9.004 mitigation (oracle checks, mint caps, timelocks).
+The operator-key management failure (T11) is the load-bearing root cause: the attacker gained access to a privileged key. The protocol's T11 surface (how the mint-authority key was stored, who had access, whether it was in a multisig or a single-key wallet, whether it was online/hot or offline/cold) determines the likelihood of key compromise. The mint-safeguard surface (whether the mint function had secondary safety mechanisms) determines the blast radius once a compromise occurs. The combined key-custody + mint-safeguard surface is the defender's risk equation: `expected_loss = P(key_compromise) × extraction_volume_per_compromise`. Reducing P(key_compromise) is a T11 mitigation (multisig, cold storage, access controls); reducing extraction_volume_per_compromise is a blast-radius mitigation (oracle checks, mint caps, timelocks).
 
-The Resolv Labs incident anchors both the T9 × 2026 and T11 × 2026 matrix cells (contributing to the P1 backfill targets for those tactics) and provides the canonical 2026 worked example of the unlimited-mint-from-compromised-key pattern that has recurred throughout DeFi history (EasyFi 2021, Ankr aBNBc 2022, and now Resolv 2026).
+The Resolv Labs incident anchors the T11 × 2026 matrix cell (contributing to the P1 backfill target for that tactic) and provides the canonical 2026 worked example of the unlimited-mint-from-compromised-key pattern that has recurred throughout DeFi history (EasyFi 2021, Ankr aBNBc 2022, and now Resolv 2026).

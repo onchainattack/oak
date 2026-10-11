@@ -22,9 +22,9 @@ On **2026-09-05**, an attacker used that combination to withdraw approximately *
 
 | When | Event | OAK ref |
 |---|---|---|
-| (standing) | Award creation **records a reward without locking collateral**; payouts drawn from a **shared proxy balance** | (latent T9.004 defect — unfunded obligation) |
-| (standing) | Participation path **does not require an award to be unclaimed**; claimed state is **resettable** | (latent T9.004 defect — non-monotonic claim state) |
-| 2026-09-05 | Attacker creates and repeatedly re-claims award(s), draining **~\$71.8K** from the pooled balance | **T9.004 exploitation** |
+| (standing) | Award creation **records a reward without locking collateral**; payouts drawn from a **shared proxy balance** | (latent T9.016 defect — unfunded obligation) |
+| (standing) | Participation path **does not require an award to be unclaimed**; claimed state is **resettable** | (latent T9.016 defect — non-monotonic claim state) |
+| 2026-09-05 | Attacker creates and repeatedly re-claims award(s), draining **~\$71.8K** from the pooled balance | **T9.016 exploitation** |
 | after | **SlowMist** reports the incident and the defective functions; no project post-mortem published | (external forensics only) |
 
 ## What defenders observed
@@ -41,7 +41,7 @@ On **2026-09-05**, an attacker used that combination to withdraw approximately *
 
 ## Discussion
 
-At \$71.8K this is one of the smallest entries in the 2026 corpus, and it is here for the shape rather than the sum. OAK's T9.004 anchors cluster at two extremes: **genuine permission defects** (a function missing an `onlyOwner`, a role granted to the wrong address) and **valuation-predicate defects** (Lien Finance's bond-rate calculation mispricing attacker-crafted inputs). This case sits in a third place — **a state machine that permits an illegal transition** — and it is the most common defect class in the long tail of small protocols, where the contract is not a fork of anything audited and the business logic was written once, by one person, against a product spec.
+At \$71.8K this is one of the smallest entries in the 2026 corpus, and it is here for the shape rather than the sum. OAK's smart-contract-logic anchors cluster at two extremes: **genuine permission defects** (T9.004 — a function missing an `onlyOwner`, a role granted to the wrong address) and **valuation-predicate defects** (T9.016; Lien Finance's bond-rate calculation mispricing attacker-crafted inputs). This case is also T9.016 but sits in a third place within it — **a state machine that permits an illegal transition** — and it is the most common defect class in the long tail of small protocols, where the contract is not a fork of anything audited and the business logic was written once, by one person, against a product spec.
 
 The composition is the transferable part. Neither defect here would headline an audit report. An auditor noting "awards are paid from a shared balance" and an auditor noting "claimed status can be reset" are both making medium-severity observations in isolation, and the combination is critical. **Severity is not additive across findings that touch the same balance**, and review processes that score findings independently will systematically under-rate cases like this one.
 

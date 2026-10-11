@@ -27,8 +27,8 @@ This was the **second major breach in 18 months**. On **2025-02-28**, attackers 
 | When | Event | OAK ref |
 |---|---|---|
 | 2025-02-28 | Prior breach: 8.65M WEMIX (~\$6.1–6.2M) drained from the Play Bridge Vault via Nile monitoring keys exposed in a shared repository; disclosed 2025-03-04, contributing to a June 2025 domestic delisting | (prior incident, different vector — see the 2025-02 example) |
-| (undisclosed, prior) | Administrator privileges over the WEMIX\$ stablecoin contract come under attacker control; method not publicly disclosed | **T9.004 pre-positioning** |
-| 2026-07-26 09:17 | Attacker mints ~5,225,525 WEMIX\$ (~\$5.22M at par) from nothing | **T9.004 / T5.003 exploitation** |
+| (undisclosed, prior) | Administrator privileges over the WEMIX\$ stablecoin contract come under attacker control; method not publicly disclosed | **T11.014 pre-positioning** |
+| 2026-07-26 09:17 | Attacker mints ~5,225,525 WEMIX\$ (~\$5.22M at par) from nothing | **T11.014 / T5.003 exploitation** |
 | 2026-07-26 | Minted units routed through a DEX into WEMIX and USDC.e | **T7.007 (conversion)** |
 | 2026-07-26 | Assets bridged to Ethereum and BNB Smart Chain, then deposited into centralised exchanges; ~\$6.25M total, \$724K bridged USDC confirmed externally siphoned | **T7.003 / T7.002** |
 | 2026-07-26 onward | WEMIX suspends all bridges, freezes affected liquidity pools, pauses the WEMIX\$ Module and PNIX DEX, disables NFT marketplace trading; emergency audits begin | (operator containment) |
