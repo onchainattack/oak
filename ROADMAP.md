@@ -1,59 +1,117 @@
 # Roadmap
 
-This file aggregates the work items called out in the **Discussion** section of each Technique and Tactic page, plus repository-level commitments from the strategy that govern the overall trajectory. It is not a delivery commitment — it is the maintainer's current best read of where contributor effort and OAK-side work would compound.
+This is OAK's working plan: what is being done now, what comes next, and **why**. It is updated in the same commit as the work it describes. When an item is done it moves to the log at the end of the "Current work" part, with its commit and the reason it was worth doing, so the file also answers "why does OAK look like this?".
+
+Order of trust: **sourced facts first, coverage second.** Since the October 2026 source pass, an incident that cannot be traced to a source does not go in, and a mechanism that does not match its source gets fixed before anything new is added.
 
 If you want to contribute against any of these items, open an issue using the relevant template in `.github/ISSUE_TEMPLATE/` and the maintainers will comment on scope and ID assignment before you spend effort drafting.
 
 ---
 
-## v0.x — content-depth release (the next major content delivery)
+## Current work
 
-With T9 (Smart-Contract Exploit) and T10 (Bridge & Cross-Chain) shipped at v0.1, the largest content gap remaining is the missing high-frequency T4 sub-Techniques (address poisoning, approve-pattern drainers, `setApprovalForAll` NFT drainers) and the missing T7 sub-Techniques (CEX layering, cross-chain laundering as a destination class). These are the work items that the dollar-loss-prevented metric is most sensitive to in 2024-2025 incident statistics.
+_Last reviewed 2026-10-12._
 
-### Remaining T4 sub-Techniques (post v0.1 expansion)
+### Next
 
-T4.003 Address Poisoning, T4.004 Allowance/Approve-Pattern Drainer, and T4.005 setApprovalForAll NFT Drainer were delivered at v0.1. The remaining T4 sub-Techniques targeted for v0.x:
+#### 1. Write proper entries for real incidents that were filed under the wrong mechanism
 
-- **WalletConnect session hijacking** — distinct from T4.001/T4.004 because the entry vector is a malicious dApp pairing rather than a phishing flow at sign time.
-- **QR-code phishing as an entry vector** — relevant across T4 generally; merits a standalone Technique stub if the QR-specific surface (mobile-wallet UX, malicious WalletConnect QR codes) warrants one.
+**Why:** the October 2026 source pass quarantined these files because what they described did not happen. The incidents behind their names did happen, differently, and OAK has no entry for them. Each one needs a new example written from the sources, mapped to the technique that matches the real mechanism. Details per file are in the `CORRECTIONS.md` correction log.
 
-### Remaining T7 sub-Techniques (post v0.1 expansion)
+| Incident | What actually happened (per the correction log) | Quarantined file |
+|---|---|---|
+| Akutars / AkuDreams, 2022-04 | Contract bug locked ~11,539 ETH (~\$34M) | `2022-02-akutar-nft-influencer-rug` |
+| Elephant Money, 2022-04-12 | Price manipulation on BNB Chain, ~\$11M | `2022-04-elephant-money-flash-loan-governance-attack` |
+| Fei Rari Fuse, 2022-04-30 | Reentrancy, ~\$80M | `2022-04-rari-fuse-twap-oracle-window-manipulation` |
+| Omni bridge on EthereumPoW, 2022-09 | Message replay on the ETHW fork (ETHW itself used chain ID 10001) | `2022-09-ethereum-pow-fork-replay-cohort` |
+| Visor Finance, 2021-12-21 | `deposit()` validation flaw in the vVISR rewards contract minted shares, ~\$8.2M | `2021-12-visor-finance` |
+| Atlantis Loans, 2023-06 | Malicious governance proposal on an abandoned protocol spent lingering approvals | `2023-06-atlantis-loans` |
+| SnowdogDAO, 2021-11 | ~\$30M rug on Avalanche | `2023-11-snowdog-dao-avalanche-cross-chain-lock-spoof` |
+| Balancer veBAL "Humpy", 2022 | Gauge-vote capture | `2023-2024-balancer-vebal-delegation-takeover` |
+| Fake wallet apps | Kaspersky's App Store "FakeWallet"; fake Ledger Live for macOS | `2023-2025-fake-crypto-wallet-google-play-app-store-phishing` |
+| Fake security extension | Okta's "ShieldGuard" report | `2023-2025-fake-revoke-cash-wallet-security-extension-phishing` |
 
-T7.002 CEX Deposit-Address Layering, T7.003 Cross-Chain Bridge Laundering, and T7.004 NFT Wash-Laundering were delivered at v0.1. Remaining v0.x targets:
+Before writing each, run `python3 tools/check_known.py` and add a `## Root-cause evidence` block if the incident date requires one.
 
-- **Privacy-chain hops** (Monero / Zcash routing) — distinct from T7.003 because privacy-chain destinations break on-chain attribution for the privacy-chain hop entirely.
-- **DeFi yield-strategy laundering** — deposit as a "yield user", withdraw to a different chain or address.
+#### 2. Clean old mechanisms off technique and actor pages
 
-### Per-Technique calibration / scope refinements
+**Why:** the source pass corrected the example files, but some technique and actor pages still describe the old, wrong version in their own prose. A reader landing on the technique page sees the error the example no longer has.
 
-- **OAK-T1.001** — `Maturity: governance-gated` sub-classification for governance-timelocked modifiable fees.
-- **OAK-T1.002** — split into per-extension sub-Techniques covering other Token-2022 extensions whose authority semantics differ materially.
-- **OAK-T2.002** — extend coverage to cross-chain locked-liquidity setups.
-- **OAK-T3.001** — publish reference funder-graph depth and threshold combinations per chain.
-- **OAK-T3.002** — publish per-venue calibration for cycle-window and net-flow thresholds.
-- **OAK-T3.003** — confidence-band reporting convention.
-- **OAK-T5.002** — close the v0.1 calibration gap on window size and cumulative-fraction threshold; promote Reference-implementation status from `gap` to `partial` or `full` once a calibrated detector lands.
-- **OAK-T5.003** — split into chain-specific sub-Techniques if detection methodology diverges materially.
-- **OAK-T8.001** — publish cluster freshness/decay convention.
+Known leftovers: OAK-T11.001 (BitMart described with "1Password"), OAK-T17.005 (Inverse), OAK-T5.007 (ICP), OAK-G18 (Karakurt), OAK-G01 (Yapizon / Upbit wording), and anchor descriptions on OAK-T7.007, OAK-T8.004, OAK-T2.003 and OAK-T16.004. Method: for every corrected or quarantined example, grep the corpus for its slug and key claims and align the sibling text.
 
-### Standalone T6 (Defense Evasion) Techniques
+#### 3. Check suspected duplicates
 
-T6.001 Source-Verification Mismatch was delivered at v0.1 as the first standalone T6 Technique. v0.x targets for additional standalone T6 entries: audit-claim mismatch (claimed audit by a firm that did not audit); renouncement-but-not-really (proxy-admin retains control after marketing-claimed renouncement); audit-pending marketing-claim (token marketed as audit-pending where no audit is in progress).
+**Why:** bulk-generated files repeat the same incident under different slugs, which double-counts it in statistics. The October pass merged eight such sets. These pairs were noticed afterwards and are not yet compared:
 
-### Per-Technique Data Source backfill
+- EigenLayer airdrop: `2024-05-eigenlayer-restaking-airdrop` and `2024-eigenlayer-restaking-airdrop`. The first cites no URLs and claims "\$1B+" in losses.
+- LastPass: `2022-12-lastpass-vault-cohort` and `2023-10-lastpass-breach-crypto-drain`. The first cites no URLs and ties Chris Larsen's January 2024 theft to LastPass; verify that link and the amount before keeping either.
+- Onyx: `2024-09-onyx` and `2024-onyx-protocol-year-plus-exposure`.
 
-The Data Sources axis (`data-sources/`) was delivered at v0.1 with 12 OAK-DS-NN entries. Per-Technique pages will progressively add explicit `Data Sources:` references in their headers across v0.x updates; v0.1 introduced the axis without backfilling every existing Technique.
+#### 4. Review doubtful technique mappings
+
+**Why:** a wrong primary technique sends a defender to the wrong control. These were left as filed during the October pass because the sources did not settle them:
+
+- Yearn v2, 2023-02 — maybe OAK-T9.016 (accounting-invariant flaw) rather than its current mapping.
+- Compound, 2021-09.
+- B2 Network, 2026-07 — OAK-T11.014 may overreach.
+- Ankr — the secondary OAK-T9.004.
+
+#### 5. Re-run the external A/B test
+
+**Why:** an outside model was asked root-cause questions with and without OAK, and its answers exposed the THORChain misclassification. After the fixes, run it again with direct links (Onyx, YO) to check that OAK now gives the sourced answer and that `root_cause_evidence` and the withdrawn-example list come through oak-mcp.
+
+#### 6. Coverage gaps below target
+
+**Why:** `BACKLOG.md` (generated) lists the tactic × year cells under their minimum. Currently: T1 × 2026 (4/5), T4 × 2021 (3/4), T12 × 2026 (1/2), T13 × 2026 (2/3). Fill them only with sourced incidents; never write a cohort file to reach a number.
+
+#### 7. Next content snapshot (~2026-12)
+
+**Why:** releases are quarterly. The October source pass, the new techniques and the four deprecations belong in a versioned snapshot so downstream users (oak-mcp, STIX consumers) get them as one change with a `CHANGELOG.md` entry.
+
+### Log
+
+Newest first. Each entry: what, commit, why.
+
+- **2026-10-11 — OAK-T9.012 deprecated** (`d65a2b3`). _Why:_ the mechanism ("buy before the pool has liquidity") cannot happen, and its three anchors were invented. The real neighbouring patterns, launch sniping and pool pre-creation at a skewed ratio, went to `TAXONOMY-GAPS.md` as candidates.
+- **2026-10-11 — Every example now cites a source, and the build enforces it** (`1c98e22`, with `b11ee35`, `d5b4bb5`, `a64a876`). _Why:_ the KelpDAO and THORChain cases showed that OAK held confident entries nobody had checked. Unsourced examples went from 253 to 0. 78 files with no record of the incident were moved to `quarantine/`, duplicate sets were merged, and ~150 were corrected in place. `check_sourcing --ci --max 0` now fails the build on any new unsourced example. Examples: 738 → 651.
+- **2026-10-11 — `root_cause_evidence`, withdrawn examples, oak-mcp 0.4.0** (`5120e04`, `d4b34c9`). _Why:_ an external A/B test showed a model using OAK could not tell how solid a root cause was, or that an example had been withdrawn. Examples dated 2026-10 onward must state technique, source, source type and confidence. `oak.json` lists withdrawn files with the reason, and oak-mcp exposes both.
+- **2026-10-11 — THORChain reclassified, OAK-T10.008 deprecated** (`591e636`). _Why:_ THORChain's own Exploit Report #2 attributes the May 2026 loss to key extraction through its threshold-signing library, not the observer-signature flaw OAK had recorded from a same-day third-party analysis.
+- **2026-10-11 — New techniques OAK-T9.016 and OAK-T11.014** (`15d2c9b`). _Why:_ contract accounting-invariant flaws and operator privileged-key compromise had been spread across techniques that did not fit them, which blurred both statistics and mitigations.
+
+---
+
+## Longer-range plan
+
+_Written at v0.1. Reviewed 2026-10-12: delivered items are struck through. The website and governance items were not re-checked._
+
+### v0.x — content depth
+
+- ~~WalletConnect session hijacking~~ — delivered as OAK-T4.006.
+- **QR-code phishing as an entry vector** — no standalone Technique yet; add one only if a sourced incident shows a QR-specific mechanism.
+- ~~Privacy-chain hops~~ (OAK-T7.005) and ~~DeFi yield-strategy laundering~~ (OAK-T7.006) — delivered.
+- ~~Standalone T6 entries~~ — delivered: fake audit claim (OAK-T6.002), audit-pending marketing claim (OAK-T6.004), renounced-but-not-really (OAK-T1.003).
+- **Per-Technique calibration / scope refinements** — not re-checked:
+  - OAK-T1.001: `governance-gated` sub-classification for governance-timelocked modifiable fees.
+  - OAK-T1.002: per-extension sub-Techniques for other Token-2022 extensions.
+  - OAK-T2.002: cross-chain locked-liquidity setups.
+  - OAK-T3.001: reference funder-graph depth and thresholds per chain.
+  - OAK-T3.002: per-venue cycle-window and net-flow thresholds.
+  - OAK-T3.003: confidence-band reporting convention.
+  - OAK-T5.002: calibrate window size and cumulative-fraction threshold; move reference implementation from `gap`.
+  - OAK-T5.003: chain-specific sub-Techniques if detection diverges.
+  - OAK-T8.001: cluster freshness/decay convention.
+- **Per-Technique Data Source backfill** — technique pages do not yet carry explicit Data Sources references.
 
 ---
 
 ## v0.5 — multi-implementation matrix and co-maintainers
 
 - Two-dimensional `COVERAGE.md` (Technique × Implementation) with at least three implementations represented (operator-behaviour detectors + protocol-layer monitors + audit-firm continuous-monitoring services).
-- Cross-walk between OAK Techniques and OWASP Smart Contract Top 10 categories (`[owaspscstop10]`).
+- ~~Cross-walk between OAK Techniques and OWASP Smart Contract Top 10 categories~~ — delivered as `CROSSWALK.md`.
 - Invite 2–3 co-maintainers from the contributor community to share PR review load, per the v0.1 commitment in `CONTRIBUTING.md`.
 - First retroactive coverage audits — comparing self-attested vendor coverage entries against publicly verifiable evidence.
-- Move the per-Technique example bar from "5+ examples in `examples/`" to "≥1 example per Technique." Contributor-paced.
-- NFT-specific Techniques.
+- ~~Move the per-Technique example bar to "≥1 example per Technique."~~ — met: every active Technique has an anchor (`BACKLOG.md`).
+- ~~NFT-specific Techniques~~ — delivered as Tactic T12.
 - Detection-test corpus — labelled-example harness derived from the cited academic datasets.
 
 ---
@@ -65,8 +123,8 @@ The hard semantic commitment that comes with v1.0:
 - The Tactics are stable. New top-level Tactics may be introduced in v2.0+ but not before, and only after community consultation.
 - Existing Technique and Group IDs are stable. Deprecated entries are marked `Maturity: deprecated` and remain in the repository with a pointer to the superseding entry. IDs are never reused.
 - A canonical machine-readable schema is published alongside the markdown, frozen as **stable**. `tools/oak.json` was promoted from a draft to a released (pre-1.0) schema at **v0.7**; v1.0 freezes it as the stable, ID-stable contract.
-- Account abstraction (ERC-4337) coverage.
-- Validator / staking / restaking coverage.
+- ~~Account abstraction (ERC-4337) coverage~~ — delivered as Tactic T13.
+- ~~Validator / staking / restaking coverage~~ — delivered as Tactic T14.
 - Severity and timing dimensions on every Technique.
 
 ---
