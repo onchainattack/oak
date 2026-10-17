@@ -1,6 +1,6 @@
 # UNCX Network — `release()` cut the pool's total shares but left the position's deposited shares, so cancelling counted the same reduction twice — UNCX VestingManager / Ethereum, Base, BNB Chain, Robinhood Chain — 2026-10-14
 
-**Loss:** **~\$86K** taken in the initial attack; **~\$3.25M** was still in the contract when Blockaid flagged it. UNCX later said **ten tokens across four chains** were affected (the first five named: EDGEN, ZC, PEPECOIN, LO0P, PAAL). Copycats followed the original attacker; no funds returned at last report.
+**Loss:** **~\$1.49M across four chains** per Blockaid's 2026-10-15 update (BNB Chain ~\$969K, Ethereum ~\$242K, Robinhood Chain ~\$169K, Base ~\$114K; 11 drain transactions including copycats and MEV bots). The first attack, on Ethereum, took **~\$86K**; **~\$3.25M** was in that contract when Blockaid flagged it. UNCX said **ten tokens** were affected (the first five named: EDGEN, ZC, PEPECOIN, LO0P, PAAL). No funds returned at last report.
 
 **OAK Techniques observed:** **OAK-T9.016** (Contract Accounting / State-Invariant Flaw — *primary*, per ExVul. In the shared `VestingManager` pool, `release()` reduced the global `_totalTokenShares` **without removing the released shares from the position's `_depositedShares`**. On `cancel`, the contract subtracted shares based on the original deposit, so the same reduction was applied twice and the global share count fell below what other users' positions were owed. A direct token donation further skewed the ratio, and a tiny residual position could then withdraw other users' locked tokens. See [`techniques/T9.016-contract-accounting-state-invariant-flaw.md`](../techniques/T9.016-contract-accounting-state-invariant-flaw.md)). No key was stolen and no permission bypassed: every call was one the attacker was entitled to make.
 
@@ -25,3 +25,4 @@ On 2026-10-14 an attacker created vesting positions in UNCX's shared `VestingMan
 - `[bitcoincomuncx2026]` — Bitcoin.com News, "An \$86,000 Exploit Rocks a Crypto Pool Built to Lock Tokens" (2026-10-15): <https://news.bitcoin.com/security/an-86000-exploit-rocks-a-crypto-pool-built-to-lock-tokens/>
 - `[blockaiduncx2026]` — Blockaid on X, UNCX alert: <https://x.com/blockaid_/status/2110406902752387455>
 - `[exvuluncx2026]` — ExVul on X, VestingManager analysis: <https://x.com/exvulsec/status/2110408967822381342>
+- `[blockaiduncxupdate2026]` — Blockaid on X, four-chain update (2026-10-15): <https://x.com/blockaid_/status/2110616419939566029>

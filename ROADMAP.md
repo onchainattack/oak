@@ -68,7 +68,7 @@ Known leftovers: OAK-T11.001 (BitMart described with "1Password"), OAK-T17.005 (
 
 **Why:** these incidents are real but no source yet says what happened, and OAK no longer files a mechanism it cannot cite.
 
-- **Pirate Chain (ARRR), 2026-10-14.** The project reported "an exploit in the new transparent layer related to the Ironwood turnstile for supply accounting" and rolled the chain back to 20:00 UTC 2026-10-14. No amount and no mechanism are published; a "39.8M ARRR minted" headline is unconfirmed. File once the team's write-up is out.
+- **Pirate Chain (ARRR), 2026-10-14.** Filed at T9.014 from the project's statement (issuance-check bypass + mis-parsed output scripts, ~39.8M ARRR). Add the code path when the promised post-mortem is out.
 - **Ledger / CryptoBilis final report.** The example is filed at T11.007 parent with the implant confirmed; assign a sub-Technique (candidate T11.007.004 in `TAXONOMY-GAPS.md`) once Ledger ties the losses to the implant.
 
 #### 8. Next content snapshot (~2026-12)
@@ -80,6 +80,7 @@ Known leftovers: OAK-T11.001 (BitMart described with "1Password"), OAK-T17.005 (
 Newest first. Each entry: what, commit, why.
 
 - **2026-10-17 — Sweep 2026-10-11 → 10-17: four incidents, Ledger implant confirmed** (this commit). _Why:_ keep recency tight. Demex (2026-09-25, missed last sweep; T10.002 from the operator's post-mortem), UNCX VestingManager (T9.016), Gamdom (T15.003 + T11.011, the second casino multi-chain hot-wallet drain in three weeks), Coldcard's X account (T15.006). Ledger's confirmation of a hardware implant moved the CryptoBilis entry from *disputed* to *corroborated* and opened the T11.007.004 candidate. Pirate Chain held until it has a source.
+- **2026-10-17 — Sweep follow-up: five more from the SlowMist tracker** (this commit). _Why:_ the first pass used news and vendor posts only and missed the tracker, as the sweep-coverage rule warns. Pirate Chain (T9.014, now sourced), Papertrade (T17.001), X7 Finance (T9.016), Set Protocol (T9.011), Based Visa Card KYC exposure (T15.004); UNCX loss raised to ~\$1.49M. Rule for next sweeps: read `hacked.slowmist.io` first.
 - **2026-10-11 — OAK-T9.012 deprecated** (`d65a2b3`). _Why:_ the mechanism ("buy before the pool has liquidity") cannot happen, and its three anchors were invented. The real neighbouring patterns, launch sniping and pool pre-creation at a skewed ratio, went to `TAXONOMY-GAPS.md` as candidates.
 - **2026-10-11 — Every example now cites a source, and the build enforces it** (`1c98e22`, with `b11ee35`, `d5b4bb5`, `a64a876`). _Why:_ the KelpDAO and THORChain cases showed that OAK held confident entries nobody had checked. Unsourced examples went from 253 to 0. 78 files with no record of the incident were moved to `quarantine/`, duplicate sets were merged, and ~150 were corrected in place. `check_sourcing --ci --max 0` now fails the build on any new unsourced example. Examples: 738 → 651.
 - **2026-10-11 — `root_cause_evidence`, withdrawn examples, oak-mcp 0.4.0** (`5120e04`, `d4b34c9`). _Why:_ an external A/B test showed a model using OAK could not tell how solid a root cause was, or that an example had been withdrawn. Examples dated 2026-10 onward must state technique, source, source type and confidence. `oak.json` lists withdrawn files with the reason, and oak-mcp exposes both.
