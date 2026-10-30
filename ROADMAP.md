@@ -96,6 +96,10 @@ Known leftovers: OAK-T11.001 (BitMart described with "1Password"), OAK-T17.005 (
 
 Newest first. Each entry: what, commit, why.
 
+- **2026-10-30 17:00 UTC — Binance follow-up** (this commit). _Why:_ new statements arrived during the day.
+  - **Statements and figures.** Yi He (04:17 UTC): deposits normal, withdrawals expected within 48 h after "enhancements to the withdrawal service and related address controls". TRM's figure is \$6.36B. Ondology saw small bridge tests through MetaMask's router and LI.FI.
+  - **OAK's own snapshot** (block 26306931). Both main ETH holdings (197,460 and 17,260 ETH) have nonce 0, so they have never sent a transaction. The receiver is down to 4.5 ETH after 703 outgoing transactions.
+  - **Still missing:** Binance's full post-mortem.
 - **2026-10-30 — All October 2026 incidents traced; tracer covers native hops, Solana and Tron** (this commit). _Why:_ the remaining 14 October incidents still said "funds: undisclosed", and the tracer was blind to native coins over RPC and to non-EVM chains.
   - **Traced.** Seven Sonnet tracer agents covered the 14 incidents, with edges spot-checked here.
   - **Corrections found by tracing:**
