@@ -193,6 +193,127 @@ marked.use({
   headerIds: false,
 });
 
+// Fund-flow blocks (```oak-flow, validated by tools/check_flow.py) render as
+// a Mermaid graph plus an edge table with full, linked addresses and txs.
+// The YAML is parsed once by tools/export_json.py; the renderer looks the
+// parsed flow up by the document being rendered, so JS needs no YAML parser.
+const chains = JSON.parse(await readFile(rel("tools/chains.json"), "utf8"));
+const flowsByDoc = Object.fromEntries(
+  JSON.parse(await readFile(rel("tools/oak.json"), "utf8"))
+    .examples.filter((e) => e.fund_flow && (e.fund_flow.edges ?? []).length)
+    .map((e) => [`examples/${e.file}`, e.fund_flow]),
+);
+let renderingDoc = "";
+
+// Cross-incident address links (tools/build_address_index.py). Appended to an
+// example page when one of its addresses also appears in another example;
+// shared infrastructure (mixers, DEX pools, exchanges, issuers) is left out.
+const INFRA_ROLES = new Set(["mixer", "dex", "bridge", "cex-deposit", "issuer-freeze", "lending", "burn", "token"]);
+let addressIndex = {};
+try {
+  addressIndex = JSON.parse(await readFile(rel("tools/addresses.json"), "utf8"));
+} catch {
+  addressIndex = {};
+}
+const sharedAddressesHtml = (docPath) => {
+  if (!docPath.startsWith("examples/")) return "";
+  const file = docPath.slice("examples/".length);
+  const rows = [];
+  for (const [addr, entry] of Object.entries(addressIndex)) {
+    const incidents = entry.incidents ?? [];
+    if (incidents.length < 2 || !incidents.some((i) => i.file === file)) continue;
+    if (incidents.some((i) => INFRA_ROLES.has(i.role))) continue;
+    const others = incidents.filter((i) => i.file !== file);
+    const url = explorerUrl(entry.chains?.[0], "address", addr);
+    const code = `<code>${escapeHtml(addr)}</code>`;
+    rows.push(
+      `<li>${url ? `<a href="${escapeHtml(url)}" rel="noopener">${code}</a>` : code} also appears in ` +
+        others.map((o) => `<a href="${escapeHtml(o.file)}">${escapeHtml(o.file.replace(/\.md$/, ""))}</a>`).join(", ") +
+        `</li>`,
+    );
+  }
+  return rows.length
+    ? `<h2 id="addresses-seen-in-other-incidents">Addresses seen in other incidents</h2><p>Same address, different incident: a candidate cluster link (OAK-T8.001). Generated from tools/addresses.json.</p><ul>${rows.join("")}</ul>`
+    : "";
+};
+
+const escapeHtml = (v) =>
+  String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const explorerUrl = (chain, kind, value) => {
+  const tpl = chains[String(chain).toLowerCase()]?.[kind];
+  return tpl && value ? tpl.replace(kind === "tx" ? "{t}" : "{a}", value) : "";
+};
+const shortForGraph = (a) => (a && a.length > 14 ? `${a.slice(0, 8)}…${a.slice(-6)}` : a ?? "");
+const formatAmount = (n) =>
+  typeof n === "number" ? n.toLocaleString("en-US", { maximumFractionDigits: 4 }) : String(n ?? "");
+
+const ROLE_CLASS = {
+  "attacker-eoa": "attacker", "attack-contract": "attacker", "attacker-receiver": "attacker",
+  "attacker-holding": "attacker", victim: "victim", "victim-hot-wallet": "victim",
+  "vulnerable-contract": "victim", mixer: "mixer", bridge: "infra", "cex-deposit": "infra",
+  dex: "infra", lending: "infra", "issuer-freeze": "frozen", returned: "frozen", burn: "neutral",
+  intermediary: "neutral", unknown: "neutral",
+};
+
+const renderFlow = (flow) => {
+  const nodes = flow.nodes ?? [];
+  const byId = Object.fromEntries(nodes.map((n) => [n.id, n]));
+  const mid = (id) => `n_${String(id).replace(/[^A-Za-z0-9_]/g, "_")}`;
+  const label = (n) => {
+    const head = n.label || n.role;
+    const addr = n.address ? `<br/>${shortForGraph(n.address)}` : "";
+    return `"${String(head).replace(/"/g, "'")}${addr}<br/><small>${n.chain}</small>"`;
+  };
+  const lines = ["flowchart LR"];
+  for (const n of nodes) lines.push(`  ${mid(n.id)}[${label(n)}]:::${ROLE_CLASS[n.role] ?? "neutral"}`);
+  for (const e of flow.edges ?? []) {
+    const text = [formatAmount(e.amount), e.asset].filter(Boolean).join(" ").replace(/"/g, "'");
+    const arrow = e.verified === "oak" ? "-->" : "-.->";
+    lines.push(`  ${mid(e.from)} ${arrow}|"${text}"| ${mid(e.to)}`);
+  }
+  lines.push(
+    "  classDef attacker fill:#3a1418,stroke:#ff5c6c,color:#ffd6db",
+    "  classDef victim fill:#0f2a2a,stroke:#00ffd1,color:#cffff6",
+    "  classDef mixer fill:#2a1a3a,stroke:#b07cff,color:#eadcff",
+    "  classDef infra fill:#1d2230,stroke:#7aa2ff,color:#dce6ff",
+    "  classDef frozen fill:#2c2a12,stroke:#e6c84a,color:#fff3c4",
+    "  classDef neutral fill:#161618,stroke:#747780,color:#e8e9ec",
+  );
+  const nodeCell = (id) => {
+    const n = byId[id] ?? { id };
+    const name = escapeHtml(n.label || n.role || id);
+    if (!n.address) return name;
+    const url = explorerUrl(n.chain, "address", n.address);
+    const code = `<code>${escapeHtml(n.address)}</code>`;
+    return `${name}<br/>${url ? `<a href="${escapeHtml(url)}" rel="noopener">${code}</a>` : code}`;
+  };
+  const rows = (flow.edges ?? []).map((e) => {
+    const chain = byId[e.from]?.chain;
+    const txUrl = explorerUrl(chain, "tx", e.tx);
+    const tx = e.tx
+      ? txUrl ? `<a href="${escapeHtml(txUrl)}" rel="noopener"><code>${escapeHtml(e.tx)}</code></a>` : `<code>${escapeHtml(e.tx)}</code>`
+      : "";
+    const verified = e.verified === "oak" ? "traced by OAK" : `per <code>${escapeHtml(e.source ?? "")}</code>`;
+    return `<tr><td>${escapeHtml(e.time ?? "")}</td><td>${nodeCell(e.from)}</td><td>${nodeCell(e.to)}</td>` +
+      `<td>${escapeHtml([formatAmount(e.amount), e.asset].filter(Boolean).join(" "))}</td>` +
+      `<td>${escapeHtml(e.technique ?? "")}</td><td>${tx}</td><td>${verified}</td></tr>`;
+  });
+  const asOf = flow.as_of ? `<p class="flow-asof">As of ${escapeHtml(flow.as_of)}. Solid arrows: traced by OAK on-chain. Dashed: relayed from a cited source.</p>` : "";
+  return `<pre><code class="language-mermaid">${escapeHtml(lines.join("\n"))}</code></pre>${asOf}` +
+    `<div class="table-scroll"><table class="flow-table"><thead><tr><th>Time (UTC)</th><th>From</th><th>To</th>` +
+    `<th>Amount</th><th>OAK</th><th>Tx</th><th>Basis</th></tr></thead><tbody>${rows.join("")}</tbody></table></div>`;
+};
+
+marked.use({
+  renderer: {
+    code({ text, lang }) {
+      if (lang !== "oak-flow") return false;
+      const flow = flowsByDoc[renderingDoc];
+      return flow ? renderFlow(flow) : `<pre><code>${escapeHtml(text)}</code></pre>`;
+    },
+  },
+});
+
 const oak = JSON.parse(await readFile(rel("tools/oak.json"), "utf8"));
 const tactics = [...oak.tactics]
   .sort((a, b) => idNumber(a.id).localeCompare(idNumber(b.id)))
@@ -366,6 +487,7 @@ const documents = Object.fromEntries(
       const raw = await readFile(rel(docPath), "utf8");
       const markdown = cleanMarkdownEscapes(raw);
       const documentMeta = extractDocumentMeta(markdown);
+      renderingDoc = docPath;
       return [
         docPath,
         {
@@ -374,7 +496,7 @@ const documents = Object.fromEntries(
           toc: tocFromMarkdown(documentMeta.markdown),
           meta: documentMeta.meta,
           html: rewriteRelativeLinks(
-            linkifyOakIds(addHeadingIds(marked.parse(documentMeta.markdown))),
+            linkifyOakIds(addHeadingIds(marked.parse(documentMeta.markdown))) + sharedAddressesHtml(docPath),
             docPath,
             routeForSource,
             unmappedMarkdown,

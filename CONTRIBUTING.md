@@ -72,6 +72,31 @@ Rules (`tools/check_timeline.py`, part of `npm run check`):
 
 The rules are hard failures from 2026-09 on, and for any example with no timeline at all. Older tables that break a rule are reported as legacy until the backfill in `ROADMAP.md` clears them.
 
+## Fund flow on worked examples
+
+The timeline says what happened. The `## Fund flow` block makes the money machine-readable: the site draws it as a graph with a table of full, linked addresses and transactions, `oak.json` exports it as `fund_flow`, and `tools/build_address_index.py` joins it across incidents. Validated by `tools/check_flow.py` (in `npm run check`). It is required for examples dated 2026-11 or later. Earlier examples get it as they are traced.
+
+````markdown
+## Fund flow
+
+```oak-flow
+as_of: 2026-10-30T11:40Z
+nodes:
+  - {id: rcv, chain: ethereum, address: 0x…40 hex, role: attacker-receiver, label: "Receiver"}
+  - {id: tc,  chain: ethereum, role: mixer, label: "Tornado Cash"}
+edges:
+  - {from: rcv, to: tc, asset: ETH, amount: 100, tx: 0x…64 hex, time: 2026-10-30T05:14:35Z, technique: T7.001, verified: oak}
+  - {from: rcv, to: tc, asset: ETH, amount: 50, verified: source, source: citekey}
+```
+````
+
+- **Roles:** `attacker-eoa`, `attack-contract`, `attacker-receiver`, `attacker-holding`, `victim`, `victim-hot-wallet`, `vulnerable-contract`, `mixer`, `bridge`, `cex-deposit`, `dex`, `lending`, `issuer-freeze`, `returned`, `burn`, `intermediary`, `unknown`.
+- **`verified: oak`** means OAK checked the hop on-chain itself, and `tx` is required. **`verified: source`** relays a cited source, and `source` must be a citekey from Public references. This is the "verified by us vs. relayed" line from good forensic write-ups, in machine-readable form.
+- Addresses and transactions are written in full. A pooled endpoint with no single address (for example "64 Uniswap pools" or "Tether freeze") may omit `address`.
+- Aggregated edges carry `tx` (the first), `tx_count` and `time_last`.
+
+**Tracing it yourself:** `python3 tools/explorer.py trace <chain> <seed address> --hops 1 --yaml` follows outgoing transfers without an API key (Blockscout for EVM, mempool.space for Bitcoin). Results are cached in `.cache/explorer/`. Counterfeit tokens (no price and fewer than 1,000 holders) and zero-value transfers are skipped. Around large thefts, address-poisoning bots flood the attacker's wallets with fake "ETH"/"USDT" Transfer events from lookalike addresses, and following them would invent hops that never happened. Review every candidate edge before pasting it in. `examples/2026-10-binance-devops-laptop-service-container-hot-wallet-drain.md` is the reference.
+
 ## Per-Technique template (defender's-eye-view)
 
 OAK is a **detection and defense** framework, not an offensive playbook. Every Technique page is written from the perspective of **what a defender, investigator, or risk team observes** — not as instructions for performing an action. Use this template:

@@ -38,6 +38,7 @@ says the funds were frozen / held / returned / not moved).
 Usage:
     python3 tools/check_timeline.py           # validate (exit 1 on hard failures)
     python3 tools/check_timeline.py --warn    # also print fund-flow warnings
+    python3 tools/check_timeline.py --file <path>   # one file (hook mode)
 """
 
 from __future__ import annotations
@@ -108,7 +109,11 @@ def check_file(path: Path) -> tuple[list[str], list[str]]:
 
 
 def main(argv: list[str]) -> int:
-    files = sorted(p for p in EXAMPLES.glob("*.md") if SINGLE_INCIDENT_RE.match(p.name))
+    if "--file" in argv:
+        one = Path(argv[argv.index("--file") + 1])
+        files = [one] if SINGLE_INCIDENT_RE.match(one.name) else []
+    else:
+        files = sorted(p for p in EXAMPLES.glob("*.md") if SINGLE_INCIDENT_RE.match(p.name))
     failures = 0
     warned = 0
     legacy: list[str] = []

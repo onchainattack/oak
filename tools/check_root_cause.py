@@ -46,6 +46,7 @@ Hard rules (exit 1):
 Usage:
     python3 tools/check_root_cause.py            # validate + coverage summary
     python3 tools/check_root_cause.py --list     # also list examples without the section
+    python3 tools/check_root_cause.py --file <path>   # one file (hook mode)
 """
 
 from __future__ import annotations
@@ -137,7 +138,10 @@ def check_file(path: Path) -> list[str]:
 
 
 def main(argv: list[str]) -> int:
-    files = sorted(EXAMPLES.glob("*.md"))
+    if "--file" in argv:
+        files = [Path(argv[argv.index("--file") + 1])]
+    else:
+        files = sorted(EXAMPLES.glob("*.md"))
     failures = 0
     with_section, missing = 0, []
     by_conf: dict[str, int] = {}

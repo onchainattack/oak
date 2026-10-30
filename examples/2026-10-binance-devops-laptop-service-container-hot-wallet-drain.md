@@ -19,7 +19,7 @@ Read it as three stages. **Get in**: a laptop, then the withdrawal service. **Pr
 | When | What happened | OAK |
 |---|---|---|
 | Before 2026-10-28 (undisclosed) | A DevOps engineer's laptop is compromised. From it the attacker reaches a **service container that submits withdrawals**. How the laptop was compromised is not published. Binance says there were "additional points of breach". | **T15.003** entry |
-| 10-28 07:39 → | Three 0.1 ETH Tornado Cash withdrawals fund the attacker's initiator wallet. | T7.001 (funding) |
+| 10-28 07:39 → 10-29 08:23 | Three 0.1 ETH Tornado Cash withdrawals (10-28 07:39 and 08:53, 10-29 08:23; traced by OAK) fund the initiator [`0x7c8601d4645b93cea45f71e118a729332e6b5ca0`](https://etherscan.io/address/0x7c8601d4645b93cea45f71e118a729332e6b5ca0). | **T7.001** (funding) |
 | 10-28 13:51–16:47 | Rehearsal: the initiator uses EIP-7702 to delegate its *own* test wallets to a sweep contract and drains small USDT/USDC balances. | T13.004 (rehearsal) |
 | 10-28 15:59 | Final sweep contract [`0x63e842b054bd624a465454d533c33f573e9c6fae`](https://etherscan.io/address/0x63e842b054bd624a465454d533c33f573e9c6fae) deployed. Only the initiator can call it. | — |
 | 10-29 20:04:52 | Drain starts on **XRP**. **Solana, Optimism, Bitcoin, Tron** follow before 20:22, all as ordinary signed transfers that look like Binance withdrawals (CertiK). Bitcoin: 18,270 BTC in 11 transactions (CoinDesk). | **T15.003** (the service signs) |
@@ -46,7 +46,8 @@ Ethereum, from Ondology Labs' write-up, where each one is linked to Etherscan.
 - Receiver of the sweeps — [`0x5227f603c1ee34ce3c06efe6477003bdfccb2f8c`](https://etherscan.io/address/0x5227f603c1ee34ce3c06efe6477003bdfccb2f8c)
 - Largest attacker ETH holding (197,460 ETH as of 2026-10-30 06:25 UTC) — [`0x8532fa14acaf483729c449b8458aeddb900543d4`](https://etherscan.io/address/0x8532fa14acaf483729c449b8458aeddb900543d4)
 - Address shared with Bitget exploit proceeds (TRM, via The Hacker News) — [`0x15104a9ce0f08a8f0075a0869ae80e795fe0feb7`](https://etherscan.io/address/0x15104a9ce0f08a8f0075a0869ae80e795fe0feb7)
-- The initiator (`0x7c86…5ca0`), six further attacker ETH wallets, the Avalanche receiver (`0x8035…c397`) and an RLUSD wallet (`0xe702…958d`) are published only in shortened form (full addresses not published). The 19 Bitcoin wallets are not listed in the sources.
+- Initiator, full address traced by OAK — [`0x7c8601d4645b93cea45f71e118a729332e6b5ca0`](https://etherscan.io/address/0x7c8601d4645b93cea45f71e118a729332e6b5ca0)
+- Six further attacker ETH wallets, the Avalanche receiver (`0x8035…c397`) and an RLUSD wallet (`0xe702…958d`) are published only in shortened form (full addresses not published). The 19 Bitcoin wallets are not listed in the sources.
 
 ### Where the funds are (as of 2026-10-30 06:25 UTC, Ondology Labs)
 
@@ -65,6 +66,65 @@ Ethereum, from Ondology Labs' write-up, where each one is linked to Etherscan.
 - Whether the DPRK attribution holds. Binance has not confirmed it, and Ondology did not verify it.
 
 **Why two techniques.** T15.003 explains *how the attacker got the power to sign*. T13.004 explains *what they made Binance 14 sign on Ethereum*: a delegation, rather than a plain transfer, so that one EOA could be emptied of everything in one call and could then command Hot Wallet 34. On the other chains no 7702 step was needed; the compromised service just sent transfers.
+
+## Fund flow
+
+Ethereum leg, traced by OAK with `tools/explorer.py` (Blockscout, keyless) on 2026-10-30. Edges marked *traced by OAK* were checked on-chain; dashed edges are relayed from the cited source. Counterfeit-token transfers were excluded: within hours, address-poisoning bots sent the attacker's wallets fake "ETH", "USDT" and "USDC" Transfer events from lookalike addresses (for example `0x8537cce92e58b935874ddf03826030d7440543d4` imitating the real holding wallet `0x8532fa14acaf483729c449b8458aeddb900543d4`). The two share their first four and last six characters, which is exactly why OAK never shortens an address.
+
+```oak-flow
+as_of: 2026-10-30T11:40Z
+nodes:
+  - {id: tc, chain: ethereum, address: 0x12d66f87a04a9e220743712ce6d9bb1b5616b8fc, role: mixer, label: "Tornado Cash 0.1 ETH pool"}
+  - {id: fund, chain: ethereum, address: 0xe4f9070e1316de2988fc6f869fead8fb99cc74cd, role: unknown, label: "Unlabelled funder"}
+  - {id: init, chain: ethereum, address: 0x7c8601d4645b93cea45f71e118a729332e6b5ca0, role: attacker-eoa, label: "Initiator"}
+  - {id: sweep, chain: ethereum, address: 0x63e842b054bd624a465454d533c33f573e9c6fae, role: attack-contract, label: "Sweep contract (7702 delegate)"}
+  - {id: b14, chain: ethereum, address: 0x28c6c06298d514db089934071355e5743bf21d60, role: victim-hot-wallet, label: "Binance 14"}
+  - {id: hw34, chain: ethereum, address: 0xee7ae85f2fe2239e27d9c1e23fffe168d63b4055, role: victim-hot-wallet, label: "Hot Wallet 34"}
+  - {id: rcv, chain: ethereum, address: 0x5227f603c1ee34ce3c06efe6477003bdfccb2f8c, role: attacker-receiver, label: "Receiver"}
+  - {id: h1, chain: ethereum, address: 0x8532fa14acaf483729c449b8458aeddb900543d4, role: attacker-holding, label: "ETH holding 1"}
+  - {id: h2, chain: ethereum, address: 0x03b0ee5d82990cff1bda48651ac3e436d1a020ea, role: attacker-holding, label: "ETH holding 2"}
+  - {id: hopa, chain: ethereum, address: 0x9749292d74fd460982d0912ea9515ea24736c762, role: intermediary, label: "Hop wallet (USDT)"}
+  - {id: hopb, chain: ethereum, address: 0x0ddf0480016e6bcb2c1f5d190d221fba1320697e, role: intermediary, label: "Hop wallet (USDT)"}
+  - {id: hopc, chain: ethereum, address: 0x5c23023ca6633f91ded909b4a753a3ca00fea4fc, role: intermediary, label: "Hop wallet (RLUSD)"}
+  - {id: hopd, chain: ethereum, address: 0x7f9dc988b46336ad536828fad50fa8fa1e5415e3, role: intermediary, label: "Hop wallet (WBETH, ENA)"}
+  - {id: hope, chain: ethereum, address: 0xb3ddec0ccc5c3ba733fcdf5a15f98c95ec5a5fdb, role: intermediary, label: "Hop wallet (WBTC, USDe)"}
+  - {id: hopf, chain: ethereum, address: 0x42cdf00c85005630cc8605731b9364f712077810, role: intermediary, label: "Hop wallet (UNI, ONDO)"}
+  - {id: dex, chain: ethereum, role: dex, label: "64 Uniswap / SushiSwap pools"}
+  - {id: tether, chain: ethereum, role: issuer-freeze, label: "Tether freeze"}
+  - {id: circle, chain: ethereum, role: issuer-freeze, label: "Circle freeze"}
+  - {id: bbtc, chain: bitcoin, role: victim-hot-wallet, label: "Binance BTC hot wallet"}
+  - {id: abtc, chain: bitcoin, role: attacker-holding, label: "19 BTC wallets"}
+edges:
+  - {from: tc, to: init, asset: ETH, amount: 0.29, tx: 0xd9e59064d7681439e732a5eb0e2a167b9a23f161d3ce4c8ef111ca824fe59008, time: 2026-10-28T07:39:47Z, tx_count: 3, time_last: 2026-10-29T08:23:11Z, technique: T7.001, verified: oak}
+  - {from: fund, to: init, asset: ETH, amount: 1.08221822, tx: 0x96cae1ec044b4b3e34c1f2113a7bcd1b0d3257370788f5d8a2b91e9c99c0ebe5, time: 2026-10-29T18:20:47Z, verified: oak}
+  - {from: init, to: b14, asset: "EIP-7702 authorizations (50)", tx: 0xad99264d5532ae0dd04b2004eebda05f25657e70dacb764f7ac8d4ccd051298b, time: 2026-10-29T20:20:59Z, technique: T13.004, verified: oak}
+  - {from: b14, to: rcv, asset: ETH, amount: 167464.24785656, tx: 0x53bd38b816c23e74134786c29a8c18d792777998a3b9326047b583100e88e2f3, time: 2026-10-29T20:24:23Z, technique: T13.004, verified: oak}
+  - {from: b14, to: rcv, asset: USDT, amount: 1615409498.97324, tx: 0x53bd38b816c23e74134786c29a8c18d792777998a3b9326047b583100e88e2f3, time: 2026-10-29T20:24:23Z, technique: T13.004, verified: oak}
+  - {from: hw34, to: rcv, asset: USDC, amount: 780000000, tx: 0xdc102dd89dded5a83f1008906883ffb7c81ff3b7d7965d8c7277d170b5e17481, time: 2026-10-29T20:41:23Z, technique: T13.004, verified: oak}
+  - {from: hw34, to: rcv, asset: USDC, amount: 43000000, time: 2026-10-29T20:59:47Z, verified: source, source: ondologybinance2026}
+  - {from: rcv, to: hopa, asset: USDT, amount: 500000000, tx: 0x68d7d69deaeb9750c38020b4f8d3728146ca8d2267eba1e38cf9b56722ad659a, time: 2026-10-29T20:30:11Z, verified: oak}
+  - {from: rcv, to: hopb, asset: USDT, amount: 200000000, tx: 0x1fc0ef33a767132edad434834a5555b30fcb5a171206c03b86175ef6dafac81c, time: 2026-10-29T20:33:23Z, verified: oak}
+  - {from: rcv, to: h1, asset: ETH, amount: 197460, tx: 0x551d7961652e6d9835b11988908adf86ebe480badb4ce2d7d52193b2b1b02c76, time: 2026-10-29T20:38:47Z, tx_count: 2, time_last: 2026-10-30T01:14:11Z, verified: oak}
+  - {from: rcv, to: hopc, asset: RLUSD, amount: 88541065, tx: 0x1d3f0f9b56ef51d2ea54fc3e8db63d331c16befd292a743b71413caa70a600e4, time: 2026-10-29T21:22:59Z, verified: oak}
+  - {from: rcv, to: hopf, asset: UNI, amount: 7018792.33215254, tx: 0x028bdd8b5f0bda6503a760b734090f1cdbc213e90b71394b8a089b3d66eada74, time: 2026-10-29T21:46:59Z, verified: oak}
+  - {from: rcv, to: hopd, asset: WBETH, amount: 29934.01316315, tx: 0xc19a2dcc7508e45f2743558cebefa50140fe68d9450ab18d14fd34039eb4bce2, time: 2026-10-29T21:52:47Z, verified: oak}
+  - {from: rcv, to: hopd, asset: ENA, amount: 217497348.01079366, tx: 0x8bcbacb34b4e49b3e86675b3bc2a988461ded1207cc7e3a23bfd2577deb35aee, time: 2026-10-29T22:02:11Z, verified: oak}
+  - {from: rcv, to: hope, asset: WBTC, amount: 167.14, tx: 0x314928ff5fb72f708f77093c166dbb26a04709ac9c43ef19d2ed603d5543df66, time: 2026-10-29T22:41:35Z, verified: oak}
+  - {from: rcv, to: hopf, asset: ONDO, amount: 21851870.65, tx: 0x6bf04dd89cd7fb70b2eb02762c8515f67dbdff0d9101507fa3cc01a7120ea023, time: 2026-10-29T22:53:47Z, verified: oak}
+  - {from: rcv, to: hope, asset: USDE, amount: 9707546.77, tx: 0xfc5eefa601d35a9d004ed166c704ccfb65d92ebc45912ace23493ba8e4c4cc4f, time: 2026-10-29T22:56:47Z, verified: oak}
+  - {from: rcv, to: dex, asset: "35 tokens (FET, PENDLE, CRV, SHIB, EIGEN, PLUME, COTI, IMX, OGN, …)", tx: 0x91f6eb26ea5500e202fe41362908ab21dc205d7ab317eee206804d92419b2fa9, time: 2026-10-30T01:17:35Z, tx_count: 529, time_last: 2026-10-30T11:08:35Z, verified: oak}
+  - {from: rcv, to: h2, asset: ETH, amount: 17260.1, tx: 0x88e4bc31dc948ac5dedb3a9936d2e429494e0ae1ff3dfce70e673ac194b06b78, time: 2026-10-30T05:14:35Z, tx_count: 2, time_last: 2026-10-30T05:15:47Z, verified: oak}
+  - {from: rcv, to: tether, asset: USDT, time: 2026-10-29T21:01:35Z, verified: source, source: ondologybinance2026}
+  - {from: rcv, to: circle, asset: USDC, amount: 823000000, time: 2026-10-29T21:04:59Z, verified: source, source: ondologybinance2026}
+  - {from: bbtc, to: abtc, asset: BTC, amount: 18270, time: 2026-10-29T20:20:00Z, verified: source, source: coindeskbinancebtc2026}
+```
+
+What the trace adds beyond the sources:
+
+- **The initiator** is `0x7c8601d4645b93cea45f71e118a729332e6b5ca0` (published only shortened). It was funded by **three** 0.1 ETH Tornado Cash withdrawals: on 2026-10-28 at 07:39 and 08:53, and on 2026-10-29 at 08:23. It also received 1.08 ETH from an unlabelled address on 2026-10-29 at 18:20.
+- **The ETH holding wallet `0x8532…`** received 195,460 ETH at 20:38:47 and 2,000 ETH at 01:14:11 on 2026-10-30, a total of **197,460 ETH**. This resolves the 195,460 vs 197,460 discrepancy that Ondology flagged.
+- **Hop wallets.** The receiver gave at least 14 fresh wallets about 0.5 ETH of gas each, then one large asset each: 500M and 200M USDT, 88.5M RLUSD, 29,934 WBETH, 217M ENA, 167 WBTC, 9.7M USDe, 7.0M UNI, 21.9M ONDO.
+- **DEX dumping.** From 2026-10-30 01:17 UTC the receiver sold 35 long-tail tokens directly into 64 Uniswap and SushiSwap pools in 529 swaps.
 
 ## Root-cause evidence
 

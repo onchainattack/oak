@@ -52,6 +52,7 @@ secrets/
 # Tool output that should regenerate per-build
 tools/oak-stix.json
 tools/oak.json
+tools/addresses.json
 tools/stats.json
 tools/embedded.json
 tools/document-render.json
@@ -68,3 +69,4 @@ vendor-outreach/
 # Sub-agent transcripts (Claude Code)
 .claude/
 .tasks/
+.cache/

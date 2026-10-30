@@ -47,6 +47,9 @@ Output schema (v2):
             "source_type": "operator|government|security-firm|independent-researcher|news",
             "confidence": "confirmed|corroborated|reported|disputed",
             "evidence": "..."}],
+         "fund_flow": {"as_of": "...", "nodes": [{"id", "chain", "address", "role", "label"}],
+                       "edges": [{"from", "to", "asset", "amount", "tx", "time",
+                                  "technique", "verified": "oak|source", "source"}]},
          "source_file": "..."}
       ],
       "withdrawn_examples": [
@@ -220,6 +223,7 @@ class Example:
     techniques: list[str] = field(default_factory=list)
     attribution: str = ""
     root_cause_evidence: list[dict] = field(default_factory=list)
+    fund_flow: dict = field(default_factory=dict)
     source_file: str = ""
 
 
@@ -417,6 +421,18 @@ def parse_root_cause_evidence(text: str) -> list[dict]:
     ]
 
 
+def parse_fund_flow(text: str) -> dict:
+    """Parse the `## Fund flow` oak-flow block. Format and rules live in
+    tools/check_flow.py, which is the validator; a block that does not parse
+    exports as empty rather than failing the build."""
+    from check_flow import parse_flow  # same parser as the validator
+    try:
+        flow = parse_flow(text)
+    except ValueError:
+        return {}
+    return flow or {}
+
+
 def withdrawn_examples(root: Path) -> list[dict]:
     """Example IDs that were removed from the corpus, with the reason.
 
@@ -482,6 +498,7 @@ def parse_example(path: Path) -> Example:
         if (ma := EXAMPLE_ATTR_RE.search(mb.group(1))):
             ex.attribution = ma.group(1).lower()
     ex.root_cause_evidence = parse_root_cause_evidence(text)
+    ex.fund_flow = parse_fund_flow(text)
     return ex
 
 
