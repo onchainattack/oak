@@ -9,6 +9,7 @@ OAK (onchainattack.org) is a sourced knowledge base of crypto attacks. Each real
 - **End to end.** Every single-incident example has a `## Timeline (UTC)` that covers entry → preparation → execution → where the funds went → response, with a Technique per step. Examples dated 2026-11 or later also have a `## Fund flow` oak-flow block.
 - **Root cause is evidenced.** `## Root-cause evidence` says which source established the mechanism and how settled it is. A same-day third-party analysis is never `confirmed`.
 - **Neutral framing.** Document mechanism and prevention. Attacker identity and fund disposition (returned, laundered, burned) are metadata; they do not make an incident more or less of an attack. Don't name private individuals who are not charged.
+- **Mitigations say what, how and why.** Each one names a concrete control, where it is enforced, and the real incident (linked) it would have stopped. No generic advice.
 - **Lean means less ceremony, not less content.** Don't drop timelines, addresses or fund flow to save time.
 
 ## How work lands

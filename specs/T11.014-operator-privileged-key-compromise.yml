@@ -80,7 +80,7 @@ false_positive_modes:
   - Privileged-address registries go stale after migrations; PATH A on an unregistered new admin produces silence, not noise
   - Market-making and treasury diversification can look like PATH D — require both size and speed
 
-mitigations: [OAK-M11, OAK-M16]
+mitigations: [OAK-M11, OAK-M16, OAK-M49]
 
 reference_implementations:
   - { target: mg-detectors-rs, chain: cross-chain, url: "" }

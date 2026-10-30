@@ -110,7 +110,7 @@ false_positive_modes:
   - PATH C false positives where chain-id binding is omitted intentionally for vendor-managed multi-chain deployment with disclosed scope (require absence of disclosed scope)
   - PATH D false positives for legitimate auto-routing wallet UX (e.g., gas-abstraction routers) — require recipient cluster match in drainer set
 
-mitigations: [OAK-M02, OAK-M21, OAK-M22, OAK-M30, OAK-M31, OAK-M39]
+mitigations: [OAK-M02, OAK-M21, OAK-M22, OAK-M30, OAK-M31, OAK-M39, OAK-M49]
 
 reference_implementations:
   - { target: wintermute-crimeenjoyor-dune,  chain: evm, url: "" }

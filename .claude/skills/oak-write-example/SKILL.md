@@ -38,3 +38,5 @@ Run each of these:
 4. `npx markdownlint-cli2 <file>`
 
 Then add the example to its primary Technique page under `### Additional incidents`. Also add it to the actor page's `## Observed Examples` if it is attributed to an OAK-Gnn actor. `npm run check` enforces both backlinks.
+
+**Mitigation, required from 2026-11:** on the primary Technique page, make sure `## Mitigations` has a bullet under `### What would have stopped the <year> cases`. The bullet says what control, how it is enforced (where it sits so the compromised component cannot switch it off) and why, meaning which step of *this* incident it breaks, with a link to the example. If no existing OAK-Mnn fits, propose a new mitigation file in the same what/how/why form (see `mitigations/OAK-M49-*`). Generic advice does not count. See CONTRIBUTING, "Mitigations: what, how, why". `python3 tools/check_mitigations.py` checks it.

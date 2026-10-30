@@ -63,7 +63,7 @@ false_positive_modes:
   - Exchange delisting or asset migration can produce simultaneous outflows across chains — check for prior operator announcement
   - Multi-chain outflows from a shared multi-chain address (e.g., a Gnosis Safe on multiple chains) due to a legitimate operational action — check for operator confirmation
 
-mitigations: []
+mitigations: [OAK-M50]
 
 reference_implementations:
   - { target: chainalysis-reactor,  chain: cross-chain, url: "" }

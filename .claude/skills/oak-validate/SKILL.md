@@ -24,6 +24,7 @@ Target: $ARGUMENTS (a single file, or the whole repo if empty).
 | `oak-flow …` errors | Check the role enum, full-length address or tx, that every edge's `from`/`to` matches a node `id`, that `verified: oak` has a `tx`, and that `verified: source` uses a citekey from Public references. |
 | `ACTOR BACKLINK ISSUES` | Add the example under `## Observed Examples` on the actor page. |
 | unsourced example (`check_sourcing`) | Add a cited URL in Public references. Never commit an unsourced example. |
+| `check_mitigations`: no bullet tied to a real example | Add a "What would have stopped" bullet: what control, how it is enforced, why (the step it breaks in the linked example). Generic text does not satisfy it. |
 | MD049 emphasis style | Use `_x_` instead of `*x*` in ROADMAP and docs. |
 
 `link-check` in CI is pre-existing red and does not block deployment.

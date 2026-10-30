@@ -97,6 +97,26 @@ edges:
 
 **Tracing it yourself:** `python3 tools/explorer.py trace <chain> <seed address> --hops 1 --yaml` follows outgoing transfers without an API key (Blockscout for EVM, mempool.space for Bitcoin). Results are cached in `.cache/explorer/`. Counterfeit tokens (no price and fewer than 1,000 holders) and zero-value transfers are skipped. Around large thefts, address-poisoning bots flood the attacker's wallets with fake "ETH"/"USDT" Transfer events from lookalike addresses, and following them would invent hops that never happened. Review every candidate edge before pasting it in. `examples/2026-10-binance-devops-laptop-service-container-hot-wallet-drain.md` is the reference.
 
+## Mitigations: what, how, why — tied to a real case
+
+A mitigation that names no incident is a slogan. Every mitigation bullet in a Technique's `## Mitigations`, and every `## How it applies` in a mitigation file, answers three questions:
+
+1. **What** to do: one concrete control, not a category. Write "the signer refuses `0x05` authorization payloads for custodial keys", not "improve wallet security".
+2. **How:** where it sits and who enforces it, so it holds when the obvious component is compromised. For example: "in the HSM policy, not in the service that requests signatures".
+3. **Why:** the real incident it would have stopped, the step it breaks, and a link to the example. For example: "Binance 2026-10-29: the 50 authorizations signed by Binance 14 → no delegated code → no 167,464 ETH sweep".
+
+Also state the limits: what the control does *not* stop, as M49 and M50 do. When a source makes a recommendation (Ondology's custodian list, a post-mortem's "lessons"), cite it. When the "would have stopped" is OAK's own reasoning from the mechanism, say so.
+
+On a Technique page, start the section with `### What would have stopped the <year> cases`, where every bullet links an example, then keep the general guidance below it. `examples/2026-10-binance-devops-laptop-service-container-hot-wallet-drain.md`, `techniques/T13.004-*`, `techniques/T15.003-*`, `mitigations/OAK-M49-*` and `mitigations/OAK-M50-*` are the reference.
+
+`tools/check_mitigations.py` (in `npm run check`) enforces the checkable part:
+
+- Mitigation files from OAK-M49 on must link an example under `## How it applies`.
+- A Technique that is the root cause of an example dated 2026-11 or later must have at least one case-tied mitigation.
+- Every bullet under "What would have stopped" must link an example.
+
+The ~200 older generic sections are listed by `--legacy` for backfill.
+
 ## Per-Technique template (defender's-eye-view)
 
 OAK is a **detection and defense** framework, not an offensive playbook. Every Technique page is written from the perspective of **what a defender, investigator, or risk team observes** — not as instructions for performing an action. Use this template:

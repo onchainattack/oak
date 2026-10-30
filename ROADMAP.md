@@ -28,7 +28,8 @@ Next small slices. Take one or two per session, then ship and log them:
 4. ✅ Native hops over RPC: the EOA nonce walk. It found Autheo's Relay bridge deposits and Polymarket's 28.6M POL split.
 5. ✅ Solana (public RPC balance deltas) and Tron (TronGrid). **Open:** XRP, Zcash.
 6. **Backfill (next session):** 61 pre-2026-09 timelines break a rule (`check_timeline.py --legacy`), and 282 examples have no fund-flow row (`--warn`). Work in batches by size of loss.
-7. **Follow-ups found while tracing:** follow TranchePool's CCTP burn to its Solana recipient (Solana is now supported); trace the Polymarket POL receivers; trace Bitget's Tron receiver (`TBWNgu…`, 20.59M TRX in).
+7. **Mitigation backfill (what/how/why):** about 200 Technique and mitigation sections are generic (`check_mitigations.py --legacy`). Rewrite them case by case, biggest-loss techniques first. Each bullet needs a concrete control, where it is enforced, and the linked incident it would have stopped.
+8. **Follow-ups found while tracing:** follow TranchePool's CCTP burn to its Solana recipient (Solana is now supported); trace the Polymarket POL receivers; trace Bitget's Tron receiver (`TBWNgu…`, 20.59M TRX in).
 
 #### 1. Write proper entries for real incidents that were filed under the wrong mechanism
 
@@ -96,6 +97,11 @@ Known leftovers: OAK-T11.001 (BitMart described with "1Password"), OAK-T17.005 (
 
 Newest first. Each entry: what, commit, why.
 
+- **2026-10-30 — Mitigations must say what, how and why; Binance cause wording corrected** (this commit). _Why:_ the user pointed out that OAK's mitigations were empty words, and that I wrote most of them. They named no incident, and the control that would have stopped Binance's Ethereum takeover was not in OAK at all.
+  - **New mitigations.** OAK-M49: custodial signers refuse EIP-7702 authorizations and watch their EOAs for code. OAK-M50: withdrawal approval sits outside the service that submits withdrawals. Both are tied step by step to Binance, Bitget, Gamdom, Bloom and AlpsCon.
+  - **Rewritten sections.** T13.004 and T15.003 now open with "What would have stopped the 2026 cases".
+  - **Enforced.** `tools/check_mitigations.py` is in `npm run check`, and the rule is written into CONTRIBUTING, CLAUDE.md and the skills, so contributors cannot slip generic text through. About 200 legacy sections are listed for backfill.
+  - **Binance wording.** Teng's own post says the attack *may have started* on a DevOps engineer's laptop, but that it was a multi-step process, not one engineer's permissions, and that **no individual is held responsible**. "Additional points of breach" appears only in press paraphrases, not in Binance's posts, and is now labelled as such.
 - **2026-10-30 17:00 UTC — Binance follow-up** (this commit). _Why:_ new statements arrived during the day.
   - **Statements and figures.** Yi He (04:17 UTC): deposits normal, withdrawals expected within 48 h after "enhancements to the withdrawal service and related address controls". TRM's figure is \$6.36B. Ondology saw small bridge tests through MetaMask's router and LI.FI.
   - **OAK's own snapshot** (block 26306931). Both main ETH holdings (197,460 and 17,260 ETH) have nonce 0, so they have never sent a transaction. The receiver is down to 4.5 ETH after 703 outgoing transactions.
