@@ -12,6 +12,23 @@
 
 On 2026-10-01 Microsoft's official X account posted promotions for CLIPPY, an unofficial meme coin playing on Clippy and the MSFT ticker. The posts were removed; an apology appeared about 30 minutes later and was itself quickly deleted. Microsoft said the account was secured, that it never authorised use of its IP for a token, and that it would pursue removal of the token and its marketing.
 
+## Timeline (UTC)
+
+Read it as three stages. **Get in**: undisclosed access to the account. **Prepare**: not published. **Take**: a few minutes of posts promoting a token. Exact times are not given in the cited source (Bitcoin.com News, 2026-10-02).
+
+| When | What happened | OAK |
+|---|---|---|
+| Before 2026-10-01 (undisclosed) | How the attacker gained access to Microsoft's X account is not published. | **T15.006** entry |
+| 2026-10-01 (Thursday, time undisclosed) | The account follows an account promoting CLIPPY, an unofficial meme coin built on Clippy and the MSFT ticker, reposts one of its tweets, and changes its profile picture to Clippy. | **T15.006** |
+| same day | The CLIPPY promotion rides the account's reach. A promoter account cites liquidity pools reportedly worth over \$200,000; claims that Microsoft shares back them are unverified. | **T3.004** |
+| same day | The posts are removed. An apology tweet appears about 30 minutes later and is deleted almost as quickly. | response |
+| 2026-10-01 | Microsoft confirms to The Verge "unauthorized access to our account on X, including posts that did not come from Microsoft", says the account is secured and the unauthorized posts removed, and that it is still investigating. The deleted apology said Microsoft never authorized token promotion with its IP and would seek the token's removal. | response |
+| after the posts | Buyer losses and where any funds went are not reported; the token's chain is not reported. | — |
+
+Key addresses:
+
+- No wallet, token-contract or pool addresses are published in the cited source.
+
 ## Root-cause evidence
 
 - **Technique:** OAK-T15.006

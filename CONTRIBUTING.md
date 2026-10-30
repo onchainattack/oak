@@ -37,6 +37,41 @@ Every worked example dated 2026-10 or later must carry a `## Root-cause evidence
 
 `confirmed` needs the operator's own post-mortem or a government source that states the mechanism. `corroborated` needs two independent sources. One security firm's alert relayed by several outlets is `reported`, not `corroborated`. Use `disputed` when credible sources conflict, and say how. A same-day third-party analysis is never `confirmed`: OAK's KelpDAO and THORChain misclassifications both came from treating one as settled.
 
+## Timeline, key addresses and fund flow on worked examples
+
+**The test for any example:** could a defender replay the incident from this file alone, and see that every step is a known Technique?
+
+Every single-incident example (file name `YYYY-MM-…`) carries a `## Timeline (UTC)` table that runs **end to end**:
+
+1. **Entry or flaw** — how the attacker got in, or what was broken and since when.
+2. **Preparation** — funding (for example Tornado withdrawals), deployments, rehearsals, approvals left open.
+3. **Execution** — the exploit transactions.
+4. **Where the funds went** — swaps, bridges, mixers, CEX deposits, the holding address. If the funds did not leave, say so: frozen, returned, or not moved as of a given date.
+5. **Response** — pause, freeze, statement, fix, refunds.
+
+```markdown
+## Timeline (UTC)
+
+| When | What happened | OAK |
+|---|---|---|
+| 2026-10-29 20:20:59 | [`0xad99…full hash`](https://etherscan.io/tx/0x…) carries 50 EIP-7702 authorizations signed by Binance 14 | **T13.004** |
+| 2026-10-29 21:01:35 | Tether freezes the receiver | response |
+
+Key addresses:
+
+- Attacker EOA — [`0x…full address`](https://etherscan.io/address/0x…)
+```
+
+Rules (`tools/check_timeline.py`, part of `npm run check`):
+
+- Each row's OAK cell is a Technique declared in **OAK Techniques observed:**, or `response`, or `—`. The root-cause Technique appears on the step where that mechanism happens.
+- **Addresses and transaction hashes are written in full and linked to the chain's explorer, never shortened.** They are public, and they are how a reader checks the work and links one incident to another. If a source publishes only a shortened form, keep it as given and write "(full address not published)".
+- List every address the sources give, by role, under **Key addresses**: attacker EOA, attack contract, vulnerable or victim contract, receiving and holding wallets, mixer or bridge deposits.
+- A stage that is not public stays in the table as **undisclosed**. Do not leave it out, and do not fill it in.
+- Say what the source verified against what it relayed (for example "verified on-chain by X; other chains from Y"). When the funds are still moving, add a dated **Where the funds are** snapshot and a **What is not known yet** list. `examples/2026-10-binance-devops-laptop-service-container-hot-wallet-drain.md` is the reference.
+
+The rules are hard failures from 2026-09 on, and for any example with no timeline at all. Older tables that break a rule are reported as legacy until the backfill in `ROADMAP.md` clears them.
+
 ## Per-Technique template (defender's-eye-view)
 
 OAK is a **detection and defense** framework, not an offensive playbook. Every Technique page is written from the perspective of **what a defender, investigator, or risk team observes** — not as instructions for performing an action. Use this template:

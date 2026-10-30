@@ -12,6 +12,22 @@
 
 Polkadot published the warning on 2026-10-21 and told users to create new keys in another wallet.
 
+## Timeline (UTC)
+
+Read it as three stages. **Get in**: malicious code in the browser extension. **Prepare**: not published. **Take**: keys leaked to an outside server, then spent by someone. Times are from Polkadot's notice; press detail is as summarised in this file (Crypto Briefing could not be fetched).
+
+| When | What happened | OAK |
+|---|---|---|
+| Before 2025-02 (undisclosed) | How the leaking code entered the Fearless Wallet browser extension build is not published. | **T11.002** entry |
+| From 2025-02 | The extension begins leaking users' private keys. Press names extension versions 3.0.1, 3.0.3, 3.0.4 and 3.0.5, and says the mobile apps did not contain the code. | **T11.002** |
+| 2025-02 to 2026-10 (undisclosed) | Where the keys were sent and when funds were taken are not published. Eight users report 17,286 DOT stolen in total (Polkadot Community Foundation via press). | — |
+| before 2026-10-21 (undisclosed) | The Polkadot Technical Fellowship investigates on behalf of the Polkadot Community Foundation and finds the extension compromised. | — |
+| 2026-10-21 14:13:03 | Polkadot publishes a security alert: Fearless is an independent third-party wallet, the extension has leaked keys since February 2025, and users should create a new keypair in a different wallet and move funds. | response |
+
+Key addresses:
+
+- No attacker, receiving or exfiltration-server addresses are published in the cited sources.
+
 ## Root-cause evidence
 
 - **Technique:** OAK-T11.002

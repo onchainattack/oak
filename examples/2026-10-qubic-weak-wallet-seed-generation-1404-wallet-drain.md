@@ -12,6 +12,20 @@
 
 Qubic halted the chain at tick 85,371,949, published an update on 2026-10-18 and restarted around 2026-10-20 with a claims process.
 
+## Timeline (UTC)
+
+Read it as three stages. **Flaw**: some wallet software generated predictable seeds. **Take**: 1,404 wallets are emptied in 104 minutes. **Contain**: the chain is halted, most of the QU is stuck on-chain, an exchange freezes the rest. Sources give no addresses or transaction hashes.
+
+| When | What happened | OAK |
+|---|---|---|
+| Before 2026-10-17 (undisclosed; Qubic puts the earliest affected wallets at legacy Apple devices and early iOS app builds) | Qubic's wallet software on certain browsers (Safari), legacy Apple devices and early iOS app builds generates weak, predictable seeds. Wallets created that way can be re-derived by anyone. The protocol itself is not at fault. | **T11.004** |
+| Before 2026-10-17 23:42 (undisclosed) | How the attacker found and enumerated the weak seed space is not published. | **T11.004** |
+| 2026-10-17 23:42 to 2026-10-18 01:26 | An attacker drains 1,404 wallets, about 2.94 trillion QU (about \$1.3M), in about 1 hour 44 minutes. | **T11.004** |
+| 2026-10-18 (after 01:26) | Validators stop the chain at tick 85,371,949, which locks the ledger. About 87.1% of the drained QU never left the network and is immobilised on-chain. | response |
+| 2026-10-18 (within 1 hour of arrival) | The other 12.9% reaches MEXC. MEXC freezes the receiving account within an hour on suspicion that it is linked to the attack. Bitget separately suspends QUBIC deposits and withdrawals. | response |
+| 2026-10-18 | Qubic ships client 4.26.4 to fix seed generation and says it secured further funds exposed to the same flaw before they could be taken. QEARN staking is unaffected. | response |
+| 2026-10-18 12:29 | Qubic publishes its security incident update. Whether victims are compensated is left to a vote of the Computor cluster; Crypto Briefing says affected users are advised to file police reports. Later restart and return steps are not covered by the sources fetched here. | response |
+
 ## Root-cause evidence
 
 - **Technique:** OAK-T11.004

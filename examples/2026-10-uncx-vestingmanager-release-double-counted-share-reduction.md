@@ -12,6 +12,29 @@
 
 On 2026-10-14 an attacker created vesting positions in UNCX's shared `VestingManager`, released a large one, donated tokens into the pool and cancelled a topped-up vest, leaving a small residual position that could withdraw other users' locked tokens. Blockaid raised the alarm; ExVul published the accounting analysis. UNCX blocked new positions in the contract, raised flat lock fees (first 100 ETH, then above 1,000 ETH per lock) and token fees to 5%, closed fee-bypass methods, and said its liquidity lockers and legacy vesting contracts are not affected. It is working with law enforcement and SEAL 911 and preparing an incident report and recovery plan.
 
+## Timeline (UTC)
+
+Read it as three stages. **Flaw**: one exit path retires shares twice. **Take**: positions, a donation and a cancel leave a tiny position able to withdraw others' tokens; copycats repeat it on three more chains. **After**: no funds returned; UNCX restricts the contract. Times are from Blockaid, ExVul and Bitcoin.com News.
+
+| When | What happened | OAK |
+|---|---|---|
+| Before 2026-10-14 (since when: undisclosed) | In the shared `VestingManager`, `release()` subtracts claimed shares from the global `_totalTokenShares` but leaves them in the position's `_depositedShares`. After `release()` then `topUpVesting()`, `cancel()` works from the full lifetime `_depositedShares`, so released shares leave the global total a second time (ExVul). | **T9.016** |
+| 2026-10-14 (before 16:26 UTC) | The attacker creates vesting positions in the shared pool, releases a large one, and tops one up. Funding of the attacker address is not published. | T9.016 |
+| 2026-10-14 (before 16:26 UTC) | Tokens are donated directly into the pool to magnify the stale-share debit, and the topped-up vest is cancelled. The global share count falls below what other users' positions are owed. A second attacker-owned vesting is then released and takes tokens backing unrelated users ([`0x352065378c4a41b77e5b6a1e5b5616cd2886c3e1a2c87ed3db8e5ddddc23823d`](https://etherscan.io/tx/0x352065378c4a41b77e5b6a1e5b5616cd2886c3e1a2c87ed3db8e5ddddc23823d)). | **T9.016** |
+| 2026-10-14 16:26:29 | Blockaid detects an ongoing exploit: ~\$86K drained from the shared pool in one drain transaction, with ~\$3.25M still in the Ethereum contract. | — |
+| 2026-10-14 16:34:42 | ExVul: five ERC-20s (EDGEN, ZC, PEPECOIN, LO0P, PAAL) worth ~\$87.7K drained. The exploit contract **retains** ~\$85.6K of them; profit after 0.5624 ETH fees and gas is ~\$84.2K. The same accounting path is still live at the latest checked block. | — |
+| 2026-10-14 → 10-15 06:19:02 | Copycats and MEV bots reach the same flaw. Blockaid's update counts **11 drain transactions across four chains, ~\$1.49M**: BNB Chain ~\$969K, Ethereum ~\$242K, Robinhood Chain ~\$169K, Base ~\$114K. UNCX later says ten tokens are affected. | T9.016 |
+| After the drains | Funds sit in the exploit contract and copycat wallets; UNCX says neither the original attacker nor copycats have returned anything. No laundering step is reported. | — |
+| 2026-10-14 19:00 ET (23:00 UTC) | UNCX blocks new positions in the affected contract, raises flat lock fees (first 100 ETH, then above 1,000 ETH per lock) and token fees to 5%, and closes fee-bypass methods. It says liquidity lockers and legacy vesting contracts are not affected, is working with law enforcement and SEAL 911, advises against trading affected tokens in affected pools, and is preparing an incident report and recovery plan. | response |
+
+Key addresses:
+
+- Attacker — [`0x78c9b11853e4f183a34c63ffd1924d2319a2f5b3`](https://etherscan.io/address/0x78c9b11853e4f183a34c63ffd1924d2319a2f5b3)
+- Exploit contract (retains the tokens) — [`0xf6d072254eb8a9b06e0ba21221b498332c1bc35e`](https://etherscan.io/address/0xf6d072254eb8a9b06e0ba21221b498332c1bc35e)
+- Victim (UNCX Smart Token Vesting, Ethereum) — [`0xa98f06312b7614523d0f5e725e15fd20fb1b99f5`](https://etherscan.io/address/0xa98f06312b7614523d0f5e725e15fd20fb1b99f5)
+- First attack transaction — [`0x352065378c4a41b77e5b6a1e5b5616cd2886c3e1a2c87ed3db8e5ddddc23823d`](https://etherscan.io/tx/0x352065378c4a41b77e5b6a1e5b5616cd2886c3e1a2c87ed3db8e5ddddc23823d)
+- Contracts and copycat addresses on BNB Chain, Robinhood Chain and Base — not published in the cited sources (Blockaid's thread lists the drain transactions)
+
 ## Root-cause evidence
 
 - **Technique:** OAK-T9.016

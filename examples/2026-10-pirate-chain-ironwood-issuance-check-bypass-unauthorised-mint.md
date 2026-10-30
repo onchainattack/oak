@@ -12,6 +12,23 @@
 
 On 2026-10-14 developers found the unauthorised issuance and announced a rollback to 20:00 UTC that day, asking exchanges to suspend ARRR deposits and withdrawals. On 2026-10-15 the team withdrew the rollback: *"Because Pirate Chain is decentralized, it is not possible to freeze the network or unilaterally rollback its blockchain history."* dPoW notaries suspended notarisations, exchanges and pools were asked to pause, and users were asked not to move funds while a recovery plan and post-mortem are prepared.
 
+## Timeline (UTC)
+
+Times are from the two Pirate Chain posts. The project has not published transaction hashes or addresses.
+
+| When | What happened | OAK |
+|---|---|---|
+| 2026-10-03 | The Ironwood upgrade activates (date as stated in this file's summary of earlier sources). It adds a transparent supply-accounting layer around the turnstile, where the flaw later sits. | **T9.014** |
+| 2026-10-03 to 10-14 | How long the flaw is exploitable before use, and any attacker preparation, is undisclosed. | — |
+| 2026-10-14 (time undisclosed) | A transaction bypasses the issuance check and exploits incorrect interpretation of output scripts, creating about 39.8M ARRR, about 20% of supply. Developers discover it the same day. | **T9.014** |
+| 2026-10-14 | The new coins are immediately moved into the Sapling shielded pool. NonKYC spots suspicious deposits and restricts the associated account. The full onward movement cannot be traced. | — |
+| 2026-10-15 02:20 | The team announces a rollback to 2026-10-14 1:00 PM Pacific (20:00 UTC) and tells exchanges to suspend deposits and withdrawals. | response |
+| 2026-10-15 16:46 | The team withdraws the rollback (a decentralised chain cannot be frozen or rolled back unilaterally). dPoW notaries suspend notarisations; exchanges and pools are asked to pause; users are asked not to move funds. A post-mortem is promised. | response |
+
+Key addresses:
+
+- Addresses — none published in the cited sources (full addresses not published)
+
 ## Root-cause evidence
 
 - **Technique:** OAK-T9.014

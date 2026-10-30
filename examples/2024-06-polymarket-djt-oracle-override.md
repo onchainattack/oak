@@ -16,6 +16,24 @@ Polymarket uses UMA's "optimistic oracle" as its designated resolution mechanism
 
 The case highlights a structurally general pattern: any DeFi protocol that uses a "decentralised" oracle as a resolution/dispute/settlement mechanism can be contradicted by the protocol's governance or the platform. The oracle's outcome is a signal input; the platform's willingness to compensate against it is the real settlement authority. The gap between the oracle's stated outcome and the platform's actual resolution is the T9.006.005 detection surface.
 
+## Timeline (UTC)
+
+Read it as three stages. **Setup**: a rumour creates a market. **Oracle**: UMA votes NO. **Override**: the platform contradicts its own oracle and compensates YES holders. This is a market-integrity dispute, not a theft. DL News is the main source for dates; the CoinDesk and Crypto Times pages were not retrievable when this timeline was written.
+
+| When | What happened | OAK |
+|---|---|---|
+| Before 2024-06-17 (approx.) | Pirate Wires posts on X that "Trump is launching an official token — \$DJT on Solana" with "Barron spearheading". Trump spokespeople never comment. Polymarket bettors create markets on whether \$DJT is real and whether Barron was involved (DL News). | — |
+| 2024-06-20 | Odds that Barron was involved peak at 60%, then fall as no evidence appears. Over \$1 million is wagered on the "preponderance of evidence" market (DL News). | — |
+| 2024-06-23 → 06-24 | Evidence cut-off for the market is 06-23. On Monday 06-24 UMA token holders vote overwhelmingly that a preponderance of evidence does not show Barron's involvement: the oracle outcome is NO (DL News). | — |
+| 2024-06-26 | Polymarket says it believes UMA "got this resolution wrong" and promises a "near-term solution" to "uphold the integrity of the marketplace and pricing" (DL News). It then states it is "conclusive" that Barron was involved in some way, without publishing evidence (CoinDesk, Crypto Times as cited in this entry). | **T9.006.005** |
+| 2024-06-26 → 06-28 | Polymarket announces refunds to holders of the YES side instead of resolving the market to YES. Final refund mechanics are not confirmed in the sources reviewed. | **T9.006.005** |
+| 2024-06 (no funds stolen) | No theft or contract exploit occurred, so there is no attacker fund flow. The money at stake was bettors' positions on the market; the NO resolution and the platform's refund to YES holders are the whole movement. | — |
+| After 2024-06-26 | Polymarket pledges to improve its oracle and resolution methods. Whether it changed anything is not shown in the sources reviewed. | response |
+
+Key addresses:
+
+- No on-chain exploit and no attacker addresses: none published in the cited sources.
+
 ## Public references
 
 - `[theblockpolydjt2024]` — The Block, "Polymarket contradicts UMA's resolution on Barron Trump's involvement with DJT token" (2024-06-27): <https://www.theblock.co/post/302171/polymarket-contradicts-umas-resolution-on-barron-trumps-involvement-with-djt-token>

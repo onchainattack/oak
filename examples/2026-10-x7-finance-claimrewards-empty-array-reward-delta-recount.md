@@ -10,7 +10,23 @@
 
 ## Summary
 
-On 2026-10-08 an attacker repeatedly called `claimRewards()` on X7Pioneer (`0x7000…49c9e4f7`) with an empty token list after donating ETH, inflating `totalRewards`, then claimed the inflated rewards (tx `0xc98056d6…1766d`).
+On 2026-10-08 an attacker repeatedly called `claimRewards()` on X7Pioneer ([`0x70000299ee8910ccacd97b1bb560e34f49c9e4f7`](https://etherscan.io/address/0x70000299ee8910ccacd97b1bb560e34f49c9e4f7)) with an empty token list after donating ETH, inflating `totalRewards`, then claimed the inflated rewards (tx [`0xc98056d6ab55ef898189da5fa1fb08b968cb84ca99528d171f8240836b21766d`](https://etherscan.io/tx/0xc98056d6ab55ef898189da5fa1fb08b968cb84ca99528d171f8240836b21766d)).
+
+## Timeline (UTC)
+
+Only the SlowMist alert time is public.
+
+| When | What happened | OAK |
+|---|---|---|
+| Before 2026-10-08 (undisclosed) | In X7Pioneer ([`0x70000299ee8910ccacd97b1bb560e34f49c9e4f7`](https://etherscan.io/address/0x70000299ee8910ccacd97b1bb560e34f49c9e4f7)), `claimRewards()` adds `address(this).balance - lastETHBalance` to `totalRewards` on every call but updates `lastETHBalance` only when `claimable > 0`. Since when is not stated. | **T9.016** |
+| 2026-10-08 (time undisclosed) | The attacker ([`0xc79352119a7cf6efbfabbd7e6b013b79687bacf2`](https://etherscan.io/address/0xc79352119a7cf6efbfabbd7e6b013b79687bacf2)) donates ETH to enlarge the delta, then calls `claimRewards()` repeatedly with an empty array, inflating `totalRewards`, and claims the inflated rewards ([`0xc98056d6ab55ef898189da5fa1fb08b968cb84ca99528d171f8240836b21766d`](https://etherscan.io/tx/0xc98056d6ab55ef898189da5fa1fb08b968cb84ca99528d171f8240836b21766d)). | **T9.016** |
+| after the claim | Loss ~6.78 ETH (~\$16.5K). Where it went is not stated (undisclosed). | — |
+| 2026-10-08 10:28 | SlowMist publishes its alert. No project statement or fix appears in the cited sources. | response |
+
+Key addresses:
+
+- Attacker — [`0xc79352119a7cf6efbfabbd7e6b013b79687bacf2`](https://etherscan.io/address/0xc79352119a7cf6efbfabbd7e6b013b79687bacf2)
+- Victim and vulnerable contract (X7Pioneer) — [`0x70000299ee8910ccacd97b1bb560e34f49c9e4f7`](https://etherscan.io/address/0x70000299ee8910ccacd97b1bb560e34f49c9e4f7)
 
 ## Root-cause evidence
 

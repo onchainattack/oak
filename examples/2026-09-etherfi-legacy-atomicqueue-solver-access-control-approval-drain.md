@@ -6,7 +6,7 @@
 
 **Explicitly not OAK-T4.004** (Allowance / Approve Drainer). No approval was solicited, phished, or obtained under false pretences — every one of them was granted knowingly, to a legitimate contract, for its documented purpose. The distinction is operational, not pedantic: T4.004 is detected by watching **what users are asked to sign**, and nothing here would have tripped it. This class is detected by watching **what a deprecated contract is still authorised to do.**
 
-**Attribution:** **pseudonymous.** On-chain identifiers only. The exploit was identified and published by **ExVul** and **SlowMist**; the vulnerable contract is `0xd45884b5…ea07`, labelled *"ether.fi: Withdrawal Queue"* on Etherscan.
+**Attribution:** **pseudonymous.** On-chain identifiers only. The exploit was identified and published by **ExVul** and **SlowMist**; the attacker is [`0xa5cc6e490bce9185fa47b421f2eac677a83b64ea`](https://etherscan.io/address/0xa5cc6e490bce9185fa47b421f2eac677a83b64ea) (exploit tx [`0x7cbe0b4349513fed6d03ba8bf9ed708e10e07a501d10b5f344a25ae10595599b`](https://etherscan.io/tx/0x7cbe0b4349513fed6d03ba8bf9ed708e10e07a501d10b5f344a25ae10595599b)); the vulnerable contract is [`0xd45884b592e316eb816199615a95c182f75dea07`](https://etherscan.io/address/0xd45884b592e316eb816199615a95c182f75dea07), labelled *"ether.fi: Withdrawal Queue"* on Etherscan.
 
 **Key teaching point:** **An approval is a standing grant to whatever the code at that address decides to do, for as long as the address exists — so deprecating a contract without clearing its approvals leaves a loaded, user-funded weapon in the field.** Both parties who could have defused it had a good reason not to be looking. ether.fi had migrated users to a new withdrawal stack and stopped thinking about the old one; the users had granted an approval once, to a contract that worked, and had no event to prompt them to revisit it. Nobody was wrong in a way they would have noticed. The control follows from that: **revocation is a step in the migration, not a hygiene tip for users.** When a protocol retires a contract that holds approvals, it should publish the address, prompt revocation in its own interface, and — where the contract is ownable or upgradeable — disable the entry point rather than rely on disuse. A contract nobody uses and everybody still trusts is the most dangerous combination in the approval model.
 
@@ -30,7 +30,7 @@ The stolen liquidETH was sold through Uniswap v4 in three swaps and the USDC thr
 | 07:20:11, block 25952624 | Single transaction: **`updateAtomicRequest()`** files an offer of a worthless attacker-minted token; **`solve()`** names eleven approving wallets; `safeTransferFrom` pulls **14.4455 liquidETH + ~7.05 USDC**. Gas cost **0.000685 ETH** | **T9.004 exploitation** |
 | (same path) | **`finishSolve`** callback is a no-op for EOAs and for seven **EIP-7702**-delegated Coinbase Wallet addresses | (no policy layer to intervene) |
 | minutes later | liquidETH sold on **Uniswap v4** (2.4728 / 6.4949 / 6.4830 ETH); USDC via **v3** (0.002853 WETH) | (extraction) |
-| shortly after | **Tornado Cash** relayer `0xd90e…F31b`: 1×10, 5×1, 5×0.1 ETH = **15.5 ETH**; ~0.03701 ETH left undeposited | **T7.001** |
+| shortly after | **Tornado Cash** relayer `0xd90e…F31b` (full address not published in the cited sources): 1×10, 5×1, 5×0.1 ETH = **15.5 ETH**; ~0.03701 ETH left undeposited | **T7.001** |
 | same day | **ExVul** and **SlowMist** publish the mechanism and the contract address | (external forensics) |
 | same day | ether.fi CEO acknowledges, attributes to "an old Veda contract," pledges **full reimbursement**; users told to revoke approvals to `0xd4…ea07` | (operator response) |
 | as of 2026-09-12 | **No formal post-mortem and no reimbursement transaction hashes published** | (open item) |
@@ -45,7 +45,8 @@ The stolen liquidETH was sold through Uniswap v4 in three swaps and the USDC thr
 
 ## Public references
 
-- `[cryptotimesetherfi2026]` — The Crypto Times, "ether.fi Loses 15.45 ETH in Legacy AtomicQueue Exploit; CEO Pledges Full User Reimbursement" (2026-09-11 07:20:11 UTC, block 25952624; `solve()` accepted solver from caller; 11 wallets; Uniswap v4/v3 swaps; Tornado ladder; contract `0xd45884b5…ea07`): <https://www.cryptotimes.io/2026/09/11/ether-fi-loses-15-45-eth-in-legacy-atomicqueue-exploit-ceo-pledges-full-user-reimbursement/>
+- `[slowmistetherfi2026]` — SlowMist TI alert, AtomicQueue root cause with attacker, contract and tx: <https://x.com/SlowMist_Team/status/2098344499923784048>
+- `[cryptotimesetherfi2026]` — The Crypto Times, "ether.fi Loses 15.45 ETH in Legacy AtomicQueue Exploit; CEO Pledges Full User Reimbursement" (2026-09-11 07:20:11 UTC, block 25952624; `solve()` accepted solver from caller; 11 wallets; Uniswap v4/v3 swaps; Tornado ladder; contract [`0xd45884b592e316eb816199615a95c182f75dea07`](https://etherscan.io/address/0xd45884b592e316eb816199615a95c182f75dea07)): <https://www.cryptotimes.io/2026/09/11/ether-fi-loses-15-45-eth-in-legacy-atomicqueue-exploit-ceo-pledges-full-user-reimbursement/>
 - `[panewsetherfi2026]` — PANews, "ether.fi Loses Approximately 15.45 ETH Due to Access Control Vulnerability in AtomicQueue Contract" (missing access control in `solve()`; attacker-created worthless token used to stage the offers): <https://panews.io/articles/01a08fd3-7c49-7256-aff3-8ab8cfbaec30>
 
 ## Discussion

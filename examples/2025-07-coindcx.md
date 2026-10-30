@@ -14,6 +14,28 @@
 
 The account was drained in the early hours of 2025-07-19; ZachXBT identified the affected wallet as CoinDCX's before the exchange announced it. CoinDCX first described a server breach. After a complaint from Neblio Technologies, Bengaluru police detained a staff engineer on 2025-07-31 and seized his laptop. Police said hackers had tricked him into installing malware through a part-time job offer. The engineer said he worked for up to four private clients while employed and denied involvement in the theft.
 
+## Timeline (UTC)
+
+Read it as four stages. **Get in**: a recruiter lure, malware on a work laptop, then company servers. **Prepare**: a Tornado-funded address. **Take**: the internal liquidity account is drained. **Move**: Solana to Ethereum. The sources give dates, and clock times only in local time, so rows carry dates.
+
+| When | What happened | OAK |
+|---|---|---|
+| Before 2025-07-19 (date undisclosed) | Attackers posing as recruiters offer a CoinDCX staff engineer part-time work and induce him to install malware on his company-issued laptop (Bengaluru police, via The Indian Express). The malware family is not published. | **T15.001** |
+| Before 2025-07-19 (date undisclosed) | The engineer's credentials are compromised through the laptop, which gives access to company servers and to an internal account used for liquidity provisioning on a partner exchange (Neblio complaint, via Cointelegraph). | **T15.003** |
+| Shortly before the first outflow | The attacker's receiving address is funded with 1 ETH withdrawn from Tornado Cash (ZachXBT; Merkle Science). | **T7.001** (funding) |
+| 2025-07-19, early hours | A test transfer of 1 USDT leaves the account. Later that morning about \$44.2M in USDT and USDC is moved to six wallets (Cointelegraph, Ondology). | **T15.003** |
+| 2025-07-19 onward | The attacker converts the proceeds to SOL through Jupiter in batches, then bridges them from Solana to Ethereum via Wormhole (Merkle Science). | **T7.003** |
+| By 2025-07-21 | The funds are consolidated into one Ethereum address holding about 4,443 ETH and 155,830 SOL, dormant as of CoinDCX's statement (TechCrunch; Merkle Science). | — |
+| 2025-07-19 | CoinDCX CEO Sumit Gupta discloses the incident, says the affected account was isolated, that no customer funds are involved, and that CoinDCX will absorb the loss from treasury. ZachXBT had already linked the wallet to CoinDCX. | response |
+| 2025-07-21 | CoinDCX offers up to 25% of recovered funds as a bounty and says it is working with CERT-In and partner exchanges (TechCrunch). | response |
+| 2025-07-31 | Bengaluru police detain a staff engineer and seize his laptop after Neblio's complaint. He denies involvement in the theft (Cointelegraph). | response |
+
+Key addresses:
+
+- Attacker receiving address (funded with 1 ETH from Tornado Cash) — full address not published
+- Compromised internal liquidity account (Solana) — full address not published
+- Final Ethereum holding address (about 4,443 ETH) — full address not published
+
 ## Root-cause evidence
 
 - **Technique:** OAK-T15.001

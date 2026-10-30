@@ -12,6 +12,18 @@
 
 Bloom published its findings on 2026-10-26 and is tracing funds.
 
+## Timeline (UTC)
+
+Bloom's statement is the only source, and it gives no clock times, transaction hashes or addresses. Stages that it does not describe are marked undisclosed.
+
+| When | What happened | OAK |
+|---|---|---|
+| Before 2026-10-26 (undisclosed) | A third-party module used in Bloom's infrastructure contains a Remote Code Execution (RCE) flaw. The module is not named and the date it was introduced is not published. | **T15.003** |
+| Before 2026-10-26 (undisclosed) | Preparation by the attacker (funding, tooling) is not published. | — |
+| Before 2026-10-26 (undisclosed) | The attacker exploits the module and moves funds out of 49 bot wallets belonging to 9 users, about 9,408 SOL (about \$947K). Bloom says no private keys were accessed or compromised, so the code ran where it could move the custodial bot wallets without exporting keys. Transactions are not published. | **T15.003** |
+| Undisclosed | Where the stolen SOL went (swaps, bridges, exchange deposits, holding address) is not published. Bloom says it is tracing the funds and exploring recovery and freezing options. | — |
+| 2026-10-26 09:12 | Bloom publishes its statement: attack vector identified, scope confirmed at 49 wallets of 9 users, broader wallet exposure ruled out, and 100% reimbursement promised to secure wallets designated by the affected users. | response |
+
 ## Root-cause evidence
 
 - **Technique:** OAK-T15.003

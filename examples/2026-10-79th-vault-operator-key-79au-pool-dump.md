@@ -14,6 +14,27 @@
 
 On 2026-10-07 the 79th Vault operator's hot wallet moved 2.01M 79AU out of a contract and sold it into the PancakeSwap 79AU/USDT pool in about 95 trades, draining ~\$11.3M of USDT and converting the proceeds to ~16,249 BNB. The team attributed it to a stolen operator key, repaired the affected permissions, and offered a settlement. On 2026-10-09 the attacker returned 15,000 BNB.
 
+## Timeline (UTC)
+
+Read it as three stages. **Get in**: an operator key is obtained through weak account-permission management. **Take**: the operator wallet moves 79AU out of the pool contract and sells it back into the pool. **Move and respond**: proceeds become BNB, most of it is later returned.
+
+| When | What happened | OAK |
+|---|---|---|
+| Before 2026-10-07 (undisclosed) | An attacker obtains an operator's private key "through a flaw in account-permission management" (79th Vault statement). How the key was obtained is not published. Defimon's first alert named insider activity as an alternative. The 79AU contract has an `OPERATOR_ROLE`-only function that can move tokens from the pool and update its reserves. | **T11.014** |
+| 2026-10-07 07:25–08:25 | The operator wallet moves 2.01M 79AU out of the pool in seven transactions (10,000; 100,000; 100,000; 300,000; 500,000; 500,000; 500,000) to another address (TokenPost; KuCoin News citing PeckShield). | **T11.014** |
+| 2026-10-07 (same window) | The 79AU is sold back into the 79AU/USDT PancakeSwap pool in about 95 transactions. The pool's USDT reserve falls from about \$15.2M to \$3.9M and the price spikes briefly (TokenPost). | **T5.001** |
+| 2026-10-07 | The USDT is converted on-chain into 16,249 BNB, sent to a separate address. The operator wallet sends a further 3.79 BNB to the same address 41 seconds later (TokenPost). | — |
+| 2026-10-07 | The `OPERATOR_ROLE` permission is revoked afterwards (TokenPost). | response |
+| 2026-10-08 | 79th Vault publishes a statement: permissions repaired and reviewed, attack addresses identified, a white-hat settlement offered under its bug-bounty framework, the other party has replied (79th Vault on X). | response |
+| 2026-10-09 | The attacker returns 15,000 BNB (about \$11M) to the project's designated wallet, and had sent 30 BNB to KuCoin. The rest is unaccounted for (PeckShield via KuCoin News). | response |
+
+Key addresses:
+
+- Operator hot wallet (compromised) — full address not published
+- Receiving address for the withdrawn 79AU and the 16,249 BNB — full address not published
+- 79AU contract and 79AU/USDT PancakeSwap pool — full addresses not published
+- Project wallet that received the returned 15,000 BNB — full address not published
+
 ## Root-cause evidence
 
 - **Technique:** OAK-T11.014

@@ -35,6 +35,21 @@ The Balland case became the emblematic incident of a broader **2024–2026 wave 
 - **This is the confirmed anchor for the proposed wrench-attack Technique.** The corpus has now flagged the covering-Technique gap in three physical-extortion cases (TeufeurS, Kraken/Coinbase, and here). If a coercion-based-extraction Technique is added under T5, these three examples are its first citations, with this case as the highest-confidence one.
 - **Duress-resistant controls are the mitigation class to record for the whole physical-coercion family** — decoy wallets, withdrawal time-locks, remote co-signers, exchange delays — because they, uniquely, defend where the cryptographic perimeter cannot.
 
+## Timeline (UTC)
+
+Read it as four stages. **Target**: a publicly known co-founder. **Seize and demand**: abduction, then a ransom demand to a second co-founder. **Pay and trace**: part handed over under police-run negotiation, most of the crypto frozen. **Arrests**: ten people taken into custody within days, one more suspect in Spain over a year later. Only dates are public, not clock times.
+
+| When | What happened | OAK |
+|---|---|---|
+| Before 2025-01-21 (undisclosed) | How the attackers chose and located Balland is not public. He was a publicly known co-founder of Ledger, so his link to crypto wealth was a matter of record. | **T8.005** |
+| 2025-01-21 (early morning) | David Balland and his partner are taken from their home in Mereau (Cher, central France). Balland is driven to another address and held; his partner is taken to a different location (Reuters, AFP). | **T5.009** |
+| 2025-01-21 | Fellow Ledger co-founder Éric Larchevêque receives a video showing a mutilated finger belonging to Balland, together with a ransom demand for "a large cryptocurrency sum" (AFP; The Block reports about €10 million). He alerts the police. | **T5.009** |
+| 2025-01-21 to 2025-01-22 | Negotiations are handled by police. Part of the crypto is handed over during them; most of the crypto assets were then seized and frozen (AFP, quoting the Paris prosecutor). Reuters on 2025-01-23 said the prosecutors did not say whether a ransom was paid. The wallet addresses and chains are not published. | **T7** |
+| 2025-01-22 | Police locate and free Balland, who is taken to hospital. His partner is found tied up in a car. 230 police and gendarmes took part, including the GIGN. | response |
+| 2025-01-23 | The Paris prosecutor's office confirms the kidnapping and release in a statement. Ten people are taken into custody late that day. | response |
+| 2025-01-25 | Seven of the ten are held in pre-trial detention, facing charges of gang-related kidnapping, torture and armed extortion. Three are released. | response |
+| 2026-03 (reported 2026-03-23) | Spanish Civil Guard arrests the one remaining suspect in Andalusia. He had left France after the events. | response |
+
 ## Public references
 
 - [Reuters via Yahoo News — Co-founder of French crypto firm Ledger freed after kidnapping, Paris prosecutors say](https://www.yahoo.com/news/co-founder-french-crypto-firm-141344947.html) — prosecutor-sourced account of the rescue and the arrests.

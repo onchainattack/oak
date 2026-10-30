@@ -28,7 +28,7 @@ Exploitation required no capital, no flash loan and no privileged position. An a
 | (standing) | Router's **`transfer` checks neither `caller == from` nor the caller's authority over `from`** | (latent T9.004 defect) |
 | (exploitation) | Attacker calls `transfer` with **`from` = an approving wallet, `to` = themselves**; tokens move and are sold through the same pool | **T9.004 exploitation** |
 | (exploitation) | Repeated across the approval set — **41 holders**, **~\$50,000** total | **T9.004.001 — residue-bounded blast radius** |
-| 2026-09-16 | **SlowMist** publishes the mechanism and names the contract `0x17e801e1…03d3` | (external forensics) |
+| 2026-09-16 | **SlowMist** publishes the mechanism and names the contract [`0x17e801e17cefc6334059189c178d4783830e03d3`](https://etherscan.io/address/0x17e801e17cefc6334059189c178d4783830e03d3) | (external forensics) |
 
 ## What defenders observed
 

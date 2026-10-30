@@ -14,6 +14,16 @@ _Last reviewed 2026-10-30._
 
 ### Next
 
+#### 0. Make incidents replayable end to end: fund flow, wallet links, graphs
+
+**Why:** a defender should be able to rebuild an incident from OAK alone, see every step as a known Technique, and follow the money. Since 2026-10-30 every single-incident example must carry a timeline with a Technique per step, full linked addresses and a fund-flow row (`tools/check_timeline.py`). The fund flow and the addresses are still prose, though, so nothing can be drawn, queried or joined across incidents. Ondology Labs' Binance write-up is the bar: a funding → takeover → receiver graph, a laundering graph, a dated holdings snapshot, and every figure marked as verified by them or taken from someone else.
+
+1. **Structured fund flow.** Add a machine-readable flow block per example (from → to, asset, amount, tx, chain, address role), exported to `oak.json` / oak-mcp. Pilot it on Binance, then fill in the October 2026 set.
+2. **Graph on the site.** Render that block as a flow graph on each incident page (Mermaid is already a dependency), with nodes coloured by role.
+3. **Address index.** One index of every address across the corpus, so the site can show where an address from one incident appears in another (as Binance ↔ Bitget does) and the overlap becomes a T8.001 signal by itself.
+4. **Our own tracing.** Many timelines say "where the funds went: undisclosed" only because the cited sources stop there. Explorer-API tracing would let OAK close those gaps itself, with each hop marked as verified by OAK.
+5. **Backfill.** 61 pre-2026-09 timelines break a rule (`check_timeline.py --legacy`), and 282 examples have no fund-flow row (`--warn`).
+
 #### 1. Write proper entries for real incidents that were filed under the wrong mechanism
 
 **Why:** the October 2026 source pass quarantined these files because what they described did not happen. The incidents behind their names did happen, differently, and OAK has no entry for them. Each one needs a new example written from the sources, mapped to the technique that matches the real mechanism. Details per file are in the `CORRECTIONS.md` correction log.
@@ -80,6 +90,7 @@ Known leftovers: OAK-T11.001 (BitMart described with "1Password"), OAK-T17.005 (
 
 Newest first. Each entry: what, commit, why.
 
+- **2026-10-30 — Every incident gets an end-to-end timeline with full addresses** (this commit). _Why:_ the user could not follow Binance as a sequence, and objected that the lean sweep entries shortened addresses and dropped how the money moved: "attackers have everything and defenders have nothing." The new `tools/check_timeline.py` in `npm run check` requires a Timeline table on every single-incident example: entry, preparation, execution, where the funds went and response, with a Technique per step. Undisclosed stages stay in as "undisclosed", and from 2026-09 on no address or hash may be shortened. The rule is written up in CONTRIBUTING, with Binance as the reference (key addresses, a dated funds snapshot, open questions). 47 timelines were added (five Sonnet agents working only from each file's cited sources, reviewed here), and shortened addresses were expanded throughout. Flagged for review: the Flamincome summary differs from SlowMist on the mechanism, and the Qubic restart and fund return lack a fetched source.
 - **2026-10-30 — Incidents page filters by month and day** (this commit). _Why:_ the site could only filter by year, so "what happened this month" meant scrolling a year of cards. Each example now carries a date: the month comes from the file name, and the day comes from the title only when the title's date falls in that month. 391 examples have a day, 162 a month only, and 130 a year or range. Year → month → day selectors sort by full date and sync to `?year=&month=&day=`, so a filtered view can be linked.
 - **2026-10-30 — CoinDCX 2025-07 entry vector corrected** (this commit). _Why:_ while reading Ondology Labs' other posts for the Binance case. The example said "server breach" and built a teaching point on it, but police and operator statements since 2025-07-31 describe a recruiter lure and malware on an employee's laptop (T15.001 → T15.003). This is the same shape as Binance's DevOps-laptop entry. The rest of Ondology's blog is compliance and tax material, with nothing for OAK.
 - **2026-10-30 — Binance: EIP-7702 leg verified on-chain** (this commit). _Why:_ the T13.004 secondary rested on TRM as relayed by The Hacker News. Ondology Labs recovered the signer of all 50 authorizations as the Binance 14 EOA and published tx hashes, the rehearsal on test wallets, the Hot Wallet 34 payout of 823M USDC and a per-chain breakdown. The mechanism is now corroborated, and the remaining unknown is narrower: how the service container got Binance's keys to sign.

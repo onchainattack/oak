@@ -12,7 +12,30 @@
 
 ## Summary
 
-On 2026-10-04 an unidentified vault on Base (TransparentUpgradeableProxy `0xD1895f2019c2152FC2b9022D57f19198c4CFCABC`) lost ~1,783 wstETH. Its owner Safe whitelisted a freshly deployed contract, which borrowed aBaswstETH against the vault's Aave V3 position and forwarded it to `0xcdFE91301356da873562EF513828a60dba1F569d`; the attacker `0x0B5126e1bc27C0de77e02e97945760A674EdB034` redeemed it through Aave for wstETH. Blockaid flagged it at 09:20 UTC; PeckShield followed at 09:56 UTC.
+On 2026-10-04 an unidentified vault on Base (TransparentUpgradeableProxy [`0xD1895f2019c2152FC2b9022D57f19198c4CFCABC`](https://basescan.org/address/0xD1895f2019c2152FC2b9022D57f19198c4CFCABC)) lost ~1,783 wstETH. Its owner Safe whitelisted a freshly deployed contract, which borrowed aBaswstETH against the vault's Aave V3 position and forwarded it to [`0xcdFE91301356da873562EF513828a60dba1F569d`](https://basescan.org/address/0xcdFE91301356da873562EF513828a60dba1F569d); the attacker [`0x0B5126e1bc27C0de77e02e97945760A674EdB034`](https://basescan.org/address/0x0B5126e1bc27C0de77e02e97945760A674EdB034) redeemed it through Aave for wstETH. Blockaid flagged it at 09:20 UTC; PeckShield followed at 09:56 UTC.
+
+## Timeline (UTC)
+
+Read it as three stages. **Flaw**: the vault lets any whitelisted address borrow its Aave receipt tokens with no collateral. **Take**: the owner Safe whitelists a new contract, which borrows and forwards the tokens for redemption. **After**: no response from the vault's operator. Signing times are from ExVul as relayed by Blockfence and The Crypto Times; The Crypto Times could not be fetched (blocked), so its claims are used only where Blockfence repeats them.
+
+| When | What happened | OAK |
+|---|---|---|
+| Before 2026-10-04 (undisclosed) | The vault ([`0xD1895f2019c2152FC2b9022D57f19198c4CFCABC`](https://basescan.org/address/0xD1895f2019c2152FC2b9022D57f19198c4CFCABC)) restricts borrowing against its Aave V3 position to a whitelist, but any whitelisted address can take its aBaswstETH with no collateral, so the whitelist is the only gate (Immunefi's head of security, via crypto.news). A researcher identified this weakness the previous week but had no disclosure channel. | **T9.004** |
+| About 25 days before 2026-10-04 | The vault's owner Safe (three approvals needed from seven signers) last transacts, then stays idle (ExVul). | — |
+| 2026-10-04, before 08:52 (undisclosed) | The attacker deploys a new contract (`0xcdFE91301356da873562EF513828a60dba1F569d`). Deployment time and funding are not published. | — |
+| 2026-10-04 08:52 | The owner Safe removes the new contract from the vault whitelist, with three valid signature recoveries under the existing signer identities. | **T11.003** |
+| 2026-10-04 08:53 | The owner Safe adds it back, again with three valid signatures. How the approvals were obtained is not established: stolen keys, misled signers or a legitimate actor are all open. | **T11.003** |
+| About 70 seconds later | The whitelisted contract borrows aBaswstETH from the vault and sends it to the attacker's contract. Six outflows take 1,783.067 aBaswstETH in total, starting with a one-token transfer. | **T9.004** |
+| 2026-10-04 | The attacker `0x0B5126e1bc27C0de77e02e97945760A674EdB034` redeems the aTokens through Aave V3 for about 1,783 wstETH (about \$6M). Part reportedly began bridging to Ethereum via Lido (unverified community tracking). | — |
+| 2026-10-04 09:20 | Blockaid flags the exploit in progress at about \$2.02M across about 4 transactions. PeckShield follows at 09:56. | response |
+| 2026-10-05 and after | No team claims the vault, acknowledges the loss, or announces a post-mortem, freeze, bounty or remediation (undisclosed). | response |
+
+Key addresses:
+
+- Vault (TransparentUpgradeableProxy) — [`0xD1895f2019c2152FC2b9022D57f19198c4CFCABC`](https://basescan.org/address/0xD1895f2019c2152FC2b9022D57f19198c4CFCABC)
+- Attacker — [`0x0B5126e1bc27C0de77e02e97945760A674EdB034`](https://basescan.org/address/0x0B5126e1bc27C0de77e02e97945760A674EdB034)
+- Contract that received the borrowed aBaswstETH — [`0xcdFE91301356da873562EF513828a60dba1F569d`](https://basescan.org/address/0xcdFE91301356da873562EF513828a60dba1F569d)
+- Owner Safe address — full address not published
 
 ## Root-cause evidence
 
