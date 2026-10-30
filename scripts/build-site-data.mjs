@@ -243,42 +243,19 @@ const explorerUrl = (chain, kind, value) => {
   const tpl = chains[String(chain).toLowerCase()]?.[kind];
   return tpl && value ? tpl.replace(kind === "tx" ? "{t}" : "{a}", value) : "";
 };
-const shortForGraph = (a) => (a && a.length > 14 ? `${a.slice(0, 8)}…${a.slice(-6)}` : a ?? "");
 const formatAmount = (n) =>
   typeof n === "number" ? n.toLocaleString("en-US", { maximumFractionDigits: 4 }) : String(n ?? "");
-
-const ROLE_CLASS = {
-  "attacker-eoa": "attacker", "attack-contract": "attacker", "attacker-receiver": "attacker",
-  "attacker-holding": "attacker", victim: "victim", "victim-hot-wallet": "victim",
-  "vulnerable-contract": "victim", mixer: "mixer", bridge: "infra", "cex-deposit": "infra",
-  dex: "infra", lending: "infra", "issuer-freeze": "frozen", returned: "frozen", burn: "neutral",
-  intermediary: "neutral", unknown: "neutral",
-};
 
 const renderFlow = (flow) => {
   const nodes = flow.nodes ?? [];
   const byId = Object.fromEntries(nodes.map((n) => [n.id, n]));
-  const mid = (id) => `n_${String(id).replace(/[^A-Za-z0-9_]/g, "_")}`;
-  const label = (n) => {
-    const head = n.label || n.role;
-    const addr = n.address ? `<br/>${shortForGraph(n.address)}` : "";
-    return `"${String(head).replace(/"/g, "'")}${addr}<br/><small>${n.chain}</small>"`;
+  // Interactive graph data (src/components/document/fundflow). Explorer URLs
+  // are resolved here so the client needs no chain table.
+  const data = {
+    as_of: flow.as_of,
+    nodes: nodes.map((n) => ({ ...n, explorer: explorerUrl(n.chain, "address", n.address) || undefined })),
+    edges: (flow.edges ?? []).map((e) => ({ ...e, txUrl: explorerUrl(byId[e.from]?.chain, "tx", e.tx) || undefined })),
   };
-  const lines = ["flowchart LR"];
-  for (const n of nodes) lines.push(`  ${mid(n.id)}[${label(n)}]:::${ROLE_CLASS[n.role] ?? "neutral"}`);
-  for (const e of flow.edges ?? []) {
-    const text = [formatAmount(e.amount), e.asset].filter(Boolean).join(" ").replace(/"/g, "'");
-    const arrow = e.verified === "oak" ? "-->" : "-.->";
-    lines.push(`  ${mid(e.from)} ${arrow}|"${text}"| ${mid(e.to)}`);
-  }
-  lines.push(
-    "  classDef attacker fill:#3a1418,stroke:#ff5c6c,color:#ffd6db",
-    "  classDef victim fill:#0f2a2a,stroke:#00ffd1,color:#cffff6",
-    "  classDef mixer fill:#2a1a3a,stroke:#b07cff,color:#eadcff",
-    "  classDef infra fill:#1d2230,stroke:#7aa2ff,color:#dce6ff",
-    "  classDef frozen fill:#2c2a12,stroke:#e6c84a,color:#fff3c4",
-    "  classDef neutral fill:#161618,stroke:#747780,color:#e8e9ec",
-  );
   const nodeCell = (id) => {
     const n = byId[id] ?? { id };
     const name = escapeHtml(n.label || n.role || id);
@@ -293,15 +270,16 @@ const renderFlow = (flow) => {
     const tx = e.tx
       ? txUrl ? `<a href="${escapeHtml(txUrl)}" rel="noopener"><code>${escapeHtml(e.tx)}</code></a>` : `<code>${escapeHtml(e.tx)}</code>`
       : "";
+    const count = e.tx_count > 1 ? ` (×${e.tx_count})` : "";
     const verified = e.verified === "oak" ? "traced by OAK" : `per <code>${escapeHtml(e.source ?? "")}</code>`;
     return `<tr><td>${escapeHtml(e.time ?? "")}</td><td>${nodeCell(e.from)}</td><td>${nodeCell(e.to)}</td>` +
-      `<td>${escapeHtml([formatAmount(e.amount), e.asset].filter(Boolean).join(" "))}</td>` +
+      `<td>${escapeHtml([formatAmount(e.amount), e.asset].filter(Boolean).join(" "))}${count}</td>` +
       `<td>${escapeHtml(e.technique ?? "")}</td><td>${tx}</td><td>${verified}</td></tr>`;
   });
-  const asOf = flow.as_of ? `<p class="flow-asof">As of ${escapeHtml(flow.as_of)}. Solid arrows: traced by OAK on-chain. Dashed: relayed from a cited source.</p>` : "";
-  return `<pre><code class="language-mermaid">${escapeHtml(lines.join("\n"))}</code></pre>${asOf}` +
+  return `<div class="oak-flow-graph" data-flow="${escapeHtml(JSON.stringify(data))}"></div>` +
+    `<details class="flow-table-wrap"><summary>All transfers as a table (${rows.length})</summary>` +
     `<div class="table-scroll"><table class="flow-table"><thead><tr><th>Time (UTC)</th><th>From</th><th>To</th>` +
-    `<th>Amount</th><th>OAK</th><th>Tx</th><th>Basis</th></tr></thead><tbody>${rows.join("")}</tbody></table></div>`;
+    `<th>Amount</th><th>OAK</th><th>Tx</th><th>Basis</th></tr></thead><tbody>${rows.join("")}</tbody></table></div></details>`;
 };
 
 marked.use({

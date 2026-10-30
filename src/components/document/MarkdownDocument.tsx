@@ -4,6 +4,7 @@ import { useDocumentHtml } from "../../lib";
 import { handleMarkdownLinkClick, REPO_URL, reportIssueUrl } from "../../routing";
 import { highlightYaml } from "../../highlight";
 import { useMermaid } from "./useMermaid";
+import { useFundFlow } from "./fundflow/useFundFlow";
 import Breadcrumb from "../layout/Breadcrumb";
 import DocumentHero from "./DocumentHero";
 import DocumentToc from "./DocumentToc";
@@ -22,6 +23,7 @@ export default function MarkdownDocument({
   const bodyRef = useRef<HTMLDivElement>(null);
 
   useMermaid(bodyRef, documentHtml.status === "loaded", documentHtml.status === "loaded" ? documentHtml.html : "");
+  useFundFlow(bodyRef, documentHtml.status === "loaded", documentHtml.status === "loaded" ? documentHtml.html : "");
 
   const documentKind = path.startsWith("examples/")
     ? "Incident"

@@ -97,7 +97,8 @@ nodes:
 edges:
   - {from: tc, to: init, asset: ETH, amount: 0.29, tx: 0xd9e59064d7681439e732a5eb0e2a167b9a23f161d3ce4c8ef111ca824fe59008, time: 2026-10-28T07:39:47Z, tx_count: 3, time_last: 2026-10-29T08:23:11Z, technique: T7.001, verified: oak}
   - {from: fund, to: init, asset: ETH, amount: 1.08221822, tx: 0x96cae1ec044b4b3e34c1f2113a7bcd1b0d3257370788f5d8a2b91e9c99c0ebe5, time: 2026-10-29T18:20:47Z, verified: oak}
-  - {from: init, to: b14, asset: "EIP-7702 authorizations (50)", tx: 0xad99264d5532ae0dd04b2004eebda05f25657e70dacb764f7ac8d4ccd051298b, time: 2026-10-29T20:20:59Z, technique: T13.004, verified: oak}
+  - {from: init, to: sweep, asset: "deploys sweep contract", time: 2026-10-28T15:59:00Z, verified: source, source: ondologybinance2026}
+  - {from: init, to: b14, asset: "50 EIP-7702 authorizations → sweep contract", tx: 0xad99264d5532ae0dd04b2004eebda05f25657e70dacb764f7ac8d4ccd051298b, time: 2026-10-29T20:20:59Z, technique: T13.004, verified: oak}
   - {from: b14, to: rcv, asset: ETH, amount: 167464.24785656, tx: 0x53bd38b816c23e74134786c29a8c18d792777998a3b9326047b583100e88e2f3, time: 2026-10-29T20:24:23Z, technique: T13.004, verified: oak}
   - {from: b14, to: rcv, asset: USDT, amount: 1615409498.97324, tx: 0x53bd38b816c23e74134786c29a8c18d792777998a3b9326047b583100e88e2f3, time: 2026-10-29T20:24:23Z, technique: T13.004, verified: oak}
   - {from: hw34, to: rcv, asset: USDC, amount: 780000000, tx: 0xdc102dd89dded5a83f1008906883ffb7c81ff3b7d7965d8c7277d170b5e17481, time: 2026-10-29T20:41:23Z, technique: T13.004, verified: oak}

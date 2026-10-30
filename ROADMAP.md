@@ -91,6 +91,14 @@ Known leftovers: OAK-T11.001 (BitMart described with "1Password"), OAK-T17.005 (
 
 Newest first. Each entry: what, commit, why.
 
+- **2026-10-30 — The fund-flow graph is an OAK component, not Mermaid** (this commit). _Why:_ Mermaid laid 20+ nodes out in an arbitrary order and shrank them to the text column, so the graph could not be read. The new component in `src/components/document/fundflow` uses the site's design tokens:
+  - **Columns by stage** (funding → attacker → victim wallets → receiver → hops → exits), with neighbour-aligned rows.
+  - **Role colours** for each wallet card, solid lines for transfers traced by OAK and dashed lines for those relayed from a source.
+  - **Amount and asset labels** placed by fan direction.
+  - **Hover** highlights a wallet's links; **click** opens a card with the full address, a copy button, the explorer link and every transfer with its tx.
+  - **Zoom, Fit and Full screen**, and the view opens on the receiver.
+  - The transfer table stays as a collapsible fallback.
+  - Checked by screenshot at 1440, 1600 and 390 px.
 - **2026-10-30 — Claude Code tooling for OAK agents; X100 traced end to end** (this commit). _Why:_ sweeps, tracing and write-ups were done by hand in long sessions, so they came out differently each time, and rules were remembered rather than enforced. The tooling now lives in the repo, so any contributor's Claude session works the same way.
   - **Added.** `CLAUDE.md` with the working rules. Skills `oak-sweep`, `oak-write-example` (with `template.md`), `oak-trace-funds` and `oak-validate`. Agents `oak-source-reader` (Haiku, read-only), `oak-fund-tracer` and `oak-example-writer` (Sonnet). A `PostToolUse` hook that validates any edited `examples/*.md` at once and feeds errors back. A shared `.claude/settings.json` with allowlists. Offline unit tests in `tools/tests` that run in `npm run check`.
   - **Pilot.** The tracer procedure ran on X100: 15 edges, all checked on-chain. The USDT was swapped for ETH via UniswapX within 6 minutes, the ETH was split to four fresh wallets, and about 2,022.4 ETH entered Tornado Cash in 82 deposits on 10-26 and 10-27. That contradicts the "not moved" in the cited brief.

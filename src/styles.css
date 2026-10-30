@@ -4335,3 +4335,177 @@ transition: border-color 0.15s, background 0.15s;
   white-space: nowrap;
   border: 0;
 }
+
+/* ── Fund-flow graph (examples/*: ## Fund flow) ─────────────────────────────
+   src/components/document/fundflow. Role families map to design tokens:
+   attacker = red, victim = accent, mixer = violet, exit = evm blue,
+   frozen = gold, hop/other = muted. */
+.oak-flow-graph { margin: var(--space-5) 0 var(--space-3); }
+
+.ff {
+  --ff-attacker: var(--red);
+  --ff-victim: var(--accent);
+  --ff-mixer: var(--chain-sol);
+  --ff-exit: var(--chain-evm);
+  --ff-frozen: var(--chain-bnb);
+  --ff-hop: var(--muted-strong);
+  --ff-neutral: var(--muted);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+.ff-expanded {
+  position: fixed;
+  inset: var(--space-4);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.72), var(--shadow);
+}
+.ff-expanded .ff-viewport { flex: 1; max-height: none; }
+.ff-expanded .ff-details { max-height: 32vh; overflow: auto; }
+body.ff-lock { overflow: hidden; }
+
+.ff-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-5);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+.ff-legend { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); font-size: var(--fs-small); color: var(--muted-strong); }
+.ff-key { display: inline-flex; align-items: center; gap: var(--space-2); }
+.ff-key i { width: 10px; height: 10px; border-radius: 3px; background: var(--ff-c, var(--ff-neutral)); }
+.ff-key-line svg line { stroke: var(--muted-strong); stroke-width: 1.6; }
+.ff-key-dashed svg line { stroke-dasharray: 4 3; }
+.ff-controls { display: flex; align-items: center; gap: var(--space-1); }
+.ff-controls button {
+  background: var(--surface-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  color: var(--muted-strong);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--fs-small);
+  min-height: 30px;
+  min-width: 30px;
+  padding: 0 var(--space-2);
+}
+.ff-controls button:hover { border-color: var(--line-strong); color: var(--ink); }
+.ff-scale { font-family: var(--mono); font-size: var(--fs-mono); color: var(--muted); min-width: 3.5em; text-align: center; }
+
+.ff-viewport {
+  overflow: auto;
+  max-height: 72vh;
+  background:
+    radial-gradient(circle at 1px 1px, var(--line) 1px, transparent 0) 0 0 / 22px 22px,
+    var(--bg);
+  overscroll-behavior: contain;
+  scrollbar-color: var(--line-strong) transparent;
+}
+.ff-viewport:focus-visible { outline: 1px solid var(--accent-line); outline-offset: -1px; }
+.ff-canvas { position: relative; }
+.ff-stage { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.ff-links { position: absolute; inset: 0; overflow: visible; }
+
+.ff-link-line { fill: none; stroke: var(--muted); stroke-width: 1.5; opacity: 0.75; transition: opacity 0.15s, stroke 0.15s; }
+.ff-link-source .ff-link-line { stroke-dasharray: 5 4; }
+.ff-link-hit { fill: none; stroke: transparent; stroke-width: 14; cursor: pointer; pointer-events: stroke; }
+.ff-links marker path { fill: var(--muted); }
+.ff-link.ff-on .ff-link-line { stroke: var(--accent); opacity: 1; stroke-width: 2; }
+.ff-link.ff-dim .ff-link-line { opacity: 0.12; }
+
+.ff-node {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  padding: 8px 10px 8px 13px;
+  text-align: left;
+  background: var(--panel-2);
+  border: 1px solid var(--line-strong);
+  border-left: 3px solid var(--ff-c, var(--ff-neutral));
+  border-radius: var(--r-sm);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+  box-shadow: var(--shadow-sharp);
+  transition: opacity 0.15s, border-color 0.15s, transform 0.15s;
+}
+.ff-node:hover, .ff-node:focus-visible { border-color: var(--ff-c, var(--line-strong)); outline: none; }
+.ff-node.ff-selected { border-color: var(--ff-c); box-shadow: 0 0 0 1px var(--ff-c), var(--shadow-sharp); }
+.ff-node.ff-dim { opacity: 0.28; }
+.ff-node > * { flex-shrink: 0; }
+.ff-node-title { font-size: var(--fs-small); font-weight: 600; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ff-node-meta { display: flex; gap: var(--space-2); font-size: 0.6875rem; color: var(--muted); text-transform: lowercase; }
+.ff-role { color: var(--ff-c, var(--muted)); }
+.ff-chain::before { content: "·"; margin-right: var(--space-2); color: var(--line-strong); }
+.ff code.ff-node-addr { font-family: var(--mono); font-size: 0.6875rem; line-height: 1.3; color: var(--muted-strong); background: none; border: 0; padding: 0; margin: 0; }
+
+.ff-fam-attacker { --ff-c: var(--ff-attacker); }
+.ff-fam-victim { --ff-c: var(--ff-victim); }
+.ff-fam-mixer { --ff-c: var(--ff-mixer); }
+.ff-fam-exit { --ff-c: var(--ff-exit); }
+.ff-fam-frozen { --ff-c: var(--ff-frozen); }
+.ff-fam-hop { --ff-c: var(--ff-hop); }
+.ff-fam-neutral { --ff-c: var(--ff-neutral); }
+
+.ff-label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 2px 7px;
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-pill);
+  color: var(--ink);
+  font: inherit;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  line-height: 1.35;
+  white-space: nowrap;
+  cursor: pointer;
+  z-index: 1;
+  transition: opacity 0.15s;
+}
+.ff-label span { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.ff-label-source { border-style: dashed; color: var(--muted-strong); }
+.ff-label:hover, .ff-label.ff-selected { border-color: var(--accent-line); color: var(--ink-strong); }
+.ff-label.ff-dim { opacity: 0.2; }
+
+.ff-details { border-top: 1px solid var(--line); padding: var(--space-3) var(--space-4); font-size: var(--fs-small); }
+.ff-hint { margin: 0; color: var(--muted); }
+.ff-card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2) var(--space-3); }
+.ff-card-head strong { color: var(--ink-strong); font-size: var(--fs-body); }
+.ff-close { margin-left: auto; background: none; border: 0; color: var(--muted); font-size: 1.25rem; line-height: 1; cursor: pointer; }
+.ff-close:hover { color: var(--ink); }
+.ff-address { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin: var(--space-2) 0; }
+.ff .ff-address code, .ff .ff-tx code, .ff .ff-transfer-meta code { font-family: var(--mono); font-size: var(--fs-mono); word-break: break-all; }
+.ff-copy { background: var(--surface-3); border: 1px solid var(--line); border-radius: var(--r-sm); color: var(--muted-strong); cursor: pointer; font: inherit; font-size: 0.6875rem; padding: 2px 8px; }
+.ff-transfers { list-style: none; margin: var(--space-2) 0 0; padding: 0; display: grid; gap: var(--space-2); }
+.ff-transfer { padding: var(--space-2) var(--space-3); background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-sm); }
+.ff-transfer-main { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); justify-content: space-between; }
+.ff-amount { font-family: var(--mono); color: var(--ink); }
+.ff-transfer-meta { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; margin-top: 2px; color: var(--muted); font-size: 0.75rem; }
+.ff-tx { margin-top: 2px; }
+.ff-badge { border: 1px solid var(--line-strong); border-radius: var(--r-pill); padding: 0 6px; font-size: 0.6875rem; color: var(--muted-strong); }
+.ff-badge-oak { border-color: var(--accent-line); color: var(--accent); background: var(--accent-soft); }
+.ff-muted { color: var(--muted); }
+
+.flow-table-wrap { margin: 0 0 var(--space-5); }
+.flow-table-wrap > summary { cursor: pointer; color: var(--muted-strong); font-size: var(--fs-small); padding: var(--space-2) 0; }
+.flow-table code { font-size: 0.6875rem; word-break: break-all; }
+
+@media (max-width: 720px) {
+  .ff-toolbar { padding: var(--space-2) var(--space-3); }
+  .ff-legend { font-size: 0.75rem; }
+  .ff-expanded { inset: 0; border-radius: 0; }
+}
