@@ -30,8 +30,17 @@ Goal: a `## Fund flow` block a defender can trust. Every hop is either checked o
 7. **Update the timeline's fund-flow rows and Key addresses** with the full addresses you confirmed. Mark them "traced by OAK".
 8. **Validate.** Run `python3 tools/check_flow.py --file <file>`, then `python3 tools/check_timeline.py --file <file>`, then `python3 tools/build_address_index.py --shared`. If the index shows an address shared with another incident, report it as a possible link (T8.001 candidate). Never treat it as proof by itself.
 
-## Limits (say them, don't hide them)
+## Providers and limits (say them, don't hide them)
 
-- Supported: Ethereum, Base, Arbitrum, Optimism, Polygon and Gnosis via Blockscout; Bitcoin via mempool.space. Not yet supported: BSC, Avalanche, Solana, Tron, XRP. Those hops stay `verified: source`, or go undisclosed.
+- Ethereum, Arbitrum, Optimism, Gnosis: Blockscout, full history, native and internal transfers included.
+- Base, Polygon, BSC (and any chain whose Blockscout answers HTTP 403): **public JSON-RPC fallback**, used automatically.
+  - `tx` sees every token Transfer log in the transaction. Untrusted tokens are flagged.
+  - `transfers` and `trace` cover only the allowlisted tokens in `tools/address_labels.yaml` (USDC, USDT, WETH …), and they **require `--after` and `--before`**.
+  - Native-coin transfers (ETH, POL, BNB) are **not visible** except inside a known tx. Say so when a hop might be native.
+  - Seed from the exploit tx. `tx` shows which addresses received the real assets, and those are often fuller than the published ones.
+- Avalanche C-chain: Routescan (Etherscan-compatible, keyless).
+- Bitcoin: mempool.space.
+- Not yet supported: Solana, Tron, XRP, Robinhood Chain. Hops there stay `verified: source`, or go undisclosed.
 - Explorer labels are hints, not attribution. A "Binance" tag on a deposit address means the funds entered Binance. It does not mean Binance is involved.
-- Do not invent USD values. Use the asset amounts, and cite the source for any dollar figures.
+- Do not invent USD values. Use asset amounts, and cite the source for any dollar figures.
+- If a provider blocks you (bot challenge), do not try to get around it. Record the gap.

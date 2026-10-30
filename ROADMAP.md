@@ -91,6 +91,16 @@ Known leftovers: OAK-T11.001 (BitMart described with "1Password"), OAK-T17.005 (
 
 Newest first. Each entry: what, commit, why.
 
+- **2026-10-30 — Eight more incidents traced on-chain; tracer works where indexers block us** (this commit). _Why:_ "where the funds went: undisclosed" was the weakest part of the October set. `oak-fund-tracer` agents (Sonnet, one per file) traced Initia, zkLink Nova, UNCX, MakerDAO keeper, BiFi, Base vault, Autheo THEO and Polymarket. Their findings were spot-checked against chain data here.
+  - **Corrections and new facts:**
+    - BiFi ran on **10-17 05:43**, not 10-18, and the MEV bot that took the funds **returned 159,103.65 USDC** on 10-18. No source mentions the return.
+    - Initia's "unmoved" ETH left on 10-27, and **920 ETH went into Tornado**.
+    - zkLink's first withdrawal came 4 h before the alert.
+    - UNCX's "retained" tokens were sold within minutes.
+    - Full addresses were recovered: Initia exit, Autheo orchestrator and pair, Base vault hop and bridge.
+  - **Tracer.** Base and Polygon Blockscout sit behind a Cloudflare challenge, which we do not bypass. `explorer.py` now falls back to public JSON-RPC: it rotates nodes, finds blocks by interpolation, and reads `eth_getLogs` per allowlisted token, since public nodes require a contract address. Routescan covers Avalanche. Native-coin hops over RPC stay invisible, and the tool says so.
+  - **Labels.** `tools/address_labels.yaml` now holds canonical tokens, verified on-chain, plus labelled infrastructure. `0x8f10…f996`, which shows up in both zkLink and Autheo, is a shared swap executor (~9.96M token transfers), not a cluster link. The address index now skips labelled infrastructure.
+  - **Site.** The full-screen button is highlighted, and the graph uses the full document column.
 - **2026-10-30 — The fund-flow graph is an OAK component, not Mermaid** (this commit). _Why:_ Mermaid laid 20+ nodes out in an arbitrary order and shrank them to the text column, so the graph could not be read. The new component in `src/components/document/fundflow` uses the site's design tokens:
   - **Columns by stage** (funding → attacker → victim wallets → receiver → hops → exits), with neighbour-aligned rows.
   - **Role colours** for each wallet card, solid lines for transfers traced by OAK and dashed lines for those relayed from a source.

@@ -29,8 +29,8 @@ Read it as four stages. **Flaw**: a 2020 keeper holds claimable collateral and o
 
 Key addresses:
 
-- Attacker EOA — [`0x01EB957E5C7DcDDD60F3C875956cCc6fb9BdA5FA`](https://etherscan.io/address/0x01EB957E5C7DcDDD60F3C875956cCc6fb9BdA5FA)
-- Attack contract — [`0xEc997d2aD033277913d6002277353368E8321dcF`](https://etherscan.io/address/0xEc997d2aD033277913d6002277353368E8321dcF)
+- Attacker EOA (traced by OAK) — [`0x01EB957E5C7DcDDD60F3C875956cCc6fb9BdA5FA`](https://etherscan.io/address/0x01EB957E5C7DcDDD60F3C875956cCc6fb9BdA5FA)
+- Attack contract (traced by OAK; unwraps WETH and pays the EOA) — [`0xEc997d2aD033277913d6002277353368E8321dcF`](https://etherscan.io/address/0xEc997d2aD033277913d6002277353368E8321dcF)
 - Malicious adapter module (still holds Vat delegation over the victim) — [`0xf09a13072Ed939B79Bc25B66AA3a836ea6DCC170`](https://etherscan.io/address/0xf09a13072Ed939B79Bc25B66AA3a836ea6DCC170)
 - Vulnerable keeper (AdminUpgradeabilityProxy) — [`0x9c05a05893Ada984FC20D0DA0c046De5Cc0e8273`](https://etherscan.io/address/0x9c05a05893Ada984FC20D0DA0c046De5Cc0e8273)
 - Vulnerable implementation (source not verified) — [`0x68399ed8aa33C5b43F863EE6782de492006A5546`](https://etherscan.io/address/0x68399ed8aa33C5b43F863EE6782de492006A5546)
@@ -40,6 +40,34 @@ Key addresses:
 - MakerDAO ETH-A GemJoin (exit point) — [`0x2F0b23f53734252Bda2277357e97e1517d6B042A`](https://etherscan.io/address/0x2F0b23f53734252Bda2277357e97e1517d6B042A)
 - Tornado Cash router (proceeds deposited) — [`0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b`](https://etherscan.io/address/0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b)
 - Tornado Cash 0.1 ETH pool (funding source) — [`0x12D66f87A04A9E220743712cE6d9bB1B5616B8Fc`](https://etherscan.io/address/0x12D66f87A04A9E220743712cE6d9bB1B5616B8Fc)
+
+## Fund flow
+
+Ethereum only, traced by OAK with `tools/explorer.py` (Blockscout, keyless) on 2026-10-30 over a window of the first five days after the exploit. Every edge below was checked on-chain. No counterfeit-token transfers were skipped.
+
+```oak-flow
+as_of: 2026-10-30T12:30Z
+nodes:
+  - {id: tc, chain: ethereum, address: 0x12d66f87a04a9e220743712ce6d9bb1b5616b8fc, role: mixer, label: "Tornado Cash 0.1 ETH pool"}
+  - {id: eoa, chain: ethereum, address: 0x01eb957e5c7dcddd60f3c875956ccc6fb9bda5fa, role: attacker-eoa, label: "Attacker EOA"}
+  - {id: atk, chain: ethereum, address: 0xec997d2ad033277913d6002277353368e8321dcf, role: attack-contract, label: "Attack contract"}
+  - {id: mod, chain: ethereum, address: 0xf09a13072ed939b79bc25b66aa3a836ea6dcc170, role: attack-contract, label: "Malicious adapter module"}
+  - {id: join, chain: ethereum, address: 0x2f0b23f53734252bda2277357e97e1517d6b042a, role: vulnerable-contract, label: "MakerDAO ETH-A GemJoin"}
+  - {id: router, chain: ethereum, address: 0xd90e2f925da726b50c4ed8d0fb90ad053324f31b, role: mixer, label: "Tornado Cash router"}
+edges:
+  - {from: tc, to: eoa, asset: ETH, amount: 0.0978373, tx: 0xd4c0b18a058e7f0a12855f30174f4cb1e973c15c886063deab97e1a21f048ac6, time: 2026-10-06T05:57:23Z, technique: T7.001, verified: oak}
+  - {from: join, to: mod, asset: WETH, amount: 200, tx: 0xbb6940f7c2a1e68cafbae7bb9b94d09af9af06ec3a114f6996f2cab993f3a88c, time: 2026-10-06T06:13:11Z, technique: T9.004, verified: oak}
+  - {from: mod, to: atk, asset: WETH, amount: 200, tx: 0xbb6940f7c2a1e68cafbae7bb9b94d09af9af06ec3a114f6996f2cab993f3a88c, time: 2026-10-06T06:13:11Z, technique: T9.004, verified: oak}
+  - {from: atk, to: eoa, asset: ETH, amount: 200, tx: 0xbb6940f7c2a1e68cafbae7bb9b94d09af9af06ec3a114f6996f2cab993f3a88c, time: 2026-10-06T06:13:11Z, technique: T9.004, verified: oak}
+  - {from: eoa, to: router, asset: ETH, amount: 200, tx: 0xb8ecff9c129d8d9331c85558eaeddff29a38c4c16b71a40986acbf8f6febefeb, time: 2026-10-06T06:19:35Z, tx_count: 20, time_last: 2026-10-06T06:28:35Z, technique: T7.001, verified: oak}
+```
+
+What the trace adds beyond the sources:
+
+- **Exit path.** In the exploit transaction the GemJoin sent 200 WETH to the module, the module sent it to the attack contract, and the attack contract unwrapped it (200 WETH burned to zero address) and paid 200 ETH to the attacker EOA. CertiK says the module forwards to the EOA; on-chain the attack contract is the last step before the EOA.
+- **Funding amount.** The Tornado withdrawal was relayed (the transaction sender is relayer `0xd04e9f0945dea8373d882c730e2c93a74b591796`). The EOA received 0.0978373 ETH; the pool paid the relayer 0.0021627 ETH as fee. The sources say "0.1 ETH", which is the pool denomination.
+- **Proceeds.** The 20 deposits to the Tornado router are 10 ETH each, 200 ETH in total from 06:19:35 to 06:28:35 UTC, matching the 200 ETH taken. Nothing else left the EOA in the window; the trace stops at the mixer.
+- **Limits.** Withdrawals from Tornado Cash are not linkable on-chain, so nothing past the router is traced. The keeper-to-GemJoin step (Vat `flux`/`exit` accounting) is Vat-internal and not shown as a token edge. The Blockscout view of the first deposit transaction shows extra internal 10 ETH transfers between Tornado-side addresses that OAK did not follow.
 
 ## Root-cause evidence
 

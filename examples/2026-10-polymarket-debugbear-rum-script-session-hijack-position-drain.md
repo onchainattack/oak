@@ -32,6 +32,25 @@ Key addresses:
 - Attacker wallet (Polygon), embedded in the malicious script per BleepingComputer — [`0x3F99139F1C5854bb628c2e576Aaf638e99dFfc18`](https://polygonscan.com/address/0x3F99139F1C5854bb628c2e576Aaf638e99dFfc18)
 - Script host — `cdn.debugbear[.]com`; instruction server — `data.debugbear.com`.
 
+## Fund flow
+
+**Not traced by OAK.** On 2026-10-30 the keyless Polygon provider (`polygon.blockscout.com`) answered every request from `tools/explorer.py` with HTTP 403 (a Cloudflare challenge), and the other keyless sources tried also failed (Routescan: chain not supported; the public `polygon-rpc.com` endpoint: API key disabled). OAK did not work around the challenge. No edge is therefore checked on-chain, and the block below holds only the one relayed fact, a total with an undisclosed destination.
+
+```oak-flow
+as_of: 2026-10-30T12:30Z
+nodes:
+  - {id: atk, chain: polygon, address: 0x3F99139F1C5854bb628c2e576Aaf638e99dFfc18, role: attacker-eoa, label: "Attacker wallet"}
+  - {id: dest, chain: polygon, role: unknown, label: "Destination not published"}
+edges:
+  - {from: atk, to: dest, asset: POL, amount: 28600000, time: 2026-10-29T18:00:00Z, verified: source, source: bleepingpolymarket2026}
+```
+
+What the trace adds beyond the sources:
+
+- Nothing yet. The only fund-flow fact is BleepingComputer's: about 28.6M POL (about \$2.57M) left the attacker wallet [`0x3F99139F1C5854bb628c2e576Aaf638e99dFfc18`](https://polygonscan.com/address/0x3F99139F1C5854bb628c2e576Aaf638e99dFfc18) (`[bleepingpolymarket2026]`). Its destination, the outcome-token transfers into the wallet, the sold positions and the wallet's funding are not published.
+- The loss figures are not reconciled: DefiLlama's about \$2.7M and BleepingComputer's about \$2.57M differ by about \$0.1M, and the basis of neither is public. The 28.6M POL figure is the wallet's outflow, which may not equal the victims' loss, because some positions were sold for USDC rather than transferred.
+- To finish the trace, re-run `python3 tools/explorer.py trace polygon 0x3F99139F1C5854bb628c2e576Aaf638e99dFfc18 --hops 1 --before 2026-11-02T00:00:00Z --yaml` from a network the provider accepts, or with a Blockscout API key.
+
 ## Root-cause evidence
 
 - **Technique:** OAK-T15.002

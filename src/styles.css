@@ -4509,3 +4509,16 @@ body.ff-lock { overflow: hidden; }
   .ff-legend { font-size: 0.75rem; }
   .ff-expanded { inset: 0; border-radius: 0; }
 }
+
+/* Fund-flow graphs break out of the 760px reading measure and use the full
+   document column (sidebar excluded). The layout grid is the size container,
+   so 100cqw is its width; never narrower than the text column. */
+.document-layout { container-type: inline-size; container-name: doclayout; }
+@container doclayout (min-width: 1000px) {
+  .markdown-body .oak-flow-graph {
+    width: max(100%, calc(100cqw - 280px - var(--space-6)));
+    max-width: none;
+  }
+}
+.ff-controls .ff-fullscreen { border-color: var(--accent-line); color: var(--accent); background: var(--accent-soft); }
+.ff-controls .ff-fullscreen:hover { color: var(--ink-strong); border-color: var(--accent); }

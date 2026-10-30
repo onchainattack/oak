@@ -222,7 +222,7 @@ const sharedAddressesHtml = (docPath) => {
   for (const [addr, entry] of Object.entries(addressIndex)) {
     const incidents = entry.incidents ?? [];
     if (incidents.length < 2 || !incidents.some((i) => i.file === file)) continue;
-    if (incidents.some((i) => INFRA_ROLES.has(i.role))) continue;
+    if (entry.infrastructure || incidents.some((i) => INFRA_ROLES.has(i.role))) continue;
     const others = incidents.filter((i) => i.file !== file);
     const url = explorerUrl(entry.chains?.[0], "address", addr);
     const code = `<code>${escapeHtml(addr)}</code>`;

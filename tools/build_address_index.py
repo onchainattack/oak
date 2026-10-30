@@ -96,12 +96,27 @@ def build() -> dict:
     return index
 
 
+def label_roles() -> dict[str, str]:
+    """address → role from tools/address_labels.yaml (any chain section)."""
+    import yaml
+    path = REPO / "tools" / "address_labels.yaml"
+    if not path.exists():
+        return {}
+    raw = re.sub(r"(?<![\w'\"])(0x[0-9a-fA-F]{40})(?![\w'\"])", r"'\1'", path.read_text(encoding="utf-8"))
+    out = {}
+    for entries in (yaml.safe_load(raw) or {}).values():
+        for e in entries or []:
+            out[str(e["address"]).lower()] = e.get("role", "")
+    return out
+
+
 def shared(index: dict) -> list[tuple[str, dict]]:
+    known = label_roles()
     out = []
     for addr, e in index.items():
         if len(e["incidents"]) < 2:
             continue
-        if any(i.get("role") in INFRA_ROLES for i in e["incidents"]):
+        if any(i.get("role") in INFRA_ROLES for i in e["incidents"]) or known.get(addr.lower()) in INFRA_ROLES:
             continue
         out.append((addr, e))
     return sorted(out, key=lambda x: -len(x[1]["incidents"]))
@@ -109,6 +124,10 @@ def shared(index: dict) -> list[tuple[str, dict]]:
 
 def main(argv: list[str]) -> int:
     index = build()
+    # mark labelled infrastructure in the index itself, so the site skips it too
+    for addr, role in label_roles().items():
+        if addr in index and role in INFRA_ROLES:
+            index[addr]["infrastructure"] = role
     OUT.write_text(json.dumps(index, indent=1, sort_keys=True) + "\n", encoding="utf-8")
     links = shared(index)
     print(f"OAK address index — {len(index)} addresses; {len(links)} shared across incidents (non-infrastructure)")

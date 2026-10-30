@@ -1,0 +1,61 @@
+# Known on-chain endpoints and canonical tokens, used by tools/explorer.py.
+#
+# role: token     → canonical token contract. Transfers of it are trusted even
+#                   where the provider gives no price or holder count (public
+#                   RPC). Everything else seen via RPC is treated as possibly
+#                   counterfeit (address-poisoning bots copy symbols).
+# role: mixer / bridge / cex-deposit / dex / issuer-freeze / burn
+#                 → a trace stops here.
+#
+# Every entry carries a source: the explorer page that labels it.
+# Keep addresses lowercase and in full.
+
+ethereum:
+  - {address: 0xdac17f958d2ee523a2206206994597c13d831ec7, role: token, label: USDT, source: "https://etherscan.io/token/0xdac17f958d2ee523a2206206994597c13d831ec7"}
+  - {address: 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48, role: token, label: USDC, source: "https://etherscan.io/token/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"}
+  - {address: 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2, role: token, label: WETH, source: "https://etherscan.io/token/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"}
+  - {address: 0x6b175474e89094c44da98b954eedeac495271d0f, role: token, label: DAI, source: "https://etherscan.io/token/0x6b175474e89094c44da98b954eedeac495271d0f"}
+  - {address: 0x2260fac5e5542a773aa44fbcfedf7c193bc2c599, role: token, label: WBTC, source: "https://etherscan.io/token/0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"}
+  - {address: 0xd90e2f925da726b50c4ed8d0fb90ad053324f31b, role: mixer, label: "Tornado Cash router", source: "https://etherscan.io/address/0xd90e2f925da726b50c4ed8d0fb90ad053324f31b"}
+  - {address: 0x12d66f87a04a9e220743712ce6d9bb1b5616b8fc, role: mixer, label: "Tornado Cash 0.1 ETH pool", source: "https://etherscan.io/address/0x12d66f87a04a9e220743712ce6d9bb1b5616b8fc"}
+
+base:
+  - {address: 0x833589fcd6edb6e08f4c7c32d4f71b54bda02913, role: token, label: USDC, source: "https://basescan.org/token/0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"}
+  - {address: 0x4200000000000000000000000000000000000006, role: token, label: WETH, source: "https://basescan.org/token/0x4200000000000000000000000000000000000006"}
+  - {address: 0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca, role: token, label: USDbC, source: "https://basescan.org/token/0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca"}
+  - {address: 0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf, role: token, label: cbBTC, source: "https://basescan.org/token/0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf"}
+  - {address: 0xc1cba3fcea344f92d9239c08c0568f6f2f0ee452, role: token, label: wstETH, source: "https://basescan.org/token/0xc1cba3fcea344f92d9239c08c0568f6f2f0ee452"}
+  - {address: 0x99cbc45ea5bb7ef3a5bc08fb1b7e56bb2442ef0d, role: token, label: aBaswstETH, source: "https://basescan.org/token/0x99cbc45ea5bb7ef3a5bc08fb1b7e56bb2442ef0d"}
+
+polygon:
+  - {address: 0x3c499c542cef5e3811e1192ce70d8cc03d5c3359, role: token, label: USDC, source: "https://polygonscan.com/token/0x3c499c542cef5e3811e1192ce70d8cc03d5c3359"}
+  - {address: 0x2791bca1f2de4661ed88a30c99a7a9449aa84174, role: token, label: USDC.e, source: "https://polygonscan.com/token/0x2791bca1f2de4661ed88a30c99a7a9449aa84174"}
+  - {address: 0xc2132d05d31c914a87c6611c10748aeb04b58e8f, role: token, label: USDT, source: "https://polygonscan.com/token/0xc2132d05d31c914a87c6611c10748aeb04b58e8f"}
+  - {address: 0x7ceb23fd6bc0add59e62ac25578270cff1b9f619, role: token, label: WETH, source: "https://polygonscan.com/token/0x7ceb23fd6bc0add59e62ac25578270cff1b9f619"}
+  - {address: 0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270, role: token, label: WPOL, source: "https://polygonscan.com/token/0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270"}
+
+bsc:
+  - {address: 0x55d398326f99059ff775485246999027b3197955, role: token, label: USDT, source: "https://bscscan.com/token/0x55d398326f99059ff775485246999027b3197955"}
+  - {address: 0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d, role: token, label: USDC, source: "https://bscscan.com/token/0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d"}
+  - {address: 0xbb4cdb9cbd36b01bd1cbaef2af378a0993dc6b6a, role: token, label: WBNB, source: "https://bscscan.com/token/0xbb4cdb9cbd36b01bd1cbaef2af378a0993dc6b6a"}
+
+arbitrum:
+  - {address: 0xaf88d065e77c8cc2239327c5edb3a432268e5831, role: token, label: USDC, source: "https://arbiscan.io/token/0xaf88d065e77c8cc2239327c5edb3a432268e5831"}
+  - {address: 0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9, role: token, label: USDT, source: "https://arbiscan.io/token/0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9"}
+  - {address: 0x82af49447d8a07e3bd95bd0d56f35241523fbab1, role: token, label: WETH, source: "https://arbiscan.io/token/0x82af49447d8a07e3bd95bd0d56f35241523fbab1"}
+
+optimism:
+  - {address: 0x0b2c639c533813f4aa9d7837caf62653d097ff85, role: token, label: USDC, source: "https://optimistic.etherscan.io/token/0x0b2c639c533813f4aa9d7837caf62653d097ff85"}
+  - {address: 0x4200000000000000000000000000000000000006, role: token, label: WETH, source: "https://optimistic.etherscan.io/token/0x4200000000000000000000000000000000000006"}
+
+avalanche:
+  - {address: 0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e, role: token, label: USDC, source: "https://snowtrace.io/token/0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e"}
+  - {address: 0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7, role: token, label: USDt, source: "https://snowtrace.io/token/0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7"}
+  - {address: 0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7, role: token, label: WAVAX, source: "https://snowtrace.io/token/0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7"}
+  - {address: 0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab, role: token, label: WETH.e, source: "https://snowtrace.io/token/0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab"}
+  - {address: 0x152b9d0fdc40c096757f570a51e494bd4b943e50, role: token, label: BTC.b, source: "https://snowtrace.io/token/0x152b9d0fdc40c096757f570a51e494bd4b943e50"}
+
+# Shared swap infrastructure seen in several incidents. Appearing in two
+# incidents through one of these is NOT a cluster link.
+shared:
+  - {address: 0x8f10b468b06c6fd214b65f87778827f7d113f996, role: dex, label: "High-volume unverified swap executor (~9.96M token transfers, 176 own txs on Ethereum; same address on Base)", source: "https://eth.blockscout.com/address/0x8f10b468b06c6fd214b65f87778827f7d113f996"}

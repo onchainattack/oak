@@ -248,7 +248,7 @@ export default function FundFlowGraph({ flow }: { flow: Flow }) {
           <button type="button" onClick={() => setScale((s) => Math.min(MAX_SCALE, +(s + 0.1).toFixed(2)))} aria-label="Zoom in">+</button>
           <button type="button" onClick={fit}>Fit</button>
           <button type="button" onClick={() => setScale(1)}>100%</button>
-          <button type="button" onClick={() => setExpanded((v) => !v)}>{expanded ? "Close" : "Full screen"}</button>
+          <button type="button" className="ff-fullscreen" onClick={() => setExpanded((v) => !v)}>{expanded ? "Close" : "Full screen"}</button>
         </div>
       </div>
 

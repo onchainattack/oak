@@ -1,15 +1,126 @@
 {
-  "_comment": "Chain → explorer URL templates and keyless API hosts. Shared by tools/explorer.py (tracing) and scripts/build-site-data.mjs (links in fund-flow graphs). {a} = address, {t} = tx.",
-  "ethereum":  {"family": "evm", "address": "https://etherscan.io/address/{a}", "tx": "https://etherscan.io/tx/{t}", "blockscout": "https://eth.blockscout.com", "chainid": 1, "native": "ETH"},
-  "base":      {"family": "evm", "address": "https://basescan.org/address/{a}", "tx": "https://basescan.org/tx/{t}", "blockscout": "https://base.blockscout.com", "chainid": 8453, "native": "ETH"},
-  "arbitrum":  {"family": "evm", "address": "https://arbiscan.io/address/{a}", "tx": "https://arbiscan.io/tx/{t}", "blockscout": "https://arbitrum.blockscout.com", "chainid": 42161, "native": "ETH"},
-  "optimism":  {"family": "evm", "address": "https://optimistic.etherscan.io/address/{a}", "tx": "https://optimistic.etherscan.io/tx/{t}", "blockscout": "https://optimism.blockscout.com", "chainid": 10, "native": "ETH"},
-  "polygon":   {"family": "evm", "address": "https://polygonscan.com/address/{a}", "tx": "https://polygonscan.com/tx/{t}", "blockscout": "https://polygon.blockscout.com", "chainid": 137, "native": "POL"},
-  "gnosis":    {"family": "evm", "address": "https://gnosisscan.io/address/{a}", "tx": "https://gnosisscan.io/tx/{t}", "blockscout": "https://gnosis.blockscout.com", "chainid": 100, "native": "xDAI"},
-  "bsc":       {"family": "evm", "address": "https://bscscan.com/address/{a}", "tx": "https://bscscan.com/tx/{t}", "rpc": "https://bsc-dataseed.bnbchain.org", "chainid": 56, "native": "BNB"},
-  "avalanche": {"family": "evm", "address": "https://snowtrace.io/address/{a}", "tx": "https://snowtrace.io/tx/{t}", "routescan": "https://api.routescan.io/v2/network/mainnet/evm/43114/etherscan/api", "chainid": 43114, "native": "AVAX"},
-  "bitcoin":   {"family": "utxo", "address": "https://mempool.space/address/{a}", "tx": "https://mempool.space/tx/{t}", "mempool": "https://mempool.space/api", "native": "BTC"},
-  "solana":    {"family": "solana", "address": "https://solscan.io/account/{a}", "tx": "https://solscan.io/tx/{t}", "rpc": "https://api.mainnet-beta.solana.com", "native": "SOL"},
-  "tron":      {"family": "tron", "address": "https://tronscan.org/#/address/{a}", "tx": "https://tronscan.org/#/transaction/{t}", "trongrid": "https://api.trongrid.io", "native": "TRX"},
-  "xrp":       {"family": "xrp", "address": "https://livenet.xrpl.org/accounts/{a}", "tx": "https://livenet.xrpl.org/transactions/{t}", "native": "XRP"}
+ "_comment": "Chain \u2192 explorer URL templates and keyless API hosts. Shared by tools/explorer.py (tracing) and scripts/build-site-data.mjs (links in fund-flow graphs). {a} = address, {t} = tx.",
+ "ethereum": {
+  "family": "evm",
+  "address": "https://etherscan.io/address/{a}",
+  "tx": "https://etherscan.io/tx/{t}",
+  "blockscout": "https://eth.blockscout.com",
+  "chainid": 1,
+  "native": "ETH",
+  "rpc": [
+   "https://ethereum-rpc.publicnode.com",
+   "https://eth.drpc.org"
+  ]
+ },
+ "base": {
+  "family": "evm",
+  "address": "https://basescan.org/address/{a}",
+  "tx": "https://basescan.org/tx/{t}",
+  "blockscout": "https://base.blockscout.com",
+  "chainid": 8453,
+  "native": "ETH",
+  "rpc": [
+   "https://base-rpc.publicnode.com",
+   "https://mainnet.base.org"
+  ]
+ },
+ "arbitrum": {
+  "family": "evm",
+  "address": "https://arbiscan.io/address/{a}",
+  "tx": "https://arbiscan.io/tx/{t}",
+  "blockscout": "https://arbitrum.blockscout.com",
+  "chainid": 42161,
+  "native": "ETH",
+  "rpc": [
+   "https://arbitrum-one-rpc.publicnode.com",
+   "https://arb1.arbitrum.io/rpc"
+  ]
+ },
+ "optimism": {
+  "family": "evm",
+  "address": "https://optimistic.etherscan.io/address/{a}",
+  "tx": "https://optimistic.etherscan.io/tx/{t}",
+  "blockscout": "https://optimism.blockscout.com",
+  "chainid": 10,
+  "native": "ETH",
+  "rpc": [
+   "https://optimism-rpc.publicnode.com",
+   "https://mainnet.optimism.io"
+  ]
+ },
+ "polygon": {
+  "family": "evm",
+  "address": "https://polygonscan.com/address/{a}",
+  "tx": "https://polygonscan.com/tx/{t}",
+  "blockscout": "https://polygon.blockscout.com",
+  "chainid": 137,
+  "native": "POL",
+  "rpc": [
+   "https://polygon-bor-rpc.publicnode.com",
+   "https://polygon.drpc.org"
+  ]
+ },
+ "gnosis": {
+  "family": "evm",
+  "address": "https://gnosisscan.io/address/{a}",
+  "tx": "https://gnosisscan.io/tx/{t}",
+  "blockscout": "https://gnosis.blockscout.com",
+  "chainid": 100,
+  "native": "xDAI",
+  "rpc": [
+   "https://gnosis-rpc.publicnode.com"
+  ]
+ },
+ "bsc": {
+  "family": "evm",
+  "address": "https://bscscan.com/address/{a}",
+  "tx": "https://bscscan.com/tx/{t}",
+  "rpc": [
+   "https://bsc-rpc.publicnode.com",
+   "https://bsc-dataseed.bnbchain.org"
+  ],
+  "chainid": 56,
+  "native": "BNB"
+ },
+ "avalanche": {
+  "family": "evm",
+  "address": "https://snowtrace.io/address/{a}",
+  "tx": "https://snowtrace.io/tx/{t}",
+  "routescan": "https://api.routescan.io/v2/network/mainnet/evm/43114/etherscan/api",
+  "chainid": 43114,
+  "native": "AVAX",
+  "rpc": [
+   "https://avalanche-c-chain-rpc.publicnode.com",
+   "https://api.avax.network/ext/bc/C/rpc"
+  ]
+ },
+ "bitcoin": {
+  "family": "utxo",
+  "address": "https://mempool.space/address/{a}",
+  "tx": "https://mempool.space/tx/{t}",
+  "mempool": "https://mempool.space/api",
+  "native": "BTC"
+ },
+ "solana": {
+  "family": "solana",
+  "address": "https://solscan.io/account/{a}",
+  "tx": "https://solscan.io/tx/{t}",
+  "rpc": [
+   "https://api.mainnet-beta.solana.com"
+  ],
+  "native": "SOL"
+ },
+ "tron": {
+  "family": "tron",
+  "address": "https://tronscan.org/#/address/{a}",
+  "tx": "https://tronscan.org/#/transaction/{t}",
+  "trongrid": "https://api.trongrid.io",
+  "native": "TRX"
+ },
+ "xrp": {
+  "family": "xrp",
+  "address": "https://livenet.xrpl.org/accounts/{a}",
+  "tx": "https://livenet.xrpl.org/transactions/{t}",
+  "native": "XRP"
+ }
 }

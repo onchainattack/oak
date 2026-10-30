@@ -12,6 +12,12 @@ Providers (no API key needed; hosts in tools/chains.json):
     EVM      Blockscout REST v2 (ethereum, base, arbitrum, optimism, polygon, gnosis)
              Etherscan v2 is used instead when ETHERSCAN_API_KEY is set (any EVM chain)
     bitcoin  mempool.space REST
+    fallback public JSON-RPC (tools/chains.json "rpc") when the indexer is
+             blocked or absent (Base, Polygon, BSC, ...): tx lookups see every
+             token Transfer log; transfer listing covers allowlisted tokens
+             only and needs --after/--before; native-coin hops are visible
+             only inside a known tx
+    avalanche Routescan (Etherscan-compatible, keyless)
     others   not yet implemented: the command says so instead of guessing
 
 Responses are cached under .cache/explorer/ (gitignored), so re-running a
@@ -140,14 +146,19 @@ def load_labels() -> dict[tuple[str, str], dict]:
     ) or {}
     out = {}
     for chain, entries in raw.items():
+        # "shared": same contract address on every EVM chain (e.g. a swap executor)
+        chains = [c for c, v in CHAINS.items() if not c.startswith("_") and v.get("family") == "evm"] if chain == "shared" else [chain]
         for e in entries or []:
-            out[(chain, str(e["address"]).lower())] = e
+            for c in chains:
+                out[(c, str(e["address"]).lower())] = e
             if e.get("role") == "token":
                 TOKEN_ALLOW[str(e["address"]).lower()] = e
+    LABELS.update(out)
     return out
 
 
 TOKEN_ALLOW: dict[str, dict] = {}
+LABELS: dict[tuple[str, str], dict] = {}
 
 
 def endpoint_role(text: str) -> str | None:
@@ -367,10 +378,15 @@ def es_key() -> str | None:
 
 
 def es_call(chain: str, params: dict):
-    cid = CHAINS.get(chain, {}).get("chainid")
-    if not cid:
-        raise ExplorerError(f"no chainid for {chain}")
-    d = http_json("https://api.etherscan.io/v2/api", {"chainid": cid, **params, "apikey": es_key()})
+    rs = CHAINS.get(chain, {}).get("routescan")
+    if rs and not es_key():
+        # Routescan: Etherscan-compatible, keyless (Avalanche C-chain)
+        d = http_json(rs, params)
+    else:
+        cid = CHAINS.get(chain, {}).get("chainid")
+        if not cid:
+            raise ExplorerError(f"no chainid for {chain}")
+        d = http_json("https://api.etherscan.io/v2/api", {"chainid": cid, **params, "apikey": es_key()})
     if str(d.get("status")) == "0" and "No transactions" not in str(d.get("message")):
         raise ExplorerError(f"etherscan: {d.get('message')}: {d.get('result')}")
     return d.get("result") or []
@@ -400,6 +416,171 @@ def es_transfers(chain: str, address: str, limit: int = 200) -> list[dict]:
     return out
 
 
+# --------------------------------------------------------------------------- public JSON-RPC (EVM fallback)
+# Used where no keyless indexer answers (Blockscout behind a bot challenge,
+# or none for the chain). Public nodes require a contract address in
+# eth_getLogs, so transfer listing covers the allowlisted tokens in
+# tools/address_labels.yaml only; native-coin transfers are not visible in
+# logs and appear only inside a known tx (`tx` command).
+
+TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+_token_meta: dict[tuple[str, str], tuple[str, int]] = {}
+
+
+_rpc_dead: set[str] = set()
+
+
+def rpc(chain: str, method: str, params: list, cache: bool = True):
+    urls = CHAINS.get(chain, {}).get("rpc") or []
+    if isinstance(urls, str):
+        urls = [urls]
+    if not urls:
+        raise ExplorerError(f"no public RPC configured for '{chain}' (tools/chains.json)")
+    last: Exception | None = None
+    for url in [u for u in urls if u not in _rpc_dead] or urls:
+        try:
+            d = http_json(url, post={"jsonrpc": "2.0", "id": 1, "method": method, "params": params}, cache=cache)
+        except ExplorerError as e:
+            # a public node that rate-limits or challenges us: use the next one
+            _rpc_dead.add(url)
+            last = e
+            continue
+        if "error" in d:
+            raise ExplorerError(f"rpc {method}: {d['error'].get('message')}")
+        return d.get("result")
+    raise ExplorerError(f"all public RPCs failed for {chain}: {last}")
+
+
+def _decode_str(hexdata: str) -> str:
+    b = bytes.fromhex((hexdata or "0x")[2:])
+    if len(b) >= 64:
+        n = int.from_bytes(b[32:64], "big")
+        return b[64:64 + n].decode("utf-8", "replace")
+    return b.rstrip(b"\0").decode("utf-8", "replace")
+
+
+def token_meta(chain: str, token: str) -> tuple[str, int]:
+    key = (chain, token)
+    if key not in _token_meta:
+        lab = TOKEN_ALLOW.get(token) or {}
+        try:
+            sym = lab.get("label") or _decode_str(rpc(chain, "eth_call", [{"to": token, "data": "0x95d89b41"}, "latest"])) or "?"
+        except ExplorerError:
+            sym = "?"
+        try:
+            dec = int(rpc(chain, "eth_call", [{"to": token, "data": "0x313ce567"}, "latest"]), 16)
+        except (ExplorerError, ValueError, TypeError):
+            dec = 18
+        _token_meta[key] = (sym, dec)
+    return _token_meta[key]
+
+
+def _block_time(chain: str, number: int) -> int:
+    b = rpc(chain, "eth_getBlockByNumber", [hex(number), False])
+    return int(b["timestamp"], 16)
+
+
+def block_at(chain: str, iso: str) -> int:
+    """Last block with timestamp <= iso. Interpolation search: block times
+    are near-regular, so a handful of lookups lands within a few blocks."""
+    target = int(time.mktime(time.strptime(iso[:19], "%Y-%m-%dT%H:%M:%S")) - time.timezone)
+    hi = int(rpc(chain, "eth_blockNumber", [], cache=False), 16)
+    t_hi = _block_time(chain, hi)
+    if t_hi <= target:
+        return hi
+    lo = max(1, hi - 2_000_000)
+    t_lo = _block_time(chain, lo)
+    while t_lo > target and lo > 1:
+        lo = max(1, lo - (hi - lo))
+        t_lo = _block_time(chain, lo)
+    for _ in range(40):
+        if hi - lo <= 1:
+            break
+        guess = lo + int((target - t_lo) * (hi - lo) / max(1, t_hi - t_lo))
+        guess = min(hi - 1, max(lo + 1, guess))
+        t = _block_time(chain, guess)
+        if t <= target:
+            lo, t_lo = guess, t
+        else:
+            hi, t_hi = guess, t
+    return lo
+
+
+def _iso(ts: int) -> str:
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(ts))
+
+
+def _topic_addr(a: str) -> str:
+    return "0x" + "0" * 24 + a.lower()[2:]
+
+
+def rpc_tx(chain: str, h: str) -> dict:
+    native = CHAINS[chain].get("native", "ETH")
+    t = rpc(chain, "eth_getTransactionByHash", [h])
+    if not t:
+        raise ExplorerError(f"tx {h} not found on {chain}")
+    r = rpc(chain, "eth_getTransactionReceipt", [h])
+    ts = _block_time(chain, int(t["blockNumber"], 16))
+    transfers = []
+    if int(t.get("value") or "0x0", 16) > 0:
+        transfers.append({"from": t["from"].lower(), "to": (t.get("to") or "").lower(), "asset": native,
+                          "amount": num(scaled(int(t["value"], 16), 18)), "kind": "native"})
+    for lg in r.get("logs", []):
+        tp = lg.get("topics") or []
+        if len(tp) != 3 or tp[0] != TRANSFER_TOPIC:
+            continue
+        token = lg["address"].lower()
+        sym, dec = token_meta(chain, token)
+        transfers.append({"from": "0x" + tp[1][-40:], "to": "0x" + tp[2][-40:], "asset": sym, "token": token,
+                          "trusted": token in TOKEN_ALLOW,
+                          "amount": num(scaled(int(lg.get("data") or "0x0", 16), dec)), "kind": "token"})
+    return {"chain": chain, "tx": h, "time": _iso(ts), "status": "ok" if r.get("status") == "0x1" else "failed",
+            "from": t["from"].lower(), "to": (t.get("to") or "").lower(), "provider": "rpc",
+            "note": "internal (contract) native transfers are not visible over public RPC",
+            "transfers": transfers}
+
+
+def _get_logs(chain: str, token: str, topics: list, lo: int, hi: int) -> list:
+    """eth_getLogs in chunks: public nodes cap block ranges and result counts
+    with assorted messages, so any error shrinks the chunk and retries."""
+    out, start, span = [], lo, min(10_000, max(1, hi - lo + 1))
+    while start <= hi:
+        end = min(hi, start + span - 1)
+        try:
+            out += rpc(chain, "eth_getLogs", [{"address": token, "fromBlock": hex(start), "toBlock": hex(end), "topics": topics}])
+            start = end + 1
+        except ExplorerError:
+            if span <= 50:
+                raise
+            span = max(50, span // 4)
+    return out
+
+
+def rpc_transfers(chain: str, address: str, after: str | None, before: str | None) -> list[dict]:
+    if not after or not before:
+        raise ExplorerError(f"{chain}: public-RPC mode needs a time window (--after and --before) to bound eth_getLogs")
+    a = address.lower()
+    tokens = [k for (c, k), e in LABELS.items() if c == chain and e.get("role") == "token"]
+    if not tokens:
+        raise ExplorerError(f"no allowlisted tokens for {chain} in tools/address_labels.yaml")
+    lo, hi = block_at(chain, after), block_at(chain, before)
+    out, times = [], {}
+    for token in tokens:
+        sym, dec = token_meta(chain, token)
+        for direction, topics in (("out", [TRANSFER_TOPIC, _topic_addr(a)]), ("in", [TRANSFER_TOPIC, None, _topic_addr(a)])):
+            for lg in _get_logs(chain, token, topics, lo, hi):
+                bn = int(lg["blockNumber"], 16)
+                if bn not in times:
+                    times[bn] = _block_time(chain, bn)
+                out.append({"tx": lg["transactionHash"], "time": _iso(times[bn]),
+                            "from": "0x" + lg["topics"][1][-40:], "to": "0x" + lg["topics"][2][-40:],
+                            "asset": sym, "token": token, "trusted": True,
+                            "amount": num(scaled(int(lg.get("data") or "0x0", 16), dec)),
+                            "direction": direction, "kind": "token"})
+    out.sort(key=lambda x: x["time"])
+    return out
+
+
 # --------------------------------------------------------------------------- dispatch
 
 def family(chain: str) -> str:
@@ -408,21 +589,37 @@ def family(chain: str) -> str:
     return CHAINS[chain]["family"]
 
 
+def _blocked(e: ExplorerError) -> bool:
+    return "HTTP 403" in str(e) or "no keyless EVM provider" in str(e)
+
+
 def get_tx(chain: str, h: str) -> dict:
     f = family(chain)
     if f == "evm":
-        return bs_tx(chain, h)
+        try:
+            return bs_tx(chain, h)
+        except ExplorerError as e:
+            if not _blocked(e):
+                raise
+            return rpc_tx(chain, h)
     if f == "utxo":
         return mp_tx(h)
     raise ExplorerError(f"tx lookup for {chain} is not implemented yet")
 
 
-def get_transfers(chain: str, address: str, limit: int) -> list[dict]:
+def get_transfers(chain: str, address: str, limit: int, after: str | None = None, before: str | None = None) -> list[dict]:
     f = family(chain)
     if f == "evm":
         if es_key():
             return es_transfers(chain, address, limit)
-        return bs_transfers(chain, address, limit)
+        if CHAINS[chain].get("routescan"):
+            return es_transfers(chain, address, limit)
+        try:
+            return bs_transfers(chain, address, limit)
+        except ExplorerError as e:
+            if not _blocked(e):
+                raise
+            return rpc_transfers(chain, address, after, before)
     if f == "utxo":
         return mp_transfers(address, limit)
     raise ExplorerError(f"transfer listing for {chain} is not implemented yet")
@@ -473,7 +670,7 @@ def trace(chain: str, seeds: list[str], hops: int, min_amount: float, asset: str
         if addr in expanded or depth >= hops:
             continue
         expanded.add(addr)
-        for t in get_transfers(chain, addr, limit):
+        for t in get_transfers(chain, addr, limit, after, before):
             if t["direction"] != "out" or not t.get("to"):
                 continue
             if t.get("kind") == "token" and not t.get("trusted") and not include_unverified:
@@ -556,6 +753,7 @@ def main(argv: list[str]) -> int:
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("tx"); p.add_argument("chain"); p.add_argument("hash")
     p = sub.add_parser("transfers"); p.add_argument("chain"); p.add_argument("address"); p.add_argument("--limit", type=int, default=200)
+    p.add_argument("--after"); p.add_argument("--before")
     p = sub.add_parser("info"); p.add_argument("chain"); p.add_argument("address")
     p = sub.add_parser("trace"); p.add_argument("chain"); p.add_argument("seeds", nargs="+")
     p.add_argument("--hops", type=int, default=2); p.add_argument("--min-amount", type=float, default=0.0)
@@ -570,7 +768,7 @@ def main(argv: list[str]) -> int:
         if a.cmd == "tx":
             out = get_tx(a.chain, a.hash)
         elif a.cmd == "transfers":
-            out = get_transfers(a.chain, a.address, a.limit)
+            out = get_transfers(a.chain, a.address, a.limit, a.after, a.before)
         elif a.cmd == "info":
             out = get_info(a.chain, a.address)
         else:
