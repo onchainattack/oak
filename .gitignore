@@ -67,6 +67,10 @@ public/sitemap.xml
 vendor-outreach/
 
 # Sub-agent transcripts (Claude Code)
-.claude/
+# Claude Code: shared tooling (skills, agents, hooks, settings.json) is committed;
+# personal settings and runtime state are not.
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/worktrees/
 .tasks/
 .cache/

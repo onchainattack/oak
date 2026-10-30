@@ -18,7 +18,8 @@ _Last reviewed 2026-10-30._
 
 **Why:** a defender should be able to rebuild an incident from OAK alone, see every step as a known Technique, and follow the money. Since 2026-10-30 every single-incident example must carry a timeline with a Technique per step, full linked addresses and a fund-flow row (`tools/check_timeline.py`). The fund flow and the addresses are still prose, though, so nothing can be drawn, queried or joined across incidents. Ondology Labs' Binance write-up is the bar: a funding → takeover → receiver graph, a laundering graph, a dated holdings snapshot, and every figure marked as verified by them or taken from someone else.
 
-1. **Structured fund flow.** Add a machine-readable flow block per example (from → to, asset, amount, tx, chain, address role), exported to `oak.json` / oak-mcp. Pilot it on Binance, then fill in the October 2026 set.
+1. ✅ **Structured fund flow** (`89365fb`); next: roll out to the October 2026 set with `oak-fund-tracer`, one agent per file.
+   Originally: Add a machine-readable flow block per example (from → to, asset, amount, tx, chain, address role), exported to `oak.json` / oak-mcp. Pilot it on Binance, then fill in the October 2026 set.
 2. **Graph on the site.** Render that block as a flow graph on each incident page (Mermaid is already a dependency), with nodes coloured by role.
 3. **Address index.** One index of every address across the corpus, so the site can show where an address from one incident appears in another (as Binance ↔ Bitget does) and the overlap becomes a T8.001 signal by itself.
 4. **Our own tracing.** Many timelines say "where the funds went: undisclosed" only because the cited sources stop there. Explorer-API tracing would let OAK close those gaps itself, with each hop marked as verified by OAK.
@@ -90,6 +91,11 @@ Known leftovers: OAK-T11.001 (BitMart described with "1Password"), OAK-T17.005 (
 
 Newest first. Each entry: what, commit, why.
 
+- **2026-10-30 — Claude Code tooling for OAK agents; X100 traced end to end** (this commit). _Why:_ sweeps, tracing and write-ups were done by hand in long sessions, so they came out differently each time, and rules were remembered rather than enforced. The tooling now lives in the repo, so any contributor's Claude session works the same way.
+  - **Added.** `CLAUDE.md` with the working rules. Skills `oak-sweep`, `oak-write-example` (with `template.md`), `oak-trace-funds` and `oak-validate`. Agents `oak-source-reader` (Haiku, read-only), `oak-fund-tracer` and `oak-example-writer` (Sonnet). A `PostToolUse` hook that validates any edited `examples/*.md` at once and feeds errors back. A shared `.claude/settings.json` with allowlists. Offline unit tests in `tools/tests` that run in `npm run check`.
+  - **Pilot.** The tracer procedure ran on X100: 15 edges, all checked on-chain. The USDT was swapped for ETH via UniswapX within 6 minutes, the ETH was split to four fresh wallets, and about 2,022.4 ETH entered Tornado Cash in 82 deposits on 10-26 and 10-27. That contradicts the "not moved" in the cited brief.
+  - **Spillover.** The ether.fi entry's Tornado router address is now complete.
+  - **Note.** New agents load only in a new session.
 - **2026-10-30 — Fund flow becomes data; OAK traces on-chain itself** (this commit). _Why:_ timelines and full addresses were still prose, so nothing could be drawn, queried or joined across incidents, and "where the funds went" stopped wherever the sources stopped.
   - **What was added.** The `## Fund flow` oak-flow block, validated by `check_flow.py` and exported as `oak.json` `fund_flow`. Its edges are marked `verified: oak` or `verified: source`. The site draws it with Mermaid and a table of full linked addresses. `tools/explorer.py` traces keylessly (Blockscout for EVM, mempool.space for BTC, cached). `tools/build_address_index.py` builds the cross-incident address index (`addresses.json`), and pages get a "seen in other incidents" block.
   - **Binance pilot, traced by OAK.** The full initiator address, now confirmed. Three Tornado withdrawals, not three on one day. The 195,460 vs 197,460 ETH discrepancy explained (two transfers). The USDT figure (1.615B) confirmed in the sweep transaction. 14 gas-funded hop wallets. 529 swaps of 35 tokens into 64 DEX pools.

@@ -30,7 +30,7 @@ The stolen liquidETH was sold through Uniswap v4 in three swaps and the USDC thr
 | 07:20:11, block 25952624 | Single transaction: **`updateAtomicRequest()`** files an offer of a worthless attacker-minted token; **`solve()`** names eleven approving wallets; `safeTransferFrom` pulls **14.4455 liquidETH + ~7.05 USDC**. Gas cost **0.000685 ETH** | **T9.004 exploitation** |
 | (same path) | **`finishSolve`** callback is a no-op for EOAs and for seven **EIP-7702**-delegated Coinbase Wallet addresses | (no policy layer to intervene) |
 | minutes later | liquidETH sold on **Uniswap v4** (2.4728 / 6.4949 / 6.4830 ETH); USDC via **v3** (0.002853 WETH) | (extraction) |
-| shortly after | **Tornado Cash** relayer `0xd90e…F31b` (full address not published in the cited sources): 1×10, 5×1, 5×0.1 ETH = **15.5 ETH**; ~0.03701 ETH left undeposited | **T7.001** |
+| shortly after | **Tornado Cash** router [`0xd90e2f925da726b50c4ed8d0fb90ad053324f31b`](https://etherscan.io/address/0xd90e2f925da726b50c4ed8d0fb90ad053324f31b) (full address traced by OAK; Blockscout labels it TornadoRouter): 1×10, 5×1, 5×0.1 ETH = **15.5 ETH**; ~0.03701 ETH left undeposited | **T7.001** |
 | same day | **ExVul** and **SlowMist** publish the mechanism and the contract address | (external forensics) |
 | same day | ether.fi CEO acknowledges, attributes to "an old Veda contract," pledges **full reimbursement**; users told to revoke approvals to `0xd4…ea07` | (operator response) |
 | as of 2026-09-12 | **No formal post-mortem and no reimbursement transaction hashes published** | (open item) |
