@@ -64,6 +64,10 @@ If something on OAK is wrong about you or your work, write to us. We'll fix it.
 
 ## Correction log
 
+### 2026-10-30 — CoinDCX (2025-07): entry vector corrected
+
+`examples/2025-07-coindcx.md` recorded the entry as a "server breach". On that basis it presented back-end infrastructure as a new, third axis of the custody-compromise family. Public reporting since 2025-07-31 says otherwise. Bengaluru police (via The Indian Express, relayed by Cointelegraph and Coinspeaker) say attackers posing as recruiters offered an engineer part-time work and got malware onto his company laptop. Neblio Technologies' complaint says his credentials were compromised through that laptop. The CEO called it "a sophisticated social engineering attack". The example is rewritten at T15.001 → T15.003, the "third axis" teaching point is withdrawn, and the detained engineer is not named because he denies involvement. Found through Ondology Labs' write-up.
+
 ### 2026-10-11 — 39 unsourced worked examples quarantined
 
 A source pass over the 93 examples dated 2024–2026 that cited nothing (`tools/check_sourcing.py`) found no credible public record for 39 of them. They were moved to the repository's `quarantine/` directory (see its `README.md`), out of the corpus, statistics and site; backlinks, spec fixtures and prose that relied on them were removed or marked. 33 trace to the v0.1 bulk release (`f32645a`). 43 further files described real incidents with wrong facts and were corrected in place (each carries a `**Corrected 2026-10-11:**` line); 11 were confirmed as written.

@@ -64,7 +64,7 @@ Operationally, Lazarus's modern crypto-theft playbook combines social engineerin
 - [`examples/2024-10-radiant-capital.md`](../examples/2024-10-radiant-capital.md) — Radiant Capital cross-chain lending compromise
 - [`examples/2025-01-phemex.md`](../examples/2025-01-phemex.md) — Phemex hot-wallet theft
 - [`examples/2025-04-exch-shutdown.md`](../examples/2025-04-exch-shutdown.md) — eXch instant-exchange shutdown (laundering-rail substrate; G01 customer-cohort attribution)
-- [`examples/2025-07-coindcx.md`](../examples/2025-07-coindcx.md) — CoinDCX operational-wallet drain
+- [`examples/2025-07-coindcx.md`](../examples/2025-07-coindcx.md) — CoinDCX, ~\$44M, 2025-07: recruiter lure → malware on an engineer's work laptop → internal liquidity account (police via Indian Express; corrected 2026-10-30 from "server breach")
 - [`examples/2025-09-sbi-crypto.md`](../examples/2025-09-sbi-crypto.md) — SBI Crypto mining-pool drain
 - [`examples/2025-02-infini.md`](../examples/2025-02-infini.md) — Infini neobank treasury drain
 - [`examples/2024-01-post-tornado-defi-yield-laundering.md`](../examples/2024-01-post-tornado-defi-yield-laundering.md) — Post-Tornado-Cash DeFi yield-protocol laundering shift (T7.006 pattern case); G01 is the principal documented cluster using DeFi yield protocols as laundering cover at scale.
