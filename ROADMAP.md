@@ -10,7 +10,7 @@ If you want to contribute against any of these items, open an issue using the re
 
 ## Current work
 
-_Last reviewed 2026-10-17._
+_Last reviewed 2026-10-30._
 
 ### Next
 
@@ -69,6 +69,7 @@ Known leftovers: OAK-T11.001 (BitMart described with "1Password"), OAK-T17.005 (
 **Why:** these incidents are real but no source yet says what happened, and OAK no longer files a mechanism it cannot cite.
 
 - **Pirate Chain (ARRR), 2026-10-14.** Filed at T9.014 from the project's statement (issuance-check bypass + mis-parsed output scripts, ~39.8M ARRR). Add the code path when the promised post-mortem is out.
+- **October 2026 incidents with no mechanism published yet** (sweep 2026-10-30). Each is real and sourced for the loss, but nothing yet says how it happened: **Affluent** (TON, 10-16, ~\$1.05M, DefiLlama "unbacked mint" only), **Diamante** (10-27, operator says breach, no amount or vector), **Frogman** personal-wallet drain (10-07, ~\$4M, vector unknown), **MORPHO / EIP-7702** institutional addresses (10-21, ~\$2.3M, ZachXBT; key vs. delegation unresolved), **HAI** malicious proposal (10-06, Optimism, ~\$927K at risk, outcome unknown). Also revisit **Binance** when its post-mortem lands: the "additional points of breach" may move the primary technique.
 - **Ledger / CryptoBilis final report.** The example is filed at T11.007 parent with the implant confirmed; assign a sub-Technique (candidate T11.007.004 in `TAXONOMY-GAPS.md`) once Ledger ties the losses to the implant.
 
 #### 8. Next content snapshot (~2026-12)
@@ -79,6 +80,7 @@ Known leftovers: OAK-T11.001 (BitMart described with "1Password"), OAK-T17.005 (
 
 Newest first. Each entry: what, commit, why.
 
+- **2026-10-30 — Month-end sweep 2026-10-17 → 10-30: 23 incidents** (this commit). _Why:_ October is the worst month on record and the corpus stopped at 10-17. SlowMist tracker first, then RektRadar daily briefs, which surfaced five earlier-October gaps the tracker's first page did not show (THEO, Kolan, BiFi, AlpsCon, MetaMask Staking). Headline: **Binance ~\$6.3B** (T15.003 from Binance's preliminary finding; T13.004 from TRM's reconstruction of 50 pre-signed 7702 authorizations; G01 attribution is the analytics firms', not Binance's). Polymarket's second frontend-vendor drain in four months (DebugBear RUM script, session hijack rather than approval prompts). Initia is the second "VM bug paid at par by the bridges" after Liquid. Six new T9.016 anchors. Five held under Next §7 for want of a mechanism.
 - **2026-10-17 — Sweep 2026-10-11 → 10-17: four incidents, Ledger implant confirmed** (this commit). _Why:_ keep recency tight. Demex (2026-09-25, missed last sweep; T10.002 from the operator's post-mortem), UNCX VestingManager (T9.016), Gamdom (T15.003 + T11.011, the second casino multi-chain hot-wallet drain in three weeks), Coldcard's X account (T15.006). Ledger's confirmation of a hardware implant moved the CryptoBilis entry from *disputed* to *corroborated* and opened the T11.007.004 candidate. Pirate Chain held until it has a source.
 - **2026-10-17 — Sweep follow-up: five more from the SlowMist tracker** (this commit). _Why:_ the first pass used news and vendor posts only and missed the tracker, as the sweep-coverage rule warns. Pirate Chain (T9.014, now sourced), Papertrade (T17.001), X7 Finance (T9.016), Set Protocol (T9.011), Based Visa Card KYC exposure (T15.004); UNCX loss raised to ~\$1.49M. Rule for next sweeps: read `hacked.slowmist.io` first.
 - **2026-10-11 — OAK-T9.012 deprecated** (`d65a2b3`). _Why:_ the mechanism ("buy before the pool has liquidity") cannot happen, and its three anchors were invented. The real neighbouring patterns, launch sniping and pool pre-creation at a skewed ratio, went to `TAXONOMY-GAPS.md` as candidates.
