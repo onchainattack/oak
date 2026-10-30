@@ -10,7 +10,7 @@ If you want to contribute against any of these items, open an issue using the re
 
 ## Current work
 
-_Last reviewed 2026-10-30._
+_Last reviewed 2026-10-30 (evening)._
 
 ### Next
 
@@ -18,12 +18,16 @@ _Last reviewed 2026-10-30._
 
 **Why:** a defender should be able to rebuild an incident from OAK alone, see every step as a known Technique, and follow the money. Since 2026-10-30 every single-incident example must carry a timeline with a Technique per step, full linked addresses and a fund-flow row (`tools/check_timeline.py`). The fund flow and the addresses are still prose, though, so nothing can be drawn, queried or joined across incidents. Ondology Labs' Binance write-up is the bar: a funding → takeover → receiver graph, a laundering graph, a dated holdings snapshot, and every figure marked as verified by them or taken from someone else.
 
-1. ✅ **Structured fund flow** (`89365fb`); next: roll out to the October 2026 set with `oak-fund-tracer`, one agent per file.
-   Originally: Add a machine-readable flow block per example (from → to, asset, amount, tx, chain, address role), exported to `oak.json` / oak-mcp. Pilot it on Binance, then fill in the October 2026 set.
-2. **Graph on the site.** Render that block as a flow graph on each incident page (Mermaid is already a dependency), with nodes coloured by role.
-3. **Address index.** One index of every address across the corpus, so the site can show where an address from one incident appears in another (as Binance ↔ Bitget does) and the overlap becomes a T8.001 signal by itself.
-4. **Our own tracing.** Many timelines say "where the funds went: undisclosed" only because the cited sources stop there. Explorer-API tracing would let OAK close those gaps itself, with each hop marked as verified by OAK.
-5. **Backfill.** 61 pre-2026-09 timelines break a rule (`check_timeline.py --legacy`), and 282 examples have no fund-flow row (`--warn`).
+Done so far (2026-10-30): the oak-flow data model and `check_flow` (`89365fb`); the interactive graph on incident pages (`d8cc12f`); the address index with infrastructure filtering; the keyless tracer `tools/explorer.py` (Blockscout, public RPC, Routescan, mempool.space); agent tooling in `.claude/` (`759272c`); and fund flow for Binance, X100 and eight more October incidents (`f538c51`).
+
+Next small slices. Take one or two per session, then ship and log them:
+
+1. **Trace the rest of October 2026:** NEM and AlpsCon (BSC), TranchePool and the trading Safe (Avalanche), Kolan, Slice, Yapeswap, Argent-style wallets, Set, GoldPesa, Malt, EtherVista, BitBay, X7. Use one `oak-fund-tracer` per file and spot-check two edges each.
+2. **Graph polish:** on large graphs (Initia, 41 transfers), labels overlap cards in the first columns. Try collision avoidance for labels, or a "collapse peel chains" toggle.
+3. **Binance ↔ Bitget:** add Bitget's attacker addresses from sources (TRM/Halborn) so the shared-address claim can be checked on-chain, not just relayed.
+4. **Native hops over RPC:** the Autheo bridge step and Polymarket's 28.6M POL need native-transfer visibility. Options: a trace-capable endpoint, or a block scan bounded by the source's timestamps.
+5. **Unsupported chains:** Solana (public RPC `getSignaturesForAddress`), then Tron (TronGrid).
+6. **Backfill:** 61 pre-2026-09 timelines break a rule (`check_timeline.py --legacy`), and 282 examples have no fund-flow row (`--warn`). Work in batches by size of loss.
 
 #### 1. Write proper entries for real incidents that were filed under the wrong mechanism
 
