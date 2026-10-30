@@ -199,16 +199,63 @@ export default function FundFlowGraph({ flow }: { flow: Flow }) {
       const c1x = x1 + dx;
       const c2x = backwards ? b.x - dx : x2 - dx;
       const d = `M${x1},${p.y1} C${c1x},${p.y1} ${c2x},${p.y2} ${x2},${p.y2}`;
+      const at = (t: number) => {
+        const u = 1 - t;
+        return {
+          x: u * u * u * x1 + 3 * u * u * t * c1x + 3 * u * t * t * c2x + t * t * t * x2,
+          y: u * u * u * p.y1 + 3 * u * u * t * p.y1 + 3 * u * t * t * p.y2 + t * t * t * p.y2,
+        };
+      };
+      return { d, at };
+    },
+    [layout, ports],
+  );
+
+  // Label placement: try points along each link (preferring the target end
+  // of a fan-out and the source end of a fan-in) and take the first whose
+  // box clears every node card and every label already placed. Falls back
+  // to the preferred point if nothing is free.
+  const labelPos = useMemo(() => {
+    type Box = { x1: number; y1: number; x2: number; y2: number };
+    const hit = (a: Box, b: Box) => a.x1 < b.x2 && a.x2 > b.x1 && a.y1 < b.y2 && a.y2 > b.y1;
+    const nodeBoxes: Box[] = [...layout.nodes.values()].map((n) => ({
+      x1: n.x - 4, y1: n.y - 4, x2: n.x + NODE_W + 4, y2: n.y + NODE_H + 4,
+    }));
+    const placed: Box[] = [];
+    const out = new Map<string, { x: number; y: number }>();
+    // place labels of short links first: they have the least room to move
+    const order = [...layout.links].sort((l1, l2) => {
+      const len = (l: Link) => Math.abs((layout.nodes.get(l.to)?.x ?? 0) - (layout.nodes.get(l.from)?.x ?? 0));
+      return len(l1) - len(l2);
+    });
+    for (const l of order) {
+      const lines = linkLabel(l).slice(0, 2);
+      const more = linkLabel(l).length > 2 ? 1 : 0;
+      const w = Math.min(GAP_X + 40, Math.max(...lines.map((t) => t.length), 6) * 6.7 + 16);
+      const h = (lines.length + more) * 15 + 6;
       const fanOut = (degree.out.get(l.from) ?? 0) > 2;
       const fanIn = (degree.inn.get(l.to) ?? 0) > 2;
-      const t = fanOut && !fanIn ? 0.78 : fanIn && !fanOut ? 0.22 : 0.5;
-      const u = 1 - t;
-      const lx = u * u * u * x1 + 3 * u * u * t * c1x + 3 * u * t * t * c2x + t * t * t * x2;
-      const ly = u * u * u * p.y1 + 3 * u * u * t * p.y1 + 3 * u * t * t * p.y2 + t * t * t * p.y2;
-      return { d, lx, ly };
-    },
-    [layout, ports, degree],
-  );
+      const pref = fanOut && !fanIn ? 0.78 : fanIn && !fanOut ? 0.22 : 0.5;
+      const candidates = [pref, 0.5, 0.65, 0.35, 0.82, 0.18, 0.72, 0.28, 0.9, 0.1];
+      const { at } = geometry(l);
+      let chosen: { x: number; y: number } | null = null;
+      for (const t of candidates) {
+        const pt = at(t);
+        const box = { x1: pt.x - w / 2, y1: pt.y - h / 2, x2: pt.x + w / 2, y2: pt.y + h / 2 };
+        if (!nodeBoxes.some((nb) => hit(box, nb)) && !placed.some((pb) => hit(box, pb))) {
+          chosen = pt;
+          placed.push(box);
+          break;
+        }
+      }
+      if (!chosen) {
+        chosen = at(pref);
+        placed.push({ x1: chosen.x - w / 2, y1: chosen.y - h / 2, x2: chosen.x + w / 2, y2: chosen.y + h / 2 });
+      }
+      out.set(l.id, chosen);
+    }
+    return out;
+  }, [layout, geometry, degree]);
 
   const families = useMemo(
     () => [...new Set(flow.nodes.map((n) => ROLE_FAMILY[n.role] ?? "neutral"))],
@@ -287,7 +334,7 @@ export default function FundFlowGraph({ flow }: { flow: Flow }) {
             </svg>
 
             {layout.links.map((l) => {
-              const { lx: mx, ly: my } = geometry(l);
+              const { x: mx, y: my } = labelPos.get(l.id)!;
               const lines = linkLabel(l);
               const shown = lines.slice(0, 2);
               const more = lines.length - shown.length;

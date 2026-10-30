@@ -22,12 +22,13 @@ Done so far (2026-10-30): the oak-flow data model and `check_flow` (`89365fb`); 
 
 Next small slices. Take one or two per session, then ship and log them:
 
-1. **Trace the rest of October 2026:** NEM and AlpsCon (BSC), TranchePool and the trading Safe (Avalanche), Kolan, Slice, Yapeswap, Argent-style wallets, Set, GoldPesa, Malt, EtherVista, BitBay, X7. Use one `oak-fund-tracer` per file and spot-check two edges each.
-2. **Graph polish:** on large graphs (Initia, 41 transfers), labels overlap cards in the first columns. Try collision avoidance for labels, or a "collapse peel chains" toggle.
-3. **Binance ↔ Bitget:** add Bitget's attacker addresses from sources (TRM/Halborn) so the shared-address claim can be checked on-chain, not just relayed.
-4. **Native hops over RPC:** the Autheo bridge step and Polymarket's 28.6M POL need native-transfer visibility. Options: a trace-capable endpoint, or a block scan bounded by the source's timestamps.
-5. **Unsupported chains:** Solana (public RPC `getSignaturesForAddress`), then Tron (TronGrid).
-6. **Backfill:** 61 pre-2026-09 timelines break a rule (`check_timeline.py --legacy`), and 282 examples have no fund-flow row (`--warn`). Work in batches by size of loss.
+1. ✅ Trace the rest of October 2026 (14 incidents, 2026-10-30 evening).
+2. ✅ Graph polish: label collision avoidance; DEX round trips no longer pull pools left of the receiver.
+3. ◐ Binance ↔ Bitget: the attribution is corrected (Elliptic citing ZachXBT, ~\$39K; not TRM). Bitget's published receiving addresses are now in its entry. **Open:** trace both sides to `0x15104a9c…` on-chain.
+4. ✅ Native hops over RPC: the EOA nonce walk. It found Autheo's Relay bridge deposits and Polymarket's 28.6M POL split.
+5. ✅ Solana (public RPC balance deltas) and Tron (TronGrid). **Open:** XRP, Zcash.
+6. **Backfill (next session):** 61 pre-2026-09 timelines break a rule (`check_timeline.py --legacy`), and 282 examples have no fund-flow row (`--warn`). Work in batches by size of loss.
+7. **Follow-ups found while tracing:** follow TranchePool's CCTP burn to its Solana recipient (Solana is now supported); trace the Polymarket POL receivers; trace Bitget's Tron receiver (`TBWNgu…`, 20.59M TRX in).
 
 #### 1. Write proper entries for real incidents that were filed under the wrong mechanism
 
@@ -95,6 +96,22 @@ Known leftovers: OAK-T11.001 (BitMart described with "1Password"), OAK-T17.005 (
 
 Newest first. Each entry: what, commit, why.
 
+- **2026-10-30 — All October 2026 incidents traced; tracer covers native hops, Solana and Tron** (this commit). _Why:_ the remaining 14 October incidents still said "funds: undisclosed", and the tracer was blind to native coins over RPC and to non-EVM chains.
+  - **Traced.** Seven Sonnet tracer agents covered the 14 incidents, with edges spot-checked here.
+  - **Corrections found by tracing:**
+    - NEM ran on **10-21**, not 10-22; Slice on **10-20**, not 10-21.
+    - TranchePool lost ~1.013M USDC once, not twice: the first draw nets to zero. The money left via CCTP to Solana.
+    - The Avalanche Safe funds **were returned** (307,834.86 WAVAX and the rest), confirmed on-chain, against the sources' "unconfirmed". The bot kept 42,541 WAVAX.
+    - Autheo's attacker bridged **292.19 ETH via Relay**, found by nonce walk.
+    - Polymarket's 28.6M POL went to **three wallets**, now with txs.
+  - **Attribution fix.** The Binance ↔ Bitget address overlap was attributed to TRM via THN. It actually comes from Elliptic, citing ZachXBT, and covers ~\$39K. Bitget's receiving addresses were added.
+  - **Tooling:**
+    - EOA nonce walk (archive `eth_getTransactionCount`) for native sends.
+    - Solana via public RPC, from balance deltas.
+    - Tron via TronGrid.
+    - Allowlist additions checked on-chain: Base USDT, wstETH and aBaswstETH; Polygon DAI.
+    - The WBNB allowlist entry was wrong, written from memory with a wrong tail. An agent caught it, and it was fixed and verified.
+    - Graph labels avoid cards and each other; DEX round trips are laid out as exits.
 - **2026-10-30 — Eight more incidents traced on-chain; tracer works where indexers block us** (this commit). _Why:_ "where the funds went: undisclosed" was the weakest part of the October set. `oak-fund-tracer` agents (Sonnet, one per file) traced Initia, zkLink Nova, UNCX, MakerDAO keeper, BiFi, Base vault, Autheo THEO and Polymarket. Their findings were spot-checked against chain data here.
   - **Corrections and new facts:**
     - BiFi ran on **10-17 05:43**, not 10-18, and the MEV bot that took the funds **returned 159,103.65 USDC** on 10-18. No source mentions the return.

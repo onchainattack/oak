@@ -43,7 +43,7 @@ Key addresses:
 Traced by OAK on Base over the public-RPC fallback (Blockscout answered HTTP 403), as of 2026-10-30. One transaction is checked end to end ([`0x9d2a604246abdd8b8a847049f114a670218d307a3160d37a0c4e567edde73fcb`](https://basescan.org/tx/0x9d2a604246abdd8b8a847049f114a670218d307a3160d37a0c4e567edde73fcb), 2026-10-12 17:16:13 UTC). The bridge to Ethereum is relayed from PeckShield and not traced.
 
 ```oak-flow
-as_of: 2026-10-30T15:00Z
+as_of: 2026-10-30T18:00Z
 nodes:
   - {id: theo, chain: base, address: 0xebe516a20238f79dc20b07ead6768e08891ed309, role: vulnerable-contract, label: "THEO HypERC20 warp route"}
   - {id: atk, chain: base, address: 0x3048b4ee5a070f33b73e3401829847255079e0ad, role: attacker-eoa, label: "Attacker (sender of the dump tx)"}
@@ -51,7 +51,8 @@ nodes:
   - {id: ext, chain: base, address: 0x8f10b468b06c6fd214b65f87778827f7d113f996, role: dex, label: "Swap executor (shared, high-volume; Defimon calls it the extraction engine)"}
   - {id: pair, chain: base, address: 0x182be47742b81777055d69c50e5c9d2fe803e938, role: dex, label: "THEO/USDC pair"}
   - {id: pools, chain: base, role: dex, label: "USDC to WETH/cbBTC pools and routers (a05de8fe…, 5d2806b9…, 3fe04a59…, 160d7e9d…, 42d4a22c…, 7c7420dd…, bee3211a…, 5b5562aa…, 4f5905e3…; cbBTC legs net to zero)"}
-  - {id: bridge, chain: base, role: bridge, label: "Bridge Base to Ethereum (not published)"}
+  - {id: relay, chain: base, address: 0x4cd00e387622c35bddb9b4c962c136462338bc31, role: bridge, label: "Relay bridge depository"}
+  - {id: bridge, chain: base, role: bridge, label: "Bridge Base to Ethereum (rest of the 700.8 ETH, path not traced)"}
   - {id: eth, chain: ethereum, role: unknown, label: "Ethereum receiving address (not published)"}
 edges:
   - {from: theo, to: atk, asset: "THEO (unbacked mint)", amount: 19000000, time: 2026-10-12T00:00Z, technique: T10.002, verified: source, source: defimontheo2026}
@@ -60,11 +61,14 @@ edges:
   - {from: pair, to: ext, asset: USDC, amount: 476898.7, tx: 0x9d2a604246abdd8b8a847049f114a670218d307a3160d37a0c4e567edde73fcb, time: 2026-10-12T17:16Z, technique: T10.002, verified: oak}
   - {from: ext, to: pools, asset: USDC, amount: 476898.7, tx: 0x9d2a604246abdd8b8a847049f114a670218d307a3160d37a0c4e567edde73fcb, time: 2026-10-12T17:16Z, technique: T10.002, verified: oak}
   - {from: pools, to: ext, asset: WETH, amount: 189.44, tx: 0x9d2a604246abdd8b8a847049f114a670218d307a3160d37a0c4e567edde73fcb, time: 2026-10-12T17:16Z, technique: T10.002, verified: oak}
+  - {from: atk, to: relay, asset: ETH, amount: 292.18820218, tx: 0x88728afe998c34a50f7dcbfb8e1afe1ae62e13a2952f1a30dd08b85897222154, time: 2026-10-12T17:18:15Z, tx_count: 4, time_last: 2026-10-12T17:59:09Z, technique: T7.003, verified: oak}
   - {from: ext, to: bridge, asset: ETH, amount: 700.8, time: 2026-10-13T00:00Z, technique: T7.003, verified: source, source: peckshieldtheo2026}
   - {from: bridge, to: eth, asset: ETH, amount: 700.8, time: 2026-10-13T00:00Z, technique: T7.003, verified: source, source: peckshieldtheo2026}
 ```
 
 What the trace adds beyond the sources:
+
+- **The bridge step, found via the attacker's nonce.** Native ETH is invisible to log-based RPC tracing, so `tools/explorer.py` walked the attacker EOA's nonce instead. On 2026-10-12, between 17:18 and 17:59 UTC, [`0x3048b4ee5a070f33b73e3401829847255079e0ad`](https://basescan.org/address/0x3048b4ee5a070f33b73e3401829847255079e0ad) sent **292.19 ETH in four deposits** (280.45, 0.1, 11.21 and 0.43 ETH) to [`0x4cd00e387622c35bddb9b4c962c136462338bc31`](https://basescan.org/address/0x4cd00e387622c35bddb9b4c962c136462338bc31). That address is the Relay bridge's RelayDepository; the same contract is verified under that name on Ethereum. This accounts for part of the 700.8 ETH PeckShield saw bridged. The rest went by a path not traced here, possibly from other attacker addresses.
 
 - **New:** the full addresses of the orchestrator, extraction contract and THEO/USDC pair (previously shortened), and that the attacker address `0x3048…` signed the dump tx, so it held the unbacked THEO.
 - **New:** in that one tx 9,501,032.6 THEO went attacker, orchestrator, extraction contract. The contract sold all of it in 9 swaps to the pair for 476,898.7 USDC (matches the ~\$476K in the timeline), then swapped the USDC through other pools into 189.44 WETH. The USDC and cbBTC legs net to zero; 189.44 WETH is left in the extraction contract and nothing leaves it inside the tx. The ~\$700K figure in the sources fits this 189.44 WETH only loosely; it was not reconciled.

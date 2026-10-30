@@ -56,5 +56,20 @@ class AggregateTest(unittest.TestCase):
         self.assertEqual(check_flow.check_text("2026-10-x.md", doc), [])
 
 
+class ChainHelpersTest(unittest.TestCase):
+    def test_tron_hex_to_base58(self):
+        # USDT (TRC20) contract: TronGrid hex form → T… address
+        self.assertEqual(explorer._tron_b58("41a614f803b6fd780986a42c78ec9c7f77e6ded13c"),
+                         "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t")
+
+    def test_solana_balance_deltas(self):
+        tx = {"meta": {"fee": 5000, "preBalances": [2_000_005_000, 0], "postBalances": [1_000_000_000, 1_000_000_000],
+                       "preTokenBalances": [], "postTokenBalances": []},
+              "transaction": {"message": {"accountKeys": [{"pubkey": "A"}, {"pubkey": "B"}]}}}
+        changes = dict(((o, a), d) for o, a, d in explorer._sol_changes(tx))
+        self.assertEqual(changes[("A", "SOL")], -1)   # fee excluded
+        self.assertEqual(changes[("B", "SOL")], 1)
+
+
 if __name__ == "__main__":
     unittest.main()

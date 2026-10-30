@@ -18,7 +18,13 @@ Providers (no API key needed; hosts in tools/chains.json):
              only and needs --after/--before; native-coin hops are visible
              only inside a known tx
     avalanche Routescan (Etherscan-compatible, keyless)
-    others   not yet implemented: the command says so instead of guessing
+    EOA native sends over RPC: nonce walk (archive eth_getTransactionCount),
+             capped at 60 txs per window
+    solana   public RPC: getSignaturesForAddress + getTransaction balance
+             deltas (SOL and SPL tokens; USDC/USDT/wSOL trusted)
+    tron     TronGrid v1: TRC20 transfers and TRX TransferContract
+             (USDT/USDC trusted)
+    others   (XRP, …) not yet implemented: the command says so instead of guessing
 
 Responses are cached under .cache/explorer/ (gitignored), so re-running a
 trace is free and reproducible. Requests are paced and retried on 429/5xx.
@@ -577,8 +583,236 @@ def rpc_transfers(chain: str, address: str, after: str | None, before: str | Non
                             "asset": sym, "token": token, "trusted": True,
                             "amount": num(scaled(int(lg.get("data") or "0x0", 16), dec)),
                             "direction": direction, "kind": "token"})
+    # native sends of an EOA (contracts have no nonce-ordered sends)
+    try:
+        if rpc(chain, "eth_getCode", [a, "latest"]) in ("0x", "0x0", None):
+            out += rpc_eoa_sends(chain, a, after, before)
+    except ExplorerError as e:
+        print(json.dumps({"warning": f"native sends of {a} not listed: {e}"}), file=sys.stderr)
     out.sort(key=lambda x: x["time"])
     return out
+
+
+# --------------------------------------------------------------------------- EOA nonce walk (native hops over RPC)
+# Public nodes cannot list an address's transactions, but an EOA's nonce
+# rises by one with each transaction it sends, and archive-capable nodes
+# answer eth_getTransactionCount at a past block. Binary-searching the block
+# where the nonce passes k finds the k-th transaction; reading that block
+# gives its recipient and native value. Cost: ~log2(range) calls per tx, so
+# this is for a handful of hops, not for busy wallets (capped).
+
+MAX_NONCE_WALK = 60
+
+
+def _nonce_at(chain: str, address: str, block: int) -> int:
+    return int(rpc(chain, "eth_getTransactionCount", [address, hex(block)]), 16)
+
+
+def rpc_eoa_sends(chain: str, address: str, after: str, before: str) -> list[dict]:
+    a = address.lower()
+    native = CHAINS[chain].get("native", "ETH")
+    lo, hi = block_at(chain, after), block_at(chain, before)
+    n_lo, n_hi = _nonce_at(chain, a, lo), _nonce_at(chain, a, hi)
+    if n_hi - n_lo > MAX_NONCE_WALK:
+        raise ExplorerError(f"{a} sent {n_hi - n_lo} txs in the window; nonce walk is capped at {MAX_NONCE_WALK} "
+                            f"(narrow --after/--before)")
+    out = []
+    left = lo
+    for k in range(n_lo, n_hi):
+        # smallest block b in (left, hi] with nonce(b) > k
+        l, r = left, hi
+        while l < r:
+            mid = (l + r) // 2
+            if _nonce_at(chain, a, mid) > k:
+                r = mid
+            else:
+                l = mid + 1
+        blk = rpc(chain, "eth_getBlockByNumber", [hex(l), True])
+        for t in blk.get("transactions", []):
+            if (t.get("from") or "").lower() == a and int(t.get("nonce", "0x0"), 16) == k:
+                value = int(t.get("value") or "0x0", 16)
+                if value > 0:
+                    out.append({"tx": t["hash"], "time": _iso(int(blk["timestamp"], 16)), "from": a,
+                                "to": (t.get("to") or "").lower(), "asset": native,
+                                "amount": num(scaled(value, 18)), "direction": "out", "kind": "native"})
+                break
+        left = l
+    return out
+
+
+# --------------------------------------------------------------------------- Solana (public RPC)
+# Transfers are read from balance changes: for each transaction touching
+# the address, SOL and SPL-token balances before and after give who lost
+# and who gained. When the address loses an amount of a mint, the accounts
+# that gained the same mint in that tx are its counterparties.
+
+SOL_TRUSTED_MINTS = {
+    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": "USDC",
+    "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB": "USDT",
+    "So11111111111111111111111111111111111111112": "wSOL",
+}
+
+
+def sol(method: str, params: list, cache: bool = True):
+    return rpc("solana", method, params, cache=cache)
+
+
+def _sol_changes(tx: dict) -> list[tuple[str, str, Decimal]]:
+    """(owner, asset, delta) per account in one parsed transaction."""
+    meta = tx.get("meta") or {}
+    keys = [k["pubkey"] if isinstance(k, dict) else k for k in tx["transaction"]["message"]["accountKeys"]]
+    out = []
+    fee_payer = keys[0] if keys else ""
+    for i, (pre, post) in enumerate(zip(meta.get("preBalances", []), meta.get("postBalances", []))):
+        d = Decimal(post - pre)
+        if i == 0:
+            d += Decimal(meta.get("fee", 0))  # the fee is not a transfer
+        if d:
+            out.append((keys[i], "SOL", d / Decimal(10**9)))
+    pre_t = {(b["accountIndex"]): b for b in meta.get("preTokenBalances", [])}
+    post_t = {(b["accountIndex"]): b for b in meta.get("postTokenBalances", [])}
+    for idx in set(pre_t) | set(post_t):
+        b0, b1 = pre_t.get(idx), post_t.get(idx)
+        ref = b1 or b0
+        mint, owner = ref["mint"], ref.get("owner") or keys[idx]
+        a0 = Decimal(b0["uiTokenAmount"]["amount"]) if b0 else Decimal(0)
+        a1 = Decimal(b1["uiTokenAmount"]["amount"]) if b1 else Decimal(0)
+        dec = int(ref["uiTokenAmount"]["decimals"])
+        if a1 != a0:
+            out.append((owner, mint, (a1 - a0) / (Decimal(10) ** dec)))
+    _ = fee_payer
+    return out
+
+
+def sol_tx(sig: str) -> dict:
+    tx = sol("getTransaction", [sig, {"encoding": "jsonParsed", "maxSupportedTransactionVersion": 1}])
+    if not tx:
+        raise ExplorerError(f"solana tx {sig} not found")
+    changes = _sol_changes(tx)
+    transfers = []
+    for owner, asset, d in changes:
+        if d < 0:
+            for o2, a2, d2 in changes:
+                if a2 == asset and d2 > 0 and o2 != owner:
+                    sym = "SOL" if asset == "SOL" else SOL_TRUSTED_MINTS.get(asset, asset)
+                    transfers.append({"from": owner, "to": o2, "asset": sym, "token": None if asset == "SOL" else asset,
+                                      "trusted": asset == "SOL" or asset in SOL_TRUSTED_MINTS,
+                                      "amount": num(min(-d, d2)), "kind": "native" if asset == "SOL" else "token"})
+    return {"chain": "solana", "tx": sig, "time": _iso(tx["blockTime"]) if tx.get("blockTime") else None,
+            "status": "ok" if not (tx.get("meta") or {}).get("err") else "failed", "transfers": transfers}
+
+
+def sol_transfers(address: str, limit: int, after: str | None, before: str | None) -> list[dict]:
+    sigs, cursor = [], None
+    while len(sigs) < limit:
+        opts = {"limit": min(1000, limit - len(sigs))}
+        if cursor:
+            opts["before"] = cursor
+        page = sol("getSignaturesForAddress", [address, opts], cache=False)
+        if not page:
+            break
+        sigs += page
+        cursor = page[-1]["signature"]
+        if after and page[-1].get("blockTime") and _iso(page[-1]["blockTime"]) < after:
+            break
+    out = []
+    for s in sigs:
+        when = _iso(s["blockTime"]) if s.get("blockTime") else ""
+        if (after and when < after) or (before and when > before) or s.get("err"):
+            continue
+        for t in sol_tx(s["signature"])["transfers"]:
+            if address in (t["from"], t["to"]):
+                out.append({**t, "tx": s["signature"], "time": when,
+                            "direction": "out" if t["from"] == address else "in"})
+    out.sort(key=lambda x: x["time"])
+    return out
+
+
+# --------------------------------------------------------------------------- Tron (TronGrid, keyless)
+
+TRON_TRUSTED = {
+    "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t": "USDT",
+    "TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8": "USDC",
+}
+
+
+def tron_transfers(address: str, limit: int, after: str | None, before: str | None) -> list[dict]:
+    base = CHAINS["tron"]["trongrid"]
+    out = []
+    params = {"limit": 200, "only_confirmed": "true"}
+    if after:
+        params["min_timestamp"] = int(time.mktime(time.strptime(after[:19], "%Y-%m-%dT%H:%M:%S")) - time.timezone) * 1000
+    if before:
+        params["max_timestamp"] = int(time.mktime(time.strptime(before[:19], "%Y-%m-%dT%H:%M:%S")) - time.timezone) * 1000
+    url = f"{base}/v1/accounts/{address}/transactions/trc20"
+    fp = None
+    while len(out) < limit:
+        d = http_json(url, {**params, **({"fingerprint": fp} if fp else {})})
+        for it in d.get("data", []):
+            tok = it.get("token_info") or {}
+            out.append({"tx": it["transaction_id"], "time": _iso(it["block_timestamp"] // 1000),
+                        "from": it["from"], "to": it["to"], "asset": tok.get("symbol") or "?",
+                        "token": tok.get("address"), "trusted": tok.get("address") in TRON_TRUSTED,
+                        "amount": num(scaled(it.get("value") or 0, tok.get("decimals") or 0)),
+                        "direction": "out" if it["from"] == address else "in", "kind": "token"})
+        fp = (d.get("meta") or {}).get("fingerprint")
+        if not fp:
+            break
+    # native TRX transfers
+    d = http_json(f"{base}/v1/accounts/{address}/transactions", params)
+    for it in d.get("data", []):
+        for c in (it.get("raw_data") or {}).get("contract", []):
+            if c.get("type") != "TransferContract":
+                continue
+            v = c["parameter"]["value"]
+            frm, to = _tron_b58(v.get("owner_address")), _tron_b58(v.get("to_address"))
+            out.append({"tx": it["txID"], "time": _iso(it["block_timestamp"] // 1000), "from": frm, "to": to,
+                        "asset": "TRX", "amount": num(scaled(v.get("amount", 0), 6)),
+                        "direction": "out" if frm == address else "in", "kind": "native"})
+    out.sort(key=lambda x: x["time"])
+    return out[:limit]
+
+
+_B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+
+
+def _tron_b58(hexaddr: str | None) -> str:
+    """TronGrid returns 41-prefixed hex; convert to base58check (T…)."""
+    if not hexaddr:
+        return ""
+    if hexaddr.startswith("T"):
+        return hexaddr
+    raw = bytes.fromhex(hexaddr)
+    chk = hashlib.sha256(hashlib.sha256(raw).digest()).digest()[:4]
+    n = int.from_bytes(raw + chk, "big")
+    s = ""
+    while n:
+        n, r = divmod(n, 58)
+        s = _B58[r] + s
+    return s
+
+
+def tron_tx(txid: str) -> dict:
+    base = CHAINS["tron"]["trongrid"]
+    d = http_json(f"{base}/walletsolidity/gettransactioninfobyid", post={"value": txid})
+    t = http_json(f"{base}/walletsolidity/gettransactionbyid", post={"value": txid})
+    transfers = []
+    for c in (t.get("raw_data") or {}).get("contract", []):
+        if c.get("type") == "TransferContract":
+            v = c["parameter"]["value"]
+            transfers.append({"from": _tron_b58(v.get("owner_address")), "to": _tron_b58(v.get("to_address")),
+                              "asset": "TRX", "amount": num(scaled(v.get("amount", 0), 6)), "kind": "native"})
+    for lg in d.get("log", []) or []:
+        tp = lg.get("topics") or []
+        if len(tp) == 3 and tp[0] == TRANSFER_TOPIC[2:]:
+            token = _tron_b58("41" + lg["address"])
+            sym = TRON_TRUSTED.get(token, "?")
+            dec = 6 if sym in ("USDT", "USDC") else 0
+            transfers.append({"from": _tron_b58("41" + tp[1][-40:]), "to": _tron_b58("41" + tp[2][-40:]),
+                              "asset": sym, "token": token, "trusted": token in TRON_TRUSTED,
+                              "amount": num(scaled(int(lg.get("data") or "0", 16), dec)), "kind": "token"})
+    ts = d.get("blockTimeStamp")
+    return {"chain": "tron", "tx": txid, "time": _iso(ts // 1000) if ts else None, "transfers": transfers}
 
 
 # --------------------------------------------------------------------------- dispatch
@@ -604,6 +838,10 @@ def get_tx(chain: str, h: str) -> dict:
             return rpc_tx(chain, h)
     if f == "utxo":
         return mp_tx(h)
+    if f == "solana":
+        return sol_tx(h)
+    if f == "tron":
+        return tron_tx(h)
     raise ExplorerError(f"tx lookup for {chain} is not implemented yet")
 
 
@@ -622,6 +860,10 @@ def get_transfers(chain: str, address: str, limit: int, after: str | None = None
             return rpc_transfers(chain, address, after, before)
     if f == "utxo":
         return mp_transfers(address, limit)
+    if f == "solana":
+        return sol_transfers(address, limit, after, before)
+    if f == "tron":
+        return tron_transfers(address, limit, after, before)
     raise ExplorerError(f"transfer listing for {chain} is not implemented yet")
 
 

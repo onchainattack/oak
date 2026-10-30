@@ -27,6 +27,16 @@ Cold storage was untouched. Withdrawals were paused; deposits and trading contin
 | 2026-09-25 | Bitget confirms \$351.6M; states no keys stolen; withdrawals suspended; protection fund >\$464M | (operator disclosure) |
 | 2026-09-25 | CEO: method "highly consistent" with DPRK patterns; Mandiant and SlowMist engaged | (attribution claim — not established) |
 
+Key addresses:
+
+- Receiving address, EVM chains, listed by Bitget on 2026-09-25 per The Hacker News (not yet traced by OAK) — [`0x770b10b273fc44fe9197d6bf20f145c2e98463ee`](https://etherscan.io/address/0x770b10b273fc44fe9197d6bf20f145c2e98463ee)
+- Receiving address, XRP Ledger, same listing — [`rwNhefsz1UQEusxhCvHip3RANinWi4CTck`](https://livenet.xrpl.org/accounts/rwNhefsz1UQEusxhCvHip3RANinWi4CTck)
+- Receiving address, Zcash, same listing — `t1WgMdtND8NF7NDUuYmq8MpMj1NTCXkMDVG`
+- Receiving address, Tron, same listing — [`TBWNguTTgezw9dVorX441C6nDrZpRxYwKD`](https://tronscan.org/#/address/TBWNguTTgezw9dVorX441C6nDrZpRxYwKD)
+- Address that later also received Binance proceeds, per Elliptic citing ZachXBT (not yet traced by OAK) — [`0x15104a9ce0f08a8f0075a0869ae80e795fe0feb7`](https://etherscan.io/address/0x15104a9ce0f08a8f0075a0869ae80e795fe0feb7)
+
+Chainalysis: \$387M left Bitget in 23 transfers within three hours, landing on Ethereum (49.7%), XRP (40.8%), Zcash (7.6%) and Tron (1.8%).
+
 ## What defenders observed
 
 - **The failure was upstream of the signer and the signer did its job.** Every check that asks "was this signed by an authorised key through the approved process?" answers yes. The only check that fails is "does this payout correspond to something a customer asked for?" — and that check has to be performed against data the compromised backend did not produce.
@@ -43,6 +53,9 @@ Cold storage was untouched. Withdrawals were paused; deposits and trading contin
 
 ## Public references
 
+- `[thnbitgetaddresses2026]` — The Hacker News, "Bitget Says Attacker Exploited Third-Party Security Product Flaw to Steal \$388M" (2026-09-28), with the receiving addresses Bitget listed: <https://thehackernews.com/2026/09/bitget-says-attacker-exploited-third.html>
+- `[chainalysisbitget2026]` — Chainalysis, the \$387M Bitget theft (2026-10-01): <https://www.chainalysis.com/blog/387m-bitget-theft-2026/>
+- `[ellipticbinance2026]` — Elliptic, Binance: the largest hack in history (2026-10-30), naming the shared address: <https://www.elliptic.co/insights/binance-largest-hack-in-history/>
 - `[techflowslowmistbitget2026]` — TechFlow, "SlowMist Releases Update on Bitget Incident Investigation: Malicious Activity Traced to Late August, Involves Third-Party Security Product" (2026-09-30): <https://www.techflowpost.com/en-US/newsletter/138358>
 - `[coindeskbitget2026]` — CoinDesk, "Bitget's \$352 million hack happened via spoofed transfers, not private keys, CEO Gracy Chen says" (2026-09-25): <https://www.coindesk.com/markets/2026/09/25/bitget-s-usd351-million-hack-happened-via-spoofed-transfers-not-private-keys-ceo-gray-chen-says>
 - `[thehackernewsbitget2026]` — The Hacker News, "Bitget Says Suspected North Korean Hackers Stole \$351.6M After Backend Compromise": <https://thehackernews.com/2026/09/bitget-says-suspected-north-korean.html>

@@ -80,12 +80,18 @@ function components(nodes: FlowNode[], links: Link[]): string[][] {
   return out.sort((a, b) => b.length - a.length);
 }
 
-function layers(ids: string[], links: Link[]): Map<string, number> {
+// Swap round trips (A → DEX → A) are cycles; for column assignment the
+// return leg from the DEX is ignored so the DEX sits after A, as an exit.
+const RETURN_ROLES = new Set(["dex", "lending", "bridge"]);
+
+function layers(ids: string[], links: Link[], role: (id: string) => string): Map<string, number> {
   const inSet = new Set(ids);
   const outs = new Map<string, string[]>(ids.map((id) => [id, []]));
   const ins = new Map<string, string[]>(ids.map((id) => [id, []]));
+  const pairs = new Set(links.map((l) => `${l.from}→${l.to}`));
   for (const l of links) {
     if (!inSet.has(l.from) || !inSet.has(l.to) || l.from === l.to) continue;
+    if (pairs.has(`${l.to}→${l.from}`) && RETURN_ROLES.has(role(l.from))) continue;
     outs.get(l.from)!.push(l.to);
     ins.get(l.to)!.push(l.from);
   }
@@ -184,7 +190,7 @@ export function layoutFlow(flow: Flow): Layout {
   let top = PAD;
   let width = 0;
   for (const comp of components(flow.nodes, links)) {
-    const layer = layers(comp, links);
+    const layer = layers(comp, links, (id) => byId.get(id)?.role ?? "");
     const ncols = Math.max(...comp.map((id) => layer.get(id)!)) + 1;
     const cols: string[][] = Array.from({ length: ncols }, () => []);
     comp.forEach((id) => cols[layer.get(id)!].push(id));

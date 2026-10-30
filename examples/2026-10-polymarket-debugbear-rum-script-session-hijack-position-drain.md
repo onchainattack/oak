@@ -34,22 +34,31 @@ Key addresses:
 
 ## Fund flow
 
-**Not traced by OAK.** On 2026-10-30 the keyless Polygon provider (`polygon.blockscout.com`) answered every request from `tools/explorer.py` with HTTP 403 (a Cloudflare challenge), and the other keyless sources tried also failed (Routescan: chain not supported; the public `polygon-rpc.com` endpoint: API key disabled). OAK did not work around the challenge. No edge is therefore checked on-chain, and the block below holds only the one relayed fact, a total with an undisclosed destination.
+**Traced by OAK (2026-10-30, public RPC with a nonce walk of the attacker wallet):** between 18:28 and 18:38 UTC on 2026-10-29 the attacker wallet sent **28,636,284.45 POL in three transfers** to three fresh wallets, which matches BleepingComputer's "about 28.6M POL to three wallets", now with addresses and txs. Before that it swapped small USDC and USDC.e amounts (16.7K USDC inbound from about 15 counterparties between 17:27 and 18:01) through the same shared swap executor seen in other incidents. The bulk of the value moved as pUSD and outcome tokens, which public-RPC tracing does not see, so the victim leg stays relayed from BleepingComputer.
 
 ```oak-flow
-as_of: 2026-10-30T12:30Z
+as_of: 2026-10-30T18:30Z
 nodes:
-  - {id: atk, chain: polygon, address: 0x3F99139F1C5854bb628c2e576Aaf638e99dFfc18, role: attacker-eoa, label: "Attacker wallet"}
-  - {id: dest, chain: polygon, role: unknown, label: "Destination not published"}
+  - {id: vic, chain: polygon, role: victim, label: "Polymarket users' sessions (pUSD and outcome tokens)"}
+  - {id: atk, chain: polygon, address: 0x3f99139f1c5854bb628c2e576aaf638e99dffc18, role: attacker-eoa, label: "Attacker wallet (embedded in the script)"}
+  - {id: swap, chain: polygon, address: 0x8f10b468b06c6fd214b65f87778827f7d113f996, role: dex, label: "Swap executor (shared, high-volume)"}
+  - {id: w1, chain: polygon, address: 0xe4c4c39c1733e1c7c06b79f97ed442b68df41ec6, role: intermediary, label: "POL receiver 1"}
+  - {id: w2, chain: polygon, address: 0x5392587814ce8c6af6789764f88e5e9ab0b9962c, role: intermediary, label: "POL receiver 2"}
+  - {id: w3, chain: polygon, address: 0xc91ee0574a14446de200923729c349b9cae19b60, role: intermediary, label: "POL receiver 3"}
 edges:
-  - {from: atk, to: dest, asset: POL, amount: 28600000, time: 2026-10-29T18:00:00Z, verified: source, source: bleepingpolymarket2026}
+  - {from: vic, to: atk, asset: "pUSD / outcome tokens (sold or transferred via hijacked sessions)", time: 2026-10-29T17:50:00Z, technique: T15.002, verified: source, source: bleepingpolymarket2026}
+  - {from: atk, to: swap, asset: USDC, amount: 6304.88628, tx: 0xa7519799ae329d220b9fe6fa5669b143a7c6047ac3808d2a709791649b44f00a, time: 2026-10-29T18:03:08Z, verified: oak}
+  - {from: atk, to: swap, asset: USDC.e, amount: 513.417769, tx: 0x3f28afc8c4b113596fb2fd0698c86d6ec356b8d25b4d9085edefc224f54d3594, time: 2026-10-29T17:32:38Z, verified: oak}
+  - {from: atk, to: w1, asset: POL, amount: 18613584, tx: 0x2629289569ea8be042b6706ba0a9e0d76f069247bb115f973fcedc556e8a4f88, time: 2026-10-29T18:28:32Z, verified: oak}
+  - {from: atk, to: w2, asset: POL, amount: 4295442, tx: 0x69e1c3f6c3cc1cacbc145ba0a7b475532d0856522b112add36d4eeb5d84fc0c5, time: 2026-10-29T18:30:41Z, verified: oak}
+  - {from: atk, to: w3, asset: POL, amount: 5727258.44500568, tx: 0xe8b8ee79a0e507b88027506f4098cbbcab6557272fb59becc42b53574b3e9f66, time: 2026-10-29T18:38:16Z, verified: oak}
 ```
 
 What the trace adds beyond the sources:
 
-- Nothing yet. The only fund-flow fact is BleepingComputer's: about 28.6M POL (about \$2.57M) left the attacker wallet [`0x3F99139F1C5854bb628c2e576Aaf638e99dFfc18`](https://polygonscan.com/address/0x3F99139F1C5854bb628c2e576Aaf638e99dFfc18) (`[bleepingpolymarket2026]`). Its destination, the outcome-token transfers into the wallet, the sold positions and the wallet's funding are not published.
-- The loss figures are not reconciled: DefiLlama's about \$2.7M and BleepingComputer's about \$2.57M differ by about \$0.1M, and the basis of neither is public. The 28.6M POL figure is the wallet's outflow, which may not equal the victims' loss, because some positions were sold for USDC rather than transferred.
-- To finish the trace, re-run `python3 tools/explorer.py trace polygon 0x3F99139F1C5854bb628c2e576Aaf638e99dFfc18 --hops 1 --before 2026-11-02T00:00:00Z --yaml` from a network the provider accepts, or with a Blockscout API key.
+- **Where the POL went:** three fresh wallets, 18,613,584 / 4,295,442 / 5,727,258.45 POL, with the txs in the table. The total of 28,636,284.45 POL matches BleepingComputer's figure.
+- **Swaps before the split** ran through `0x8f10b468b06c6fd214b65f87778827f7d113f996`, a high-volume swap executor that also appears in the zkLink Nova and Autheo traces. It is shared infrastructure, not a link between the incidents.
+- **Not reconciled:** DefiLlama's about \$2.7M against BleepingComputer's about \$2.57M. The victim-side pUSD and outcome-token flows are not visible to log-based RPC tracing. The three POL receivers were not followed further.
 
 ## Root-cause evidence
 

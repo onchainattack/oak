@@ -38,9 +38,12 @@ Goal: a `## Fund flow` block a defender can trust. Every hop is either checked o
   - `transfers` and `trace` cover only the allowlisted tokens in `tools/address_labels.yaml` (USDC, USDT, WETH …), and they **require `--after` and `--before`**.
   - Native-coin transfers (ETH, POL, BNB) are **not visible** except inside a known tx. Say so when a hop might be native.
   - Seed from the exploit tx. `tx` shows which addresses received the real assets, and those are often fuller than the published ones.
+- **Native sends of an EOA over RPC: nonce walk, automatic in `transfers`/`trace`.** The EOA's nonce is read at past blocks to find each transaction it sent. It needs an archive-capable node, which Base, Polygon and Ethereum public nodes provide. It is capped at 60 txs per window, so narrow `--after`/`--before` for busy wallets. This is how the Autheo bridge deposits (Relay) and Polymarket's 28.6M POL split were found.
 - Avalanche C-chain: Routescan (Etherscan-compatible, keyless).
 - Bitcoin: mempool.space.
-- Not yet supported: Solana, Tron, XRP, Robinhood Chain. Hops there stay `verified: source`, or go undisclosed.
+- **Solana:** public RPC. Transfers are derived from per-transaction SOL and SPL balance changes. USDC, USDT and wSOL are trusted; memecoins show `trusted: false` by design. Use `--after`/`--before`.
+- **Tron:** TronGrid v1, TRC20 and TRX transfers. USDT and USDC are trusted.
+- Not yet supported: XRP, Zcash, Robinhood Chain. Hops there stay `verified: source`, or go undisclosed.
 - Explorer labels are hints, not attribution. A "Binance" tag on a deposit address means the funds entered Binance. It does not mean Binance is involved.
 - Do not invent USD values. Use asset amounts, and cite the source for any dollar figures.
 - If a provider blocks you (bot challenge), do not try to get around it. Record the gap.
