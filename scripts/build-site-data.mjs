@@ -249,10 +249,23 @@ const relationships = oak.relationships ?? [];
 const examples = (await readMarkdownCollection("examples")).map(({ file, text }) => {
   const title = titleFromMarkdown(text, file.replace(/\.md$/, ""));
   const loss = text.match(/\*\*Loss:\*\*\s*([^*]+?)(?:\*\*|$)/s)?.[1]?.trim() ?? "";
+  // Month comes from the file name (YYYY-MM-slug). The day is taken from a
+  // YYYY-MM-DD in the title only when it falls in that same month, so a
+  // title that cites a later disclosure date cannot move the incident.
+  const [, year = "", month = ""] = file.match(/^(\d{4})(?:-(\d{2})-)?/) ?? [];
+  const day =
+    (month &&
+      [...title.matchAll(/(\d{4})-(\d{2})-(\d{2})/g)].find(
+        ([, y, m]) => y === year && m === month,
+      )?.[3]) ||
+    "";
   return {
     title,
     file,
-    year: file.match(/^(\d{4})/)?.[1] ?? "",
+    year,
+    month,
+    day,
+    date: [year, month, day].filter(Boolean).join("-"),
     techniques: [...new Set(text.match(/OAK-T\d+\.\d{3}/g) ?? [])].sort((a, b) =>
       idNumber(a).localeCompare(idNumber(b)),
     ),
