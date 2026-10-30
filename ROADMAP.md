@@ -29,7 +29,8 @@ Next small slices. Take one or two per session, then ship and log them:
 5. ✅ Solana (public RPC balance deltas) and Tron (TronGrid). **Open:** XRP, Zcash.
 6. **Backfill (next session):** 61 pre-2026-09 timelines break a rule (`check_timeline.py --legacy`), and 282 examples have no fund-flow row (`--warn`). Work in batches by size of loss.
 7. **Mitigation backfill (what/how/why):** about 200 Technique and mitigation sections are generic (`check_mitigations.py --legacy`). Rewrite them case by case, biggest-loss techniques first. Each bullet needs a concrete control, where it is enforced, and the linked incident it would have stopped.
-8. **Follow-ups found while tracing:** follow TranchePool's CCTP burn to its Solana recipient (Solana is now supported); trace the Polymarket POL receivers; trace Bitget's Tron receiver (`TBWNgu…`, 20.59M TRX in).
+8. **Next rule candidate: a defender quick card.** A short block at the top of each incident: the mechanism in one line, the step to check in your own system, the control (linked OAK-Mnn), and addresses to watch (from Key addresses and Fund flow). It should be generated where possible, not hand-written, so it cannot drift from the data below it.
+9. **Follow-ups found while tracing:** follow TranchePool's CCTP burn to its Solana recipient (Solana is now supported); trace the Polymarket POL receivers; trace Bitget's Tron receiver (`TBWNgu…`, 20.59M TRX in).
 
 #### 1. Write proper entries for real incidents that were filed under the wrong mechanism
 

@@ -2,6 +2,10 @@
 
 OAK (onchainattack.org) is a sourced knowledge base of crypto attacks. Each real incident lives in `examples/*.md` and is mapped to attack Techniques (`techniques/`), actors (`actors/`) and mitigations. The goal is that a defender can replay any incident from OAK alone: every step is a known Technique, and the money can be followed hop by hop.
 
+## The principle
+
+Every entry must be usable by a defender **in minutes, not after a day of research**. From any incident or Technique page a reader gets what happened and at which step, which control would have stopped it and how to check their own system for it, and which addresses to watch. OAK grows by **rules first, volume second**: each rule goes into CONTRIBUTING, this file, the skills, and an `npm run check` gate, with a legacy report for older entries.
+
 ## Non-negotiables
 
 - **Sourced facts only.** Every claim traces to a cited source, or to OAK's own on-chain trace (`verified: oak`). If a step is not public, write "undisclosed"; never fill it in.

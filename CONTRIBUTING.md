@@ -21,6 +21,16 @@ We accept PRs in any of the following categories:
 | **Tooling** | Improvements to `tools/` validators, exporters, or coverage-map generators. |
 | **Relationship-graph edge** | A new entry exposed via `tools/oak.json` (mitigates / uses / detects / targets edge between existing axis entries). |
 
+## The test every contribution must pass
+
+**Could a defender act on this in five minutes?** From an incident or Technique page, a reader must get:
+
+- what happened and at which step;
+- the control that would have stopped it, and how to check their own system for it;
+- the addresses to watch.
+
+The rules below (root-cause evidence, end-to-end timeline, full addresses, fund flow, mitigations stating what, how and why) exist to make that true and checkable. A contribution that adds information but no usable payload is not done.
+
 ## Root-cause evidence on worked examples
 
 Every worked example dated 2026-10 or later must carry a `## Root-cause evidence` section saying **which source establishes the mechanism** behind its primary Technique, and how settled that is. It is exported to `oak.json` as `root_cause_evidence` and validated by `tools/check_root_cause.py` (part of `npm run check`).
