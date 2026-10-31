@@ -3,10 +3,10 @@ import path from "node:path";
 import { TOP_LEVEL_DOCUMENTS } from "./site-documents.mjs";
 import { buildRouteMap, rewriteRelativeLinks } from "./site-links.mjs";
 import {
-  exampleFacts, exampleSearchTitle, gitDates, monthHubPath, monthHubTitle, monthHubs,
+  exampleFacts, exampleSearchTitle, gitDates, lossValue, monthHubPath, monthHubTitle, monthHubs,
   yearHubPath, yearHubTitle,
 } from "./seo.mjs";
-import { incidentCard, techniqueCard } from "./og-image.mjs";
+import { hubCard, incidentCard, techniqueCard } from "./og-image.mjs";
 
 const root = process.cwd();
 const baseUrl = "https://onchainattack.org";
@@ -906,6 +906,18 @@ const hubLink = (example) => {
 const byIncidentDateDesc = (a, b) =>
   (exampleFactsByFile.get(b.file)?.iso ?? "").localeCompare(exampleFactsByFile.get(a.file)?.iso ?? "") ||
   byDateDesc(a, b);
+// The three largest incidents in a hub, for its social card.
+const topByLoss = (examples) =>
+  examples
+    .map((example) => exampleFactsByFile.get(example.file))
+    .filter((facts) => facts?.loss)
+    .sort((a, b) => lossValue(b.loss) - lossValue(a.loss))
+    .slice(0, 3)
+    .map((facts) => ({ name: `${facts.victim}${facts.verb ? ` ${facts.verb}` : ""}`, loss: facts.loss }));
+const hubOg = async (sitePath, kicker, period, examples) => {
+  await writeOg(sitePath, hubCard(root, { kicker, period, count: examples.length, top: topByLoss(examples) }));
+  return sitePath;
+};
 const hubList = (examples) => [...examples].sort(byIncidentDateDesc).map(hubLink);
 const years = new Map();
 for (const [ym, examples] of hubs) {
@@ -913,9 +925,13 @@ for (const [ym, examples] of hubs) {
   if (!years.has(year)) years.set(year, []);
   years.get(year).push([ym, examples]);
   const title = monthHubTitle(ym);
+  const period = title.replace("Crypto hacks and exploits in ", "");
+  const ogImage = await hubOg(`/og/incidents/${ym}.png`, "INCIDENTS BY MONTH", period, examples);
   routes.push(
     route(monthHubPath(ym), title, `${examples.length} crypto hacks, exploits and on-chain attacks in ${title.replace("Crypto hacks and exploits in ", "")}: date, loss, how each happened (OAK Technique), timeline and attacker addresses.`, 0.6, {
       kicker: "Incidents by month",
+      ogImage,
+      ogAlt: `${title}: ${examples.length} incidents`,
       intro: `${examples.length} incidents. Each links to a full write-up: timeline, OAK Techniques, attacker addresses and fund flow, with sources.`,
       isStatic: true,
       crumbs: [{ name: "Incidents", path: "/incidents/" }, { name: year, path: `${yearHubPath(year)}/` }],
@@ -940,9 +956,12 @@ for (const [ym, examples] of hubs) {
 }
 for (const [year, months] of years) {
   const total = months.reduce((n, [, examples]) => n + examples.length, 0);
+  const yearOg = await hubOg(`/og/incidents/${year}.png`, "INCIDENTS BY YEAR", year, months.flatMap(([, examples]) => examples));
   routes.push(
     route(yearHubPath(year), yearHubTitle(year), `${total} crypto hacks, exploits and on-chain attacks in ${year}, month by month: date, loss, mechanism, timeline and attacker addresses.`, 0.6, {
       kicker: "Incidents by year",
+      ogImage: yearOg,
+      ogAlt: `${yearHubTitle(year)}: ${total} incidents`,
       intro: `${total} incidents in ${year}.`,
       isStatic: true,
       crumbs: [{ name: "Incidents", path: "/incidents/" }],

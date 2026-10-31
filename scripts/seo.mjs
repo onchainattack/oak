@@ -75,7 +75,7 @@ export const exampleFacts = (example, markdown) => {
     ? `$${trim(lossMatch[1])}${lossMatch[2] ? `–${trim(lossMatch[2])}` : ""}${unit}`
     : "";
   const tactic = primaryTechnique(example).match(/OAK-(T\d+)\./)?.[1] ?? "";
-  const verb = !isSingleIncident(example.file ?? "") || /\b(hack|exploit|attack|breach|drain|theft|compromise|scam)/i.test(victim)
+  const verb = !isSingleIncident(example.file ?? "") || /\b(hack|exploit|attack|breach|drain|theft|compromise|scam|collapse|fraud|depeg|rug|insolven|slash|ponzi|failure|seizure|sanction|arrest|indict)/i.test(victim)
     ? ""
     : EXPLOIT_TACTICS.has(tactic) ? "exploit" : HACK_TACTICS.has(tactic) ? "hack" : "";
   return {
@@ -120,4 +120,12 @@ export const monthHubs = (examples) => {
     byMonth.get(ym).push(example);
   }
   return new Map([...byMonth.entries()].sort((a, b) => b[0].localeCompare(a[0])));
+};
+
+// Numeric USD value of a loss label ("$6.3B", "$2.5–2.7M", "$821,920"); the
+// lower bound of a range. Used only to rank incidents, never displayed.
+export const lossValue = (loss) => {
+  const m = String(loss).match(/^\$(\d[\d,.]*)(?:–[\d,.]+)?([KMB]?)$/);
+  if (!m) return 0;
+  return Number(m[1].replace(/,/g, "")) * ({ K: 1e3, M: 1e6, B: 1e9 }[m[2]] ?? 1);
 };

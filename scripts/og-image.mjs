@@ -140,3 +140,27 @@ export const techniqueCard = (root, { id, name, tactic, incidents }) => {
   ].join("");
   return render(root, frame(inner));
 };
+
+// Month / year hub card: the period, how many incidents, and the largest three.
+// top: [{ name: "Binance hack", loss: "$6.3B" }, ...]
+export const hubCard = (root, { kicker, period, count, top }) => {
+  const rows = top.slice(0, 3).map((row, i) => {
+    const y = 330 + i * 56;
+    return (
+      `<text x="64" y="${y}" font-family="Geist" font-size="34" font-weight="600" fill="${C.text}">${xml(wrap(row.name, 34, 820, 1, "bold")[0])}</text>` +
+      (row.loss
+        ? `<text x="1136" y="${y}" text-anchor="end" font-family="Geist" font-size="34" font-weight="700" fill="${C.accent}">${xml(row.loss)}</text>`
+        : "")
+    );
+  });
+  const inner = [
+    `<text x="64" y="76" font-family="Geist Mono" font-size="22" font-weight="500" fill="${C.accent}" letter-spacing="2">${xml(kicker)}</text>`,
+    `<text x="64" y="150" font-family="Geist" font-size="40" font-weight="500" fill="${C.muted}">Crypto hacks and exploits in</text>`,
+    `<text x="64" y="232" font-family="Geist" font-size="84" font-weight="700" fill="${C.text}">${xml(period)}</text>`,
+    `<text x="1136" y="200" text-anchor="end" font-family="Geist" font-size="96" font-weight="700" fill="${C.accent}">${count}</text>`,
+    `<text x="1136" y="236" text-anchor="end" font-family="Geist Mono" font-size="20" fill="${C.muted}">INCIDENT${count === 1 ? "" : "S"}</text>`,
+    top.length ? `<line x1="64" y1="276" x2="1136" y2="276" stroke="${C.line}" stroke-width="2"/>` : "",
+    ...rows,
+  ].join("");
+  return render(root, frame(inner));
+};
