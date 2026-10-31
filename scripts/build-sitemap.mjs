@@ -1,4 +1,5 @@
 import { readFile, readdir, writeFile, mkdir } from "node:fs/promises";
+import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { TOP_LEVEL_DOCUMENTS } from "./site-documents.mjs";
 
@@ -8,10 +9,29 @@ const oak = JSON.parse(await readFile(path.join(root, "tools/oak.json"), "utf8")
 
 const today = new Date().toISOString().slice(0, 10);
 
+// <lastmod> is the date of the last commit that touched the page's source file.
+// Stamping every URL with the build date told Google all 988 pages changed on
+// every deploy, so it learns to ignore lastmod and recrawls nothing in priority.
+// Index pages (matrix, incidents, …) aggregate everything and keep the build date.
+const lastCommit = new Map();
+try {
+  const log = execFileSync("git", ["log", "--format=@%cs", "--name-only", "--no-renames"], {
+    cwd: root, encoding: "utf8", maxBuffer: 256 * 1024 * 1024,
+  });
+  let date = null;
+  for (const line of log.split("\n")) {
+    if (line.startsWith("@")) date = line.slice(1);
+    else if (line && date && !lastCommit.has(line)) lastCommit.set(line, date);
+  }
+} catch {
+  // no git (e.g. a tarball build): fall back to the build date
+}
+const lastmodFor = (sourceFile) => (sourceFile && lastCommit.get(sourceFile)) || today;
+
 const urls = [];
 const canonicalLoc = (loc) => (loc === `${baseUrl}/` || loc.endsWith("/") ? loc : `${loc}/`);
-const push = (loc, priority = 0.6, changefreq = "weekly") => {
-  urls.push({ loc: canonicalLoc(loc), lastmod: today, changefreq, priority });
+const push = (loc, priority = 0.6, changefreq = "weekly", sourceFile = null) => {
+  urls.push({ loc: canonicalLoc(loc), lastmod: lastmodFor(sourceFile), changefreq, priority });
 };
 
 // Clean, history-routed URLs (no `#/`, no `.md` suffix). GitHub Pages serves
@@ -31,27 +51,27 @@ push(`${baseUrl}/contribute`, 0.5, "monthly");
 
 // Per-Technique
 for (const t of oak.techniques ?? []) {
-  push(`${baseUrl}/technique/${t.id}`, 0.7, "monthly");
+  push(`${baseUrl}/technique/${t.id}`, 0.7, "monthly", t.source_file);
 }
 
 // Per-Mitigation
 for (const m of oak.mitigations ?? []) {
-  push(`${baseUrl}/mitigation/${m.id}`, 0.6, "monthly");
+  push(`${baseUrl}/mitigation/${m.id}`, 0.6, "monthly", m.source_file);
 }
 
 // Per-Software
 for (const s of oak.software ?? []) {
-  push(`${baseUrl}/software/${s.id}`, 0.6, "monthly");
+  push(`${baseUrl}/software/${s.id}`, 0.6, "monthly", s.source_file);
 }
 
 // Per-Group
 for (const g of oak.groups ?? []) {
-  push(`${baseUrl}/group/${g.id}`, 0.6, "monthly");
+  push(`${baseUrl}/group/${g.id}`, 0.6, "monthly", g.source_file);
 }
 
 // Per-Tactic
 for (const t of oak.tactics ?? []) {
-  push(`${baseUrl}/tactic/${t.id}`, 0.7, "monthly");
+  push(`${baseUrl}/tactic/${t.id}`, 0.7, "monthly", t.source_file);
 }
 
 // Per-Data-Source — as documents; see the note in build-route-pages.mjs.
@@ -59,25 +79,25 @@ for (const t of oak.tactics ?? []) {
 for (const ds of oak.data_sources ?? oak.dataSources ?? []) {
   if (!ds.source_file) continue;
   const slug = ds.source_file.split("/").pop().replace(/\.md$/, "");
-  push(`${baseUrl}/document/data-sources/${slug}`, 0.5, "monthly");
+  push(`${baseUrl}/document/data-sources/${slug}`, 0.5, "monthly", ds.source_file);
 }
 
 // Top-level documents (markdown pages indexed via the in-app viewer; .md is
 // stripped from the URL surface and restored at lookup time)
 for (const doc of TOP_LEVEL_DOCUMENTS) {
-  push(`${baseUrl}/document/${doc}`, 0.5, "monthly");
+  push(`${baseUrl}/document/${doc}`, 0.5, "monthly", `${doc}.md`);
 }
 
 // Investigations — long-form incident write-ups, opened as documents
 for (const file of (await readdir(path.join(root, "investigations"))).filter((f) => f.endsWith(".md"))) {
-  push(`${baseUrl}/document/investigations/${file.replace(/\.md$/, "")}`, 0.5, "monthly");
+  push(`${baseUrl}/document/investigations/${file.replace(/\.md$/, "")}`, 0.5, "monthly", `investigations/${file}`);
 }
 
 // Worked examples — each example file is its own indexable page
 for (const ex of oak.examples ?? []) {
   if (ex.file) {
     const slug = ex.file.replace(/\.md$/, "");
-    push(`${baseUrl}/document/examples/${slug}`, 0.4, "monthly");
+    push(`${baseUrl}/document/examples/${slug}`, 0.4, "monthly", `examples/${ex.file}`);
   }
 }
 

@@ -19,6 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history: the sitemap's <lastmod> is each page's last commit date.
+          fetch-depth: 0
 
       - name: Set up Node
         uses: actions/setup-node@v4
