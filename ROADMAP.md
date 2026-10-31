@@ -98,6 +98,10 @@ Known leftovers: OAK-T11.001 (BitMart described with "1Password"), OAK-T17.005 (
 
 Newest first. Each entry: what, commit, why.
 
+- **2026-10-31 — Binance laundering status, traced by OAK; my own wrong correction undone** (this commit). _Why:_ the user asked how the funds are being laundered now, and to trace the new wallets ourselves instead of waiting for vendors. A defender needs the addresses to watch today, not a summary.
+  - **What OAK checked.** Every address on Elliptic's blocklist: 2,598 in total (1,536 Tron, 1,009 EVM, 45 BTC). Reports of "millions of wallets" do not match this list. ~511,854 ETH sits in eight wallets with nonce 0. 378.7M USDT on Tron is in two wallets that Tether has blacklisted (checked with `isBlackListed`). The 638.2M TRX was split into five wallets. Three of them fed `TRBdWqHnDVSZCVGfgHdKFLQPirQcA2PRki`, which is peeling TRX to about 30 intermediaries. On ETH, a new round of single-use wallets sold ZAMA and SOPH for ~2,036 ETH. First BTC exit: 10 BTC. XRP untouched. All of it is in a dated "Laundering status" table and in the fund-flow graph (Tron nodes added).
+  - **Correction.** `beafc99` called "additional points of breach" a press paraphrase. It is Binance's own 08:47 UTC post. Restored and logged in CORRECTIONS.
+  - **Tool.** `explorer.py` Tron: TronGrid's TRC-20 feed also returns Approval events, which showed as unlimited "transfers". They are now skipped.
 - **2026-10-30 — Mitigations must say what, how and why; Binance cause wording corrected** (this commit). _Why:_ the user pointed out that OAK's mitigations were empty words, and that I wrote most of them. They named no incident, and the control that would have stopped Binance's Ethereum takeover was not in OAK at all.
   - **New mitigations.** OAK-M49: custodial signers refuse EIP-7702 authorizations and watch their EOAs for code. OAK-M50: withdrawal approval sits outside the service that submits withdrawals. Both are tied step by step to Binance, Bitget, Gamdom, Bloom and AlpsCon.
   - **Rewritten sections.** T13.004 and T15.003 now open with "What would have stopped the 2026 cases".

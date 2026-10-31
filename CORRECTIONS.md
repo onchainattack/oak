@@ -64,6 +64,10 @@ If something on OAK is wrong about you or your work, write to us. We'll fix it.
 
 ## Correction log
 
+### 2026-10-31 — Binance (2026-10-29): "additional points of breach" restored to Binance's own words
+
+In commit `beafc99` OAK relabelled "additional points of breach" in `examples/2026-10-binance-devops-laptop-service-container-hot-wallet-drain.md` as a press paraphrase. That was wrong. The phrase is in Binance's own post of 2026-10-30 08:47 UTC: "our initial investigation suggested that the security incident may have involved a compromised laptop, however our subsequent investigation has uncovered additional points of breach. This was a complex attack." The quote, its timeline row and the open-questions line now cite that post (`[binancebreachpoints2026]`, <https://x.com/binance/status/2116089661408108712>).
+
 ### 2026-10-30 — CoinDCX (2025-07): entry vector corrected
 
 `examples/2025-07-coindcx.md` recorded the entry as a "server breach". On that basis it presented back-end infrastructure as a new, third axis of the custody-compromise family. Public reporting since 2025-07-31 says otherwise. Bengaluru police (via The Indian Express, relayed by Cointelegraph and Coinspeaker) say attackers posing as recruiters offered an engineer part-time work and got malware onto his company laptop. Neblio Technologies' complaint says his credentials were compromised through that laptop. The CEO called it "a sophisticated social engineering attack". The example is rewritten at T15.001 → T15.003, the "third axis" teaching point is withdrawn, and the detained engineer is not named because he denies involvement. Found through Ondology Labs' write-up.

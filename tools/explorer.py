@@ -749,6 +749,8 @@ def tron_transfers(address: str, limit: int, after: str | None, before: str | No
     while len(out) < limit:
         d = http_json(url, {**params, **({"fingerprint": fp} if fp else {})})
         for it in d.get("data", []):
+            if it.get("type", "Transfer") != "Transfer":  # TronGrid also returns Approval events
+                continue
             tok = it.get("token_info") or {}
             out.append({"tx": it["transaction_id"], "time": _iso(it["block_timestamp"] // 1000),
                         "from": it["from"], "to": it["to"], "asset": tok.get("symbol") or "?",
