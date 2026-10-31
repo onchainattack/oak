@@ -1,5 +1,5 @@
 import { hrefForDoc } from "../../routing";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { siteData } from "../../data/generated";
 import { cleanInlineText } from "../../lib";
 
@@ -11,6 +11,54 @@ const initialParam = (key: string) => {
   if (typeof window === "undefined") return "all";
   return new URLSearchParams(window.location.search).get(key) || "all";
 };
+
+// Year × month grid linking the static month hubs (/incidents/YYYY/MM/).
+// Recent years are shown; older ones sit in a <details> (still in the DOM, so
+// crawlers follow every link).
+const VISIBLE_YEARS = 4;
+
+function HubCalendar() {
+  const counts = new Map<string, number>(siteData.incidentHubs.map(([ym, n]) => [ym, n]));
+  const years = [...new Set(siteData.incidentHubs.map(([ym]) => ym.slice(0, 4)))].sort().reverse();
+  const max = Math.max(1, ...counts.values());
+  const row = (year: string) => (
+    <div className="hub-row" key={year}>
+      <a className="hub-year" href={`/incidents/${year}/`}>{year}</a>
+      {MONTHS.map((label, i) => {
+        const ym = `${year}-${String(i + 1).padStart(2, "0")}`;
+        const n = counts.get(ym);
+        return n ? (
+          <a
+            key={ym}
+            className="hub-cell"
+            href={`/incidents/${year}/${ym.slice(5)}/`}
+            title={`${label} ${year}: ${n} incident${n === 1 ? "" : "s"}`}
+            style={{ "--hub-heat": String(0.12 + 0.6 * Math.sqrt(n / max)) } as CSSProperties}
+          >
+            {n}
+          </a>
+        ) : (
+          <span key={ym} className="hub-cell hub-empty" aria-hidden="true" />
+        );
+      })}
+    </div>
+  );
+  return (
+    <section className="hub-calendar" aria-label="Incidents by month">
+      <div className="hub-row hub-head" aria-hidden="true">
+        <span className="hub-year">year</span>
+        {MONTHS.map((m) => <span key={m} className="hub-cell">{m}</span>)}
+      </div>
+      {years.slice(0, VISIBLE_YEARS).map(row)}
+      {years.length > VISIBLE_YEARS && (
+        <details className="hub-more">
+          <summary>All years ({years[years.length - 1]}–{years[VISIBLE_YEARS]})</summary>
+          {years.slice(VISIBLE_YEARS).map(row)}
+        </details>
+      )}
+    </section>
+  );
+}
 
 export default function IncidentsView({ openDoc }: { openDoc: (path: string) => void }) {
   const [yearFilter, setYearFilter] = useState<string>(() => initialParam("year"));
@@ -96,20 +144,7 @@ export default function IncidentsView({ openDoc }: { openDoc: (path: string) => 
           laundering path, recovery outcome, attribution strength.
         </p>
       </div>
-      <nav className="incident-hubs" aria-label="Incidents by month">
-        {[...new Set(siteData.incidentHubs.map(([ym]) => ym.slice(0, 4)))].map((year) => (
-          <p key={year}>
-            <a href={`/incidents/${year}/`}><strong>{year}</strong></a>{" "}
-            {siteData.incidentHubs
-              .filter(([ym]) => ym.startsWith(year))
-              .map(([ym, count]) => (
-                <a key={ym} href={`/incidents/${year}/${ym.slice(5, 7)}/`} title={`${count} incidents`}>
-                  {MONTHS[Number(ym.slice(5, 7)) - 1]}
-                </a>
-              ))}
-          </p>
-        ))}
-      </nav>
+      <HubCalendar />
       <div className="incidents-controls">
         <label className="chip-group">
           <span>year</span>

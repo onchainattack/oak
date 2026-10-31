@@ -98,6 +98,7 @@ Known leftovers: OAK-T11.001 (BitMart described with "1Password"), OAK-T17.005 (
 
 Newest first. Each entry: what, commit, why.
 
+- **2026-10-31 — Incidents: month hubs as a year × month calendar** (this commit). _Why:_ the user found the 17-line strip of month links ugly, and it pushed the filters down. It is now a compact grid: years as rows, Jan–Dec as columns, a count in each cell shaded by volume. The four most recent years are shown and older ones sit in `<details>`. All 141 links stay in the DOM for crawlers.
 - **2026-10-31 — Social cards for month and year hubs; no "hack" on collapses** (this commit). _Why:_ the user wanted the hubs to share well too. Each of the 141 `/incidents/YYYY/MM/` and `/incidents/YYYY/` pages gets a card with the period, the incident count and the three largest losses. The hack/exploit verb is now skipped when the name already says collapse, fraud, depeg, rug, Ponzi, slashing or seizure ("FTX exchange collapse hack" → "FTX exchange collapse (Nov 2022): \$8B"). That keeps the neutral framing, which the verb broke.
 - **2026-10-31 — Social preview card for every incident and Technique** (this commit). _Why:_ a link to OAK shared on X, Telegram or Slack showed the generic banner, so nobody could see from the preview what the page was about. Each of the 683 incident pages and 156 Technique pages now has its own 1200×630 card:
   - incidents show victim + hack/exploit, date, loss, what happened, the primary Technique and the chains; cohort and multi-year files are labelled "Case study";

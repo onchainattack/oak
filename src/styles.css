@@ -4523,20 +4523,70 @@ body.ff-lock { overflow: hidden; }
 .ff-controls .ff-fullscreen { border-color: var(--accent-line); color: var(--accent); background: var(--accent-soft); }
 .ff-controls .ff-fullscreen:hover { color: var(--ink-strong); border-color: var(--accent); }
 
-/* Links to the static month hubs (/incidents/YYYY/MM/) above the incident filters. */
-.incident-hubs {
+/* Year × month grid linking the static month hubs (/incidents/YYYY/MM/). */
+.hub-calendar {
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  margin: var(--space-4) 0;
+  overflow-x: auto;
+  padding: 14px 16px;
+}
+.hub-row {
+  align-items: center;
   display: grid;
-  gap: var(--space-2);
-  margin: 0 0 var(--space-4);
-  font-size: 0.85rem;
-  color: var(--muted, inherit);
+  gap: 4px;
+  grid-template-columns: 64px repeat(12, minmax(30px, 1fr));
+  min-width: 480px;
 }
-.incident-hubs p {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 0;
+.hub-row + .hub-row,
+.hub-more > .hub-row {
+  margin-top: 4px;
 }
-.incident-hubs a:hover {
+.hub-head {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.hub-head .hub-cell {
+  text-align: center;
+}
+.hub-year {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+a.hub-year:hover {
+  color: var(--accent);
+}
+.hub-cell {
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  height: 26px;
+  line-height: 26px;
+  text-align: center;
+}
+a.hub-cell {
+  background: color-mix(in srgb, var(--accent) calc(var(--hub-heat, 0.2) * 100%), transparent);
+  color: var(--ink);
+  transition: outline-color 120ms ease;
+  outline: 1px solid transparent;
+}
+a.hub-cell:hover {
+  outline-color: var(--accent);
+}
+.hub-empty {
+  background: color-mix(in srgb, var(--line) 40%, transparent);
+}
+.hub-more > summary {
+  color: var(--muted);
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  margin-top: 8px;
+}
+.hub-more > summary:hover {
   color: var(--accent);
 }
