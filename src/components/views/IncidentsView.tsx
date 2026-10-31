@@ -1,3 +1,4 @@
+import { hrefForDoc } from "../../routing";
 import { useEffect, useMemo, useState } from "react";
 import { siteData } from "../../data/generated";
 import { cleanInlineText } from "../../lib";
@@ -89,12 +90,26 @@ export default function IncidentsView({ openDoc }: { openDoc: (path: string) => 
     <>
       <div className="section-heading">
         <p className="eyebrow">Worked examples</p>
-        <h2>Incidents — the proof layer</h2>
+        <h1>Incidents — the proof layer</h1>
         <p>
           Every entry ties an OAK Technique to a real, cited incident — loss size,
           laundering path, recovery outcome, attribution strength.
         </p>
       </div>
+      <nav className="incident-hubs" aria-label="Incidents by month">
+        {[...new Set(siteData.incidentHubs.map(([ym]) => ym.slice(0, 4)))].map((year) => (
+          <p key={year}>
+            <a href={`/incidents/${year}/`}><strong>{year}</strong></a>{" "}
+            {siteData.incidentHubs
+              .filter(([ym]) => ym.startsWith(year))
+              .map(([ym, count]) => (
+                <a key={ym} href={`/incidents/${year}/${ym.slice(5, 7)}/`} title={`${count} incidents`}>
+                  {MONTHS[Number(ym.slice(5, 7)) - 1]}
+                </a>
+              ))}
+          </p>
+        ))}
+      </nav>
       <div className="incidents-controls">
         <label className="chip-group">
           <span>year</span>
@@ -165,12 +180,7 @@ export default function IncidentsView({ openDoc }: { openDoc: (path: string) => 
       </div>
       <div className="example-grid">
         {filtered.map((example) => (
-          <button
-            type="button"
-            className="example-card"
-            key={example.file}
-            onClick={() => openDoc(`examples/${example.file}`)}
-          >
+          <a className="example-card" key={example.file} href={hrefForDoc(`examples/${example.file}`)}>
             <span>{example.date}</span>
             <strong className="example-card-title">{example.title}</strong>
             <p>
@@ -189,7 +199,7 @@ export default function IncidentsView({ openDoc }: { openDoc: (path: string) => 
                 <code key={actor}>{actor}</code>
               ))}
             </div>
-          </button>
+          </a>
         ))}
         {filtered.length === 0 && (
           <p className="empty-row">No incidents match the current filters.</p>

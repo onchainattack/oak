@@ -1,3 +1,4 @@
+import { hrefForDoc } from "../../routing";
 import { siteData } from "../../data/generated";
 import { techniqueById } from "../../lib";
 import { reportIssueUrl } from "../../routing";
@@ -174,19 +175,14 @@ export default function TechniqueDetailPage({
               <h2>Mitigations ({relatedMitigations.length})</h2>
               <div className="mitigation-grid">
                 {relatedMitigations.map((m) => (
-                  <button
-                    type="button"
-                    className="mitigation-card"
-                    key={m.id}
-                    onClick={() => onOpenDoc(m.sourcePath)}
-                  >
+                  <a className="mitigation-card" key={m.id} href={hrefForDoc(m.sourcePath)}>
                     <span>{m.id}</span>
                     <strong>{m.name}</strong>
                     <small>
                       {m.class}
                       {m.audience && m.audience.length > 0 && ` · ${m.audience.slice(0, 2).join(" / ")}`}
                     </small>
-                  </button>
+                  </a>
                 ))}
               </div>
             </section>
@@ -196,19 +192,14 @@ export default function TechniqueDetailPage({
             <h2>Software ({relatedSoftware.length})</h2>
             <div className="software-grid">
                 {relatedSoftware.map((s) => (
-                  <button
-                    type="button"
-                    className="software-card"
-                    key={s.id}
-                    onClick={() => onOpenDoc(s.sourcePath)}
-                  >
+                  <a className="software-card" key={s.id} href={hrefForDoc(s.sourcePath)}>
                     <span>{s.id}</span>
                     <strong>{s.name}</strong>
                     <small>
                       {s.type}
                       {s.usedByGroups.length > 0 && ` · ${s.usedByGroups.join(", ")}`}
                     </small>
-                  </button>
+                  </a>
                 ))}
               </div>
           </section>
@@ -219,16 +210,11 @@ export default function TechniqueDetailPage({
             <h2>Threat Actors ({relatedActors.length})</h2>
             <div className="actor-strip">
               {relatedActors.map((actor) => (
-                <button
-                  type="button"
-                  className="actor-card"
-                  key={actor.id}
-                  onClick={() => onOpenDoc(`actors/${actor.file}`)}
-                >
+                <a className="actor-card" key={actor.id} href={hrefForDoc(`actors/${actor.file}`)}>
                   <span>{actor.id}</span>
                   <strong>{actor.title.replace(/^OAK-G\d{2}\s+—\s+/, "")}</strong>
                   <small>{actor.status || "attribution profile"}</small>
-                </button>
+                </a>
               ))}
             </div>
           </section>
@@ -239,17 +225,13 @@ export default function TechniqueDetailPage({
               <ul className="technique-detail-examples">
                 {relatedExamples.map((example) => (
                   <li key={example.file}>
-                    <button
-                      type="button"
-                      className="link-row"
-                      onClick={() => onOpenDoc(`examples/${example.file}`)}
-                    >
+                    <a className="link-row" href={hrefForDoc(`examples/${example.file}`)}>
                       <strong>{example.title}</strong>
                       <small>
                         {example.year && `${example.year} · `}
                         {example.loss}
                       </small>
-                    </button>
+                    </a>
                   </li>
                 ))}
               </ul>

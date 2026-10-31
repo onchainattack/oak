@@ -2,6 +2,10 @@ import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TOP_LEVEL_DOCUMENTS } from "./site-documents.mjs";
 import { buildRouteMap, rewriteRelativeLinks } from "./site-links.mjs";
+import {
+  exampleFacts, exampleSearchTitle, gitDates, monthHubPath, monthHubTitle, monthHubs,
+  yearHubPath, yearHubTitle,
+} from "./seo.mjs";
 
 const root = process.cwd();
 const baseUrl = "https://onchainattack.org";
@@ -74,6 +78,14 @@ const route = (pathname, title, description, priority = 0.5, content = {}) => ({
   kicker: content.kicker ?? "",
   intro: content.intro ?? "",
   sections: content.sections ?? [],
+  // <title> when it should differ from the visible <h1> (search wording).
+  headTitle: content.headTitle ?? "",
+  // Extra schema.org nodes for this page; a BreadcrumbList is added for all.
+  jsonLd: content.jsonLd ?? [],
+  crumbs: content.crumbs ?? [],
+  // Static pages exist only as pre-rendered HTML: the SPA has no view for them,
+  // so it must not mount over them (src/main.tsx checks data-static).
+  isStatic: content.isStatic ?? false,
 });
 
 const canonicalUrlForPath = (pathname) => `${baseUrl}${pathname === "/" ? "/" : `${pathname}/`}`;
@@ -220,7 +232,23 @@ const prerenderMarkup = (meta) =>
 
 const htmlForRoute = (template, meta) => {
   const canonicalUrl = canonicalUrlForPath(meta.pathname);
-  const fullTitle = composeTitle(meta.title);
+  const fullTitle = composeTitle(meta.headTitle || meta.title);
+  const crumbs = [{ name: "OAK", path: "/" }, ...meta.crumbs];
+  const graph = [
+    ...(meta.pathname === "/" ? [] : [{
+      "@type": "BreadcrumbList",
+      itemListElement: [...crumbs, { name: meta.title, path: meta.pathname }].map((c, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        name: c.name,
+        item: canonicalUrlForPath(c.path.replace(/\/+$/, "") || "/"),
+      })),
+    }]),
+    ...meta.jsonLd,
+  ];
+  const pageLd = graph.length
+    ? `<script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@graph": graph }).replace(/</g, "\\u003c")}</script>\n  </head>`
+    : "</head>";
   // Replacement callbacks, not replacement strings — descriptions carry dollar
   // amounts ("$1.5M"), and `$1` in a replacement string is a capture group.
   // A pattern that stops matching (a reformatted meta tag, a renamed element)
@@ -264,8 +292,14 @@ const htmlForRoute = (template, meta) => {
       /<meta name="twitter:description" content="[^"]+"\s*\/?>/,
       `<meta name="twitter:description" content="${escapeHtml(meta.description)}" />`,
     ],
-    [/<div id="root"><\/div>/, `<div id="root">${prerenderMarkup(meta)}</div>`],
-  ].reduce((html, [pattern, value]) => swap(html, pattern, value), template);
+    [/<\/head>/, pageLd],
+    [
+      /<div id="root"><\/div>/,
+      `<div id="root"${meta.isStatic ? " data-static" : ""}>${prerenderMarkup(meta)}</div>`,
+    ],
+  ].reduce((html, [pattern, value]) => swap(html, pattern, value), template)
+    // A static page needs none of the app bundle.
+    .replace(meta.isStatic ? /\s*<script type="module"[^>]*src="\/assets\/[^"]+"><\/script>/ : /$^/, "");
 };
 
 const writeRoute = async (template, meta) => {
@@ -357,6 +391,7 @@ const stripSnapshot = (html) =>
     .replace(/\s*<style id="pr-style">[\s\S]*?<\/style>/, "")
     .replace(/<div id="root">[\s\S]*<\/div>(?=\s*<\/body>)/, '<div id="root"></div>');
 
+const dates = gitDates(root);
 const template = stripSnapshot(await readFile(path.join(distDir, "index.html"), "utf8"));
 
 const routes = [
@@ -555,6 +590,8 @@ for (const tactic of oak.tactics ?? []) {
     route(`/tactic/${tactic.id}`, meta.title, meta.description, 0.7, {
       doc: tactic.source_file,
       kicker: `Tactic · ${tactic.id}${tactic.phase ? ` · ${tactic.phase}` : ""}`,
+      // The SPA has no tactic view (it would render the home page here).
+      isStatic: true,
       sections: [
         {
           title: `Techniques (${(tactic.techniques ?? []).length})`,
@@ -576,6 +613,20 @@ for (const technique of oak.techniques ?? []) {
   routes.push(
     route(`/technique/${technique.id}`, meta.title, meta.description, 0.7, {
       doc: technique.source_file,
+      crumbs: (technique.parent_tactics ?? []).slice(0, 1).map((id) => ({
+        name: `${id} ${tacticById.get(id)?.name ?? ""}`.trim(),
+        path: `/tactic/${id}/`,
+      })),
+      jsonLd: [{
+        "@type": "DefinedTerm",
+        "@id": canonicalUrlForPath(`/technique/${technique.id}`),
+        termCode: technique.id,
+        name: technique.name,
+        description: meta.description,
+        url: canonicalUrlForPath(`/technique/${technique.id}`),
+        inDefinedTermSet: { "@type": "DefinedTermSet", name: "OAK — OnChain Attack Knowledge", url: `${baseUrl}/matrix/` },
+        ...(dates.last.get(technique.source_file) ? { dateModified: dates.last.get(technique.source_file) } : {}),
+      }],
       kicker: `Technique · ${technique.id}${technique.maturity ? ` · ${technique.maturity}` : ""}`,
       sections: [
         { title: "Parent Tactics", links: (technique.parent_tactics ?? []).map(tacticLink) },
@@ -704,27 +755,200 @@ for (const file of investigationFiles) {
   );
 }
 
+const exampleFactsByFile = new Map();
+for (const example of oak.examples ?? []) {
+  if (!example.file) continue;
+  exampleFactsByFile.set(
+    example.file,
+    exampleFacts(example, await readFile(path.join(root, "examples", example.file), "utf8")),
+  );
+}
+const hubs = monthHubs(oak.examples);
+
 for (const example of oak.examples ?? []) {
   if (!example.file) continue;
   const slug = exampleSlug(example.file);
+  const source = path.join("examples", example.file);
   const meta = await readMarkdownMeta(
-    path.join("examples", example.file),
+    source,
     example.title ?? slug,
     `${example.title ?? slug}: worked example in the OAK incident corpus.`,
   );
+  const facts = exampleFactsByFile.get(example.file);
+  const searchTitle = exampleSearchTitle(facts);
+  const lead = [facts.dateLabel, facts.loss && `loss ${facts.loss}`].filter(Boolean).join(" · ");
+  const description = lead ? `${lead}. ${meta.description}` : meta.description;
+  const hub = facts.single && hubs.has(facts.ym) ? monthHubPath(facts.ym) : "";
+  const pageUrl = canonicalUrlForPath(`/document/examples/${slug}`);
   routes.push(
-    route(`/document/examples/${slug}`, meta.title, meta.description, 0.4, {
-      doc: `examples/${example.file}`,
+    route(`/document/examples/${slug}`, meta.title, description, 0.4, {
+      doc: source,
+      headTitle: searchTitle,
       kicker: `Worked example${example.date_prefix ? ` · ${example.date_prefix}` : ""}`,
+      crumbs: [
+        { name: "Incidents", path: "/incidents/" },
+        ...(hub ? [{ name: monthHubTitle(facts.ym).replace("Crypto hacks and exploits in ", ""), path: `${hub}/` }] : []),
+      ],
+      jsonLd: [
+        {
+          "@type": "Article",
+          "@id": `${pageUrl}#article`,
+          headline: truncate(facts.h1, 110),
+          ...(searchTitle ? { alternativeHeadline: searchTitle } : {}),
+          description: truncate(description),
+          url: pageUrl,
+          mainEntityOfPage: pageUrl,
+          ...(dates.first.get(source) ? { datePublished: dates.first.get(source) } : {}),
+          ...(dates.last.get(source) ? { dateModified: dates.last.get(source) } : {}),
+          author: { "@id": `${baseUrl}/#organization` },
+          publisher: { "@id": `${baseUrl}/#organization` },
+          isPartOf: { "@id": `${baseUrl}/#dataset` },
+          inLanguage: "en",
+          about: (example.techniques ?? []).map((id) => ({
+            "@type": "DefinedTerm",
+            "@id": canonicalUrlForPath(`/technique/${id}`),
+            name: `${id} ${techniqueById.get(id)?.name ?? ""}`.trim(),
+          })),
+          keywords: [facts.victim, facts.verb && `${facts.victim} ${facts.verb}`, "crypto hack", "on-chain attack"]
+            .filter(Boolean)
+            .join(", "),
+        },
+      ],
       sections: [
         {
           title: `Techniques demonstrated (${(example.techniques ?? []).length})`,
           links: (example.techniques ?? []).map(techniqueLink),
         },
+        ...(hub
+          ? [{
+              title: "More incidents",
+              links: [
+                { href: `${hub}/`, label: monthHubTitle(facts.ym) },
+                { href: `${yearHubPath(facts.ym.slice(0, 4))}/`, label: yearHubTitle(facts.ym.slice(0, 4)) },
+              ],
+            }]
+          : []),
       ],
     }),
   );
 }
+
+// Month and year hubs: "Crypto hacks and exploits in October 2026". Each lists
+// that period's single incidents with date, loss and primary Technique. They
+// are what people search for, and they give every incident a second crawl path.
+const hubLink = (example) => {
+  const facts = exampleFactsByFile.get(example.file);
+  const technique = example.techniques?.[0];
+  return {
+    href: exampleRoute(example.file),
+    label: exampleSearchTitle(facts) || stripInlineMarkdown(example.title ?? exampleSlug(example.file)),
+    note: [facts.iso, facts.loss && `loss ${facts.loss}`, technique && `${technique} ${techniqueById.get(technique)?.name ?? ""}`.trim()]
+      .filter(Boolean)
+      .join(" · "),
+  };
+};
+// Newest incident first: by the incident's own date, then by file name.
+const byIncidentDateDesc = (a, b) =>
+  (exampleFactsByFile.get(b.file)?.iso ?? "").localeCompare(exampleFactsByFile.get(a.file)?.iso ?? "") ||
+  byDateDesc(a, b);
+const hubList = (examples) => [...examples].sort(byIncidentDateDesc).map(hubLink);
+const years = new Map();
+for (const [ym, examples] of hubs) {
+  const year = ym.slice(0, 4);
+  if (!years.has(year)) years.set(year, []);
+  years.get(year).push([ym, examples]);
+  const title = monthHubTitle(ym);
+  routes.push(
+    route(monthHubPath(ym), title, `${examples.length} crypto hacks, exploits and on-chain attacks in ${title.replace("Crypto hacks and exploits in ", "")}: date, loss, how each happened (OAK Technique), timeline and attacker addresses.`, 0.6, {
+      kicker: "Incidents by month",
+      intro: `${examples.length} incidents. Each links to a full write-up: timeline, OAK Techniques, attacker addresses and fund flow, with sources.`,
+      isStatic: true,
+      crumbs: [{ name: "Incidents", path: "/incidents/" }, { name: year, path: `${yearHubPath(year)}/` }],
+      jsonLd: [{
+        "@type": "CollectionPage",
+        name: title,
+        url: canonicalUrlForPath(monthHubPath(ym)),
+        isPartOf: { "@id": `${baseUrl}/#dataset` },
+        mainEntity: {
+          "@type": "ItemList",
+          numberOfItems: examples.length,
+          itemListElement: [...examples].sort(byIncidentDateDesc).map((example, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            url: canonicalUrlForPath(exampleRoute(example.file).replace(/\/+$/, "")),
+          })),
+        },
+      }],
+      sections: [{ title: `Incidents (${examples.length})`, links: hubList(examples) }],
+    }),
+  );
+}
+for (const [year, months] of years) {
+  const total = months.reduce((n, [, examples]) => n + examples.length, 0);
+  routes.push(
+    route(yearHubPath(year), yearHubTitle(year), `${total} crypto hacks, exploits and on-chain attacks in ${year}, month by month: date, loss, mechanism, timeline and attacker addresses.`, 0.6, {
+      kicker: "Incidents by year",
+      intro: `${total} incidents in ${year}.`,
+      isStatic: true,
+      crumbs: [{ name: "Incidents", path: "/incidents/" }],
+      jsonLd: [{ "@type": "CollectionPage", name: yearHubTitle(year), url: canonicalUrlForPath(yearHubPath(year)), isPartOf: { "@id": `${baseUrl}/#dataset` } }],
+      sections: months.map(([ym, examples]) => ({
+        title: `${monthHubTitle(ym).replace("Crypto hacks and exploits in ", "")} (${examples.length})`,
+        links: [{ href: `${monthHubPath(ym)}/`, label: monthHubTitle(ym) }, ...hubList(examples)],
+      })),
+    }),
+  );
+}
+
+// The Incidents index links every hub first, so they are one click from it.
+const incidentsRoute = routes.find((r) => r.pathname === "/incidents");
+incidentsRoute?.sections.unshift({
+  title: "Incidents by month",
+  links: [...years.keys()].flatMap((year) => [
+    { href: `${yearHubPath(year)}/`, label: yearHubTitle(year) },
+    ...years.get(year).map(([ym, examples]) => ({
+      href: `${monthHubPath(ym)}/`,
+      label: monthHubTitle(ym),
+      note: `${examples.length} incidents`,
+    })),
+  ]),
+});
+
+// RSS feed of the newest single incidents, newest first by incident date.
+const xmlEscape = (value) => escapeHtml(value).replace(/'/g, "&apos;");
+const feedItems = [...(oak.examples ?? [])]
+  .filter((example) => example.file && exampleFactsByFile.get(example.file)?.single)
+  .sort(byIncidentDateDesc)
+  .slice(0, 50)
+  .map((example) => {
+    const facts = exampleFactsByFile.get(example.file);
+    const url = canonicalUrlForPath(exampleRoute(example.file).replace(/\/+$/, ""));
+    const date = dates.first.get(`examples/${example.file}`) ?? facts.iso;
+    const r = routes.find((x) => x.pathname === exampleRoute(example.file).replace(/\/+$/, ""));
+    return `    <item>
+      <title>${xmlEscape(exampleSearchTitle(facts) || facts.h1)}</title>
+      <link>${url}</link>
+      <guid isPermaLink="true">${url}</guid>
+      ${date ? `<pubDate>${new Date(`${date}T12:00:00Z`).toUTCString()}</pubDate>` : ""}
+      <description>${xmlEscape(r?.description ?? facts.h1)}</description>
+    </item>`;
+  });
+await writeFile(
+  path.join(distDir, "feed.xml"),
+  `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>OAK — new crypto hacks and exploits</title>
+    <link>${baseUrl}/incidents/</link>
+    <atom:link href="${baseUrl}/feed.xml" rel="self" type="application/rss+xml" />
+    <description>Newly documented crypto hacks, exploits and on-chain attacks: mechanism, timeline, attacker addresses and fund flow.</description>
+    <language>en</language>
+${feedItems.join("\n")}
+  </channel>
+</rss>
+`,
+  "utf8",
+);
 
 const uniqueRoutes = [...new Map(routes.map((meta) => [meta.pathname, meta])).values()].sort(
   (a, b) => b.priority - a.priority || a.pathname.localeCompare(b.pathname),

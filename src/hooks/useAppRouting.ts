@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   docPathToUrl,
   groupRouteFromPath,
+  installLinkInterception,
   markdownRouteFromPath,
   mitigationRouteFromPath,
   navigateTo,
@@ -102,7 +103,11 @@ export function useAppRouting() {
     };
     onPopState();
     window.addEventListener("popstate", onPopState);
-    return () => window.removeEventListener("popstate", onPopState);
+    const removeLinkInterception = installLinkInterception();
+    return () => {
+      window.removeEventListener("popstate", onPopState);
+      removeLinkInterception();
+    };
   }, []);
 
   return {

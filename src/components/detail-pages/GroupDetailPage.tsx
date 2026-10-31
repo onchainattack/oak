@@ -1,3 +1,4 @@
+import { hrefForDoc } from "../../routing";
 import { siteData } from "../../data/generated";
 import { techniqueById } from "../../lib";
 import { reportIssueUrl } from "../../routing";
@@ -112,16 +113,11 @@ export default function GroupDetailPage({
               <h2>Software used ({usesSoftware.length})</h2>
               <div className="software-grid">
                 {usesSoftware.map((s) => (
-                  <button
-                    type="button"
-                    className="software-card"
-                    key={s.id}
-                    onClick={() => onOpenSoftware(s.id)}
-                  >
+                  <a className="software-card" key={s.id} href={`/software/${s.id}/`}>
                     <span>{s.id}</span>
                     <strong>{s.name}</strong>
                     <small>{s.type}</small>
-                  </button>
+                  </a>
                 ))}
               </div>
             </section>
@@ -131,18 +127,13 @@ export default function GroupDetailPage({
               <h2>Observed Techniques ({observedTechniques.length})</h2>
               <div className="technique-grid">
                 {observedTechniques.map((t) => (
-                  <button
-                    type="button"
-                    className="technique-card"
-                    key={t.id}
-                    onClick={() => onOpenTechnique(t.id)}
-                  >
+                  <a className="technique-card" key={t.id} href={`/technique/${t.id}/`}>
                     <span>{t.id}</span>
                     <strong>{t.name}</strong>
                     <small>
                       {t.maturity || "documented"} · {t.chains.slice(0, 2).join(" / ")}
                     </small>
-                  </button>
+                  </a>
                 ))}
               </div>
             </section>
@@ -153,17 +144,13 @@ export default function GroupDetailPage({
               <ul className="technique-detail-examples">
                 {groupExamples.map((example) => (
                   <li key={example.file}>
-                    <button
-                      type="button"
-                      className="link-row"
-                      onClick={() => onOpenDoc(`examples/${example.file}`)}
-                    >
+                    <a className="link-row" href={hrefForDoc(`examples/${example.file}`)}>
                       <strong>{example.title}</strong>
                       <small>
                         {example.year && `${example.year} · `}
                         {example.loss}
                       </small>
-                    </button>
+                    </a>
                   </li>
                 ))}
               </ul>

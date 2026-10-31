@@ -177,3 +177,46 @@ export const reportIssueUrl = (kind: string, path: string, title: string) => {
   });
   return `${REPO_URL}/issues/new?${params.toString()}`;
 };
+
+// Canonical URL for a repo markdown path. Entity files have their own routes
+// (/technique/OAK-T1.001/, /mitigation/OAK-M01/, ...); everything else opens as
+// /document/<path>/. Every in-app link is a real <a href> built from this, so
+// crawlers can follow it; clicks are intercepted by installLinkInterception.
+const ENTITY_ROUTES: Array<[RegExp, (id: string) => string]> = [
+  [/^techniques\/(T\d+\.\d{3})-/, (id) => `technique/OAK-${id}`],
+  [/^mitigations\/(OAK-M\d+)-/, (id) => `mitigation/${id}`],
+  [/^software\/(OAK-S\d+)-/, (id) => `software/${id}`],
+  [/^actors\/(OAK-G\d+)-/, (id) => `group/${id}`],
+  [/^tactics\/(T\d+)-/, (id) => `tactic/OAK-${id}`],
+];
+export const hrefForDoc = (mdPath: string) => {
+  const p = mdPath.replace(/^\.?\//, "");
+  for (const [pattern, route] of ENTITY_ROUTES) {
+    const id = p.match(pattern)?.[1];
+    if (id) return `/${route(id)}/`;
+  }
+  return `/${docPathToUrl(p)}/`;
+};
+export const hrefForView = (view: WorkspaceView) => (view === "about" ? "/" : `/${view}/`);
+
+// Paths the SPA renders itself. Anything else (tactic pages, incident month
+// hubs, data files) is a static page and gets a normal full navigation.
+const APP_ROUTE_RE =
+  /^\/(?:|(?:matrix|incidents|actors|mitigations|software|datasources|coverage|contribute)\/?|technique\/OAK-T\d+\.\d{3}\/?|mitigation\/OAK-M\d+\/?|software\/OAK-S\d+\/?|group\/OAK-G\d+\/?|document\/[^.]+\/?)$/;
+
+export const installLinkInterception = () => {
+  const onClick = (event: MouseEvent) => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const anchor = (event.target as Element | null)?.closest?.("a[href]") as HTMLAnchorElement | null;
+    if (!anchor || anchor.target || anchor.hasAttribute("download") || anchor.origin !== window.location.origin) return;
+    if (!APP_ROUTE_RE.test(anchor.pathname)) return;
+    event.preventDefault();
+    if (anchor.pathname + anchor.search !== window.location.pathname + window.location.search) {
+      window.history.pushState(null, "", anchor.pathname + anchor.search + anchor.hash);
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    }
+    if (!anchor.hash) window.scrollTo({ top: 0, behavior: "instant" });
+  };
+  document.addEventListener("click", onClick);
+  return () => document.removeEventListener("click", onClick);
+};

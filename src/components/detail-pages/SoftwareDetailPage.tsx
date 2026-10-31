@@ -105,16 +105,11 @@ export default function SoftwareDetailPage({
               <h2>Used by Groups ({usedByGroups.length})</h2>
               <div className="actor-strip">
                 {usedByGroups.map((actor) => (
-                  <button
-                    type="button"
-                    className="actor-card"
-                    key={actor.id}
-                    onClick={() => onOpenGroup(actor.id)}
-                  >
+                  <a className="actor-card" key={actor.id} href={`/group/${actor.id}/`}>
                     <span>{actor.id}</span>
                     <strong>{actor.title.replace(/^OAK-G\d{2}\s+—\s+/, "")}</strong>
                     <small>{actor.status || "attribution profile"}</small>
-                  </button>
+                  </a>
                 ))}
             </div>
           </section>
@@ -125,18 +120,13 @@ export default function SoftwareDetailPage({
             <h2>Observed Techniques ({observedTechniques.length})</h2>
             <div className="technique-grid">
                 {observedTechniques.map((t) => (
-                  <button
-                    type="button"
-                    className="technique-card"
-                    key={t.id}
-                    onClick={() => onOpenTechnique(t.id)}
-                  >
+                  <a className="technique-card" key={t.id} href={`/technique/${t.id}/`}>
                     <span>{t.id}</span>
                     <strong>{t.name}</strong>
                     <small>
                       {t.maturity || "documented"} · {t.chains.slice(0, 2).join(" / ")}
                     </small>
-                  </button>
+                  </a>
                 ))}
             </div>
           </section>

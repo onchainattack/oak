@@ -3,6 +3,7 @@ import path from "node:path";
 import { marked } from "marked";
 import { TOP_LEVEL_DOCUMENTS } from "./site-documents.mjs";
 import { buildRouteMap, rewriteRelativeLinks } from "./site-links.mjs";
+import { monthHubs } from "./seo.mjs";
 
 const root = process.cwd();
 const rel = (...parts) => path.join(root, ...parts);
@@ -601,6 +602,8 @@ const siteData = {
       { path: doc.path, title: doc.title, toc: doc.toc },
     ]),
   ),
+  // Month hubs (/incidents/YYYY/MM/, static pages): [ym, single-incident count].
+  incidentHubs: [...monthHubs(oak.examples).entries()].map(([ym, examples]) => [ym, examples.length]),
   intro: firstParagraphAfter(await readFile(rel("README.md"), "utf8"), "# OAK"),
 };
 

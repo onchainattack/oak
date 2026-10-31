@@ -31,7 +31,7 @@ export default function ActorsView({ openGroup }: { openGroup: (id: string) => v
     <>
       <div className="section-heading">
         <p className="eyebrow">Threat actors</p>
-        <h2>Attribution without flattening the market</h2>
+        <h1>Attribution without flattening the market</h1>
         <p>
           Each entry carries an explicit attribution-strength label —{" "}
           <code>confirmed</code>, <code>inferred-strong</code>, or <code>inferred-weak</code> —
@@ -49,16 +49,11 @@ export default function ActorsView({ openGroup }: { openGroup: (id: string) => v
             </div>
             <div className="actor-strip">
               {list.map((actor) => (
-                <button
-                  type="button"
-                  className="actor-card"
-                  key={actor.id}
-                  onClick={() => openGroup(actor.id)}
-                >
+                <a className="actor-card" key={actor.id} href={`/group/${actor.id}/`}>
                   <span>{actor.id}</span>
                   <strong>{actor.title.replace(/^OAK-G\d{2}\s+—\s+/, "")}</strong>
                   <small>{actor.status || "attribution profile"}</small>
-                </button>
+                </a>
               ))}
             </div>
           </div>

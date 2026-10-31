@@ -44,11 +44,11 @@ export default function RelationshipGraph({
             <ul className="rg-nodes">
               {group.items.map((node) => (
                 <li key={node.id}>
-                  <button type="button" className="rg-node" onClick={() => group.open(node.id)}>
+                  <a className="rg-node" href={`/${group.kind === "actor" ? "group" : group.kind}/${node.id}/`}>
                     <code>{node.id}</code>
                     <span>{node.name}</span>
                     <span className="rg-node-arrow" aria-hidden="true">↗</span>
-                  </button>
+                  </a>
                 </li>
               ))}
             </ul>

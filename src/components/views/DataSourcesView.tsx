@@ -1,3 +1,4 @@
+import { hrefForDoc } from "../../routing";
 import { siteData } from "../../data/generated";
 
 export default function DataSourcesView({
@@ -19,7 +20,7 @@ export default function DataSourcesView({
     <>
       <div className="section-heading">
         <p className="eyebrow">Telemetry inputs</p>
-        <h2>Data Sources.</h2>
+        <h1>Data Sources.</h1>
         <p>
           The defender-side feeds OAK Techniques are detected against — on-chain
           events, mempool flows, off-chain CTI. Each source lists its access
@@ -29,12 +30,7 @@ export default function DataSourcesView({
 
       <div className="data-source-grid">
         {dataSources.map((ds) => (
-          <button
-            type="button"
-            className="data-source-card"
-            key={ds.id}
-            onClick={() => openDoc(`data-sources/${ds.file}`)}
-          >
+          <a className="data-source-card" key={ds.id} href={hrefForDoc(`data-sources/${ds.file}`)}>
             <span>{ds.id}</span>
             <strong>{ds.title.replace(/^OAK-DS-\d+\s+—\s+/, "")}</strong>
             {ds.description && <p>{ds.description}</p>}
@@ -49,7 +45,7 @@ export default function DataSourcesView({
                 </em>
               )}
             </div>
-          </button>
+          </a>
         ))}
       </div>
     </>

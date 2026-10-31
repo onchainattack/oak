@@ -1,6 +1,7 @@
 import { useMemo, type ReactNode } from "react";
 import { siteData } from "./data/generated";
 import { chainOptions, techniqueMatches } from "./lib";
+import { hrefForDoc, hrefForView } from "./routing";
 import type { WorkspaceView } from "./types";
 import ActorsView from "./components/views/ActorsView";
 import DataSourcesView from "./components/views/DataSourcesView";
@@ -230,15 +231,14 @@ function App() {
             <div className="sb-group" key={group.label}>
               <div className="sb-group-label">{group.label}</div>
               {group.items.map(([view, label]) => (
-                <button
+                <a
                   className={"sb-link" + (activeView === view ? " active" : "")}
                   key={view}
-                  type="button"
+                  href={hrefForView(view)}
                   aria-current={activeView === view && !detailNode ? "page" : undefined}
-                  onClick={() => navigateView(view)}
                 >
                   <span className="sb-link-label">{label}</span>
-                </button>
+                </a>
               ))}
             </div>
           ))}
@@ -289,15 +289,15 @@ function App() {
             audit firms, threat-intel teams, and protocol defenders.
           </p>
           <div className="hero-actions">
-            <button type="button" className="button button-primary" onClick={() => navigateView("matrix")}>
+            <a className="button button-primary" href={hrefForView("matrix")}>
               Explore the matrix
-            </button>
-            <button type="button" className="button button-secondary" onClick={() => navigateView("incidents")}>
+            </a>
+            <a className="button button-secondary" href={hrefForView("incidents")}>
               Read incidents
-            </button>
-            <button type="button" className="button button-ghost" onClick={() => navigateView("coverage")}>
+            </a>
+            <a className="button button-ghost" href={hrefForView("coverage")}>
               See coverage gaps
-            </button>
+            </a>
           </div>
 
           <div className="howto-grid">
@@ -305,19 +305,19 @@ function App() {
               <span className="step-num">01</span>
               <h3>Browse the matrix</h3>
               <p>Pick a tactic — access, extraction, laundering, custody compromise, bridge abuse, NFT abuse, or protocol exploit.</p>
-              <button type="button" onClick={() => navigateView("matrix")}>Open matrix →</button>
+              <a href={hrefForView("matrix")}>Open matrix →</a>
             </article>
             <article className="howto-step">
               <span className="step-num">02</span>
               <h3>Open a technique</h3>
               <p>Each technique page lists indicators, detection signals, mitigations, related software, threat actors, and citations.</p>
-              <button type="button" onClick={() => openDoc("techniques/T11.001-third-party-signing-vendor-compromise.md")}>Example technique →</button>
+              <a href="/technique/OAK-T11.001/">Example technique →</a>
             </article>
             <article className="howto-step">
               <span className="step-num">03</span>
               <h3>Validate against incidents</h3>
               <p>Worked examples ground the technique in real cases — loss size, laundering path, recovery outcome, attribution strength.</p>
-              <button type="button" onClick={() => openDoc("examples/2025-02-bybit.md")}>Example incident →</button>
+              <a href={hrefForDoc("examples/2025-02-bybit.md")}>Example incident →</a>
             </article>
           </div>
 
@@ -339,10 +339,11 @@ function App() {
         </section>
       )}
 
-      <section className="section matrix-section" hidden={!!detailNode || activeView !== "matrix"} id="matrix">
+      {!detailNode && activeView === "matrix" && (
+      <section className="section matrix-section" id="matrix">
         <div className="section-heading">
           <p className="eyebrow">Tactics x Techniques</p>
-          <h2>OAK Matrix</h2>
+          <h1>OAK Matrix</h1>
           <p>
             A market-native attack matrix spanning token launch abuse, wallet access,
             laundering, smart-contract exploitation, custody, bridges, NFTs, account
@@ -464,20 +465,26 @@ function App() {
           ))}
         </div>
       </section>
+      )}
 
 
-      <section className="section" hidden={!!detailNode || activeView !== "incidents"} id="examples">
+      {!detailNode && activeView === "incidents" && (
+      <section className="section" id="examples">
         <IncidentsView openDoc={openDoc} />
       </section>
+      )}
 
-      <section className="section actors-section" hidden={!!detailNode || activeView !== "actors"} id="actors">
+      {!detailNode && activeView === "actors" && (
+      <section className="section actors-section" id="actors">
         <ActorsView openGroup={openGroup} />
       </section>
+      )}
 
-      <section className="section mitigations-section" hidden={!!detailNode || activeView !== "mitigations"} id="mitigations">
+      {!detailNode && activeView === "mitigations" && (
+      <section className="section mitigations-section" id="mitigations">
         <div className="section-heading">
           <p className="eyebrow">Mitigations</p>
-          <h2>Reusable defences mapped to techniques</h2>
+          <h1>Reusable defences mapped to techniques</h1>
           <p>
             Each mitigation maps many-to-many to techniques, so a vendor or risk team can
             specify procurement requirements as a coverage matrix rather than a long
@@ -488,11 +495,10 @@ function App() {
         </div>
         <div className="mitigation-grid">
           {siteData.mitigations.map((mitigation) => (
-            <button
-              type="button"
+            <a
               className="mitigation-card"
               key={mitigation.id}
-              onClick={() => openMitigation(mitigation.id)}
+              href={`/mitigation/${mitigation.id}/`}
             >
               <span>{mitigation.id}</span>
               <strong>{mitigation.name}</strong>
@@ -500,15 +506,17 @@ function App() {
                 {mitigation.class} · maps to {mitigation.mapsToTechniques.length} technique
                 {mitigation.mapsToTechniques.length === 1 ? "" : "s"}
               </small>
-            </button>
+            </a>
           ))}
         </div>
       </section>
+      )}
 
-      <section className="section software-section" hidden={!!detailNode || activeView !== "software"} id="software">
+      {!detailNode && activeView === "software" && (
+      <section className="section software-section" id="software">
         <div className="section-heading">
           <p className="eyebrow">Software</p>
-          <h2>Named tools, kits, and malware families</h2>
+          <h1>Named tools, kits, and malware families</h1>
           <p>
             Software is tracked separately from threat actors because the same kit is
             often rented across operators. Categories include drainer-kits,
@@ -518,11 +526,10 @@ function App() {
         </div>
         <div className="software-grid">
           {siteData.software.map((sw) => (
-            <button
-              type="button"
+            <a
               className="software-card"
               key={sw.id}
-              onClick={() => openSoftware(sw.id)}
+              href={`/software/${sw.id}/`}
             >
               <span>{sw.id}</span>
               <strong>{sw.name}</strong>
@@ -530,19 +537,23 @@ function App() {
                 {sw.type}
                 {sw.usedByGroups.length > 0 && ` · ${sw.usedByGroups.join(", ")}`}
               </small>
-            </button>
+            </a>
           ))}
         </div>
       </section>
+      )}
 
-      <section className="section data-sources-section" hidden={!!detailNode || activeView !== "datasources"} id="datasources">
+      {!detailNode && activeView === "datasources" && (
+      <section className="section data-sources-section" id="datasources">
         <DataSourcesView openDoc={openDoc} />
       </section>
+      )}
 
-      <section className="section contributor-section" hidden={!!detailNode || activeView !== "contribute"} id="contributors">
+      {!detailNode && activeView === "contribute" && (
+      <section className="section contributor-section" id="contributors">
         <div className="section-heading">
           <p className="eyebrow">Contributors</p>
-          <h2>How the corpus gets better</h2>
+          <h1>How the corpus gets better</h1>
           <p>
             OAK should become more useful without becoming noisier. Contributions need
             stable IDs, real examples, public citations, attribution-strength language,
@@ -550,47 +561,50 @@ function App() {
           </p>
         </div>
         <div className="contributor-grid">
-          <button type="button" onClick={() => openDoc("CONTRIBUTING.md")}>
+          <a href={hrefForDoc("CONTRIBUTING.md")}>
             <Icon name="contribute" />
             <span>Process</span>
             <strong>Submit a technique or example</strong>
             <small>Use the PR process and keep source quality high.</small>
-          </button>
-          <button type="button" onClick={() => openDoc("TAXONOMY-GAPS.md")}>
+          </a>
+          <a href={hrefForDoc("TAXONOMY-GAPS.md")}>
             <Icon name="matrix" />
             <span>Backlog</span>
             <strong>Work from named taxonomy gaps</strong>
             <small>Prefer filling documented holes over inventing overlapping names.</small>
-          </button>
-          <button type="button" onClick={() => openDoc("COVERAGE.md")}>
+          </a>
+          <a href={hrefForDoc("COVERAGE.md")}>
             <Icon name="coverage" />
             <span>Coverage</span>
             <strong>Correct full / partial / gap claims</strong>
             <small>Coverage is a buyer-facing promise, so it has to stay conservative.</small>
-          </button>
+          </a>
         </div>
       </section>
+      )}
 
-      <section className="section coverage-panel" hidden={!!detailNode || activeView !== "coverage"} id="coverage">
+      {!detailNode && activeView === "coverage" && (
+      <section className="section coverage-panel" id="coverage">
         <CorpusStats openDoc={openDoc} />
         <CoverageMatrix
           onOpenTechnique={openTechnique}
           onOpenDoc={openDoc}
         />
       </section>
+      )}
 
       <footer className="app-foot">
         <div className="foot-section">
           <span className="foot-section-label">framework</span>
-          <a href="#" onClick={(e) => { e.preventDefault(); openDoc("CHANGELOG.md"); }}>Changelog</a>
-          <a href="#" onClick={(e) => { e.preventDefault(); openDoc("ROADMAP.md"); }}>Roadmap</a>
-          <a href="#" onClick={(e) => { e.preventDefault(); openDoc("VERSIONING.md"); }}>Versioning</a>
-          <a href="#" onClick={(e) => { e.preventDefault(); openDoc("BACKLOG.md"); }}>Backlog</a>
-          <a href="#" onClick={(e) => { e.preventDefault(); openDoc("TAXONOMY-GAPS.md"); }}>Gaps</a>
-          <a href="#" onClick={(e) => { e.preventDefault(); openDoc("RESEARCH-CADENCE.md"); }}>Cadence</a>
-          <a href="#" onClick={(e) => { e.preventDefault(); openDoc("COVERAGE-TARGETS.md"); }}>Targets</a>
-          <a href="#" onClick={(e) => { e.preventDefault(); openDoc("GLOSSARY.md"); }}>Glossary</a>
-          <a href="#" onClick={(e) => { e.preventDefault(); openDoc("PRIOR-ART.md"); }}>Prior art</a>
+          <a href={hrefForDoc("CHANGELOG.md")}>Changelog</a>
+          <a href={hrefForDoc("ROADMAP.md")}>Roadmap</a>
+          <a href={hrefForDoc("VERSIONING.md")}>Versioning</a>
+          <a href={hrefForDoc("BACKLOG.md")}>Backlog</a>
+          <a href={hrefForDoc("TAXONOMY-GAPS.md")}>Gaps</a>
+          <a href={hrefForDoc("RESEARCH-CADENCE.md")}>Cadence</a>
+          <a href={hrefForDoc("COVERAGE-TARGETS.md")}>Targets</a>
+          <a href={hrefForDoc("GLOSSARY.md")}>Glossary</a>
+          <a href={hrefForDoc("PRIOR-ART.md")}>Prior art</a>
         </div>
         <div className="foot-section">
           <span className="foot-section-label">data</span>
@@ -603,15 +617,15 @@ function App() {
           <a href="https://github.com/onchainattack/oak" target="_blank" rel="noopener noreferrer">GitHub</a>
           <a href="https://github.com/onchainattack/oak-mcp" target="_blank" rel="noopener noreferrer">oak-mcp (AI integration)</a>
           <a href="https://comparedtowhatbook.com" target="_blank" rel="noopener noreferrer">The book: Compared to What?</a>
-          <a href="#" onClick={(e) => { e.preventDefault(); openDoc("CONTRIBUTING.md"); }}>Contributing</a>
-          <a href="#" onClick={(e) => { e.preventDefault(); openDoc("CODE_OF_CONDUCT.md"); }}>Code of conduct</a>
-          <a href="#" onClick={(e) => { e.preventDefault(); openDoc("SECURITY.md"); }}>Security</a>
-          <a href="#" onClick={(e) => { e.preventDefault(); openDoc("PEER-REVIEW.md"); }}>Peer review</a>
+          <a href={hrefForDoc("CONTRIBUTING.md")}>Contributing</a>
+          <a href={hrefForDoc("CODE_OF_CONDUCT.md")}>Code of conduct</a>
+          <a href={hrefForDoc("SECURITY.md")}>Security</a>
+          <a href={hrefForDoc("PEER-REVIEW.md")}>Peer review</a>
         </div>
         <div className="foot-section">
           <span className="foot-section-label">legal</span>
-          <a href="#" onClick={(e) => { e.preventDefault(); openDoc("DISCLAIMER.md"); }}>Disclaimer</a>
-          <a href="#" onClick={(e) => { e.preventDefault(); openDoc("CORRECTIONS.md"); }}>Corrections & takedowns</a>
+          <a href={hrefForDoc("DISCLAIMER.md")}>Disclaimer</a>
+          <a href={hrefForDoc("CORRECTIONS.md")}>Corrections & takedowns</a>
           <span className="foot-meta">CC-BY-SA 4.0 content · MIT tooling</span>
         </div>
         <div className="foot-bar">

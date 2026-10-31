@@ -542,7 +542,7 @@ transition:
 .signal-panel h2,
 .feature-card h2,
 .coverage-panel h2,
-.section-heading h2 {
+.section-heading :is(h1, h2) {
   margin: 0 0 14px;
   color: var(--ink-strong);
 }
@@ -1220,7 +1220,7 @@ max-width: max-content;
   margin-top: 24px;
 }
 
-.contributor-grid button {
+.contributor-grid button, .contributor-grid > a {
   background: var(--surface-1);
   border: 1px solid var(--line);
   border-radius: var(--r-md);
@@ -1235,12 +1235,12 @@ max-width: max-content;
   transition: border-color 140ms ease, background 140ms ease;
 }
 
-.contributor-grid button:hover {
+.contributor-grid button:hover, .contributor-grid > a:hover {
   border-color: var(--accent-line);
   background: var(--accent-mist);
 }
 
-.contributor-grid button > span:not(.ui-icon) {
+.contributor-grid button > span:not(.ui-icon), .contributor-grid > a > span:not(.ui-icon) {
   color: var(--muted);
   display: block;
 }
@@ -3016,7 +3016,7 @@ color: var(--muted);
   flex: 1;
 }
 
-.howto-step button {
+.howto-step button, .howto-step > a {
   background: transparent;
   border: 0;
   padding: 0;
@@ -3027,7 +3027,7 @@ cursor: pointer;
   transition: color 140ms ease;
 }
 
-.howto-step button:hover {
+.howto-step button:hover, .howto-step > a:hover {
   color: #1de2c4;
 }
 
@@ -3061,7 +3061,7 @@ color: var(--muted);
 }
 
 /* unify section headings — section-heading */
-.section-heading h2 {
+.section-heading :is(h1, h2) {
   margin-bottom: 12px;
 }
 
@@ -4522,3 +4522,21 @@ body.ff-lock { overflow: hidden; }
 }
 .ff-controls .ff-fullscreen { border-color: var(--accent-line); color: var(--accent); background: var(--accent-soft); }
 .ff-controls .ff-fullscreen:hover { color: var(--ink-strong); border-color: var(--accent); }
+
+/* Links to the static month hubs (/incidents/YYYY/MM/) above the incident filters. */
+.incident-hubs {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  font-size: 0.85rem;
+  color: var(--muted, inherit);
+}
+.incident-hubs p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+}
+.incident-hubs a:hover {
+  color: var(--accent);
+}

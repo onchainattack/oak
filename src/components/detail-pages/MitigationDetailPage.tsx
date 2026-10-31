@@ -89,18 +89,13 @@ export default function MitigationDetailPage({
               <h2>Techniques mitigated ({mappedTechniques.length})</h2>
               <div className="technique-grid">
                 {mappedTechniques.map((t) => (
-                  <button
-                    type="button"
-                    className="technique-card"
-                    key={t.id}
-                    onClick={() => onOpenTechnique(t.id)}
-                  >
+                  <a className="technique-card" key={t.id} href={`/technique/${t.id}/`}>
                     <span>{t.id}</span>
                     <strong>{t.name}</strong>
                     <small>
                       {t.maturity || "documented"} · {t.chains.slice(0, 2).join(" / ")}
                     </small>
-                  </button>
+                  </a>
                 ))}
             </div>
           </section>

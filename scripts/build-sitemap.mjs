@@ -1,7 +1,7 @@
 import { readFile, readdir, writeFile, mkdir } from "node:fs/promises";
-import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { TOP_LEVEL_DOCUMENTS } from "./site-documents.mjs";
+import { gitDates, monthHubPath, monthHubs, yearHubPath } from "./seo.mjs";
 
 const root = process.cwd();
 const baseUrl = "https://onchainattack.org";
@@ -13,19 +13,7 @@ const today = new Date().toISOString().slice(0, 10);
 // Stamping every URL with the build date told Google all 988 pages changed on
 // every deploy, so it learns to ignore lastmod and recrawls nothing in priority.
 // Index pages (matrix, incidents, …) aggregate everything and keep the build date.
-const lastCommit = new Map();
-try {
-  const log = execFileSync("git", ["log", "--format=@%cs", "--name-only", "--no-renames"], {
-    cwd: root, encoding: "utf8", maxBuffer: 256 * 1024 * 1024,
-  });
-  let date = null;
-  for (const line of log.split("\n")) {
-    if (line.startsWith("@")) date = line.slice(1);
-    else if (line && date && !lastCommit.has(line)) lastCommit.set(line, date);
-  }
-} catch {
-  // no git (e.g. a tarball build): fall back to the build date
-}
+const lastCommit = gitDates(root).last;
 const lastmodFor = (sourceFile) => (sourceFile && lastCommit.get(sourceFile)) || today;
 
 const urls = [];
@@ -99,6 +87,20 @@ for (const ex of oak.examples ?? []) {
     const slug = ex.file.replace(/\.md$/, "");
     push(`${baseUrl}/document/examples/${slug}`, 0.4, "monthly", `examples/${ex.file}`);
   }
+}
+
+// Month and year hubs (static pages built by build-route-pages.mjs); lastmod is
+// the newest change among the incidents they list.
+const hubs = monthHubs(oak.examples);
+const newest = (files) => files.map((f) => lastCommit.get(`examples/${f}`) ?? today).sort().at(-1) ?? today;
+const yearFiles = new Map();
+for (const [ym, examples] of hubs) {
+  const files = examples.map((e) => e.file);
+  urls.push({ loc: canonicalLoc(`${baseUrl}${monthHubPath(ym)}`), lastmod: newest(files), changefreq: "weekly", priority: 0.6 });
+  yearFiles.set(ym.slice(0, 4), [...(yearFiles.get(ym.slice(0, 4)) ?? []), ...files]);
+}
+for (const [year, files] of yearFiles) {
+  urls.push({ loc: canonicalLoc(`${baseUrl}${yearHubPath(year)}`), lastmod: newest(files), changefreq: "weekly", priority: 0.6 });
 }
 
 const xml = `<?xml version="1.0" encoding="UTF-8"?>

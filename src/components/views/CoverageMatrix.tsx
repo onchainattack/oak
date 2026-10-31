@@ -1,3 +1,4 @@
+import { hrefForDoc } from "../../routing";
 import { useMemo, useState } from "react";
 import { siteData } from "../../data/generated";
 type CoverageTier = "full" | "partial" | "documented" | "gap" | "na";
@@ -137,7 +138,7 @@ export default function CoverageMatrix({
     <>
       <div className="section-heading">
         <p className="eyebrow">Coverage</p>
-        <h2>Vendor × Technique coverage matrix.</h2>
+        <h1>Vendor × Technique coverage matrix.</h1>
         <p>
           {stats.vendor_count} vendors mapped against {stats.technique_count} OAK
           Techniques — {stats.edge_count} declared coverage edges. OAK publishes
@@ -195,13 +196,9 @@ export default function CoverageMatrix({
           </select>
         </label>
 
-        <button
-          type="button"
-          className="cov-stat-pill cov-doc"
-          onClick={() => onOpenDoc("COVERAGE.md")}
-        >
+        <a className="cov-stat-pill cov-doc" href={hrefForDoc("COVERAGE.md")}>
           Methodology
-        </button>
+        </a>
       </div>
 
       <div className="cov-matrix-wrap" tabIndex={0} role="region" aria-label="Vendor coverage matrix, scroll to explore techniques">
@@ -229,9 +226,9 @@ export default function CoverageMatrix({
                     className="cov-tech-header"
                     title={`${t.id} — ${t.name}`}
                   >
-                    <button type="button" className="cov-tech-button" onClick={() => onOpenTechnique(t.id)} aria-label={`${t.id} — ${t.name}`}>
+                    <a className="cov-tech-button" aria-label={`${t.id} — ${t.name}`} href={`/technique/${t.id}/`}>
                       <span className="cov-tech-id">{t.id.replace("OAK-T", "")}</span>
-                    </button>
+                    </a>
                   </th>
                 )),
               )}
@@ -272,9 +269,9 @@ export default function CoverageMatrix({
                         title={title}
                       >
                         {tier ? (
-                          <button type="button" className="cov-cell-button" onClick={() => onOpenTechnique(t.id)} aria-label={title}>
+                          <a className="cov-cell-button" aria-label={title} href={`/technique/${t.id}/`}>
                             <span className="cov-cell-dot" aria-hidden="true" />
-                          </button>
+                          </a>
                         ) : null}
                       </td>
                     );
@@ -325,14 +322,9 @@ export default function CoverageMatrix({
                       </summary>
                       <div className="cov-vendor-tids">
                         {ids.map((tid) => (
-                          <button
-                            key={tid}
-                            type="button"
-                            className="cov-vendor-tid"
-                            onClick={() => onOpenTechnique(tid)}
-                          >
+                          <a key={tid} className="cov-vendor-tid" href={`/technique/${tid}/`}>
                             {tid}
-                          </button>
+                          </a>
                         ))}
                       </div>
                     </details>

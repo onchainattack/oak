@@ -1,3 +1,4 @@
+import { hrefForDoc } from "../../routing";
 import { useMemo } from "react";
 import { siteData } from "../../data/generated";
 import { ATTRIBUTION_COLORS, ATTRIBUTION_ORDER, TACTIC_NAMES_SHORT, TACTIC_ORDER } from "../../lib";
@@ -244,15 +245,10 @@ export default function CorpusStats({ openDoc }: { openDoc: (path: string) => vo
         <p className="stats-hint">Latest 10 worked examples by incident date.</p>
         <div className="recent-list">
           {recentExamples.map((ex) => (
-            <button
-              key={ex.file}
-              type="button"
-              className="recent-item"
-              onClick={() => openDoc(`examples/${ex.file}`)}
-            >
+            <a key={ex.file} className="recent-item" href={hrefForDoc(`examples/${ex.file}`)}>
               <span className="recent-date">{ex.file.slice(0, 7)}</span>
               <span className="recent-title">{ex.title}</span>
-            </button>
+            </a>
           ))}
         </div>
       </div>

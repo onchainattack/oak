@@ -42,14 +42,7 @@ export default function TacticColumn({
               }
             : undefined;
           return (
-            <button
-              type="button"
-              className={"technique-card" + (layerHit ? " has-layer" : "")}
-              key={id}
-              onClick={() => onOpenTechnique(technique.id)}
-              title={layerHit?.comment ?? undefined}
-              style={layerStyle as CSSProperties | undefined}
-            >
+            <a className={"technique-card" + (layerHit ? " has-layer" : "")} key={id} title={layerHit?.comment ?? undefined} style={layerStyle as CSSProperties | undefined} href={`/technique/${technique.id}/`}>
               <span>{technique.id}</span>
               <strong>{technique.name}</strong>
               {technique.aliases.length > 0 && (
@@ -58,7 +51,7 @@ export default function TacticColumn({
               <small>
                 {technique.maturity || "documented"} · {technique.chains.slice(0, 2).join(" / ")}
               </small>
-            </button>
+            </a>
           );
         })}
         {techniqueIds.length === 0 && (

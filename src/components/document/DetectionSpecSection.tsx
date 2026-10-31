@@ -1,3 +1,4 @@
+import { hrefForDoc } from "../../routing";
 import { highlightPseudo } from "../../highlight";
 
 export type SpecRefImpl = { target: string; url?: string; chain?: string };
@@ -62,9 +63,9 @@ export default function DetectionSpecSection({
         <strong>{spec.maturity}</strong> · {spec.license}
         {spec.maintainer && <> · maintained by <code>{spec.maintainer}</code></>}
         {" · "}
-        <button type="button" className="link-row inline" onClick={() => onOpenDoc(spec.path)}>
+        <a className="link-row inline" href={hrefForDoc(spec.path)}>
           source ({spec.path})
-        </button>
+        </a>
       </p>
       {body.scope && <p className="detection-spec-scope">{body.scope}</p>}
 
@@ -137,13 +138,9 @@ export default function DetectionSpecSection({
               <ul>
                 {positives.map((slug) => (
                   <li key={slug}>
-                    <button
-                      type="button"
-                      className="link-row inline"
-                      onClick={() => onOpenExample(slug)}
-                    >
+                    <a className="link-row inline" href={hrefForDoc(`examples/${slug}.md`)}>
                       {slug}
-                    </button>
+                    </a>
                   </li>
                 ))}
               </ul>
