@@ -102,7 +102,7 @@ export default function MarkdownDocument({
                 kind={documentKind}
                 path={path}
                 title={indexEntry.title}
-                meta={indexEntry.meta ?? []}
+                meta={documentHtml.meta}
               />
               <div
                 className="markdown-body"

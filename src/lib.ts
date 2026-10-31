@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { siteData } from "./data/generated";
 import type {
-  DocumentBodies,
   DocumentHtmlState,
+  DocumentMetaRow,
   Technique,
 } from "./types";
 
@@ -10,46 +10,34 @@ export const techniqueById = new Map<string, Technique>(
   siteData.techniques.map((technique) => [technique.id, technique]),
 );
 export const chainOptions = ["all", "EVM", "Solana", "cross-chain", "chain-agnostic"];
-export let documentBodiesCache: DocumentBodies | null = null;
-export let documentBodiesPromise: Promise<DocumentBodies> | null = null;
+// Rendered document HTML by repo path (e.g. "examples/x.md"), fetched one file
+// at a time from /doc-html/ (written by scripts/build-site-data.mjs).
+type DocumentPayload = { html: string; meta: DocumentMetaRow[] };
+const documentHtmlCache = new Map<string, Promise<DocumentPayload | null>>();
 
 export const includes = (value: string, query: string) => value.toLowerCase().includes(query.toLowerCase());
 
-export const documentStateForPath = (bodies: DocumentBodies, path: string): DocumentHtmlState => {
-  const html = bodies[path];
-  return typeof html === "string"
-    ? { status: "loaded", html }
-    : { status: "missing", html: "" };
-};
-
-export const loadDocumentBodies = () => {
-  if (documentBodiesCache) return Promise.resolve(documentBodiesCache);
-  documentBodiesPromise ??= import("./data/documents").then((module) => {
-    documentBodiesCache = module.documentBodies;
-    return module.documentBodies;
-  });
-  return documentBodiesPromise;
+const loadDocumentHtml = (path: string) => {
+  let pending = documentHtmlCache.get(path);
+  if (!pending) {
+    const url = `/doc-html/${path.replace(/\.md$/, "").split("/").map(encodeURIComponent).join("/")}.json`;
+    pending = fetch(url)
+      .then((response) => (response.ok ? (response.json() as Promise<DocumentPayload>) : null))
+      .catch(() => null);
+    documentHtmlCache.set(path, pending);
+  }
+  return pending;
 };
 
 export function useDocumentHtml(path: string): DocumentHtmlState {
-  const [state, setState] = useState<DocumentHtmlState>(() =>
-    documentBodiesCache ? documentStateForPath(documentBodiesCache, path) : { status: "loading", html: "" },
-  );
+  const [state, setState] = useState<DocumentHtmlState>({ status: "loading", html: "" });
 
   useEffect(() => {
     let cancelled = false;
-    if (documentBodiesCache) {
-      setState(documentStateForPath(documentBodiesCache, path));
-      return () => {
-        cancelled = true;
-      };
-    }
-
     setState({ status: "loading", html: "" });
-    loadDocumentBodies().then((bodies) => {
-      if (!cancelled) setState(documentStateForPath(bodies, path));
+    loadDocumentHtml(path).then((doc) => {
+      if (!cancelled) setState(doc ? { status: "loaded", html: doc.html, meta: doc.meta } : { status: "missing", html: "" });
     });
-
     return () => {
       cancelled = true;
     };

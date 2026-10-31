@@ -61,6 +61,7 @@ tools/specs.json
 coverage/manifest.draft.yml
 src/data/generated.ts
 src/data/documents.ts
+public/doc-html/
 public/sitemap.xml
 
 # Vendor outreach (not public yet)

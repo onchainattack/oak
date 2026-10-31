@@ -16,6 +16,23 @@ type DocumentMetaInput = {
 // canonical link, and Open Graph / Twitter tags aligned with the
 // currently-rendered route. Exists outside React's render output so
 // the head mutations are not rerun by component subtree changes.
+//
+// On the first render of a pre-rendered route the head is left alone:
+// scripts/build-route-pages.mjs already wrote the right title (capped at 60
+// chars), a description taken from the page's own text, and the canonical.
+// Overwriting them with the generic templates below gave Googlebot's rendered
+// view ~1,000 near-identical descriptions. Only in-app navigation updates them.
+const canonicalFor = (pathname: string) =>
+  `https://onchainattack.org${pathname === "/" ? "/" : `${pathname.replace(/\/+$/, "")}/`}`;
+const prerenderedPath =
+  document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.getAttribute("href") ===
+  canonicalFor(window.location.pathname)
+    ? window.location.pathname
+    : null;
+const initialTitle = document.title;
+const initialDescription =
+  document.head.querySelector<HTMLMetaElement>('meta[name="description"]')?.content ?? "";
+
 export function useDocumentMeta({
   activeView,
   techniqueRoute,
@@ -73,9 +90,18 @@ export function useDocumentMeta({
       pageLabel = viewLabel[activeView] ?? "";
       pageDescription = `${pageLabel || "OAK"}: open vendor-neutral knowledge base of adversary Tactics and Techniques observed against on-chain assets.`;
     }
-    const pageTitle = pageLabel ? `${pageLabel} · ${baseTitle}` : baseTitle;
+    const pageTitle =
+      window.location.pathname === prerenderedPath
+        ? initialTitle
+        : pageLabel
+          ? `${pageLabel} · ${baseTitle}`
+          : baseTitle;
     const canonicalPath = window.location.pathname === "/" ? "/" : `${window.location.pathname.replace(/\/+$/, "")}/`;
     const canonicalUrl = `https://onchainattack.org${canonicalPath}`;
+    if (window.location.pathname === prerenderedPath) {
+      // Back on the pre-rendered URL (first load, or returning in-app): restore its own head.
+      pageDescription = initialDescription;
+    }
     const setMeta = (selector: string, attribute: "name" | "property", key: string, content: string) => {
       let el = document.head.querySelector<HTMLMetaElement>(selector);
       if (!el) {

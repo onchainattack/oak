@@ -1,4 +1,4 @@
-import { readFile, readdir, writeFile, mkdir } from "node:fs/promises";
+import { readFile, readdir, writeFile, mkdir, rm } from "node:fs/promises";
 import path from "node:path";
 import { marked } from "marked";
 import { TOP_LEVEL_DOCUMENTS } from "./site-documents.mjs";
@@ -593,11 +593,12 @@ const siteData = {
   coverageMatrix,
   specs: specsPayload.specs ?? [],
   specsByTechnique: specsPayload.by_technique ?? {},
-  // Lightweight document index: per-document title + path + meta + toc; HTML body is loaded lazily.
+  // Lightweight document index: per-document title + path + toc. The HTML body and
+  // the header meta rows (2.2 MB across all documents) live in public/doc-html/.
   documentIndex: Object.fromEntries(
     Object.entries(documents).map(([key, doc]) => [
       key,
-      { path: doc.path, title: doc.title, toc: doc.toc, meta: doc.meta },
+      { path: doc.path, title: doc.title, toc: doc.toc },
     ]),
   ),
   intro: firstParagraphAfter(await readFile(rel("README.md"), "utf8"), "# OAK"),
@@ -610,15 +611,17 @@ await writeFile(
   `${banner}\nexport const siteData = ${JSON.stringify(siteData, null, 2)} as const;\n`,
 );
 
-// Heavy document HTML map — split into a separate module so vite can code-split it.
-// Loaded on demand via dynamic import when MarkdownDocument is rendered.
-const documentBodies = Object.fromEntries(
-  Object.entries(documents).map(([key, doc]) => [key, doc.html]),
-);
-await writeFile(
-  rel("src/data/documents.ts"),
-  `${banner}\nexport const documentBodies: Record<string, string> = ${JSON.stringify(documentBodies, null, 2)};\n`,
-);
+// Document HTML, one small JSON file per document under public/doc-html/, fetched
+// on demand by useDocumentHtml. It used to be one 13 MB module holding every
+// body, which each document page had to download before it could render; for
+// Googlebot's renderer that meant an empty page and "Crawled – currently not
+// indexed" on most of the corpus. Gitignored; regenerated per build.
+await rm(rel("public/doc-html"), { recursive: true, force: true });
+for (const [key, doc] of Object.entries(documents)) {
+  const out = rel("public/doc-html", `${key.replace(/\.md$/, "")}.json`);
+  await mkdir(path.dirname(out), { recursive: true });
+  await writeFile(out, JSON.stringify({ html: doc.html, meta: doc.meta ?? [] }));
+}
 
 // Same rendered bodies, plus title/meta, as a plain JSON artifact. Consumed by
 // scripts/build-route-pages.mjs to pre-render each route entrypoint's content

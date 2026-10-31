@@ -22,8 +22,9 @@ export type SearchResult = {
   subtitle: string;
   path: string;
 };
-export type DocumentBodies = Record<string, string>;
+export type DocumentMetaRow = { readonly label: string; readonly value: string };
+
 export type DocumentHtmlState =
   | { status: "loading"; html: "" }
-  | { status: "loaded"; html: string }
+  | { status: "loaded"; html: string; meta: DocumentMetaRow[] }
   | { status: "missing"; html: "" };
