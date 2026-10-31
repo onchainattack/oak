@@ -60,7 +60,10 @@ export const exampleFacts = (example, markdown) => {
   const victim = strip(h1.split(" — ")[0].replace(/\s*\([^)]*\)\s*/g, " "));
   const iso = h1.match(/(\d{4}-\d{2}-\d{2})(?!.*\d{4}-\d{2}-\d{2})/)?.[1] ?? "";
   const ym = iso.slice(0, 7) || String(example.date_prefix ?? "").slice(0, 7);
-  const [y, m] = ym.split("-").map(Number);
+  // Multi-year files ("2011-2025-…") have no month: m is out of range there.
+  const [y, mRaw] = ym.split("-").map(Number);
+  const m = mRaw >= 1 && mRaw <= 12 ? mRaw : 0;
+  const span = String(example.file ?? "").match(/^(\d{4})-(\d{4})-/);
   const lossLine = strip(markdown.match(/^\*\*Loss:\*\*\s*(.+)$/m)?.[1] ?? "").slice(0, 90);
   // "$6.3B", "$821,920", or a range "$2.5–2.7M" (kept as a range).
   const lossMatch = lossLine.match(
@@ -72,7 +75,7 @@ export const exampleFacts = (example, markdown) => {
     ? `$${trim(lossMatch[1])}${lossMatch[2] ? `–${trim(lossMatch[2])}` : ""}${unit}`
     : "";
   const tactic = primaryTechnique(example).match(/OAK-(T\d+)\./)?.[1] ?? "";
-  const verb = /\b(hack|exploit|attack|breach|drain|theft|compromise|scam)/i.test(victim)
+  const verb = !isSingleIncident(example.file ?? "") || /\b(hack|exploit|attack|breach|drain|theft|compromise|scam)/i.test(victim)
     ? ""
     : EXPLOIT_TACTICS.has(tactic) ? "exploit" : HACK_TACTICS.has(tactic) ? "hack" : "";
   return {
@@ -81,7 +84,11 @@ export const exampleFacts = (example, markdown) => {
     iso,
     ym,
     monthLabel: y && m ? `${MONTHS[m - 1]} ${y}` : "",
-    dateLabel: iso ? `${MONTHS_LONG[m - 1]} ${Number(iso.slice(8, 10))}, ${y}` : y && m ? `${MONTHS_LONG[m - 1]} ${y}` : "",
+    dateLabel:
+      iso && m ? `${MONTHS_LONG[m - 1]} ${Number(iso.slice(8, 10))}, ${y}`
+      : y && m ? `${MONTHS_LONG[m - 1]} ${y}`
+      : span ? `${span[1]}–${span[2]}`
+      : y ? String(y) : "",
     loss,
     verb,
     single: isSingleIncident(example.file ?? ""),

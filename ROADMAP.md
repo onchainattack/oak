@@ -98,6 +98,10 @@ Known leftovers: OAK-T11.001 (BitMart described with "1Password"), OAK-T17.005 (
 
 Newest first. Each entry: what, commit, why.
 
+- **2026-10-31 — Social preview card for every incident and Technique** (this commit). _Why:_ a link to OAK shared on X, Telegram or Slack showed the generic banner, so nobody could see from the preview what the page was about. Each of the 683 incident pages and 156 Technique pages now has its own 1200×630 card:
+  - incidents show victim + hack/exploit, date, loss, what happened, the primary Technique and the chains; cohort and multi-year files are labelled "Case study";
+  - Techniques show the ID, name, Tactic and incident count.
+  - Cards are rendered at build time from SVG with `@resvg/resvg-js` and Geist (OFL, from the `geist` package, so CI and local renders match): `scripts/og-image.mjs`, written to `dist/og/` and not committed. `og:image`, `twitter:image`, the image alt and `og:type=article` are set per page, and the Article JSON-LD gets `image`.
 - **2026-10-31 — Search: what Google sees after render, search titles, month hubs, RSS** (this commit). _Why:_ the user asked for SEO "at full power". The site is almost a year old and has a real corpus to show, yet most of it is "Crawled – currently not indexed". Measured with headless Chromium on the rendered DOM, which is what Google indexes. The causes were structural:
   - **Every page carried the whole app.** All views were mounted and hidden with `hidden`: 672 incident cards, the matrix, every mitigation and software card, ~17,800 nodes and ~250K characters. That was ~92% of each page's text, and identical on all 1,000+ URLs. Now only the active view renders; the Binance page drops from 19,240 to 1,455 DOM nodes.
   - **No crawlable links.** Navigation was `<button onClick>` and `href="#"`: 4–6 internal links per page, none to incidents. That is why Search Console lists the sitemap as the only referrer. Every in-app link is now a real `<a href>` with the canonical URL (`hrefForDoc`, `hrefForView`), and one click interceptor keeps SPA navigation. Now 29–840 links per page.

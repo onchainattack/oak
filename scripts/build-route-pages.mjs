@@ -6,6 +6,7 @@ import {
   exampleFacts, exampleSearchTitle, gitDates, monthHubPath, monthHubTitle, monthHubs,
   yearHubPath, yearHubTitle,
 } from "./seo.mjs";
+import { incidentCard, techniqueCard } from "./og-image.mjs";
 
 const root = process.cwd();
 const baseUrl = "https://onchainattack.org";
@@ -86,6 +87,9 @@ const route = (pathname, title, description, priority = 0.5, content = {}) => ({
   // Static pages exist only as pre-rendered HTML: the SPA has no view for them,
   // so it must not mount over them (src/main.tsx checks data-static).
   isStatic: content.isStatic ?? false,
+  // Site path of this page's social card (written under dist/og/); "" = banner.
+  ogImage: content.ogImage ?? "",
+  ogAlt: content.ogAlt ?? "",
 });
 
 const canonicalUrlForPath = (pathname) => `${baseUrl}${pathname === "/" ? "/" : `${pathname}/`}`;
@@ -292,6 +296,15 @@ const htmlForRoute = (template, meta) => {
       /<meta name="twitter:description" content="[^"]+"\s*\/?>/,
       `<meta name="twitter:description" content="${escapeHtml(meta.description)}" />`,
     ],
+    ...(meta.ogImage
+      ? [
+          [/<meta property="og:image" content="[^"]+"\s*\/?>/, `<meta property="og:image" content="${baseUrl}${meta.ogImage}" />`],
+          [/<meta name="twitter:image" content="[^"]+"\s*\/?>/, `<meta name="twitter:image" content="${baseUrl}${meta.ogImage}" />`],
+          [/<meta property="og:image:alt" content="[^"]+"\s*\/?>/, `<meta property="og:image:alt" content="${escapeHtml(meta.ogAlt)}" />`],
+          [/<meta name="twitter:image:alt" content="[^"]+"\s*\/?>/, `<meta name="twitter:image:alt" content="${escapeHtml(meta.ogAlt)}" />`],
+          [/<meta property="og:type" content="[^"]+"\s*\/?>/, `<meta property="og:type" content="article" />`],
+        ]
+      : []),
     [/<\/head>/, pageLd],
     [
       /<div id="root"><\/div>/,
@@ -392,6 +405,11 @@ const stripSnapshot = (html) =>
     .replace(/<div id="root">[\s\S]*<\/div>(?=\s*<\/body>)/, '<div id="root"></div>');
 
 const dates = gitDates(root);
+const writeOg = async (sitePath, png) => {
+  const out = path.join(distDir, sitePath.replace(/^\/+/, ""));
+  await mkdir(path.dirname(out), { recursive: true });
+  await writeFile(out, png);
+};
 const template = stripSnapshot(await readFile(path.join(distDir, "index.html"), "utf8"));
 
 const routes = [
@@ -610,9 +628,19 @@ for (const technique of oak.techniques ?? []) {
     `${technique.id} ${technique.name}: OAK Technique in the on-chain adversary behavior taxonomy.`,
   );
   const examples = examplesByTechnique.get(technique.id) ?? [];
+  const ogImage = `/og/technique/${technique.id}.png`;
+  const parent = (technique.parent_tactics ?? [])[0];
+  await writeOg(ogImage, techniqueCard(root, {
+    id: technique.id,
+    name: technique.name,
+    tactic: parent ? `${parent} ${tacticById.get(parent)?.name ?? ""}`.trim() : "",
+    incidents: examples.length,
+  }));
   routes.push(
     route(`/technique/${technique.id}`, meta.title, meta.description, 0.7, {
       doc: technique.source_file,
+      ogImage,
+      ogAlt: `${technique.id} ${technique.name} — OAK Technique`,
       crumbs: (technique.parent_tactics ?? []).slice(0, 1).map((id) => ({
         name: `${id} ${tacticById.get(id)?.name ?? ""}`.trim(),
         path: `/tactic/${id}/`,
@@ -780,10 +808,36 @@ for (const example of oak.examples ?? []) {
   const description = lead ? `${lead}. ${meta.description}` : meta.description;
   const hub = facts.single && hubs.has(facts.ym) ? monthHubPath(facts.ym) : "";
   const pageUrl = canonicalUrlForPath(`/document/examples/${slug}`);
+  const segments = facts.h1.split(" — ");
+  const chainSegment = segments.length >= 3 ? segments[segments.length - 2] : "";
+  const primary = [example.root_cause_evidence?.[0]?.technique_id, ...(example.techniques ?? [])]
+    .find((id) => techniqueById.has(id)) ?? "";
+  const cardHeadline = `${facts.victim}${facts.verb ? ` ${facts.verb}` : ""}`;
+  // H1 shape: "Victim — what happened — Victim / chains — date". Shorter H1s
+  // carry no mechanism segment; use the page description then.
+  const mechanism = segments.length >= 4 ? segments[1] : meta.description.replace(/…$/, "");
+  const ogImage = `/og/examples/${slug}.png`;
+  await writeOg(ogImage, incidentCard(root, {
+    kicker: facts.single ? "INCIDENT" : "CASE STUDY",
+    headline: cardHeadline,
+    loss: facts.loss,
+    date: facts.dateLabel,
+    mechanism: (() => {
+      // Descriptions taken from a table row start with "| … |" cells.
+      const m = mechanism.replace(/\s*\|\s*/g, " · ").replace(/^\s*·\s*/, "");
+      return m.charAt(0).toUpperCase() + m.slice(1);
+    })(),
+    technique: primary
+      ? `${primary} ${(techniqueById.get(primary)?.name ?? "").replace(/\s*\([^)]*\)\s*$/, "")}`.trim()
+      : "",
+    chains: /\d{4}/.test(chainSegment) ? "" : (chainSegment.includes(" / ") ? chainSegment.split(" / ").slice(1).join(" / ") : chainSegment),
+  }));
   routes.push(
     route(`/document/examples/${slug}`, meta.title, description, 0.4, {
       doc: source,
       headTitle: searchTitle,
+      ogImage,
+      ogAlt: [cardHeadline, facts.dateLabel, facts.loss && `loss ${facts.loss}`].filter(Boolean).join(" · "),
       kicker: `Worked example${example.date_prefix ? ` · ${example.date_prefix}` : ""}`,
       crumbs: [
         { name: "Incidents", path: "/incidents/" },
@@ -794,6 +848,7 @@ for (const example of oak.examples ?? []) {
           "@type": "Article",
           "@id": `${pageUrl}#article`,
           headline: truncate(facts.h1, 110),
+          image: `${baseUrl}${ogImage}`,
           ...(searchTitle ? { alternativeHeadline: searchTitle } : {}),
           description: truncate(description),
           url: pageUrl,
