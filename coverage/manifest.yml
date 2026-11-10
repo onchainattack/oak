@@ -155,6 +155,8 @@ vendors:
     coverage: gap
   - id: OAK-T7.010
     coverage: gap
+  - id: OAK-T7.011
+    coverage: gap
   - id: OAK-T8.001
     coverage: full
     detector_id: D08
@@ -1142,6 +1144,8 @@ vendors:
     coverage: documented
   - id: OAK-T7.010
     coverage: documented
+  - id: OAK-T7.011
+    coverage: documented
   - id: OAK-T8.001
     coverage: documented
   - id: OAK-T8.002
@@ -1224,6 +1228,8 @@ vendors:
     coverage: documented
   - id: OAK-T7.010
     coverage: documented
+  - id: OAK-T7.011
+    coverage: documented
   - id: OAK-T8.001
     coverage: documented
   - id: OAK-T8.002
@@ -1301,6 +1307,8 @@ vendors:
   - id: OAK-T7.009
     coverage: documented
   - id: OAK-T7.010
+    coverage: documented
+  - id: OAK-T7.011
     coverage: documented
   - id: OAK-T8.001
     coverage: documented

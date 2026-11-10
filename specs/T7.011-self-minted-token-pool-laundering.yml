@@ -1,0 +1,71 @@
+oak_techniques: [OAK-T7.011]
+spec_id: oak-detection-T7.011
+version: 0.1.0
+maturity: observed
+maintainer: "@iZonex"
+license: Apache-2.0
+
+scope: |
+  Detect laundering through a token the launderer creates and pairs in a
+  pool they control: stolen funds buy the token from one wallet set and
+  sell it to another, so no transfer links the two. Detection keys on the
+  funding of the token creator and on how concentrated the pool's traders
+  are. Excludes: T7.007 (routing through existing, real liquidity);
+  T7.004 (NFT self-dealing).
+
+data_sources: [token_creation_events, dex_pool_events, funder_graph,
+               hack_blocklists]
+
+detection_logic:
+  description: |
+    Three paths. PATH A (creator-funding taint): the creator of a new token
+    was funded, shortly before creation, by a blocklisted wallet or by one
+    hop from it. PATH B (pool participant concentration): a pool under a
+    week old where almost all volume comes from a few wallets, or wallets
+    only buy or only sell. PATH C (token chain): the seller of one young
+    token funds the creator of the next.
+  pseudocode: |
+    # PATH A — creator-funding taint
+    for each token K created:
+      funders ← inbound_transfers(K.creator, window=[K.created - funding_window, K.created])
+      if any(f.sender in BLOCKLIST or hop1(f.sender) in BLOCKLIST for f in funders):
+        emit(PATH_A, token=K.contract, creator=K.creator, funder=f.sender, severity=high)
+
+    # PATH B — participant concentration on young pools
+    for each pool P with age(P) < max_pool_age:
+      wallets ← traders(P)
+      top_share ← volume_share(top_n(wallets, top_n_wallets))
+      one_way ← share_of_wallets_that_only_buy_or_only_sell(P)
+      if top_share > concentration_threshold or one_way > one_way_threshold:
+        emit(PATH_B, pool=P, traders=len(wallets), top_share, one_way, severity=medium)
+
+    # PATH C — token chain
+    for each token K2 created:
+      for f in inbound_transfers(K2.creator, window=funding_window):
+        if f.sender sold a token K1 with age(K1) < max_pool_age within funding_window:
+          emit(PATH_C, prior_token=K1, next_token=K2, link=f.tx, severity=high)
+
+parameters:
+  funding_window:          { type: duration, default: 1h }
+  max_pool_age:            { type: duration, default: 7d }
+  top_n_wallets:           { type: integer,  default: 3 }
+  concentration_threshold: { type: number,   default: 0.95 }
+  one_way_threshold:       { type: number,   default: 0.8 }
+
+output_alert: [oak_technique, detection_path, severity, chain,
+               token, pool, creator, funder, evidence]
+
+test_fixtures:
+  positive:
+    - "NEAR, 2026-11-06: toughuni8251.near receives 50 NEAR from blocklisted thickhare3997.near at 07:17:01 UTC (7pYMaTmtJiEg3vbTSCwrgUvveqkpcbULJZPqsVverFZ1) and creates olccl-4.smithii.near at 07:19:57 (HHrvqWGn1LC9oCmq635F1AS7FovBiWyu7CAsmtT4W6HQ) — PATH A"
+    - "NEAR, 2026-11-06: sourbelt7061.near (MEILI creator) funds sadfield5984.near with 400 NEAR at 12:13:47 (2x1wQ48voAijQptvuQXq7ECnV1quanM2USy47NK7uqRp), which creates mmli-6.smithii.near at 12:16:47 — PATH C"
+  negative:
+    - "Community meme token launched through a factory with few day-one traders, but its creator is funded from a long-lived wallet with no tainted inflow — not T7.011"
+
+false_positive_modes:
+  - Legitimate factory launches are often young, thin and abandoned; PATH B alone is noisy and should only raise severity when PATH A or C also fires
+  - Blocklists grow over time, so PATH A misses early tokens until labels land; rerun it when a blocklist is updated
+
+mitigations: [OAK-M43, OAK-M04, OAK-M07]
+
+reference_implementations: []

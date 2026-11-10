@@ -28,7 +28,7 @@ Next small slices. Take one or two per session, then ship and log them:
 4. ✅ Native hops over RPC: the EOA nonce walk. It found Autheo's Relay bridge deposits and Polymarket's 28.6M POL split.
 5. ✅ Solana (public RPC balance deltas) and Tron (TronGrid). **Open:** XRP, Zcash.
 6. **Backfill (next session):** 61 pre-2026-09 timelines break a rule (`check_timeline.py --legacy`), and 282 examples have no fund-flow row (`--warn`). Work in batches by size of loss.
-7. **Proposed Technique: self-made token pool laundering** (Bybit 2025 on Tron, Binance 2026 on Tron and NEAR, per Elliptic). The launderer mints a worthless token, pairs it in a pool, puts stolen funds in from one set of wallets and takes them out to another. It is not aggregator routing (T7.007), and T7.004 covers NFTs only. Write it with Elliptic's detection signals once the token addresses are found on-chain.
+7. ✅ **T7.011 Self-Minted Token Pool Laundering** (2026-11-10). **Open:** the 11-02 Tron token and the Bybit 2025 Tron token (Elliptic, ≥\$24M) are not yet identified on-chain.
 7. **Mitigation backfill (what/how/why):** about 200 Technique and mitigation sections are generic (`check_mitigations.py --legacy`). Rewrite them case by case, biggest-loss techniques first. Each bullet needs a concrete control, where it is enforced, and the linked incident it would have stopped.
 8. **Next rule candidate: a defender quick card.** A short block at the top of each incident: the mechanism in one line, the step to check in your own system, the control (linked OAK-Mnn), and addresses to watch (from Key addresses and Fund flow). It should be generated where possible, not hand-written, so it cannot drift from the data below it.
 9. **Follow-ups found while tracing:** follow TranchePool's CCTP burn to its Solana recipient (Solana is now supported); trace the Polymarket POL receivers; trace Bitget's Tron receiver (`TBWNgu…`, 20.59M TRX in).
@@ -99,6 +99,8 @@ Known leftovers: OAK-T11.001 (BitMart described with "1Password"), OAK-T17.005 (
 ### Log
 
 Newest first. Each entry: what, commit, why.
+
+- **2026-11-10 — New Technique T7.011, Self-Minted Token Pool Laundering; Binance's six NEAR tokens identified on-chain.** Elliptic published the method without addresses. OAK matched the tickers against the newest Ref Finance pools, found all six (`*.smithii.near`, pools 9005–9013) with creation times agreeing to the minute, and showed that four creators were funded directly by accounts on Elliptic's Binance blocklist (which grew from 2,598 to 22,223 addresses) and a fifth by the previous creator. Commit: this one. Why: the method was tagged T7.007 as a stopgap, but the control is different. Here a defender checks the creator's funding and the pool's participants, not route complexity.
 
 - **2026-11-10 — Binance: laundering 11-01 → 11-10, NEAR meme tokens.** Added SomaXBT's THORChain numbers for the Tron route, the SOL → USDC → ETH → BTC route through THORChain after it restarted on 11-04, Elliptic's six home-made NEAR tokens used as a pool mixer (11-05 to 11-08) with the signals that tell them apart from real meme coins, the WSJ report on services that kept processing after the FBI request, and an OAK check that the Solana receiver is now empty. Commit: this one. Why: the laundering moved to new routes, and the home-made token pool is a pattern defenders can screen for. It is tagged T7.007 for now; it needs its own Technique (see Next).
 

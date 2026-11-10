@@ -4,6 +4,10 @@ All notable changes to OAK are documented here. The format follows [Keep a Chang
 
 ## [Unreleased]
 
+### Added — new Technique
+
+- **[`OAK-T7.011`](techniques/T7.011-self-minted-token-pool-laundering.md) — Self-Minted Token Pool Laundering** (156 → 157). The launderer mints a worthless token, pairs it in a pool they control, buys it with stolen funds from one wallet set and sells it to another, so no transfer links the two. Observed with the Binance 2026 proceeds on NEAR: six tokens, all identified on-chain by OAK, four of whose creators were funded directly by Elliptic-blocklisted accounts. Elliptic reports the same method on Tron for Bybit 2025. It is not aggregator routing (T7.007), which hides funds in real liquidity; here the giveaway is the creator's funding and the pool's handful of traders. Spec `specs/T7.011-*.yml`; coverage manifest synced. The T7 tactic page now lists T7.007–T7.011, which it had been missing.
+
 Recorded here rather than held to the next version bump because one item is a **reclassification consumers may have stored** — the same reasoning `VERSIONING.md` applies to deprecations.
 
 ### Changed — classification correction (read this first if you consume OAK classifications)

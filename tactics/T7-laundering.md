@@ -25,6 +25,11 @@ T7 follows T5. T7 paths often map back to T8 (Operational Reuse) — laundering 
 - OAK-T7.004 — NFT Wash-Laundering
 - OAK-T7.005 — Privacy-Chain Hops
 - OAK-T7.006 — DeFi Yield-Strategy Laundering
+- OAK-T7.007 — DEX Aggregator Routing Laundering
+- OAK-T7.008 — Stablecoin Issuer Freeze-Asymmetry Laundering
+- OAK-T7.009 — Sanctioned-Entity and Illicit-Purpose Financing
+- OAK-T7.010 — Travel Rule Evasion
+- OAK-T7.011 — Self-Minted Token Pool Laundering
 
 ## Maintainer notes
 
