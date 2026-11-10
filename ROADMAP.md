@@ -28,6 +28,7 @@ Next small slices. Take one or two per session, then ship and log them:
 4. ✅ Native hops over RPC: the EOA nonce walk. It found Autheo's Relay bridge deposits and Polymarket's 28.6M POL split.
 5. ✅ Solana (public RPC balance deltas) and Tron (TronGrid). **Open:** XRP, Zcash.
 6. **Backfill (next session):** 61 pre-2026-09 timelines break a rule (`check_timeline.py --legacy`), and 282 examples have no fund-flow row (`--warn`). Work in batches by size of loss.
+7. **Proposed Technique: self-made token pool laundering** (Bybit 2025 on Tron, Binance 2026 on Tron and NEAR, per Elliptic). The launderer mints a worthless token, pairs it in a pool, puts stolen funds in from one set of wallets and takes them out to another. It is not aggregator routing (T7.007), and T7.004 covers NFTs only. Write it with Elliptic's detection signals once the token addresses are found on-chain.
 7. **Mitigation backfill (what/how/why):** about 200 Technique and mitigation sections are generic (`check_mitigations.py --legacy`). Rewrite them case by case, biggest-loss techniques first. Each bullet needs a concrete control, where it is enforced, and the linked incident it would have stopped.
 8. **Next rule candidate: a defender quick card.** A short block at the top of each incident: the mechanism in one line, the step to check in your own system, the control (linked OAK-Mnn), and addresses to watch (from Key addresses and Fund flow). It should be generated where possible, not hand-written, so it cannot drift from the data below it.
 9. **Follow-ups found while tracing:** follow TranchePool's CCTP burn to its Solana recipient (Solana is now supported); trace the Polymarket POL receivers; trace Bitget's Tron receiver (`TBWNgu…`, 20.59M TRX in).
@@ -98,6 +99,8 @@ Known leftovers: OAK-T11.001 (BitMart described with "1Password"), OAK-T17.005 (
 ### Log
 
 Newest first. Each entry: what, commit, why.
+
+- **2026-11-10 — Binance: laundering 11-01 → 11-10, NEAR meme tokens.** Added SomaXBT's THORChain numbers for the Tron route, the SOL → USDC → ETH → BTC route through THORChain after it restarted on 11-04, Elliptic's six home-made NEAR tokens used as a pool mixer (11-05 to 11-08) with the signals that tell them apart from real meme coins, the WSJ report on services that kept processing after the FBI request, and an OAK check that the Solana receiver is now empty. Commit: this one. Why: the laundering moved to new routes, and the home-made token pool is a pattern defenders can screen for. It is tagged T7.007 for now; it needs its own Technique (see Next).
 
 - **2026-11-03 — BTCPay Server, August 2026 macaroon exposure, plus the November hot-wallet wave.** All versions before 2.4.2 let an unauthenticated remote attacker read LND `.macaroon` files, and merchant Lightning nodes were drained (Foundation and Citadel21 named in the press). The root bug is undisclosed, so confidence is `confirmed` for the effect only. On 11-01 a second wave swept hot wallets on 2.4.1 and earlier through "a different method"; it is filed as a follow-on with BTCPay's published BTC destination traced by OAK. Mapped T15.004 (closest fit) + T11.012. Why: OAK lacked the incident, and the November wave made it current. Next: a TAXONOMY-GAPS note on credential exposure in self-hosted software, which T15.004 fits only partly.
 
