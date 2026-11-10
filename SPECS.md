@@ -260,4 +260,4 @@ Maturity legend:
 
 ---
 
-Updated automatically when `tools/build_specs_index.py` runs as part of `npm run site:data`. Last regenerated from corpus state at `2026-11-10T12:36:47+00:00`.
+Updated automatically when `tools/build_specs_index.py` runs as part of `npm run site:data`. Last regenerated from corpus state at `2026-11-10T14:17:46+00:00`.

@@ -64,6 +64,10 @@ If something on OAK is wrong about you or your work, write to us. We'll fix it.
 
 ## Correction log
 
+### 2026-11-10 — Binance (2026-10-29): Bitcoin exits
+
+On 10-31 `examples/2026-10-binance-devops-laptop-service-container-hot-wallet-drain.md` called the 10 BTC transfer at 10-31 06:20:20 UTC the "first BTC exit" from the stolen-BTC cluster. A re-trace on 11-10 found eight exits from `bc1qqjvps2qe8tva6zjev0un4qrwhv62pxghgnj9we` between 10-30 20:23 and 11-01 03:00; that one was the fifth. The 10-31 trace had read only the most recent transactions. The timeline row and the 10-31 snapshot now say so, and all eight exits are in the fund flow. The 10-31 statements that the XRP and Tron TRX holdings were untouched were true when written. Both moved later (Tron 10-31 14:50 and 18:44, XRP 11-02 03:52), and this is now in the timeline.
+
 ### 2026-10-31 — Binance (2026-10-29): "additional points of breach" restored to Binance's own words
 
 In commit `beafc99` OAK relabelled "additional points of breach" in `examples/2026-10-binance-devops-laptop-service-container-hot-wallet-drain.md` as a press paraphrase. That was wrong. The phrase is in Binance's own post of 2026-10-30 08:47 UTC: "our initial investigation suggested that the security incident may have involved a compromised laptop, however our subsequent investigation has uncovered additional points of breach. This was a complex attack." The quote, its timeline row and the open-questions line now cite that post (`[binancebreachpoints2026]`, <https://x.com/binance/status/2116089661408108712>).
