@@ -64,6 +64,10 @@ If something on OAK is wrong about you or your work, write to us. We'll fix it.
 
 ## Correction log
 
+### 2026-11-26 — Sweep of 2026-11-17 → 11-26: paraphrases that stood inside quotation marks
+
+Fourteen examples were committed on 2026-11-26 (`2f77fdd`). A check the same day fetched every cited source and searched for each quoted string. About twenty were paraphrases, not the source's words. They were changed to the exact wording, or the quotation marks were removed and the text labelled as relayed. Files: the Stratum V1 / BGP hijack (four Braiins quotes), Wagyu / XMR1 (two Bitquery quotes), K3 Capital, Reental RNT Lend, Aramid Bridge (one bracketed insertion; the thread's posts are now cited individually), Fusionist and Cyber (text from The Block, which OAK could not open directly, is no longer quoted), Fluidkey (two quotes, fixed before the first commit). No figure, date or address changed. In the LUKSO file the sentence saying the removal steps were not available was replaced with the steps themselves.
+
 ### 2026-11-10 — Binance (2026-10-29): Bitcoin exits
 
 On 10-31 `examples/2026-10-binance-devops-laptop-service-container-hot-wallet-drain.md` called the 10 BTC transfer at 10-31 06:20:20 UTC the "first BTC exit" from the stolen-BTC cluster. A re-trace on 11-10 found eight exits from `bc1qqjvps2qe8tva6zjev0un4qrwhv62pxghgnj9we` between 10-30 20:23 and 11-01 03:00; that one was the fifth. The 10-31 trace had read only the most recent transactions. The timeline row and the 10-31 snapshot now say so, and all eight exits are in the fund flow. The 10-31 statements that the XRP and Tron TRX holdings were untouched were true when written. Both moved later (Tron 10-31 14:50 and 18:44, XRP 11-02 03:52), and this is now in the timeline.

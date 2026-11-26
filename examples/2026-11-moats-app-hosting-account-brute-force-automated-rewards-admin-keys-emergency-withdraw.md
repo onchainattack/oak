@@ -34,6 +34,7 @@ Stages: **Design** (backend holds admin keys), **Entry** (hosting-account brute 
 Key addresses:
 
 - Primary receiving address of the withdrawn funds (Avalanche, named by the operator) — [`0x8ADDbea8D2a404a1C21F53d3fc4835d2F81B6Ee4`](https://snowtrace.io/address/0x8ADDbea8D2a404a1C21F53d3fc4835d2F81B6Ee4)
+- **The same address on Ethereum sold the LYX taken in the LUKSO email-recovery incident two days earlier** (traced by OAK, 2026-11-26): `0x8addbea8d2a404a1c21f53d3fc4835d2f81b6ee4` received 1,498,110.68 bridged LYX on 2026-11-18 between 00:50 and 08:13 UTC, sold it, and forwarded 52.4225 ETH. See [`examples/2026-11-lukso-email-recovery-backend-flaw-attacker-controller-keys-added-to-universal-profiles.md`](2026-11-lukso-email-recovery-backend-flaw-attacker-controller-keys-added-to-universal-profiles.md). One wallet handled both sets of proceeds; who controls it is not established, and neither operator has linked the incidents. On Ethereum the address also received 43,674.40 USDC and sent 23.364 and 1.978 ETH to [`0xeb76920f6e6f8e96d3ea464997b17311fba0f061`](https://etherscan.io/address/0xeb76920f6e6f8e96d3ea464997b17311fba0f061) on 2026-11-20 at 05:06 and 05:47 UTC; OAK has not matched those to the Moats proceeds transfer by transfer.
 - Swap counterparty that returned USDC for ARENA and other tokens (traced by OAK; type not confirmed, likely a DEX pool) — [`0x8f10b468b06c6fd214b65f87778827f7d113f996`](https://snowtrace.io/address/0x8f10b468b06c6fd214b65f87778827f7d113f996)
 - Recipient of 43,715.31 USDC (traced by OAK) — [`0x4494b8cbc69c794d82bd2d820a6ff6f62d7d841a`](https://snowtrace.io/address/0x4494b8cbc69c794d82bd2d820a6ff6f62d7d841a). This address has older, unrelated 1inch activity (2026-07-06), so it may be a pre-existing wallet.
 - Recipient of the HEFE (traced by OAK) — [`0xc9d1fe7d3a90a9bca779303ae1f446ab5a32e545`](https://snowtrace.io/address/0xc9d1fe7d3a90a9bca779303ae1f446ab5a32e545). Lookalike warning: the receiving address also sent 1 unit of token `0x7febcd576687661cb66ebe05c2c71a8bb6c4e5f7` to [`0xc9d9efa5769cff174e3721faaf3913703dd4e545`](https://snowtrace.io/address/0xc9d9efa5769cff174e3721faaf3913703dd4e545) at 05:14:55, which shares its first and last characters with the HEFE recipient. They are different addresses.
@@ -43,7 +44,7 @@ Key addresses:
 
 ## Fund flow
 
-Avalanche legs were traced by OAK with `tools/explorer.py` as of 2026-11-26. The senders `0x42f33a4f…` and `0xcf65744c…` are the addresses that sent the ARENA and HEFE to the receiving address; that they are Moat contracts is OAK's inference, since the operator names no Moat addresses. The Robinhood Chain leg is not traced.
+Avalanche legs were traced by OAK with `tools/explorer.py` as of 2026-11-26. The senders `0x42f33a4f98bc5ba0af733c624683580a013d1c80` and `0xcf65744c955a292d11de2a4184e9fabedbfc7b40` are the addresses that sent the ARENA and HEFE to the receiving address; that they are Moat contracts is OAK's inference, since the operator names no Moat addresses. The Robinhood Chain leg is not traced.
 
 ```oak-flow
 as_of: 2026-11-26T12:00Z

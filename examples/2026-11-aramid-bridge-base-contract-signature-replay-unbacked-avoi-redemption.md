@@ -18,7 +18,7 @@ Stages: **Flaw** (Base bridge contract accepts replays) → **Preparation** (sma
 
 | When | What happened | OAK |
 |---|---|---|
-| Before 2026-11-21 (undisclosed) | The Aramid Base bridge contract (`0xc7faa8...c263`, full address not published) accepts a signed claim more than once. Whether this existed from deployment or a later change is undisclosed. The operator says a contract fix "is done and our auditors are verifying it". | **T10.003** |
+| Before 2026-11-21 (undisclosed) | The Aramid Base bridge contract (`0xc7faa8...c263`, full address not published) accepts a signed claim more than once. Whether this existed from deployment or a later change is undisclosed. The operator says a contract fix "is done and our auditors are verifying it right now". | **T10.003** |
 | 2026-11-21 12:22 to 2:04 PM | "Small probes with USDC (to Arbitrum), cbBTC and 1 ALGO" (Voi Network). | — |
 | 2026-11-21 2:12 to 3:12 PM | 13,154 ALGO deposited on Algorand came back as 71,907 aALGO on Base. Bridged back, "that drained about 70K real ALGO from Aramid on Algorand, leaving 154 ALGO" (Voi Network). | **T10.003** |
 | 2026-11-21 4:00 PM | First aVOI deposit of 146,858 aVOI, "paid out 16 times on Base" (Voi Network). | **T10.003** |
@@ -29,7 +29,7 @@ Stages: **Flaw** (Base bridge contract accepts replays) → **Preparation** (sma
 | 2026-11-21 6:34 to 6:36 PM | Aramid rekeys the bridge accounts on Algorand and Voi with the note "rekeyed by aramid"; "the replays stopped" (Voi Network). The operator: "Bridging is paused and both the Algorand and Voi escrows have been rekeyed." | response |
 | 2026-11-21 6:56 to 7:07 PM | The attacker tried other tokens; the transfers "show as Pending" (Voi Network). | — |
 | 2026-11-21 7:22 PM | The attacker moved about \$4.1K USDC out on Base to an unidentified contract `0xa5c1ce36...` (Voi Network; full address not published). | — |
-| 2026-11-21 21:06 UTC | Operator's snapshot cutoff: it will "remove [Base aVOI] from the bridge and refund anyone who held it before 21:06 UTC Nov 21" and tells users not to trade Base aVOI (address given only in shortened form, full address not published). | response |
+| 2026-11-21 21:06 UTC | Operator's snapshot cutoff: it will "remove it from the bridge and refund anyone who held it before 21:06 UTC Nov 21" ("it" is Base aVOI) and tells users not to trade Base aVOI (address given only in shortened form, full address not published). | response |
 | 2026-11-22 06:21 UTC | Voi Network publishes its exploit report. | response |
 | 2026-11-22 17:08 UTC | The operator posts its incident thread: bridge paused, escrows rekeyed, fix done and being verified by auditors, bridge to reopen after the EVM contracts are upgraded and unbacked aVOI cleaned up; a full post-mortem "will follow". | response |
 | 2026-11-24 08:35 UTC | The operator says two recovery options are under review "to make sure all affected users are made whole", and gives the attacker 48 hours to return the funds, after which it proceeds "with law enforcement and tracing partners". | response |
@@ -80,5 +80,5 @@ Edge times use the report's clock times read as UTC, which the source does not c
 
 ## Public references
 
-- `[aramid2026]` — Aramid Bridge (@AramidFinance), "Aramid Bridge Incident Update" thread, posts 1–7 (2026-11-22): <https://x.com/AramidFinance/status/2124550598267928832>; recovery update and 48-hour notice (2026-11-24): <https://x.com/AramidFinance/status/2125146372802552023>, <https://x.com/AramidFinance/status/2125146377185341877>
+- `[aramid2026]` — Aramid Bridge (@AramidFinance), "Aramid Bridge Incident Update" thread, posts 1–7 (2026-11-22): <https://x.com/AramidFinance/status/2124550598267928832>, post 2 <https://x.com/AramidFinance/status/2124550603351445607>, post 3 (loss figures) <https://x.com/AramidFinance/status/2124550607029625072>, post 4 (unbacked aVOI, refund cutoff) <https://x.com/AramidFinance/status/2124550610947133569>, post 5 (fix status) <https://x.com/AramidFinance/status/2124550615384953018>, post 6 <https://x.com/AramidFinance/status/2124550619205681331>, post 7 <https://x.com/AramidFinance/status/2124550623882629436>; recovery update and 48-hour notice (2026-11-24): <https://x.com/AramidFinance/status/2125146372802552023>, <https://x.com/AramidFinance/status/2125146377185341877>
 - `[voi2026]` — Voi Network (@Voi_Net), "Aramid Bridge Exploit Report, Nov 21, 2026" (2026-11-22): <https://x.com/Voi_Net/status/2124387898757611938>
