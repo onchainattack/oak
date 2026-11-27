@@ -1,47 +1,45 @@
-# Nomad Bridge — Ethereum / Moonbeam / Avalanche / Evmos — 2022-08-01
+# Nomad Bridge — a contract upgrade left the trusted root at 0x00, so any message counted as proven and hundreds of addresses copied the exploit — Nomad / Ethereum and other chains — 2022-08-01
 
-**Loss:** \~\$190M extracted; \~\$22M recovered post-event.
-**OAK Techniques observed:** OAK-T10.002 (Message-Verification Bypass) — primary.
-**Attribution:** **pseudonymous** — initial single-attacker exploit followed by widespread "mob attack" copy-paste exploitation by hundreds of distinct addresses. A key suspect in the initial exploit was extradited to the United States in 2024 per `[trmlabs2024nomadextradition]` (see Public References).
+**Loss:** **over \$190M** drained from the Nomad bridge ([Halborn post-mortem](https://halborn.com/the-nomad-bridge-hack-a-deeper-dive): TVL fell from \$190,740,000 to \$1,794 within hours; [Mandiant](https://cloud.google.com/blog/topics/threat-intelligence/dissecting-nomad-bridge-hack): "Over $190 million"). **Returned:** Halborn reports over \$33M returned to Nomad's wallet by whitehat hackers as of 2022-08-15; Mandiant, writing on 2022-11-29, reports "Ultimately $36 million of the $190 million stolen was returned." The two figures are from different dates and both are kept.
 
-**Key teaching point:** Nomad is structurally important to OAK because the multi-actor "mob attack" signature is unique to the T10.002 templable-flaw class and complicates the standard attribution framing OAK provides through `actors/`. Contributors writing future T10.002 examples should preserve the **single-attacker vs mob-attack** distinction explicitly: the initial exploiter is potentially attributable; the mob-attack participants are typically not, and many are not professional adversaries. OAK's framework does not currently provide a clean way to express "this incident has a single-actor primary attacker plus opportunistic multi-actor secondary participants" — a v0.x consideration for the OAK-Gnn axis.
+**OAK Techniques observed:** **OAK-T10.002** (Message-Verification Bypass — *primary*. After a contract upgrade the Replica contract accepted the zero root as valid, so unproven messages passed the check in `process`; see [`techniques/T10.002-message-verification-bypass.md`](../techniques/T10.002-message-verification-bypass.md)).
+
+**Attribution:** **pseudonymous** for the exploitation as a whole: Mandiant describes many separate addresses and groups them by behaviour without naming anyone. [TRM Labs](https://www.trmlabs.com/resources/blog/key-suspect-in-190m-nomad-bridge-exploit-extradited-to-the-united-states) reports that Alexander Gurevich, a Russian-Israeli dual national, was arrested in Israel with US authorities and that he "now faces multiple federal charges in the US, including wire fraud, conspiracy, and money laundering." Charges are allegations; no source opened here reports a conviction.
+
+**Key teaching point:** **Test the verification function against the zero value and every other default state after every upgrade, before the upgrade goes live.** The check that decides whether a message is proven treated the zero root as acceptable, and once one exploit transaction worked, anyone could replay it with their own address.
 
 ## Summary
 
-On August 1, 2022, a routine contract upgrade to the Nomad Bridge initialised the contract's "trusted root" value to `0x00`. Because `0x00` was also the sentinel value used to indicate an *untrusted* root, the bridge's `process()` verification function consequently treated all incoming messages as already-proven. The first attacker discovered the exploit and extracted assets; within hours, hundreds of distinct addresses had copy-pasted the exploit transaction — substituting only their own destination address — and continued draining the bridge in what the Mandiant write-up `[mandiantnomad2022]` characterised as a "decentralized robbery." The total loss was \~\$190M across ETH, USDC, WBTC, and various ERC-20 tokens. \~\$22M was subsequently returned by some of the participating addresses in response to a 10% bounty offered by the Nomad team.
+A Nomad upgrade initialised the trusted root to `0x00`. [Halborn's explainer](https://www.halborn.com/blog/post/explained-the-nomad-hack-august-2022) says this "matches the value for an untrusted root, so all messages are automatically viewed as proven." Halborn's deeper dive, which cites Nomad's post-mortem, traces it to "an implementation bug in a June 21 smart contract upgrade." Once the flaw was used, [Halborn](https://www.halborn.com/blog/post/explained-the-nomad-hack-august-2022) reports that anyone could reuse a successful exploit transaction by submitting it with their own address, and [Mandiant](https://cloud.google.com/blog/topics/threat-intelligence/dissecting-nomad-bridge-hack) reports many addresses that took funds.
 
-For OAK's purposes, Nomad is the canonical T10.002 case because the failure mode is unambiguous from the public record (the trusted-root-vs-untrusted-root collision is documented in multiple post-mortems), the dollar loss is large, and the multi-actor "mob attack" exploitation pattern is unique to T10.002 (when the underlying flaw is templable, the attack stops being attributable to a single actor and becomes opportunistic).
+The bridge's message verification is described by Halborn as using an "optimistic mechanism" with a timer. Mandiant describes an off-chain agent, the Updater, that attests message data. None of the opened pages says that the Updater or any watcher failed, was offline or was censored: the zero root made the on-chain check accept messages.
 
 ## Timeline (UTC)
 
-| When | Event | OAK ref |
+Stages: **Flaw** (upgrade) → **Take** (exploit and copies) → **Money** (returns, laundering) → **Response**. The block time comes from Halborn; other rows carry the date the source gives.
+
+| When | What happened | OAK |
 |---|---|---|
-| Pre-event | Nomad deploys a routine contract upgrade; trusted-root state initialised to `0x00` | (precursor) |
-| 2022-08-01 (T+0) | First attacker discovers the verification flaw and extracts assets | **T10.002 initial exploit** |
-| 2022-08-01 (T+0 to T+~hours) | Hundreds of distinct addresses copy-paste the exploit transaction with their own destination address; \~\$190M total drained | **T10.002 "mob attack"** |
-| 2022-08-02 onward | Nomad team announces incident; offers 10% bounty for return of funds | (response) |
-| Following weeks | \~\$22M returned by some participating addresses | (partial recovery) |
-| 2024 | Key suspect in the initial single-attacker exploit extradited to the United States (per TRM Labs reporting) | (legal status) |
+| 2022-06-21 (per Nomad's post-mortem as quoted by [Halborn](https://halborn.com/the-nomad-bridge-hack-a-deeper-dive)) | Smart contract upgrade with an implementation bug; replicas initialised with a zero committed root had `confirmAt[bytes32(0)]` set to 1, so `acceptableRoot(bytes32(0))` returned true. Other pages disagree on the date (see Root-cause evidence). | **T10.002** |
+| 2022-08-01 21:32:31 | First exploit transactions in Ethereum block 15259101 ([Halborn](https://halborn.com/the-nomad-bridge-hack-a-deeper-dive)); unproven messages processed | **T10.002** |
+| 2022-08-01, within hours | Other addresses copy the transaction with their own address; TVL falls from \$190,740,000 to \$1,794 ([Halborn](https://halborn.com/the-nomad-bridge-hack-a-deeper-dive)) | **T10.002** |
+| 2022-08 to 2022-11 | Mandiant groups the taking addresses; some returned funds to a Nomad recovery address, others sent funds through Tornado Cash and other services ([Mandiant](https://cloud.google.com/blog/topics/threat-intelligence/dissecting-nomad-bridge-hack)). Individual transaction hashes: undisclosed on the pages opened. | — |
+| After the exploit | Nomad offered a bounty of 10% of funds with no legal action if the rest was returned, plus a Whitehat NFT ([Mandiant](https://cloud.google.com/blog/topics/threat-intelligence/dissecting-nomad-bridge-hack)); over \$33M returned by 2022-08-15 ([Halborn](https://halborn.com/the-nomad-bridge-hack-a-deeper-dive)) | response |
+| 2025-05 (page date) | TRM Labs reports arrest and extradition approval of a suspect, about \$88M traced to laundering wallets ([TRM Labs](https://www.trmlabs.com/resources/blog/key-suspect-in-190m-nomad-bridge-exploit-extradited-to-the-united-states)) | response |
 
-## What defenders observed
+Key addresses: none printed in full on the pages opened; undisclosed here.
 
-- **Pre-event (audit / upgrade-review layer):** the trusted-root-vs-untrusted-root collision was introduced by an upgrade. Pre-deployment review of the upgrade's effect on verification-state initialisation would have identified the issue. This is the canonical T10.002 pre-deployment signal.
-- **At-event (single-attacker phase):** a single transaction processed an invalid-proof message — the kind of event that a post-upgrade smoke-test simulating a randomly-chosen invalid message would have caught immediately.
-- **At-event (mob-attack phase):** repeated processing of structurally-identical exploit transactions from distinct senders within minutes — the canonical T10.002 multi-actor signature. This is the runtime detection signal that catches T10.002 *during* an active exploit, but at that point the bridge is already being drained.
+## Root-cause evidence
 
-## What this example tells contributors writing future Technique pages
-
-- **T10.002 detection lives at audit / upgrade review.** Once the flaw is in production, the only meaningful detection signal is the multi-actor exploitation pattern, by which point the bridge is already being drained. T10.002 mitigation is overwhelmingly pre-deployment.
-- **The "mob attack" signature is unique to T10.002.** When the verification flaw is templable, attribution fragments across hundreds of opportunistic actors with mixed motivations (financial, "I'm just experimenting", "I'll return it"). Contributors writing future T10.002 examples should expect the multi-actor pattern when the underlying flaw is templable; single-actor T10.002 cases (Wormhole — see `examples/2022-02-wormhole.md`) are the exception rather than the rule.
-- **Partial recovery via bounty is realistic for T10.002.** Some "mob attack" participants are not professional adversaries and will return funds in response to a published bounty — particularly when their addresses are identifiable (e.g., funded from a CEX with KYC). Contributors should not characterise post-event recovery as "lucky"; for T10.002 mob-attack cases it is a structural feature.
+- **Technique:** OAK-T10.002
+- **Source:** <https://halborn.com/the-nomad-bridge-hack-a-deeper-dive>; <https://www.halborn.com/blog/post/explained-the-nomad-hack-august-2022>; <https://cloud.google.com/blog/topics/threat-intelligence/dissecting-nomad-bridge-hack>
+- **Source type:** security-firm
+- **Confidence:** corroborated
+- **Evidence:** Halborn, citing Nomad's post-mortem, and Mandiant agree on the zero trusted root making all messages count as proven. Dates disagree: Halborn gives the faulty upgrade as June 21 (per Nomad) and the exploit as 2022-08-01; the Immunefi analysis (not opened: its page returned 403) is reported by a search summary to give April 21. Nomad's own root-cause post (Medium, 403, not opened) is also not read. Not established by an opened page: why no one stopped the exploit during the hours it ran.
 
 ## Public references
 
-- `[mandiantnomad2022]` — Mandiant / Google Cloud forensic write-up (primary citation).
-- [Halborn — Explained: The Nomad Hack (August 2022)](https://www.halborn.com/blog/post/explained-the-nomad-hack-august-2022) — technical post-mortem.
-- [Immunefi — Hack Analysis: Nomad Bridge, August 2022](https://medium.com/immunefi/hack-analysis-nomad-bridge-august-2022-5aa63d53814a) — second technical post-mortem.
-- [TRM Labs — Key Suspect in \$190M Nomad Bridge Exploit Extradited to the United States](https://www.trmlabs.com/resources/blog/key-suspect-in-190m-nomad-bridge-exploit-extradited-to-the-united-states) — 2024 update on the legal status of the initial single-attacker case.
-
-## Discussion
-
-Nomad is structurally important to OAK because the multi-actor "mob attack" signature is unique to the T10.002 templable-flaw class and complicates the standard attribution framing OAK provides through `actors/`. Contributors writing future T10.002 examples should preserve the **single-attacker vs mob-attack** distinction explicitly: the initial exploiter is potentially attributable; the mob-attack participants are typically not, and many are not professional adversaries. OAK's framework does not currently provide a clean way to express "this incident has a single-actor primary attacker plus opportunistic multi-actor secondary participants" — a v0.x consideration for the OAK-Gnn axis.
+- [Halborn, "The Nomad Bridge Hack: A Deeper Dive"](https://halborn.com/the-nomad-bridge-hack-a-deeper-dive): upgrade date, block 15259101, over \$33M returned by 2022-08-15.
+- [Halborn, "Explained: The Nomad Hack (August 2022)"](https://www.halborn.com/blog/post/explained-the-nomad-hack-august-2022): zero-root mechanism, replay by other addresses.
+- [Mandiant / Google Cloud, "Decentralized Robbery: Dissecting the Nomad Bridge Hack and Following the Money"](https://cloud.google.com/blog/topics/threat-intelligence/dissecting-nomad-bridge-hack) (2022-11-29): \$36M returned, Updater, address groups.
+- [TRM Labs, key suspect extradited](https://www.trmlabs.com/resources/blog/key-suspect-in-190m-nomad-bridge-exploit-extradited-to-the-united-states): charges, \$88M traced to laundering wallets.

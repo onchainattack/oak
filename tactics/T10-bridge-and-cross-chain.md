@@ -27,11 +27,11 @@ T10 chains directly into T7 (Laundering): bridge-extraction proceeds are typical
 - OAK-T10.001 — Validator / Signer Key Compromise
 - OAK-T10.002 — Message-Verification Bypass
 - OAK-T10.003 — Cross-Chain Replay
-- OAK-T10.004 — Optimistic-Bridge Fraud-Proof Gap
+- OAK-T10.004 — Optimistic-Bridge Fraud-Proof Gap (deprecated 2026-11-27)
 - OAK-T10.005 — Light-Client Verification Bypass
 
 ## Maintainer notes
 
-T10 in v0.1 covers three Technique classes with strong public forensic records. Emerging classes that may warrant their own Techniques in v0.x updates: optimistic-bridge fraud-proof gap exploitation; light-client verification bypass; cross-chain-message ordering attacks. Liquidity-provider loss-of-funds via bridge pause/wind-down is a risk class but not an attack class, and is intentionally out of scope for OAK.
+T10 in v0.1 covers three Technique classes with strong public forensic records. Emerging classes that may warrant their own Techniques in v0.x updates: light-client verification bypass; cross-chain-message ordering attacks. Liquidity-provider loss-of-funds via bridge pause/wind-down is a risk class but not an attack class, and is intentionally out of scope for OAK.
 
 The Wormhole Feb 2022 case is classified primarily under T9.004 (access-control misconfiguration in the verification logic) with T10 cross-references, because the underlying flaw is generic access-control rather than bridge-specific. Contributors writing future bridge cases should preserve this distinction.

@@ -16,7 +16,7 @@ scope: |
   bytecode pinning); runtime defence requires redundant verification
   paths. Excludes: T10.001 (no validator threshold to compromise);
   T10.002 (handwritten Solidity bug, not circuit/proof-system);
-  T10.004 (deferred/economic verification, not upfront/cryptographic).
+  T10.004 (deprecated) (deferred/economic verification, not upfront/cryptographic).
 
 data_sources: [bridge_architecture_doc, circuit_artefacts,
                trusted_setup_ceremony, audit_reports, verifier_contract,

@@ -81,7 +81,7 @@ Note: omit specific file hashes and C2 IP addresses from this entry. Defenders s
 - `[trmlabsdprk2026]` — TRM Labs, "North Korea's Crypto Theft Dominance," 2026; reports $577M stolen by DPRK actors in January–April 2026 (76% of global crypto theft), $6B+ all-time since 2017. *(NEW citation — see summary.)*
 - `[cisaaa22108a]` — CISA / FBI / Treasury joint advisory AA22-108A on TraderTraitor (broader OAK-G01 operator-cluster context). (Already in citations.bib per OAK-S08.)
 - `[chainalysis2024dprk]` — Chainalysis DPRK crypto-theft aggregate reporting (broader OAK-G01 financial scale context). (Already in citations.bib per OAK-G01.)
-- `[chainalysis2024laundering]` — Chainalysis 2024 laundering report (post-extraction T7.003 / T7.006 context for OAK-G01 proceeds). (Already in citations.bib per OAK-G01.)
+- `[chainalysis2024laundering]` — Chainalysis 2024 laundering report (post-extraction T7.003 context for OAK-G01 proceeds). (Already in citations.bib per OAK-G01.)
 
 ## Discussion
 

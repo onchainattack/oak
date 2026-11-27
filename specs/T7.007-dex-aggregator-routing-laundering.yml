@@ -14,7 +14,7 @@ scope: |
   aggregator per-asset-pair baselines. Excludes: T7.001 (mixer-routed hop
   — uses explicit obfuscation services); T7.003 (cross-chain bridge
   laundering — crosses chain boundaries, not within-chain fragmentation);
-  T7.006 (yield-strategy laundering — temporal obfuscation via yield-user
+  T7.006 (deprecated) (yield-strategy laundering — temporal obfuscation via yield-user
   crowd, not structural obfuscation via routing complexity).
 
 data_sources: [dex_trades, tx_call_trace, funder_graph,

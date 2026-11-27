@@ -54,4 +54,4 @@ The ad-hoc nature of the coordination is the key operational insight: every exch
 
 ## Discussion
 
-The Curve Finance freeze coordination case is OAK's canonical compliance freeze workflow example at the multi-VASP scale for 2023. It demonstrates the load-bearing role of ad-hoc compliance coordination and the gap that a formal VASP-to-VASP active-threat alert protocol would fill. The case is documented as a T7.010-adjacent worked example because the freeze coordination was the recovery mechanism, not the laundering method; the laundering attempt (T7.002 CEX off-ramp) was intercepted before completion.
+The Curve Finance freeze coordination case is OAK's canonical compliance freeze workflow example at the multi-VASP scale for 2023. It demonstrates the load-bearing role of ad-hoc compliance coordination and the gap that a formal VASP-to-VASP active-threat alert protocol would fill. The case is documented as a worked example because the freeze coordination was the recovery mechanism, not the laundering method; the laundering attempt (T7.002 CEX off-ramp) was intercepted before completion.

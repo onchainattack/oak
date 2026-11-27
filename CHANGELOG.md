@@ -10,6 +10,10 @@ All notable changes to OAK are documented here. The format follows [Keep a Chang
 
 Recorded here rather than held to the next version bump because one item is a **reclassification consumers may have stored** — the same reasoning `VERSIONING.md` applies to deprecations.
 
+### Changed — four more Techniques deprecated (2026-11-27)
+
+**`OAK-T7.006` (DeFi Yield-Strategy Laundering), `OAK-T10.004` (Optimistic-Bridge Fraud-Proof Gap), `OAK-T16.004` (Snapshot / Off-Chain Voting Exploitation) and `OAK-T7.010` (Travel Rule Evasion) are deprecated** (tombstones kept, IDs never reused). A source pass on their remaining examples and a search for any documented incident of each shape found none. Consumers holding these IDs: Nomad 2022-08 is `OAK-T10.002`; AFX Trade 2026-07 is `OAK-T10.001`; Tornado Cash governance 2023-05 is `OAK-T16.005` and `OAK-T9.003`; the laundering cases formerly tagged T7.006 or T7.010 keep `OAK-T7.001`, `OAK-T7.003` and `OAK-T7.005` as declared in each file. Details in `CORRECTIONS.md` and on each tombstone.
+
 ### Changed — OAK-T17.005 deprecated; 19 more examples removed (2026-11-27)
 
 **`OAK-T17.005` (TWAP Oracle Manipulation via Multi-Block MEV) is deprecated** (tombstone kept, ID never reused): the mechanism is described in a research paper and no incident was found. A third source pass removed 15 examples that describe no attack (design properties, policy notes, product launches, a non-crypto case, cohorts with no sourced member) and merged 4 duplicates. Reclassifications consumers may hold: Audius 2022-07 is `OAK-T9.003` (not T16.005/T9.004); Fortress 2022-05 is `OAK-T9.001` (not T16.001); dYdX 2023-11 is `OAK-T9.001`; CoinsPaid is dated 2023-07. Details in `CORRECTIONS.md`.

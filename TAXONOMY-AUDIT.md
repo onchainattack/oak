@@ -84,7 +84,7 @@ Both need source research before either file is touched.
 
 ### A — T9.003 → T16.x migration (most concrete misclassification)
 
-**Current:** `techniques/T9.003-governance-attack.md` lives under T9 Smart-Contract Exploit. After T16 Governance / Voting Manipulation introduction, T9.003 is conceptually a parent of T16.001 / T16.002 / T16.004 / T16.005 — a generic ancestor class.
+**Current:** `techniques/T9.003-governance-attack.md` lives under T9 Smart-Contract Exploit. After T16 Governance / Voting Manipulation introduction, T9.003 is conceptually a parent of T16.001 / T16.002 / T16.005 — a generic ancestor class.
 
 **Problem:** T9.003 is now redundant. Worked examples that previously mapped to T9.003 now also map to T16.x. The dual mapping muddles the meaning of "T9 Smart-Contract Exploit" because governance attacks are *not* protocol-layer code-execution exploits — they are voting-power-against-protocol attacks.
 
@@ -276,7 +276,7 @@ Random spot-check across 6 files:
 | T11.005 | emerging | 4 | Should likely promote to `stable` (4 anchors, multiple vendor narratives) |
 | T1.001 | stable | ? | Verify anchors |
 | T13.001 | observed | 1+ | Vocabulary widening (B.1) makes this OK; otherwise rename to `emerging` |
-| T16.004 | draft | 0 | Correct |
+| T16.004 | deprecated 2026-11-27 | 0 | Deprecated: no documented incident |
 | T9.005 | stable | 20 | Correct |
 
 Full per-file maturity sweep is a follow-up activity (script-driven: count anchors per technique, recommend maturity per anchor count + vendor diversity).

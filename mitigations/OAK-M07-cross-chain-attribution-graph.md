@@ -2,7 +2,7 @@
 
 **Class:** detection
 **Audience:** vendor, risk-team, venue
-**Maps to Techniques:** OAK-T7.001, OAK-T7.002, OAK-T7.003, OAK-T7.004, OAK-T7.005, OAK-T7.006, OAK-T8.002, OAK-T11.001
+**Maps to Techniques:** OAK-T7.001, OAK-T7.002, OAK-T7.003, OAK-T7.004, OAK-T7.005, OAK-T8.002, OAK-T11.001
 
 ## Description
 
@@ -19,7 +19,6 @@ The graph itself is not a single artefact; it is a continuously-rebuilt index co
 - **OAK-T7.003 (Cross-Chain Bridge Laundering):** bridge-side message correlation is the canonical attribution-graph edge that re-links the source-chain extraction cluster to the destination-chain off-ramp cluster; this is the defining cross-chain-attribution use case.
 - **OAK-T7.004 (NFT Wash Laundering):** per-marketplace wash-trade-rate metrics derived from the attribution graph (buyer / seller cluster overlap) flag NFT-sale proceeds where source-of-funds analysis reveals the buyer-side funding originates from the seller-side cluster.
 - **OAK-T7.005 (Privacy-Chain Hops):** the attribution graph cannot follow the privacy-chain hop directly, but it preserves the pre-hop and post-hop edges (deposit cluster → privacy-chain venue → re-emergence cluster), which is sufficient for amount-class-matching re-emergence detection at downstream venues.
-- **OAK-T7.006 (DeFi Yield Strategy Laundering):** per-protocol illicit-cluster inflow / outflow metrics surfaced from the attribution graph let DeFi protocols and downstream off-ramps treat positions with deposit-source / withdrawal-recipient divergence as elevated risk.
 - **OAK-T8.002 (Cross-Chain Operator Continuity):** per-chain funder-graph extensions and off-chain operator-profile data (DS-12) integrated into the attribution graph maintain operator-cluster identity across the chain-switch boundary that T8.002 relies on for continuity.
 - **OAK-T11.001 (Third-Party Signing Vendor Compromise):** when a signing-vendor breach surfaces in vendor-disclosure feeds, the attribution graph cross-references vendor-disclosure addresses with on-chain cluster activity to scope the impact across affected customer organisations and chains.
 

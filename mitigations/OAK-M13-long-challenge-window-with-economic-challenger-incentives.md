@@ -2,11 +2,11 @@
 
 **Class:** architecture
 **Audience:** protocol, designer (optimistic-bridge / rollup)
-**Maps to Techniques:** OAK-T10.004
+**Maps to Techniques:** none — the only Technique it was mapped to (OAK-T10.004) was deprecated 2026-11-27 for lack of a documented incident
 
 ## Description
 
-OAK-M13 is the canonical defensive control for optimistic-verification bridges and optimistic rollups: a fraud-proof challenge window long enough for both automated and human challengers to detect, construct, and submit a valid challenge against an invalid message, paired with an economically-incentivised, contractually-bonded challenger set whose payouts make honest watching profitable in expectation. The mitigation closes the OAK-T10.004 gap between architectural assumption ("a 1-of-N honest, live, economically-motivated challenger exists") and deployed reality ("challengers may be absent, censored, under-incentivised, or technically blocked"). It is canonical for optimistic-verification architectures because it is the only mitigation surface the architecture itself exposes — once the message is finalised, the on-chain code has behaved as designed, and the only available defence was the watchers who did not arrive.
+OAK-M13 is the canonical defensive control for optimistic-verification bridges and optimistic rollups: a fraud-proof challenge window long enough for both automated and human challengers to detect, construct, and submit a valid challenge against an invalid message, paired with an economically-incentivised, contractually-bonded challenger set whose payouts make honest watching profitable in expectation. The mitigation closes the gap between architectural assumption ("a 1-of-N honest, live, economically-motivated challenger exists") and deployed reality ("challengers may be absent, censored, under-incentivised, or technically blocked"). It is canonical for optimistic-verification architectures because it is the only mitigation surface the architecture itself exposes — once the message is finalised, the on-chain code has behaved as designed, and the only available defence was the watchers who did not arrive.
 
 The mitigation is operational rather than purely architectural: writing "30-minute window" into a bridge contract is necessary but not sufficient. The defender's question is *who actually challenges, with what bond, in what window, on what infrastructure?* M13 prescribes named challenger operators, published bond balances, liveness telemetry, and successful-challenge-or-no-fault attestations on a recurring cadence. The challenge window length must be derived from a written response-time-budget analysis covering reorg depth, transaction-inclusion latency under congestion, and cross-chain proof-construction time where applicable — not from convention.
 
@@ -14,15 +14,15 @@ Economic incentive design is the load-bearing component. A challenger's expected
 
 ## How it applies
 
-- **OAK-T10.004 (Optimistic-Bridge Fraud-Proof Gap):** size the window from a written response-time-budget analysis; name and fund at least one independent challenger operator; publish challenger-set membership, bond balances, and last-heartbeat metrics; commission periodic adversarial drills exercising the fraud-proof path end-to-end on mainnet or high-fidelity testnet; ensure censorship-resistance such that the entity producing messages cannot also exclude fraud-proof transactions.
+- **Optimistic-bridge fraud-proof gap (Technique OAK-T10.004 deprecated 2026-11-27; no documented incident):** size the window from a written response-time-budget analysis; name and fund at least one independent challenger operator; publish challenger-set membership, bond balances, and last-heartbeat metrics; commission periodic adversarial drills exercising the fraud-proof path end-to-end on mainnet or high-fidelity testnet; ensure censorship-resistance such that the entity producing messages cannot also exclude fraud-proof transactions.
 
 ## Limitations
 
-- M13 does not protect against verification-predicate bugs that bypass the optimistic mechanism entirely (the Nomad 2022-08 `0x00` trusted-root case is OAK-T10.002, not T10.004; a longer window would not have helped because the optimistic check was structurally bypassed).
+- M13 does not protect against verification-predicate bugs that bypass the optimistic mechanism entirely (the Nomad 2022-08 `0x00` trusted-root case is OAK-T10.002, not an optimistic-window failure; a longer window would not have helped because the optimistic check was structurally bypassed).
 - M13 has no effect on cryptographic-light-client bridges (OAK-T10.005) where there is no challenger by construction; multi-prover redundancy (OAK-M14) is the analogous architectural control there.
 - Economic incentives are bounded by the ratio of bond size to potential-loss size; a challenger whose bond is dwarfed by the message they would dispute is structurally under-incentivised regardless of window length.
 - Censorship-resistance is hard to operationalise on chains where the message producer is also the dominant block builder; the mitigation degrades on such chains until builder-separation matures.
-- Adversarial drills are themselves a meaningful operational expense and tend to be deferred; a fraud-proof system that has never processed a successful challenge in production is a standing T10.004 surface regardless of audit reputation.
+- Adversarial drills are themselves a meaningful operational expense and tend to be deferred; a fraud-proof system that has never processed a successful challenge in production is a standing exposure regardless of audit reputation.
 
 ## Reference implementations
 

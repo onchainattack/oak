@@ -3,7 +3,7 @@
 **Class:** operational
 **Audience:** trader, protocol, custody-customer
 
-**Maps to Techniques:** OAK-T9.001, OAK-T9.002, OAK-T9.003, OAK-T9.004, OAK-T9.005, OAK-T10.001, OAK-T10.002, OAK-T10.003, OAK-T10.004, OAK-T10.005, OAK-T11.001, OAK-T11.002, OAK-T11.003
+**Maps to Techniques:** OAK-T9.001, OAK-T9.002, OAK-T9.003, OAK-T9.004, OAK-T9.005, OAK-T10.001, OAK-T10.002, OAK-T10.003, OAK-T10.005, OAK-T11.001, OAK-T11.002, OAK-T11.003
 
 ## Description
 
@@ -16,7 +16,7 @@ The mitigation is most useful where it is *underwritten in advance* of an incide
 ## How it applies
 
 - **OAK-T9.001 / T9.002 / T9.003 / T9.004 / T9.005 (smart-contract exploit classes):** the canonical M33 coverage surface. Most decentralized insurance underwriters offer named-protocol covers for major DeFi protocols (Aave, Compound, Maker, Curve, Uniswap variants, Lido, EigenLayer); the cover indemnifies the policyholder for funds lost to a smart-contract exploit at the named protocol, subject to per-policy maximum and aggregate-pool capacity limits. Reentrancy, oracle manipulation, flash-loan exploitation, governance attack, and access-control extraction are typically all in-scope under standard "smart contract failure" cover wording.
-- **OAK-T10.001 / T10.002 / T10.003 / T10.004 / T10.005 (bridge attack classes):** bridge-specific covers (and bridge-protocol-listed named-protocol covers) address the bridge attack surface; the post-Wormhole / post-Ronin / post-Nomad cohort drove substantial expansion of bridge-cover capacity in 2022–2024. Validator-key compromise (T10.001) is sometimes included under "validator failure" rider wording, sometimes excluded as an operational-security event distinct from "smart contract failure"; the policy-text granularity here is load-bearing and varies materially by underwriter.
+- **OAK-T10.001 / T10.002 / T10.003 / T10.005 (bridge attack classes):** bridge-specific covers (and bridge-protocol-listed named-protocol covers) address the bridge attack surface; the post-Wormhole / post-Ronin / post-Nomad cohort drove substantial expansion of bridge-cover capacity in 2022–2024. Validator-key compromise (T10.001) is sometimes included under "validator failure" rider wording, sometimes excluded as an operational-security event distinct from "smart contract failure"; the policy-text granularity here is load-bearing and varies materially by underwriter.
 - **OAK-T11.001 (third-party signing / custody vendor compromise):** custody-cover products specifically address vendor-side breach loss for institutional and treasury customers; Nexus Mutual Custody Cover is the canonical reference. The Bybit-Feb-2025 cohort was the largest single-event test of custody-cover capacity in the industry; pool-capacity-vs-aggregate-exposure was binding, and the recovery profile illustrated the under-capitalisation gap below.
 - **OAK-T11.002 (wallet-software distribution compromise):** end-user wallet covers exist but are structurally underdeveloped relative to the contract-layer market; the Atomic Wallet June 2023 cohort and similar end-user-cohort incidents have driven incremental market expansion but coverage capacity remains thin.
 - **OAK-T11.003 (in-use multisig smart-contract manipulation):** partially covered under custody-cover or smart-contract-cover wording depending on underwriter; the WazirX-Liminal July 2024 case was a complex claim-adjudication question where the boundary between "vendor compromise" and "in-use contract manipulation" turned on policy-text interpretation.

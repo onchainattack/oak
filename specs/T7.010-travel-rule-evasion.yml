@@ -1,11 +1,13 @@
 oak_techniques: [OAK-T7.010]
 spec_id: oak-detection-T7.010
 version: 0.1.0
-maturity: observed
+maturity: deprecated
 maintainer: "@iZonex"
 license: Apache-2.0
 
 scope: |
+  DEPRECATED 2026-11-27: no documented incident of this shape was found in the
+  source passes. Kept for reference; see the Technique tombstone.
   Detect cryptocurrency transaction patterns consistent with Travel Rule
   evasion (FATF Recommendation 16). Detection operates at the VASP-
   compliance-data layer and the cross-VASP behavioural-pattern layer:

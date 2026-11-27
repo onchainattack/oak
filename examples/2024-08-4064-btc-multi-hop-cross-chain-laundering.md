@@ -1,50 +1,53 @@
-# 4064 BTC — Instant Exchange + Cross-Chain Bridge Laundering — 2024-08
+# 4064 BTC taken from a Genesis creditor, then spread across swap services, bridges and exchanges — Bitcoin — 2024-08-19
 
-**Loss:** 4064 BTC (~$238M) suspiciously transferred. Funds routed through ThorChain, eXch, Kucoin, ChangeNow, Railgun, and Avalanche Bridge in rapid succession. Live reaction video of threat actors receiving the funds was later obtained.
-**OAK Techniques observed:** OAK-T7.010 (Travel Rule Evasion) — PATH B VASP-avoidant routing via multi-hop chain with zero VASP-to-VASP edges; OAK-T7.003 (Cross-Chain Bridge Laundering) — ThorChain and Avalanche Bridge as cross-chain translation rails; OAK-T7.005 (Privacy-Chain Hops) — Railgun as the privacy terminus breaking on-chain tracing.
-**Attribution:** **pseudonymous** — threat actors visible in private video recording of their reaction to receiving $238M. Transaction hash `4b277ba298830ea538086114803b9487558bb093b5083e383e94db687fbe9090`.
+**Loss:** 4064 BTC. [ZachXBT's alert](https://x.com/zachxbt/status/1825499490956231021) puts it at \$238M; [The Block](https://www.theblock.co/news/regulation/2024-09-19-blockchain-sleuth-zachxbt-alleges-three-perps-involved-in-243-million-theft-of-single-genesis-creditor-317349) and [CryptoSlate](https://cryptoslate.com/zachxbt-helps-secure-arrests-in-243m-social-engineering-attack-on-one-person/) report \$243M for the whole theft. The gap is a valuation basis the pages do not explain. No opened page reports a recovery.
 
-**Key teaching point:** The 4064 BTC case demonstrates the **multi-hop cross-chain obfuscation pattern** where the attacker chains together bridges, instant exchanges, CEXs, and privacy protocols in a single rapid laundering sequence: BTC → Avalanche Bridge → ThorChain → eXch → Kucoin → ChangeNow → Railgun. No single hop provides privacy, but the combination across 6+ venues and 3+ chains fragments the tracing surface to the point where no single analytics provider has full visibility. Detection approach: unified cross-chain tracing across BTC, Ethereum, Avalanche, and ThorChain in a single time window; each individual hop has a counterparty with records, but the time pressure (hours, not days) requires automated multi-venue tracing.
+**OAK Techniques observed:** OAK-T7.003 (Cross-Chain Bridge Laundering). The alert lists ThorChain and Avalanche Bridge among the destinations ([alert](https://x.com/zachxbt/status/1825499490956231021)). OAK-T7.005 (Privacy-Chain Hops). [CryptoSlate](https://cryptoslate.com/zachxbt-helps-secure-arrests-in-243m-social-engineering-attack-on-one-person/) reports the funds were converted among Bitcoin, Litecoin, Ethereum and Monero. The extraction was a social-engineering theft by spoofed support calls, and no OAK Technique is declared for it (none — impersonation of support staff over the phone has no matching Technique page). A Travel Rule evasion Technique is rejected: no opened page mentions the Travel Rule, thresholds or VASP data sharing, and the alert names Kucoin and ChangeNow as destinations without saying how they were used.
+
+**Attribution:** **pseudonymous, alleged.** [The Block](https://www.theblock.co/news/regulation/2024-09-19-blockchain-sleuth-zachxbt-alleges-three-perps-involved-in-243-million-theft-of-single-genesis-creditor-317349) says ZachXBT alleges three attackers and that The Block did not independently verify his claims. The same case has a separate OAK file with the later prosecution record: [`2024-08-genesis-creditor-social-engineering.md`](2024-08-genesis-creditor-social-engineering.md).
+
+**Key teaching point:** **The laundering began within hours, so the useful window for a freeze request was short.** [ZachXBT's alert](https://x.com/zachxbt/status/1825499490956231021) was posted seven hours after the transfer and already listed six destinations. An exchange or swap service that receives a deposit from a flagged transaction hash has to act on an alert that quickly, before the next swap.
 
 ## Summary
 
-On August 19, 2024, at 4:05 AM UTC, 4064 BTC (~$238M) was suspiciously transferred from a potential victim (transaction hash `4b277ba298830ea538086114803b9487558bb093b5083e383e94db687fbe9090`). Within hours, the funds were routed through a deliberate multi-hop chain:
+On 2024-08-19 at 4:05 UTC, 4064 BTC left the victim's wallet in the transaction [`4b277ba298830ea538086114803b9487558bb093b5083e383e94db687fbe9090`](https://mempool.space/tx/4b277ba298830ea538086114803b9487558bb093b5083e383e94db687fbe9090) ([ZachXBT, 2024-09-19](https://x.com/zachxbt/status/1836753185718865979)). The victim was a creditor of the bankrupt lender Genesis ([The Block](https://www.theblock.co/news/regulation/2024-09-19-blockchain-sleuth-zachxbt-alleges-three-perps-involved-in-243-million-theft-of-single-genesis-creditor-317349)).
 
-1. **BTC → Avalanche Bridge:** BTC bridged to Avalanche (EVM-compatible chain)
-2. **Avalanche → ThorChain:** Cross-chain swap to ThorChain's native chain
-3. **ThorChain → Instant exchanges:** Funds routed through eXch and ChangeNow (no-KYC swap services)
-4. **CEX hop:** Funds pass through Kucoin
-5. **Privacy protocol final hop:** Funds enter Railgun (privacy protocol on Ethereum)
+Per [CryptoSlate](https://cryptoslate.com/zachxbt-helps-secure-arrests-in-243m-social-engineering-attack-on-one-person/), the attackers spoofed Google Support, then Gemini support, got the victim to reset two-factor authentication, and had the victim install AnyDesk, which gave them screen access and the private keys. The Block says they allegedly gained access to his private keys (relayed; The Block returns 403 to the quote checker).
 
-The sequence — bridge → cross-chain DEX → instant exchange → CEX → privacy protocol — touches 5+ compliance jurisdictions and 3+ blockchain analytics providers. No single entity sees the full path.
+On 2024-08-19 at 11:46 UTC ZachXBT posted that the funds "were quickly transferred to ThorChain, eXch, Kucoin, ChangeNow, Railgun, Avalanche Bridge" ([alert](https://x.com/zachxbt/status/1825499490956231021)). The alert gives the venues but no order, amounts or deposit addresses. The Block and CryptoSlate describe the next stage differently: the funds were peeled off to more than 15 exchanges and swapped among Bitcoin, Litecoin, Ethereum and Monero. The pages do not reconcile the 6 venues in the alert with the 15+ exchanges in the follow-up.
 
-A private video recording obtained by ZachXBT shows the threat actors' live reaction to receiving $238M — a rare forensic artifact that captures the human side of the theft in real time.
+On 2024-09-19 ZachXBT posted a private video recording showing "the live reaction by multiple of the threat actors to receiving \$238M" ([post](https://x.com/zachxbt/status/1836753185718865979)).
 
-## Timeline
+## Timeline (UTC)
 
-| When | Event | OAK ref |
+Entry: social engineering of the victim. Preparation: undisclosed. Execution: the transfer. Funds: peeling, swaps and bridges. Response: the alert and the later investigation.
+
+| When | What happened | OAK |
 |---|---|---|
-| 2024-08-19 04:05 UTC | 4064 BTC suspiciously transferred. TX: `4b277ba...` | **T5 asset drain** |
-| 2024-08-19 (within hours) | BTC → Avalanche Bridge → ThorChain → eXch → Kucoin → ChangeNow → Railgun | **T10 cross-chain obfuscation** |
-| 2024-08-19 11:46 UTC | ZachXBT posts community alert | (public alert) |
-| 2024-09-19 | ZachXBT posts threat actor reaction video | (forensic evidence) |
+| Before 2024-08-19 | Attackers pose as Google Support, then Gemini support; victim resets two-factor authentication ([CryptoSlate](https://cryptoslate.com/zachxbt-helps-secure-arrests-in-243m-social-engineering-attack-on-one-person/)) | none — phone impersonation of support staff, no matching Technique |
+| Before 2024-08-19 | Victim installs AnyDesk; attackers extract private keys from Bitcoin Core ([CryptoSlate](https://cryptoslate.com/zachxbt-helps-secure-arrests-in-243m-social-engineering-attack-on-one-person/)) | none — remote-access key theft, no matching Technique |
+| 2024-08-19 04:05 | 4064 BTC transferred in [`4b277ba2…e9090`](https://mempool.space/tx/4b277ba298830ea538086114803b9487558bb093b5083e383e94db687fbe9090) ([ZachXBT](https://x.com/zachxbt/status/1836753185718865979)) | none — extraction by stolen keys, no matching Technique |
+| 2024-08-19, after the transfer | Funds go to ThorChain, eXch, Kucoin, ChangeNow, Railgun and Avalanche Bridge ([alert](https://x.com/zachxbt/status/1825499490956231021)); order, amounts and addresses undisclosed | **T7.003** |
+| 2024-08-19, after the transfer | Funds spread over 15+ exchanges and converted among BTC, LTC, ETH and XMR ([CryptoSlate](https://cryptoslate.com/zachxbt-helps-secure-arrests-in-243m-social-engineering-attack-on-one-person/), [The Block](https://www.theblock.co/news/regulation/2024-09-19-blockchain-sleuth-zachxbt-alleges-three-perps-involved-in-243-million-theft-of-single-genesis-creditor-317349)) | **T7.005** |
+| 2024-08-19 11:46 | ZachXBT posts the alert with the transaction hash ([alert](https://x.com/zachxbt/status/1825499490956231021)) | response |
+| 2024-09-19 | ZachXBT posts his investigation and the reaction video ([post](https://x.com/zachxbt/status/1836753185718865979)); The Block reports an FBI raid and arrests on a Wednesday evening that week but could not find arrest records | response |
 
-## What defenders observed
+Key addresses:
 
-- **6+ hops across 3+ chains under time pressure:** The entire sequence executed within hours. Each individual hop has a counterparty that could provide records (Avalanche Bridge operators, ThorChain node operators, eXch, Kucoin, ChangeNow), but the time window for subpoena/records requests is measured in weeks while the funds move in hours.
-- **Railgun as the privacy terminus:** The final hop into Railgun (an Ethereum privacy protocol using zk-SNARKs) breaks on-chain tracing. Everything after Railgun is private. The laundering sequence is designed to get funds into a privacy protocol before any exchange can freeze them.
-- **Threat actor reaction video as a forensic artifact:** The video showing threat actors celebrating the $238M receipt is non-technical evidence — it captures faces, voices, environments, and potentially device metadata. Non-crypto forensic artifacts (videos, images, voice recordings) are part of the attribution surface.
-- **Cross-jurisdictional fragmentation:** Avalanche Bridge (jurisdiction A), ThorChain (decentralized — no jurisdiction), eXch (jurisdiction B), Kucoin (jurisdiction C), ChangeNow (jurisdiction D), Railgun (smart contract — no jurisdiction). Tracing requires cooperation across at least 4 jurisdictions.
+- Theft transaction (Bitcoin) — [`4b277ba298830ea538086114803b9487558bb093b5083e383e94db687fbe9090`](https://mempool.space/tx/4b277ba298830ea538086114803b9487558bb093b5083e383e94db687fbe9090), per [ZachXBT](https://x.com/zachxbt/status/1825499490956231021)
+- Deposit and wallet addresses of the laundering: undisclosed on any opened page.
 
-## What this example tells contributors
+## Root-cause evidence
 
-- **Multi-hop cross-chain obfuscation is the post-mixer standard.** With Tornado Cash sanctioned and less accessible, threat actors are chaining bridges + instant exchanges + privacy protocols. Each hop is individually compliant; the combination is the laundering path.
-- **Privacy protocols as the final hop are a T10 detection boundary.** Railgun, Aztec, and other privacy protocols are the point where tracing ends. Monitoring inflows to privacy protocols from addresses traceable to hacks is a last-mile detection primitive — after the privacy protocol entry, tracing is impossible.
-- **Threat actor reaction content is an OSINT attribution data source.** Criminals record themselves. These recordings surface on social media, in private chats, and on seized devices. OAK T8 (Attribution) should include "threat actor self-documentation" as an attribution data source.
+- **Technique:** none for extraction (social engineering by spoofed support calls); OAK-T7.003 and OAK-T7.005 for the laundering leg
+- **Source:** <https://x.com/zachxbt/status/1825499490956231021>; <https://x.com/zachxbt/status/1836753185718865979>; <https://www.theblock.co/news/regulation/2024-09-19-blockchain-sleuth-zachxbt-alleges-three-perps-involved-in-243-million-theft-of-single-genesis-creditor-317349>; <https://cryptoslate.com/zachxbt-helps-secure-arrests-in-243m-social-engineering-attack-on-one-person/>
+- **Source type:** independent-researcher
+- **Confidence:** reported
+- **Evidence:** An independent investigator's alert and thread, relayed by two news outlets. The Block states it did not independently verify the claims. The social-engineering mechanism rests on the investigator's account as reported by CryptoSlate. The laundering path is a list of venues, with no order or addresses.
 
 ## Public references
 
-- [ZachXBT — 4064 BTC Suspicious Transfer Alert (X/Twitter)](https://x.com/zachxbt/status/1825499490956231021)
-- [ZachXBT — Threat Actor Reaction Video (X/Twitter)](https://x.com/zachxbt/status/1836753185718865979)
-- Transaction: `4b277ba298830ea538086114803b9487558bb093b5083e383e94db687fbe9090`
-- Venues: ThorChain, eXch, Kucoin, ChangeNow, Railgun, Avalanche Bridge.
+- ZachXBT, X post (2024-08-19): <https://x.com/zachxbt/status/1825499490956231021>
+- ZachXBT, X post in thread (2024-09-19): <https://x.com/zachxbt/status/1836753185718865979>
+- The Block, "Blockchain sleuth ZachXBT alleges three attackers involved in \$243 million theft of single Genesis creditor" (2024-09-19): <https://www.theblock.co/news/regulation/2024-09-19-blockchain-sleuth-zachxbt-alleges-three-perps-involved-in-243-million-theft-of-single-genesis-creditor-317349>
+- CryptoSlate, "ZachXBT helps secure arrests in \$243 million social engineering attack on one person" (2024-09-19): <https://cryptoslate.com/zachxbt-helps-secure-arrests-in-243m-social-engineering-attack-on-one-person/>

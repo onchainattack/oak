@@ -2,7 +2,7 @@
 
 **Class:** detection
 **Audience:** vendor, risk-team, protocol, designer
-**Maps to Techniques:** OAK-T9.001, OAK-T9.002, OAK-T9.003, OAK-T9.004, OAK-T9.005, OAK-T10.001, OAK-T10.002, OAK-T10.003, OAK-T10.004, OAK-T10.005, OAK-T11.001, OAK-T11.002, OAK-T11.003, OAK-T8.001, OAK-T8.002
+**Maps to Techniques:** OAK-T9.001, OAK-T9.002, OAK-T9.003, OAK-T9.004, OAK-T9.005, OAK-T10.001, OAK-T10.002, OAK-T10.003, OAK-T10.005, OAK-T11.001, OAK-T11.002, OAK-T11.003, OAK-T8.001, OAK-T8.002
 
 ## Description
 
@@ -15,7 +15,7 @@ Distinguish from OAK-M03 continuous bytecode-diff monitoring (which is change-ti
 ## How it applies
 
 - **OAK-T9.x (Smart-Contract Exploit class).** Runtime-invariant monitoring detects T9.001 oracle manipulation (price-feed deviation alarms), T9.002 flash-loan-enabled extraction (large-flash-loan-followed-by-protocol-state-anomaly alarms), T9.003 governance attack (large-vote-accumulation-followed-by-proposal-execution alarms), T9.004 access-control misconfiguration (privileged-function-invocation-from-unexpected-address alarms), T9.005 reentrancy and arithmetic flaws (state-machine-invariant-violation alarms). Detection-to-action latency is the load-bearing performance variable.
-- **OAK-T10.x (Bridge and Cross-Chain).** Cross-chain watcher coordination across both bridge endpoints captures T10.001 validator-key compromise (anomalous validator-set behaviour), T10.002 message-verification bypass (cross-chain message accepted without expected source-chain commitment), T10.003 cross-chain replay (duplicate-message-with-same-nonce alarms), T10.004 optimistic-bridge fraud-proof gap (long-pending-message-without-challenge alarms), T10.005 light-client verification bypass (cryptographic-soundness-proof-anomaly alarms).
+- **OAK-T10.x (Bridge and Cross-Chain).** Cross-chain watcher coordination across both bridge endpoints captures T10.001 validator-key compromise (anomalous validator-set behaviour), T10.002 message-verification bypass (cross-chain message accepted without expected source-chain commitment), T10.003 cross-chain replay (duplicate-message-with-same-nonce alarms), T10.005 light-client verification bypass (cryptographic-soundness-proof-anomaly alarms).
 - **OAK-T11.x (Custody-side compromise).** Watcher monitoring of custody-vendor-controlled wallets and authority-graph changes captures T11.001 / T11.002 / T11.003 anomalies (unexpected-destination withdrawals, unexpected-authority-graph changes, multisig-contract-modification events).
 - **OAK-T8.001 / T8.002 (cluster-reuse and operator continuity).** Cross-protocol cluster-graph maintenance captures the operator-cohort-attribution surface across deployments; this is the canonical input substrate for OAK-G-attribution work and for OAK-M07 cross-chain-attribution-graph mitigation.
 

@@ -3,7 +3,7 @@
 **Class:** architecture
 **Audience:** protocol, designer
 
-**Maps to Techniques:** OAK-T1.001, OAK-T1.003, OAK-T1.004, OAK-T6.001, OAK-T6.002, OAK-T6.003, OAK-T6.004, OAK-T9.001, OAK-T9.002, OAK-T9.003, OAK-T9.004, OAK-T9.005, OAK-T10.001, OAK-T10.002, OAK-T10.003, OAK-T10.004, OAK-T10.005
+**Maps to Techniques:** OAK-T1.001, OAK-T1.003, OAK-T1.004, OAK-T6.001, OAK-T6.002, OAK-T6.003, OAK-T6.004, OAK-T9.001, OAK-T9.002, OAK-T9.003, OAK-T9.004, OAK-T9.005, OAK-T10.001, OAK-T10.002, OAK-T10.003, OAK-T10.005
 
 ## Description
 
@@ -17,7 +17,7 @@ M16 is the substrate mitigation that other architecture-class mitigations (M13 c
 
 - **OAK-T9.004 / T9.005 (access-control / reentrancy):** the canonical pre-deployment audit surface; static analysis, symbolic execution, and formal verification of invariants under all reachable call paths.
 - **OAK-T9.001 / T9.002 / T9.003 (oracle / flash-loan / governance):** audit review of flash-loan-resistance, oracle-architecture choices, and governance-design properties (snapshot-based voting power, quorum-with-timelock, no emergency-execution paths bypassing the lifecycle).
-- **OAK-T10.002 / T10.003 / T10.004 / T10.005 (bridge):** audit by bridge-specialist firms; circuit-specialist audit for zk components; formal verification of consensus-rule encoding for light clients; published trusted-setup ceremony transcripts; verifier-contract bytecode pinning.
+- **OAK-T10.002 / T10.003 / T10.005 (bridge):** audit by bridge-specialist firms; circuit-specialist audit for zk components; formal verification of consensus-rule encoding for light clients; published trusted-setup ceremony transcripts; verifier-contract bytecode pinning.
 - **OAK-T10.001 (validator key compromise):** audit of the on-chain authorisation logic; off-chain operational-security review of validator-operator personnel security posture is adjacent (covered by OAK-M15).
 - **OAK-T1.001 / T1.003 / T1.004 (token-genesis modifiable authority):** static analysis for modifiable fee functions, post-renouncement proxy-admin retention, and weaponisable blacklist/pausable hooks; audit-pass-required-before-listing as a launchpad / DEX-aggregator gating control.
 - **OAK-T6.001 / T6.002 / T6.003 / T6.004 (audit-trust evasion):** publication of audited-bytecode hash, audit registry entry, and engagement-tracking attestation; each closes a specific audit-claim verification surface that the corresponding T6 Technique exploits.

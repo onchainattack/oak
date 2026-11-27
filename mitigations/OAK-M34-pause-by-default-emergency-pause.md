@@ -3,7 +3,7 @@
 **Class:** architecture
 **Audience:** protocol, designer
 
-**Maps to Techniques:** OAK-T9.001, OAK-T9.002, OAK-T9.003, OAK-T9.004, OAK-T9.005, OAK-T10.001, OAK-T10.002, OAK-T10.003, OAK-T10.004, OAK-T10.005, OAK-T11.003
+**Maps to Techniques:** OAK-T9.001, OAK-T9.002, OAK-T9.003, OAK-T9.004, OAK-T9.005, OAK-T10.001, OAK-T10.002, OAK-T10.003, OAK-T10.005, OAK-T11.003
 
 ## Description
 
@@ -16,7 +16,7 @@ The pause authority is itself a centralisation vector. A guardian role with sing
 ## How it applies
 
 - **OAK-T9.001 / T9.002 / T9.003 / T9.004 / T9.005 (smart-contract exploit classes):** the canonical M34 response surface. Once an exploit has begun extracting value, the defender's only remaining lever for the residual surface is pause. Reentrancy mid-exploitation, oracle-manipulation post-trigger, flash-loan-enabled extraction in the post-trigger window, governance-attack post-execution, and access-control extraction post-trigger are all cases where pause halts the residual exposure. The Saddle April 2022 case is the worked example for the reentrancy class; analogous "pause halted residual losses" cases exist across the other T9 sub-classes.
-- **OAK-T10.001 / T10.002 / T10.003 / T10.004 / T10.005 (bridge attack classes):** bridge-pause is structurally the highest-stakes M34 deployment because the contract holds concentrated cross-chain capital and the per-block exfiltration capacity is large. Bridge-side pause must coordinate across the validator-set / signer-set surface (T10.001 vector) as well as the contract surface (T10.002 / T10.005 vectors). The post-Nomad and post-Ronin cohort drove substantial expansion of bridge-side pause capability; many newer bridges deploy guardian-multisig pause as a base-layer architectural requirement.
+- **OAK-T10.001 / T10.002 / T10.003 / T10.005 (bridge attack classes):** bridge-pause is structurally the highest-stakes M34 deployment because the contract holds concentrated cross-chain capital and the per-block exfiltration capacity is large. Bridge-side pause must coordinate across the validator-set / signer-set surface (T10.001 vector) as well as the contract surface (T10.002 / T10.005 vectors). The post-Nomad and post-Ronin cohort drove substantial expansion of bridge-side pause capability; many newer bridges deploy guardian-multisig pause as a base-layer architectural requirement.
 - **OAK-T11.003 (in-use multisig smart-contract manipulation):** the WazirX-Liminal July 2024 case illustrates the M34 surface at the multisig layer itself. When in-flight contract-modification by partial-multisig compromise is detected, pause at the multisig (freezing modification authority pending out-of-band confirmation) is the correlate of pause at the protocol layer. M34 here is the governance-layer analogue of contract-layer pause and pairs directly with M22 (rotate-on-disclosure) for the post-pause rotation step.
 
 ## Limitations

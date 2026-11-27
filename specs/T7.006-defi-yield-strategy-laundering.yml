@@ -1,11 +1,13 @@
 oak_techniques: [OAK-T7.006]
 spec_id: oak-detection-T7.006
 version: 0.1.0
-maturity: observed
+maturity: deprecated
 maintainer: "@iZonex"
 license: Apache-2.0
 
 scope: |
+  DEPRECATED 2026-11-27: no documented incident of this shape was found in the
+  source passes. Kept for reference; see the Technique tombstone.
   Detect laundering via legitimate DeFi yield-farming / lending / LP /
   liquid-staking protocols using "yield user" persona as cover. Per-
   position behavioural pattern (deposit-to-withdrawal duration, yield-

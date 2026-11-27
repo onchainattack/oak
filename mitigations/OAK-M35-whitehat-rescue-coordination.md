@@ -3,7 +3,7 @@
 **Class:** operational
 **Audience:** protocol, designer, vendor
 
-**Maps to Techniques:** OAK-T9.001, OAK-T9.002, OAK-T9.003, OAK-T9.004, OAK-T9.005, OAK-T10.001, OAK-T10.002, OAK-T10.003, OAK-T10.004, OAK-T10.005, OAK-T11.001, OAK-T11.002, OAK-T11.003
+**Maps to Techniques:** OAK-T9.001, OAK-T9.002, OAK-T9.003, OAK-T9.004, OAK-T9.005, OAK-T10.001, OAK-T10.002, OAK-T10.003, OAK-T10.005, OAK-T11.001, OAK-T11.002, OAK-T11.003
 
 ## Description
 
@@ -16,7 +16,7 @@ The structural distinction from M32 is that M35 is **reactive**: it is invoked o
 ## How it applies
 
 - **OAK-T9.001 / T9.002 / T9.003 / T9.004 / T9.005 (smart-contract exploit classes):** the canonical M35 surface. The Euler March 2023 case is the worked example: T9.002 (flash-loan precondition) + T9.004 (missing solvency check on `donateToReserves`); on-chain message-channel negotiation; full $197M return. Subsequent cases (Tapioca October 2024, others in the cohort) illustrate the same pattern at smaller scale. The success-rate distribution across the T9 family is roughly aligned with attacker attribution: financially-motivated solo-exploit cases are the highest acceptance-rate sub-cohort.
-- **OAK-T10.001 / T10.002 / T10.003 / T10.004 / T10.005 (bridge attack classes):** the Ronin August 2024 case is the canonical bridge-layer M35 reference. Sky Mavis's whitehat-rescue framing post-incident, including the no-prosecution commitment and the rescue-channel publication, defined the recovery posture; the bridge-pause-and-rescue sequence operated against this framing. Bridge-side M35 is structurally harder than protocol-side M35 because the cross-chain capital surface and the validator-set surface (T10.001) introduce additional rescue-coordination complexity.
+- **OAK-T10.001 / T10.002 / T10.003 / T10.005 (bridge attack classes):** the Ronin August 2024 case is the canonical bridge-layer M35 reference. Sky Mavis's whitehat-rescue framing post-incident, including the no-prosecution commitment and the rescue-channel publication, defined the recovery posture; the bridge-pause-and-rescue sequence operated against this framing. Bridge-side M35 is structurally harder than protocol-side M35 because the cross-chain capital surface and the validator-set surface (T10.001) introduce additional rescue-coordination complexity.
 - **OAK-T11.001 / T11.002 / T11.003 (custody / wallet / multisig compromise):** M35 at the custody layer is structurally weak relative to the contract layer. The Bybit-Feb-2025 cohort proceeded with rescue-coordination posture (publicised bounty, hash-target tracking, exchange-side cooperation) but the recovery rate was materially lower than the typical contract-layer rescue case because the attacker (DPRK-attributed) was operating outside the financial-motivation acceptance regime. M35 here is correctly understood as a low-base-rate residual-recovery layer, not a primary control.
 
 ## Limitations

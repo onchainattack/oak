@@ -2,7 +2,7 @@
 
 **Class:** venue
 **Audience:** venue (CEX, OTC desk, stablecoin issuer, bridge protocol), regulator, law-enforcement agency, risk-team
-**Maps to Techniques:** OAK-T7.002, OAK-T7.003, OAK-T7.006, OAK-T7.007, OAK-T7.008, OAK-T5.008
+**Maps to Techniques:** OAK-T7.002, OAK-T7.003, OAK-T7.007, OAK-T7.008, OAK-T5.008
 
 ## Description
 
@@ -18,7 +18,7 @@ The class is `venue` because the workflow requires venue operational capability 
 
 ## How it applies
 
-- **Freeze activation within the 72-hour post-extraction window:** the forensic-provider cluster set is published within hours; the venue's compliance or risk team cross-references inbound deposits; matching deposits are paused at the acceptance layer (deposit credited to an internal frozen-suspense account rather than the customer's trading balance). The window is critical because the observed DPRK-cluster laundering methodology (T7.006/T7.007) moves proceeds through aggregator routes within 24–48 hours of extraction.
+- **Freeze activation within the 72-hour post-extraction window:** the forensic-provider cluster set is published within hours; the venue's compliance or risk team cross-references inbound deposits; matching deposits are paused at the acceptance layer (deposit credited to an internal frozen-suspense account rather than the customer's trading balance). The window is critical because the observed DPRK-cluster laundering methodology (T7.007) moves proceeds through aggregator routes within 24–48 hours of extraction.
 - **Cross-VASP coordination:** the cluster set propagates to all major regulated venues simultaneously via forensic-provider compliance feeds; a cluster whose deposit is frozen at Venue A cannot simply redirect to Venue B because Venue B is operating from the same watchlist update. Instant-swap services and non-KYC venues remain a structural hole — the mitigation is strongest where both the source and destination of a laundering hop are regulated venues within the same compliance-provider ecosystem.
 - **Stablecoin-issuer freeze:** for stablecoin-denominated proceeds, the issuer (Circle/USDC, Tether/USDT) can freeze the token at the contract level, preventing any further transfer regardless of venue. Issuer-level freeze is the strongest freeze surface — it does not depend on venue cooperation and cannot be bypassed by transferring to a non-cooperative venue. The freeze-asymmetry T7.008 case (USDC frozen at issuer level while USDT continues to move) demonstrates that issuer-level freeze coordination across issuers is the optimal sub-mitigation.
 - **Confiscate leg:** the venue maintains a law-enforcement liaison function; on receipt of a valid seizure warrant or equivalent court order, frozen assets are transferred to a law-enforcement-controlled wallet. The venue's role is operational (execute the transfer per court order), not adjudicative (the venue does not determine ownership).

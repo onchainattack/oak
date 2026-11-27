@@ -16,7 +16,7 @@ scope: |
   validator-concentration analysis, slashing-enforceability audit, validator-
   revenue sustainability analysis, and cross-bridge comparative economic-
   security ranking layers. Excludes: T10.001 (validator-signer key compromise —
-  technical key extraction, not economic-incentive assessment); T10.004
+  technical key extraction, not economic-incentive assessment); T10.004 (deprecated)
   (optimistic-bridge fraud-proof gap — honest-challenger assumption failure,
   not validator-stake insufficiency); T9.002 (flash-loan-enabled exploit —
   temporary capital for governance attacks, not structural stake/TVL misalignment).

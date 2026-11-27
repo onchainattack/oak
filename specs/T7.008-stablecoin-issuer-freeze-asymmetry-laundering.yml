@@ -14,7 +14,7 @@ scope: |
   Detection operates at the per-cluster stablecoin-issuer preference ratio
   and freeze-event-triggered conversion monitoring layers. Excludes: T7.002
   (CEX deposit layering — exchange-level compliance variation, not issuer-
-  level); T7.006 (yield-strategy laundering — yield-user crowd as cover,
+  level); T7.006 (deprecated) (yield-strategy laundering — yield-user crowd as cover,
   not issuer-policy gap).
 
 data_sources: [dex_trades, tx_call_trace, funder_graph, contract_events,

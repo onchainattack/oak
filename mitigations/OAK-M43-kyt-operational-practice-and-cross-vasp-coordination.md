@@ -2,7 +2,7 @@
 
 **Class:** venue
 **Audience:** venue (CEX, OTC desk, custodian, bridge protocol), compliance-provider vendor, risk-team
-**Maps to Techniques:** OAK-T7.001, OAK-T7.002, OAK-T7.003, OAK-T7.006, OAK-T7.007, OAK-T7.008, OAK-T8.001, OAK-T8.002
+**Maps to Techniques:** OAK-T7.001, OAK-T7.002, OAK-T7.003, OAK-T7.007, OAK-T7.008, OAK-T8.001, OAK-T8.002
 
 ## Description
 

@@ -64,6 +64,19 @@ If something on OAK is wrong about you or your work, write to us. We'll fix it.
 
 ## Correction log
 
+### 2026-11-27 — Four Techniques with no documented incident deprecated: OAK-T7.006, OAK-T10.004, OAK-T16.004, OAK-T7.010
+
+The third source pass left these four with few or no examples. Each remaining example was checked against its sources, and a separate search looked for any documented incident of the shape the page describes. None was found for any of the four, so each page is now a tombstone (ID kept, never reused), as OAK-T9.012, OAK-T16.003 and OAK-T17.005 are.
+
+| Technique | What it claimed | What the sources show |
+|---|---|---|
+| `OAK-T7.006` DeFi Yield-Strategy Laundering (was `stable`) | stolen funds parked in lending or yield protocols as cover | its examples rested on a Chainalysis page that does not mention yield protocols and calls DeFi a poor choice for obfuscation; no named case found. Real neighbour: borrowing against stolen collateral on Aave (Binance 2026-10, per Elliptic, read directly), now a TAXONOMY-GAPS candidate |
+| `OAK-T10.004` Optimistic-Bridge Fraud-Proof Gap | funds lost because a fraudulent root went unchallenged | Nomad was a zero-root initialisation flaw (OAK-T10.002); AFX was valid signatures from stolen keys (OAK-T10.001), with a 200-second window that is a sourced contributing condition |
+| `OAK-T16.004` Snapshot / Off-Chain Voting Exploitation | manipulation of an off-chain vote | the Tornado Cash anchor was an on-chain takeover; the MakerDAO 2024-11 vote has no manipulation alleged; no case found. Real neighbours noted: phishing through a Snapshot proposal (Stargate 2023-12), a lapsed ENS name controlling a Snapshot space (Aave 2026-01, read directly) |
+| `OAK-T7.010` Travel Rule Evasion | structuring or routing to avoid Travel Rule data sharing | no opened page on its examples mentions the Travel Rule; one regulatory lead (South Korea, 216 sub-threshold withdrawals, per crypto.news, read directly) is a candidate |
+
+Examples: `2021-2025-defi-and-nft-laundering-infrastructure-cohort` and `2024-11-makerdao-snapshot-governance-endgame-dispute` quarantined (no attack); `2022-07-nomad-optimistic-verification-gap` merged into `2022-08-nomad-bridge`; `2022-2025-stablecoin-issuer-freeze-asymmetry-and-bridge-fraud-proof-gap-cohort` merged into `2022-post-tornado-cash-usdc-usdt-freeze-asymmetry`. Rewritten: `2022-08-nomad-bridge` (faulty upgrade dated 2022-06-21 per Nomad's post-mortem as quoted by Halborn; over \$33M returned by 2022-08-15 per Halborn and \$36M per Mandiant, where the file said ~\$22M; one person charged, per TRM Labs) and `2024-08-4064-btc-multi-hop-cross-chain-laundering` (a social-engineering theft from a Genesis creditor; the fixed hop order and per-venue jurisdictions removed). The deprecated mappings were removed from `2026-07-afx-trade-bridge…`, `2026-07-dprk-military-operators…` and `2024-01-dprk-chain-hop-laundering`.
+
 ### 2026-11-27 — Third source pass: 42 examples with one real source; 23 rewritten, 15 quarantined, 4 duplicates merged; OAK-T17.005 deprecated
 
 Same method as the two passes below (`tools/source-pass-instructions.md` plus `tools/source-pass-batch-addendum.md`): open the file's sources, find more, rewrite from what the pages say. This batch took every cohort file that had a single real source and the first single incidents from 2021–2025, plus six files the earlier passes flagged.
