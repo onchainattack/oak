@@ -62,14 +62,13 @@ Operationally, Lazarus's modern crypto-theft playbook combines social engineerin
 - [`examples/2025-04-exch-shutdown.md`](../examples/2025-04-exch-shutdown.md) — eXch instant-exchange shutdown (laundering-rail substrate; G01 customer-cohort attribution)
 - [`examples/2025-07-coindcx.md`](../examples/2025-07-coindcx.md) — CoinDCX, ~\$44M, 2025-07: recruiter lure → malware on an engineer's work laptop → internal liquidity account (police via Indian Express; corrected 2026-10-30 from "server breach")
 - [`examples/2025-09-sbi-crypto.md`](../examples/2025-09-sbi-crypto.md) — SBI Crypto mining-pool drain
-- [`examples/2024-01-post-tornado-defi-yield-laundering.md`](../examples/2024-01-post-tornado-defi-yield-laundering.md) — Post-Tornado-Cash DeFi yield-protocol laundering shift (T7.006 pattern case); G01 is the principal documented cluster using DeFi yield protocols as laundering cover at scale.
 - [`examples/2017-04-yapizon.md`](../examples/2017-04-yapizon.md) — Yapizon (Youbit) exchange hack; DPRK Lazarus Group first-strike against a South Korean exchange (~$5.6M)
 - [`examples/2018-06-bithumb.md`](../examples/2018-06-bithumb.md) — Bithumb exchange hot-wallet compromise; largest DPRK-attributed exchange theft of 2017-2018 wave (~$31M)
 - [`examples/2018-2025-dprk-it-worker-exchange-account-farming.md`](../examples/2018-2025-dprk-it-worker-exchange-account-farming.md) — DPRK IT worker exchange account farming scheme; canonical T8.004 anchor
 - [`examples/2020-2023-lazarus-group-200m-laundering.md`](../examples/2020-2023-lazarus-group-200m-laundering.md) — Lazarus Group $200M fiat cash-out from 25+ hacks over 2020-2023
 - [`examples/2022-06-harmony-horizon-bridge.md`](../examples/2022-06-harmony-horizon-bridge.md) — Harmony Horizon Bridge light-client verification bypass; Lazarus-attributed (~$100M)
 - [`examples/2023-07-alphapo.md`](../examples/2023-07-alphapo.md) — Alphapo payment-processor hot-wallet compromise (~$60M+)
-- [`examples/2024-01-coinspaid-lazarus-endpoint-compromise.md`](../examples/2024-01-coinspaid-lazarus-endpoint-compromise.md) — CoinsPaid Lazarus endpoint compromise (January 2024)
+- [`examples/2023-07-coinspaid-fake-job-interview-endpoint-compromise.md`](../examples/2023-07-coinspaid-fake-job-interview-endpoint-compromise.md) — CoinsPaid fake-job-interview endpoint compromise, suspected Lazarus (July 2023)
 - [`examples/2024-01-dprk-chain-hop-laundering.md`](../examples/2024-01-dprk-chain-hop-laundering.md) — DPRK chain-hop laundering pattern (January 2024)
 - [`examples/2024-08-dprk-it-worker-infiltration.md`](../examples/2024-08-dprk-it-worker-infiltration.md) — DPRK IT worker infiltration into crypto companies (August 2024)
 - [`examples/2026-04-drift-protocol-durable-nonces-dprk.md`](../examples/2026-04-drift-protocol-durable-nonces-dprk.md) — Drift Protocol durable nonces DPRK exploitation

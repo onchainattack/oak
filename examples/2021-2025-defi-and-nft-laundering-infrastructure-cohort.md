@@ -37,8 +37,6 @@ Canonical sub-patterns:
 - **Liquid-staking-derivative conversion.** Source asset converted to stETH, jitoSOL, mSOL, etc., held for a delay, then redeemed — the derivative leg sits in a deeply liquid market dominated by legitimate stakers.
 - **Single-sided LP-pool laundering.** Single-sided deposit followed by asymmetric withdrawal of a different pool-asset composition.
 
-Primary operator: **OAK-G01 Lazarus Group** is the principal documented cluster using DeFi yield protocols as laundering cover at scale, particularly post-Tornado-Cash sanctions (2022-08). See `examples/2024-01-post-tornado-defi-yield-laundering.md`.
-
 Detection primitives: per-position duration distribution (laundering positions cluster at lockup minimum), yield-claim-rate signal (near-zero claim rate against active deposit volume), withdrawal-recipient divergence, cross-protocol rotation graph analysis (N≥3 yield protocols without yield-claim events).
 
 ## Public references

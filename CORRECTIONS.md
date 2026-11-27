@@ -64,6 +64,45 @@ If something on OAK is wrong about you or your work, write to us. We'll fix it.
 
 ## Correction log
 
+### 2026-11-27 — Third source pass: 42 examples with one real source; 23 rewritten, 15 quarantined, 4 duplicates merged; OAK-T17.005 deprecated
+
+Same method as the two passes below (`tools/source-pass-instructions.md` plus `tools/source-pass-batch-addendum.md`): open the file's sources, find more, rewrite from what the pages say. This batch took every cohort file that had a single real source and the first single incidents from 2021–2025, plus six files the earlier passes flagged.
+
+**Quarantined: no attack on any opened page (15).** `2022-2025-cross-chain-replay-cohort` (no named incident), `2022-2025-arbitrum-one-optimistic-bridge-validator-set-gap` (a design property), `2025-04-eigenlayer-mainnet-slashing-launch` (a product launch), `2023-2025-defi-yield-strategy-laundering-cohort`, `2024-01-post-tornado-defi-yield-laundering` and `2024-01-defi-bluechip-yield-laundering` (the Chainalysis page they rest on does not mention yield protocols and calls DeFi a poor choice for obfuscation), `2024-murad-memecoin-insider-wallets` (holdings disclosed, no sale reported), `2022-2025-travel-rule-gap-exploitation` (a policy summary), `2022-2026-circle-usdc-compliance-failures` (allegations about freeze timing), `2010-2015-navinder-sarao-cme-futures-spoofing` (no crypto), `2024-2025-us-treasury-ofac-blockchain-analytics-tooling-cohort` (procurement and designations), `2022-2025-optimistic-bridge-fraud-proof-cohort`, `2022-2024-snapshot-voting-exploitation-cohort`, `2021-2025-multi-block-mev-twap-cohort` and `2023-2025-multi-block-mev-twap-oracle-grinding-cohort` (no sourced member).
+
+**Merged (4).** `2023-05-tornado-cash-dao-snapshot-attack` → `2023-05-tornado-cash-governance` (its Snapshot vote and Sybil cluster are on no page); `2022-2024-flash-loan-governance-attack-cohort` → `2022-04-beanstalk`; `2024-2026-nft-marketplace-insider-trading-wash-trading` → `2022-06-opensea-insider-trading`; `2023-11-safemoon-charges` → `2021-03-safemoon`.
+
+**Rewritten, with the main change.**
+
+| File | Was | Now |
+|---|---|---|
+| `2023-05-tornado-cash-governance` | "Proposal 21" drained ~\$1M; ~\$890K returned | about 483,000 TORN taken; \$890K is one outlet's figure for the attacker's proceeds; nothing reported returned; control restored by the attacker's own proposal on 2023-05-26 |
+| `2022-07-audius` | storage collision bypassing a role guard via "proposal #75"; T9.004, T16.005 | repeated `initialize` because the proxy admin slot overlapped the initializer flags (operator post-mortem); 18,564,497 AUDIO; T9.003, T7.001 |
+| `2022-05-fortress-protocol-bought-votes-collateral-listing-oracle-manipulation` (renamed) | flash-loaned vote, mint authority, one transaction | votes bought with funded ETH, a multi-day proposal listing FTS as collateral, a publicly callable price setter; T9.001 |
+| `2023-07-coinspaid-fake-job-interview-endpoint-compromise` (renamed from 2024-01) | January 2024, six-month dwell, a second attack, FBI-confirmed, signing vendor | 2023-07-22, \$37.3M, attempts from March 2023, attribution is the operator's and a tracing firm's; the FBI release was not opened |
+| `2024-01-xrp-cofounder-personal-accounts-drain` (renamed) | "Ripple hot wallet compromise", vector never established | personal accounts of a co-founder, not a company wallet; a forfeiture complaint (seen as a screenshot) ties it to keys stored in a password manager |
+| `2023-11-fake-ledger-live-microsoft-store` (renamed from 2024) | seed-phrase entry, "Microsoft verified", BTC only | mechanism undisclosed; about \$770K across BTC, ETH and BSC; full addresses |
+| `2021-03-safemoon` | modifiable tax, price distortion, "template for thousands" | the SEC complaint's account: liquidity said to be locked was not; redemptions 2021-03-05 to 2022-05-11; all allegations |
+| `2023-11-dydx-sushi-yfi-manipulation` | T17.001, T17.002, "\$50M liquidations" | operator calls it oracle manipulation (T9.001); \$9M drawn from the insurance fund |
+| `2023-12-tellor-trb-manipulation` | 20 whales identified, 78% in one hour | manipulation unconfirmed; \$619 to \$136 in about 13 hours; no Technique |
+| `2021-2023-uranium-finance-exploit-seizure` | CEX consolidation, Polygon leg | about \$31M seized in 2025-02; one defendant charged and found guilty (BleepingComputer, 2026-10-08, read directly) |
+| `2023-tornado-cash-25m-collectibles-laundering` | "110 withdrawals of exactly 100 ETH" | 100 ETH increments, 11,200+ ETH; attribution inferred-weak |
+| `2020-2023-lazarus-group-200m-laundering` | attribution confirmed; Tornado only | an investigator's analysis relayed by two outlets; Tornado Cash and ChipMixer; at least \$44M through two P2P accounts |
+| `2025-rekt-uncovered-incidents-cohort` | "\$14.2B aggregate", family totals | 25 members, each checked against its article; nine mechanisms and four dates corrected (LuBian 2020-12-28, Woo X 2025-07-24, LNDFi 2025, BrincFi 2021); DPRK attribution of LNDFi removed |
+| `2024-2025-uniswap-permit2-phishing-cohort` | wallet-vendor timeline, drainer kits | two sourced cases; T4.001 only |
+| `2023-2024-counterfeit-token-dust-attack-lure-cohort` | drainer kits named, phishing funnel | a measurement study: at least \$83.8M across 6,633 address-poisoning incidents |
+| `2024-2025-pump-fun-solana-launch-sniping` | — | figures held up against the Helius report; one worked sandwich added |
+| `2023-2024-starknet-strk-pre-token-anticipation-phishing` | two-year anticipation window, Permit2 specifics | a fake airdrop site with drainer code; no Technique declared |
+| `2026-02-axiom-employee-data-access-allegations` (renamed from 2025) | "confirmed", a named employee, >\$100M | allegations; no one named; loss undisclosed |
+| `2024-06-mark-cuban-wallet-social-engineering` | confirmed, four names | inferred-weak, resting on one investigator post |
+| `2025-07-crypto-beast-alt-insider-dump` | confirmed, "98.4%" | an allegation the influencer denies; 97% per one outlet |
+| `2025-04-3520-btc-instant-exchange-xmr-laundering` | "no theft established" | the investigator later called it a social-engineering theft; times corrected |
+| `2023-2024-french-streamer-kidnapping-ransom-crypto`, `2023-2024-uk-scammer-ape31-fake-pnl-services` | freeze rates, an IP address, KYC identification | unsourced specifics removed; an IP address that identified a private person removed |
+
+**Taxonomy.** `OAK-T17.005` (TWAP Oracle Manipulation via Multi-Block MEV) is deprecated: the mechanism is in a research paper and no incident was found. Corrected examples were also removed from the pages of Techniques they no longer declare (Audius from OAK-T16.005, Fortress from the flash-loan lists, SafeMoon from OAK-T3.002/T3.003/T5.005, Tornado Cash from OAK-T16.004).
+
+Not machine-verified: The Block, CoinDesk, sec.gov, coinspaid.com and Medium refuse the quote checker; agents read them through a summarising fetch or, for the SEC complaint, as a PDF. 30 of the 31 addresses and hashes in the batch were found in the raw text of a cited page; the other is beside a CoinDesk page and exists on-chain.
+
 ### 2026-11-27 — Technique pages built on corrected incidents: one deprecated, two re-anchored; six more examples rewritten, four removed
 
 The two source passes below corrected example files; the Technique pages that had been written around the old versions still carried them. Each page was checked against the corrected examples and, where needed, against the sources.

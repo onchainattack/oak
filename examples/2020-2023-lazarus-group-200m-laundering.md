@@ -1,51 +1,48 @@
-# Lazarus Group — $200M Fiat Cash-Out from 25+ Hacks — 2020-2023
+# Lazarus Group — ZachXBT traces over \$200M from 25+ hacks through mixers, bridges and P2P platforms to fiat — 2020-2023
 
-**Loss:** $200M+ from 25+ crypto hacks laundered to fiat by Lazarus Group over 2020-2023. $374K USDT frozen (Nov 2023); $3.4M frozen by 3 of 4 stablecoin issuers; undisclosed amount frozen at CEXs.
-**OAK Techniques observed:** **OAK-T7.001** (Mixer-Routed Hop) — primary; stage 1 routed proceeds from 25+ hacks through Tornado Cash. **OAK-T7.003** (Cross-Chain Bridge Laundering) — stage 2; mixed funds bridged across chains. **OAK-T7.002** (CEX Deposit-Address Layering) — stage 4 consolidation and off-ramp. **OAK-T8.002** (Cross-Chain Operator Continuity) — the shared laundering path is what clustered 25+ nominally separate hacks to one operator. **Not mapped:** the Noones/Paxful P2P-marketplace fiat off-ramp — the file's own teaching point — has no covering Technique; T7.002 is the CEX off-ramp, not the lighter-KYC P2P layer.
+**Loss:** over \$200M of hacked crypto laundered from 25+ hacks, August 2020 to October 2023, per ZachXBT's analysis ([Decrypt](https://decrypt.co/228606/north-koreas-lazarus-group-laundered-200m-in-crypto-says-blockchain-sleuth-heres-how), [Cointelegraph](https://cointelegraph.com/news/lazarus-group-laundered-200m-crypto-since-2020)). Frozen: Cointelegraph reports Tether blacklisted over \$374,000 in November 2023 and that three of four stablecoin issuers blacklisted \$3.4M across Lazarus-linked addresses; it does not name the issuers.
+
+**OAK Techniques observed:** **OAK-T7.001** (Mixer-Routed Hop — primary; Decrypt reports Tornado Cash on Ethereum and ChipMixer on Bitcoin, see [`techniques/T7.001-mixer-routed-hop.md`](../techniques/T7.001-mixer-routed-hop.md)). **OAK-T7.003** (Cross-Chain Bridge Laundering — Decrypt reports repeated bridging of tokens across chains). **OAK-T7.002** (CEX Deposit-Address Layering — Decrypt reports accounts that received about \$44M and converted it to fiat). Not mapped: the Noones and Paxful peer-to-peer fiat off-ramp, which no existing Technique covers.
+
 **OAK-Gnn:** [OAK-G01 Lazarus Group / DPRK-attributed](../actors/OAK-G01-lazarus.md).
-**Attribution:** **confirmed** — Lazarus Group (DPRK state-sponsored). ZachXBT 15-month investigation published April 2024.
 
-**Key teaching point:** The Lazarus Group $200M laundering investigation demonstrates the **P2P marketplace as fiat off-ramp** pattern: after mixer (Tornado Cash) and cross-chain bridge hops, Lazarus consolidated funds at Noones and Paxful — P2P marketplaces where crypto is traded directly for fiat between users, with lighter KYC than centralized exchanges. The P2P marketplace layer is the detection gap: P2P platforms have fewer compliance resources than major CEXs, making them the preferred final hop before fiat. Detection approach: P2P marketplace deposit addresses receiving funds traceable to known exploit wallets, especially accounts trading at volumes inconsistent with retail P2P activity.
+**Attribution:** **inferred-strong** — ZachXBT's attribution of the laundering to Lazarus Group; Decrypt reports that the FBI attributed one of the hacks (Stake.com) to Lazarus and describes the laundering finding as ZachXBT's analysis. No government statement about this investigation was opened.
+
+**Key teaching point:** **Put P2P-marketplace and OTC deposit accounts inside the same screening as exchange deposit addresses, and share a flagged address with every stablecoin issuer.** Cointelegraph reports that the P2P accounts "EasyGoatfish351" and "FairJunco470" at Paxful and Noones handled at least \$44M whose deposits and volumes matched the stolen funds.
 
 ## Summary
 
-From 2020 to 2023, Lazarus Group executed 25+ crypto hacks — primarily targeting cross-chain bridges and exchange hot wallets — accumulating over $200M in stolen assets. ZachXBT's 15-month investigation (published April 2024) traced the full laundering pipeline across multiple blockchains through mixers to centralized exchanges and P2P marketplaces.
+On 2024-04-29 ZachXBT announced an investigation of how Lazarus Group laundered about \$200M from 25+ hacks to fiat between 2020 and 2023 ([post](https://x.com/zachxbt/status/1784935501935390930); the full write-up is on his Mirror page, which returned 403 to the fetch). Decrypt reports the hacks ran from August 2020 to October 2023 across multiple blockchains, naming Stake.com (\$41M) and Ronin, and that funds went through Tornado Cash and ChipMixer, were bridged repeatedly, and ended at Bitcoin P2P platforms Noones and Paxful and at centralized exchange accounts ([Decrypt](https://decrypt.co/228606/north-koreas-lazarus-group-laundered-200m-in-crypto-says-blockchain-sleuth-heres-how)). Cointelegraph reports the funds were converted to USDT and then to cash, and notes that the group has historically used China-based OTC traders ([Cointelegraph](https://cointelegraph.com/news/lazarus-group-laundered-200m-crypto-since-2020)); Cointelegraph does not describe bridges or exchanges in the path, so the two outlets differ on that detail.
 
-The laundering pipeline:
+Decrypt reports that Binance and MetaMask helped ZachXBT identify accounts he believes are linked to Lazarus. Both outlets describe the findings as ZachXBT's analysis, not a legal conclusion.
 
-1. **Mixer layer**: Stolen funds enter Tornado Cash (pre-2022 sanctions). Mixer breaks the on-chain link between hack origin and subsequent movement.
-2. **Cross-chain bridge layer**: Mixed funds are bridged across multiple blockchains, fragmenting the chain of custody.
-3. **P2P marketplace fiat off-ramp**: Funds consolidate at Noones and Paxful — P2P marketplaces where users trade crypto directly for fiat. ZachXBT identified specific accounts at both platforms that received funds from the hacks.
-4. **CEX accounts**: Additional accounts at centralized exchanges consolidated and off-ramped funds.
+## Timeline (UTC)
 
-**Fund freezes demonstrate the detection-response pipeline:** $374K USDT was frozen in November 2023. An additional $3.4M was frozen by 3 of 4 stablecoin issuers, and undisclosed amounts were frozen at CEXs in Q4 2023. These freezes validate that tracing → issuer/CEX notification → freeze is a working detection-to-response chain.
+Stages: **Entry** (the hacks, not detailed here), **Preparation** (mixing), **Execution** (bridging, P2P), **Funds** (fiat), **Response** (freezes, disclosure). No times are published.
 
-## Timeline
-
-| When | Event | OAK ref |
+| When | What happened | OAK |
 |---|---|---|
-| 2020-2023 | 25+ connected hacks by Lazarus Group. $200M+ accumulated | **T7 laundering** |
-| 2020-2023 | Funds routed through mixers, bridges, P2P marketplaces (Noones, Paxful), and CEXs | **T7 multi-stage pipeline** |
-| 2023-11 | $374K USDT frozen | (asset recovery) |
-| 2023-Q4 | $3.4M frozen by stablecoin issuers. Undisclosed amount frozen at CEXs | (asset recovery) |
-| 2024-04-29 | ZachXBT publishes 15-month investigation | (public disclosure) |
+| 2020-08 to 2023-10 | 25+ hacks across multiple chains, analysed by ZachXBT ([Decrypt](https://decrypt.co/228606/north-koreas-lazarus-group-laundered-200m-in-crypto-says-blockchain-sleuth-heres-how)) | — |
+| Undisclosed | Proceeds mixed through Tornado Cash (Ethereum) and ChipMixer (Bitcoin) ([Decrypt](https://decrypt.co/228606/north-koreas-lazarus-group-laundered-200m-in-crypto-says-blockchain-sleuth-heres-how)) | T7.001 |
+| Undisclosed | Tokens bridged repeatedly across chains (Decrypt) | T7.003 |
+| Undisclosed | Accounts at Noones and Paxful handle at least \$44M, converted to USDT then cash ([Cointelegraph](https://cointelegraph.com/news/lazarus-group-laundered-200m-crypto-since-2020)) | none — P2P off-ramp |
+| Undisclosed | Exchange accounts convert funds to fiat (Decrypt) | T7.002 |
+| 2023-11 | Tether blacklists over \$374,000 ([Cointelegraph](https://cointelegraph.com/news/lazarus-group-laundered-200m-crypto-since-2020)) | response |
+| Undisclosed | Three of four stablecoin issuers blacklist \$3.4M (Cointelegraph) | response |
+| 2024-04-29 | ZachXBT publishes the investigation ([post](https://x.com/zachxbt/status/1784935501935390930)) | response |
 
-## What defenders observed
+Key addresses: undisclosed. None is printed in full on a page opened for this pass.
 
-- **P2P marketplaces are the fiat conversion detection gap.** Noones and Paxful — not major CEXs — were the final hop before fiat. P2P platforms have lighter KYC and fewer blockchain analytics integrations than Tier 1 exchanges, making them attractive for laundering. Funds that would trigger alerts at Binance or Coinbase pass through P2P platforms with less scrutiny.
-- **Stablecoin issuers froze $3.4M across 3 of 4 issuers.** The one non-participating issuer is a detection gap — threat actors will route through the issuer that does not freeze. Uniform freeze cooperation across all major stablecoin issuers is a mitigation requirement.
-- **Cross-chain tracing required for full pipeline visibility.** The 25+ hacks spanned multiple blockchains. Single-chain analysis could not reconstruct the full laundering pipeline. The investigation required multi-chain tracing across ETH, BSC, Polygon, and others.
-- **Deterministic pipeline enables clustering.** The consistent laundering path allowed ZachXBT to cluster 25+ seemingly separate hacks into a single actor (Lazarus) — the laundering infrastructure IS the attribution signal.
+## Root-cause evidence
 
-## What this example tells contributors
-
-- **P2P marketplaces are a T7 detection data source.** Noones, Paxful, LocalCoinSwap, and other P2P crypto-fiat marketplaces should be included in OAK detection data sources. The schema: `{p2p_platform, deposit_address, receiving_account, counterparty_fiat_account, trade_volume, trade_frequency}`.
-- **Stablecoin issuer freeze coverage is a measurable metric.** 3 of 4 issuers froze funds — the 4th is a known gap. OAK detection specs can include "issuer freeze participation rate" as a metric. The gap between 3/4 and 4/4 is a detection surface that threat actors exploit.
-- **Laundering pipeline = attribution fingerprint.** When 25+ hacks share the same laundering infrastructure (same mixers, same P2P platforms, same bridge routes), they are likely the same actor. The laundering path is as identifying as the exploit technique.
+- **Technique:** OAK-T7.001
+- **Source:** <https://x.com/zachxbt/status/1784935501935390930>; <https://decrypt.co/228606/north-koreas-lazarus-group-laundered-200m-in-crypto-says-blockchain-sleuth-heres-how>; <https://cointelegraph.com/news/lazarus-group-laundered-200m-crypto-since-2020>
+- **Source type:** independent-researcher
+- **Confidence:** corroborated
+- **Evidence:** Two outlets independently relay ZachXBT's analysis and agree on the \$200M, 25+ hacks and the P2P platforms; they differ on whether bridges and exchanges were part of the path. The primary write-up could not be opened. No address-level evidence was reviewed.
 
 ## Public references
 
-- [ZachXBT — Lazarus Group $200M Laundering Investigation (X/Twitter)](https://x.com/zachxbt/status/1784935501935390930)
-- P2P marketplaces identified: Noones, Paxful.
-- $374K USDT frozen (Nov 2023). $3.4M frozen by stablecoin issuers (Q4 2023).
-- 15-month investigation. 25+ connected hacks.
+- ZachXBT, announcement post (2024-04-29): <https://x.com/zachxbt/status/1784935501935390930>
+- Decrypt, "North Korea's Lazarus Group Laundered \$200M in Crypto, Says Blockchain Sleuth" (2024-04-29): <https://decrypt.co/228606/north-koreas-lazarus-group-laundered-200m-in-crypto-says-blockchain-sleuth-heres-how>
+- Cointelegraph, "Lazarus Group laundered \$200M in crypto since 2020" (2024-04-29): <https://cointelegraph.com/news/lazarus-group-laundered-200m-crypto-since-2020>

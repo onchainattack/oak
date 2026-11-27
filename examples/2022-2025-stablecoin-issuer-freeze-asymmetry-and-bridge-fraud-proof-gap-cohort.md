@@ -34,8 +34,6 @@ The bridge architecture relies on a fraud-proof challenge window to detect inval
 
 Canonical anchor: **Nomad bridge exploit — August 2022 — ~$190M.** While primarily a verification-predicate failure (T10.002), Nomad's optimistic-verification design surfaced the structural T10.004 question: who monitors the bridge and challenges invalid messages? The absence of a live challenger network was a contributing factor.
 
-See `examples/2022-2025-optimistic-bridge-fraud-proof-cohort.md` for full cohort coverage.
-
 Detection requires pre-deployment architecture review: verify that at least one independent challenger operator is funded and live; verify challenge-window duration via written response-time-budget analysis; require the operator to demonstrate a successful fraud-proof exercise on testnet.
 
 ## Public references

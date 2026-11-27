@@ -10,6 +10,10 @@ All notable changes to OAK are documented here. The format follows [Keep a Chang
 
 Recorded here rather than held to the next version bump because one item is a **reclassification consumers may have stored** — the same reasoning `VERSIONING.md` applies to deprecations.
 
+### Changed — OAK-T17.005 deprecated; 19 more examples removed (2026-11-27)
+
+**`OAK-T17.005` (TWAP Oracle Manipulation via Multi-Block MEV) is deprecated** (tombstone kept, ID never reused): the mechanism is described in a research paper and no incident was found. A third source pass removed 15 examples that describe no attack (design properties, policy notes, product launches, a non-crypto case, cohorts with no sourced member) and merged 4 duplicates. Reclassifications consumers may hold: Audius 2022-07 is `OAK-T9.003` (not T16.005/T9.004); Fortress 2022-05 is `OAK-T9.001` (not T16.001); dYdX 2023-11 is `OAK-T9.001`; CoinsPaid is dated 2023-07. Details in `CORRECTIONS.md`.
+
 ### Changed — OAK-T16.003 deprecated; OAK-T4.011 and OAK-T11.013 re-anchored (2026-11-27)
 
 **`OAK-T16.003` (Delegation-Cluster Vote Takeover) is deprecated** (tombstone kept, ID never reused). No documented incident has voting power gathered by delegation from a cluster of wallets and used to pass a hostile proposal. Its anchor, Compound Proposal 289, is an open-market accumulation filed under `OAK-T16.002` with confidence `disputed`; its other examples were quarantined. Consumers holding `OAK-T16.003` for Compound Proposal 289 should move it to `OAK-T16.002`.

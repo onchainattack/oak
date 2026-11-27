@@ -37,6 +37,5 @@ Aggregate mid-six-figures USD in spoof-induced adverse-execution losses for mark
 - Mango Markets community channels — spoof-and-cancel pattern discussion and on-chain reconstruction (2023)
 - Solana on-chain data (Solscan, SolanaFM) — per-order lifecycle transactions for Mango Markets V4 order-book events
 - Cross-reference: T17.003 at `techniques/T17.003-orderbook-spoofing-cancel-flood.md`
-- Cross-reference: `examples/2010-2015-navinder-sarao-cme-futures-spoofing.md` — Navinder Sarao / CME futures spoofing (traditional-finance T17.003 anchor)
 - Cross-reference: `examples/2025-11-hyperliquid-popcat-spoof-and-pull.md` — Hyperliquid POPCAT spoofed-buy-wall + cancel-flood (crypto-perp-DEX T17.003 anchor)
 - `[zhou2023sok]` — academic taxonomy classifying spoofing as a recurring market-manipulation class

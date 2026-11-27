@@ -1,64 +1,54 @@
-# Tornado Cash governance attack — Ethereum — 2023-05-20
+# Tornado Cash governance — proposal contract swapped after the vote passed, giving the attacker majority voting power — Tornado Cash DAO / Ethereum — 2023-05-20
 
-**Loss:** approximately $1M nominal (drained from the Tornado Cash governance treasury) — substantially-recovered when the attacker subsequently returned ~$890k to the community after the on-chain message-channel negotiation.
-**OAK Techniques observed:** **OAK-T9.003** (Governance Attack — self-modifying-contract / hidden-malicious-proposal subclass) + **OAK-T9.004** (post-passage access-control privilege escalation through the malicious proposal's setup() function granting attacker 1.2M voting power) + **OAK-T16.005** (Malicious Proposal Snowballing — canonical anchor for the self-modifying-contract sub-shape; the case is the textbook T16.005 chain).
-**Attribution:** **pseudonymous**; the attacker subsequently published a follow-up proposal (Proposal 21) that returned all attack-acquired voting power to a normal state and returned ~$890k of the extracted ETH and TORN to the community treasury, framed as an "I was demonstrating a vulnerability" position.
-**Key teaching point:** **Self-modifying-contract proposals are a governance-attack subclass distinct from voting-power-accumulation governance attacks** (Beanstalk April 2022, Compound Proposal 289 July 2024, passed then cancelled) and from storage-collision governance attacks (Audius Jul 2022). The Tornado Cash May 2023 case is the canonical case for the **proposal-payload-as-attack-vector** subclass: a proposal contract that appears to perform one function on the front-end UI but executes a different function (`setup()`-style privilege escalation) at on-chain execution time. Future T9.003 contributions should explicitly enumerate this subclass alongside voting-power-accumulation and storage-collision sub-classes.
+**Loss:** about 483,000 TORN taken from the governance vault, per analyst EmberCN as relayed by [The Block](https://www.theblock.co/post/231637) and by [Cointelegraph](https://cointelegraph.com/news/tornado-cash-governance-control-set-to-be-restored-as-token-votes-approve-proposal). Proceeds are reported differently: [Cointelegraph](https://cointelegraph.com/news/tornado-cash-governance-control-set-to-be-restored-as-token-votes-approve-proposal) says most was swapped for 485 ETH (about $890,000) and 39,000 TORN was kept; [Rekt](https://rekt.news/tornado-gov-rekt) says about 430 ETH (about $750,000) from selling TORN. No page opened for this file says any stolen funds were returned. The Tornado Cash pools themselves could not be drained, per [Rekt](https://rekt.news/tornado-gov-rekt).
+
+**OAK Techniques observed:** **OAK-T9.003** (Governance Attack — *primary*). A proposal that looked like an earlier, passed one was approved, then its logic was replaced at the same address, giving the attacker extra votes ([Rekt](https://rekt.news/tornado-gov-rekt), [Cointelegraph](https://cointelegraph.com/news/attacker-hijacks-tornado-cash-governance-via-malicious-proposal)). See [`techniques/T9.003-governance-attack.md`](../techniques/T9.003-governance-attack.md). **OAK-T16.005** (Malicious Proposal Snowballing — the approved text and the executed code diverged). **OAK-T7.001** (Mixer-Routed Hop — [Cointelegraph](https://cointelegraph.com/news/tornado-cash-governance-control-set-to-be-restored-as-token-votes-approve-proposal) says part of the ETH was routed through Tornado Cash).
+
+**Attribution:** **pseudonymous** — addresses below are as listed by [Rekt](https://rekt.news/tornado-gov-rekt); no source opened names the operator. Rekt itself only speculates on motive.
+
+**Key teaching point:** **Before voting, diff the deployed proposal bytecode against what the UI says, and reject proposal contracts that can `selfdestruct` or be redeployed at the same address.** Voters approved code that was later replaced at its address ([Rekt](https://rekt.news/tornado-gov-rekt)).
 
 ## Summary
 
-Tornado Cash's on-chain governance system (controlling the project's treasury and the Tornado Cash Pools' parameter-update authority) accepted proposals as deployed contracts whose execution was triggered by a successful vote. The proposal-execution flow assumed that proposals would do what their public description said they would do; the front-end UI displayed the proposal's stated function (in this case, an apparently-routine governance-treasury-management proposal), but the actual deployed proposal contract included a hidden `setup()`-style function that granted the proposer 1.2M voting power upon execution.
+On 2023-05-20 an attacker got a governance proposal approved that [Rekt](https://rekt.news/tornado-gov-rekt) says was disguised as a proposal to penalise "cheating" relayers, reusing an earlier proposal's logic with an added function allowing `selfDestruct`. The proposal was deployed through a contract combining CREATE and CREATE2, so that after approval the code at that address could be erased and different code deployed to it ([Rekt](https://rekt.news/tornado-gov-rekt)). Cointelegraph, citing the researchers, says the attacker used an `emergencyStop` function to update the proposal logic ([Cointelegraph](https://cointelegraph.com/news/attacker-hijacks-tornado-cash-governance-via-malicious-proposal)). The attacker granted themselves 1.2 million votes against about 700,000 legitimate votes ([Rekt](https://rekt.news/tornado-gov-rekt)), withdrew 10,000 TORN and sold it, and the community was told governance funds were potentially at risk. [Cointelegraph](https://cointelegraph.com/news/attacker-hijacks-tornado-cash-governance-via-malicious-proposal) credits samczsun with the first report.
 
-The attacker submitted Proposal 20 with the front-end-displayed-text describing it as a routine treasury proposal, the community voted on Proposal 20 based on the front-end-displayed text (the proposal received sufficient legitimate votes to pass), and at execution time the hidden setup() function ran and granted the proposer 1.2M voting power — sufficient to reach quorum on subsequent arbitrary proposals unilaterally. The attacker then submitted and self-passed Proposal 21 (transferring the governance treasury balance to the attacker), drained approximately $1M of treasury TORN and ETH, and exited.
-
-The case is structurally important because it represents **the first major case on the public record of a governance-attack-via-hidden-proposal-payload** — the attacker did not need to acquire voting power before the attack; the attack was the mechanism by which voting power was acquired. The mitigation surface requires reading the actual deployed contract bytecode at proposal-creation time rather than trusting the front-end-displayed text, which is a discipline-in-practice not consistently implemented across DAO front-end implementations even at v0.1 cutoff.
-
-The attacker subsequently returned ~$890k to the community via a follow-up proposal (Proposal 21-followup) that reset the voting-power state to pre-attack and transferred the extracted treasury back. The attacker's stated framing was "demonstrating a vulnerability"; whether this constitutes a whitehat-rescue outcome or a recover-the-stolen-funds-after-getting-caught outcome is debated in the public record.
+The attacker later put up a proposal to undo the takeover. [Cointelegraph](https://cointelegraph.com/news/tornado-cash-governance-control-set-to-be-restored-as-token-votes-approve-proposal) reports it passed on 2023-05-26 with 517,000 token votes in favour and none against, restoring control to TORN holders. That article does not say any stolen tokens or ETH were returned.
 
 ## Timeline (UTC)
 
-| When | Event | OAK ref |
+**Entry** (earlier attempt, malicious proposal) → **Execution** (code swap, votes) → **Money** (sales) → **Response** (restore proposal). Times are from the cited pages; unstated times are undisclosed.
+
+| When | What happened | OAK |
 |---|---|---|
-| 2023-05-20 (early) | Attacker submits Proposal 20 with front-end-displayed text describing routine governance-treasury management | T9.003 (preparation) |
-| 2023-05-20 (later) | Community votes on Proposal 20 based on front-end-displayed text; proposal passes with sufficient legitimate votes | (community response to mis-displayed proposal) |
-| 2023-05-20 | Proposal 20 executes; hidden setup() function grants attacker 1.2M voting power | T9.003 + T9.004 (extraction; voting-power escalation) |
-| 2023-05-20 | Attacker submits and self-passes Proposal 21; drains ~$1M of treasury TORN and ETH | T9.003 (extraction; governance-execution) |
-| 2023-05-21 | Industry forensic posts (PeckShield, BlockSec, Tornado Cash community) publish on-chain trace | (forensic record) |
-| 2023-05-26 | Attacker publishes Proposal 21-followup returning ~$890k of extracted funds and resetting voting-power state | M35 (whitehat-rescue-coordination broadly construed; debated framing) |
-| 2023-05 onward | Tornado Cash community implements governance-improvement proposals to require contract-bytecode-display at proposal-creation time | (mitigation deployment) |
+| Week before 2023-05-20 | Several addresses locked 0 TORN in the governance vault, which Rekt describes as an earlier suspected attempt ([Rekt](https://rekt.news/tornado-gov-rekt)) | T9.003 (preparation) |
+| 2023-05-20 | Proposal resembling an earlier passed one is approved by voters ([The Block](https://www.theblock.co/post/231637)) | **T16.005** |
+| 2023-05-20 07:25:11 | Attacker replaces the proposal logic and gives themselves 1.2M votes ([Cointelegraph](https://cointelegraph.com/news/attacker-hijacks-tornado-cash-governance-via-malicious-proposal)); selfDestruct tx [`0xd3a570af795405e141988c48527a595434665089117473bc0389e83091391adb`](https://etherscan.io/tx/0xd3a570af795405e141988c48527a595434665089117473bc0389e83091391adb) per [Rekt](https://rekt.news/tornado-gov-rekt) | **T9.003** |
+| 2023-05-20 | Attacker withdraws 10,000 TORN, sells it for $25,600 ([The Block](https://www.theblock.co/post/231637)) | T9.003 (extraction) |
+| 2023-05-20 to 21 | About 483,000 TORN taken; roughly 6,000 TORN to Bitrue, 379,000 sold on-chain for about $680,000 in ether, just under 100,000 TORN left with the attacker ([The Block](https://www.theblock.co/post/231637)) | T9.003 (extraction) |
+| Undisclosed | Part of the ETH routed through Tornado Cash ([Cointelegraph](https://cointelegraph.com/news/tornado-cash-governance-control-set-to-be-restored-as-token-votes-approve-proposal)) | **T7.001** |
+| 2023-05-20 to 21 | Binance pauses TORN deposits and withdrawals; Huobi keeps them open ([The Block](https://www.theblock.co/post/231637)) | response |
+| 2023-05-21 (just before midday) | Attacker publishes the revert proposal ([Rekt](https://rekt.news/tornado-gov-rekt), dated 2023-05-22) | — |
+| 2023-05-26 | Revert proposal passes, 517,000 votes for, none against ([Cointelegraph](https://cointelegraph.com/news/tornado-cash-governance-control-set-to-be-restored-as-token-votes-approve-proposal)) | response |
 
-## What defenders observed
+Key addresses (all as printed by [Rekt](https://rekt.news/tornado-gov-rekt)):
 
-- **Pre-event (no proposal-bytecode-display in the front-end UI).** Tornado Cash's governance front-end displayed the proposal's stated text but did not display the actual deployed contract bytecode; this front-end design choice is the structural pre-incident root cause. Defenders auditing DAO governance front-end implementations should treat proposal-bytecode-display as a discrete UX-layer mitigation class.
-- **At-event (proposal passed via legitimate community votes).** The proposal received enough legitimate community votes to pass at face value; the community did not perform the additional bytecode-audit step before voting. The case is canonical for the proposition that DAO-governance security depends on the worst-case voter's audit discipline, not the average-case voter's audit discipline.
-- **Post-event (attacker-driven recovery via follow-up proposal).** The attacker's published follow-up proposal returned ~$890k and reset the voting-power state. The recovery-via-attacker-follow-up-proposal pattern is rare on the public record and has not recurred at scale post-2023.
+- Exploiter address 1 — [`0x092123663804f8801b9b086b03b98d706f77bd59`](https://etherscan.io/address/0x092123663804f8801b9b086b03b98d706f77bd59)
+- Exploiter address 2 — [`0x592340957ebc9e4afb0e9af221d06fdddf789de9`](https://etherscan.io/address/0x592340957ebc9e4afb0e9af221d06fdddf789de9)
+- Proposal publisher — [`0x1FAd009aD35689B5a9B91486148F2F32AFE31e23`](https://etherscan.io/address/0x1FAd009aD35689B5a9B91486148F2F32AFE31e23)
+- Malicious proposal contract — [`0xC503893b3e3c0C6b909222b45f2a3a259a52752D`](https://etherscan.io/address/0xC503893b3e3c0C6b909222b45f2a3a259a52752D)
+- Destination of a transfer from exploiter 1 (onward flow not confirmed by Rekt) — [`0xd90e2f925da726b50c4ed8d0fb90ad053324f31b`](https://etherscan.io/address/0xd90e2f925da726b50c4ed8d0fb90ad053324f31b)
 
-## What this example tells contributors writing future Technique pages
+## Root-cause evidence
 
-- **Self-modifying-contract proposals are a discrete T9.003 subclass.** Future T9.003 contributions should explicitly enumerate this subclass alongside voting-power-accumulation (Beanstalk Apr 2022, Compound Proposal 289 Jul 2024) and storage-collision (Audius Jul 2022) sub-classes.
-- **Front-end displayed text is not a sufficient verification surface for proposal payload.** The mitigation requires bytecode-level reading at proposal-creation time. Future T9.003 contributions and OAK-M-class mitigation contributions should explicitly enumerate proposal-bytecode-display as a discrete UX-layer mitigation class.
-- **Recovery-via-attacker-follow-up-proposal is a rare governance-specific recovery pattern.** Most T9 recovery cases route through M35 whitehat-rescue-coordination via off-chain on-chain-message-channel negotiation (Euler 2023, Tapioca 2024). The Tornado Cash case is one of the rare cases where the recovery itself was performed via the same governance mechanism that was attacked, which is a feature of governance protocols specifically and not generalisable to non-governance T9.x cases.
+- **Technique:** OAK-T9.003
+- **Source:** <https://rekt.news/tornado-gov-rekt>; <https://cointelegraph.com/news/attacker-hijacks-tornado-cash-governance-via-malicious-proposal>; <https://www.theblock.co/post/231637>
+- **Source type:** news
+- **Confidence:** reported
+- **Evidence:** All three are news pages, two dated within two days of the event, so the mechanism is not settled. They agree that an approved proposal was changed to grant 1.2M votes. They differ on the function (Rekt: `selfDestruct` plus CREATE/CREATE2 redeployment; Cointelegraph: `emergencyStop`). The Block says the added function was identified by samczsun. No operator post-mortem was opened. Loss and proceeds figures differ across pages as stated above.
 
 ## Public references
 
-- Tornado Cash community discussion and post-incident analysis — `[tornadocomm2023]`.
-- PeckShield on-chain trace — `[peckshieldtornado2023]`.
-- BlockSec function-level walkthrough — `[blocksectornadogov2023]`.
-- SlowMist incident analysis — `[slowmisttornadogov2023]`.
-
-## Citations
-
-- `[tornadocomm2023]` — Tornado Cash community post-incident analysis and governance-improvement proposals.
-- `[peckshieldtornado2023]` — PeckShield on-chain trace.
-- `[blocksectornadogov2023]` — BlockSec function-level walkthrough.
-- `[slowmisttornadogov2023]` — SlowMist incident analysis.
-- `[zhou2023sok]` — academic taxonomy classifying this as a governance / proposal-payload-attack subclass of T9.003.
-- `[ofac2022tornado]` — OFAC Tornado Cash designation; cross-reference for the broader Tornado-Cash-related context (the August 2022 OFAC SDN action against Tornado Cash precedes the May 2023 governance-attack incident; the two are structurally distinct events).
-
-## Discussion
-
-The Tornado Cash governance attack is the canonical case for the **self-modifying-contract proposal subclass** of T9.003 and is a useful framework-level reference for OAK contributors articulating the difference between governance-attack subclasses. The three documented T9.003 subclasses (voting-power-accumulation, storage-collision, self-modifying-contract) have distinct mitigation surfaces: voting-power-accumulation is mitigated by quorum-and-timelock design (OAK-M17), storage-collision is mitigated by storage-layout audit at fork-time (OAK-M16 + a discrete fork-substrate audit pass), and self-modifying-contract is mitigated by proposal-bytecode-display at proposal-creation time (a UX-layer mitigation that does not have a current OAK-M designation as of v0.1 and is a candidate for future OAK-M-class addition).
-
-The pseudonymous-unattributed framing reflects per-incident attribution; the attacker's published follow-up proposal contained a brief on-chain-message that could be read as a whitehat framing or as a after-getting-caught recovery framing, with the public record divided between the two interpretations. The case is documented as `pseudonymous-unattributed` with the attribution-strength language reflecting the divided public record.
-
-The OAK reference period note: the May 2023 governance attack precedes the August 2022 OFAC SDN action against Tornado Cash by several months in calendar time; the two events are structurally distinct and should not be conflated. The August 2022 OFAC action targeted the Tornado Cash mixer-protocol-as-laundering-venue; the May 2023 governance attack targeted the Tornado Cash on-chain-governance-treasury via the proposal-execution mechanism.
+- Rekt, "Tornado Cash Governance" (2023-05-22): <https://rekt.news/tornado-gov-rekt>
+- Cointelegraph, "Attacker hijacks Tornado Cash governance via malicious proposal" (2023-05-21): <https://cointelegraph.com/news/attacker-hijacks-tornado-cash-governance-via-malicious-proposal>
+- Cointelegraph, "Tornado Cash governance control set to be restored as voters approve proposal" (2023-05-28): <https://cointelegraph.com/news/tornado-cash-governance-control-set-to-be-restored-as-token-votes-approve-proposal>
+- The Block (2023-05-21): <https://www.theblock.co/post/231637>

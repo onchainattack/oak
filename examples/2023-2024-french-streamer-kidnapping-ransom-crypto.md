@@ -1,43 +1,41 @@
-# TeufeurS Kidnapping — $2M Crypto Ransom / $800K Frozen — 2023
+# TeufeurS — kidnapping of the streamer's father paid as a crypto ransom, ~\$800K frozen at Binance — France / chain undisclosed — 2023
 
-**Loss:** $2M crypto ransom paid after family member kidnapped in France. $800K frozen with Binance Security team assistance. Six suspects tied to the crime.
-**OAK Techniques observed:** **OAK-T5.009** (Physical-Coercion Extraction — the coerced-ransom transfer; the leverage here is physical violence against a family member, which is exactly what T5.009 covers and T5.008 Ransomware does not, its leverage being data encryption or threatened leakage). No T7 laundering leg is described — the file's own causal claim is that the \$800K was frozen *because* laundering had not started (the funds were still at Binance, unmixed and unbridged), which is itself the recovery lesson of the class. *(This case was one of three anchors — with the Balland kidnapping and the 2026 Kraken/Coinbase event — from which T5.009 was created, filling the physical-extortion Technique gap it originally flagged.)* The tracing, freeze, and six arrests are outcome.
-**Attribution:** **confirmed** — six suspects tied to the kidnapping. ZachXBT led tracing efforts resulting in $800K freeze with Binance Security.
+**Loss:** **~\$2M** in crypto paid as a ransom, per [ZachXBT's post](https://x.com/zachxbt/status/2046911569532231725). [Dexerto](https://www.dexerto.com/kick/crypto-sleuth-zachxbt-helped-catch-kidnappers-after-streamer-targeted-in-2m-ransom-plot-3355253/) puts the transfer at around €1.7 million. **~\$800K** was frozen with the Binance Security team ([ZachXBT](https://x.com/zachxbt/status/2046911569532231725)). Which coin was paid is not stated on any page opened.
 
-**Key teaching point:** The TeufeurS case demonstrates the **physical-extortion-to-crypto-ransom** pattern: a kidnapping in physical space (France) generates a crypto ransom payment on-chain. The crypto trail is the detection surface — even when the predicate crime is physical (kidnapping), the ransom payment exists on-chain and can be traced, frozen, and used to identify suspects. Detection approach: when a kidnapping involves crypto ransom, every exchange that receives ransom funds is a freeze point; rapid reporting to exchange security teams within hours of payment is the critical time window — before the funds are withdrawn or converted to privacy coins.
+**OAK Techniques observed:** **OAK-T5.009** (Physical-Coercion Extraction — *primary*). The leverage was the abduction of the streamer's father, and the payment was the coerced on-chain transfer ([Dexerto](https://www.dexerto.com/kick/crypto-sleuth-zachxbt-helped-catch-kidnappers-after-streamer-targeted-in-2m-ransom-plot-3355253/), [Bitcoin.com News](https://news.bitcoin.com/zachxbt-freeze-800k-french-streamer-kidnapping-ransom/)). See [`techniques/T5.009-physical-coercion-extraction.md`](../techniques/T5.009-physical-coercion-extraction.md). No laundering path is described by any opened source.
+
+**Attribution:** **unattributed** by name. ZachXBT says [six suspects tied to the incident were later arrested](https://x.com/zachxbt/status/2046911569532231725); [Bitcoin.com News](https://news.bitcoin.com/zachxbt-freeze-800k-french-streamer-kidnapping-ransom/) relays that they were arrested by French authorities. No opened page names them or gives charges.
+
+**Key teaching point:** **When a ransom is paid in crypto, report the receiving addresses to the exchanges that hold the funds at once.** The freeze in this case came through the Binance Security team ([ZachXBT](https://x.com/zachxbt/status/2046911569532231725)).
 
 ## Summary
 
-In late 2023, French streamer TeufeurS was extorted for a crypto ransom after a family member was kidnapped in France. A $2M ransom was paid in cryptocurrency.
+According to [Dexerto](https://www.dexerto.com/kick/crypto-sleuth-zachxbt-helped-catch-kidnappers-after-streamer-targeted-in-2m-ransom-plot-3355253/) and [Bitcoin.com News](https://news.bitcoin.com/zachxbt-freeze-800k-french-streamer-kidnapping-ransom/), the father of the French streamer TeufeurS was abducted in Sarthe in August 2023 by a group posing as Amazon delivery workers. Dexerto reports that around €1.7 million in crypto was transferred within hours and that the father was later found alive. [ZachXBT](https://x.com/zachxbt/status/2046911569532231725) dates the extortion to "late 2023" and says he helped lead efforts that led to an ~\$800K freeze with the Binance Security team after a \$2M ransom was paid. He disclosed it on 2026-04-22 and says he held off until then because of the sensitivity of the case.
 
-ZachXBT led tracing efforts on the ransom payment, working with the Binance Security team. $800K of the $2M was successfully frozen. Six suspects tied to the kidnapping were identified.
+## Timeline (UTC)
 
-The case bridges physical crime and crypto tracing: the threat actors operated in physical space (kidnapping in France), but the ransom was demanded and paid in cryptocurrency, creating an on-chain trail. The exchange freeze (Binance) was the interception point.
+Stages: **Entry** (abduction), **Execution** (ransom payment), **Money** (freeze), **Response** (arrests, disclosure). Exact times are undisclosed.
 
-## Timeline
-
-| When | Event | OAK ref |
+| When | What happened | OAK |
 |---|---|---|
-| 2023 (late) | Family member of French streamer TeufeurS kidnapped in France. $2M crypto ransom demanded | **T5 extortion / ransom** |
-| 2023 (late) | $2M ransom paid in crypto | **T5 ransom payment** |
-| 2023-2024 | ZachXBT traces ransom funds. $800K frozen with Binance Security | **T7 tracing + freeze** |
-| 2024-2026 | Six suspects tied to the kidnapping identified | (attribution) |
-| 2026-04-22 | ZachXBT publicly discloses case after investigation concludes | (public disclosure) |
+| 2023-08 | The streamer's father is abducted in Sarthe by a group posing as Amazon delivery workers ([Dexerto](https://www.dexerto.com/kick/crypto-sleuth-zachxbt-helped-catch-kidnappers-after-streamer-targeted-in-2m-ransom-plot-3355253/), [Bitcoin.com News](https://news.bitcoin.com/zachxbt-freeze-800k-french-streamer-kidnapping-ransom/)). ZachXBT dates the extortion to late 2023. | **T5.009** |
+| 2023 (date undisclosed) | A ransom of about \$2M in crypto is paid ([ZachXBT](https://x.com/zachxbt/status/2046911569532231725)); Dexerto says within hours of the abduction. Addresses and transaction hashes are undisclosed. | **T5.009** |
+| 2023 (date undisclosed) | ~\$800K is frozen with the Binance Security team after on-chain tracing led by ZachXBT ([ZachXBT](https://x.com/zachxbt/status/2046911569532231725)). Where the other funds went is undisclosed. | response |
+| Before 2026-04-22 (dates undisclosed) | Six suspects are arrested ([ZachXBT](https://x.com/zachxbt/status/2046911569532231725)). | response |
+| 2026-04-22 | ZachXBT publicly discloses his role ([post](https://x.com/zachxbt/status/2046911569532231725)). | response |
 
-## What defenders observed
+Key addresses: undisclosed. No opened page prints the ransom or freeze addresses.
 
-- **Physical crime → crypto ransom → on-chain trail.** The kidnapping itself left no crypto trail, but the ransom payment did. The attackers had to provide a crypto address to receive payment — that address became the entire tracing surface.
-- **Exchange freeze within the critical window.** $800K (40% of ransom) was frozen because tracing happened fast enough that funds were still at Binance. The freeze window between ransom payment and fund withdrawal/laundering is measured in hours.
-- **Suspect identification through exchange KYC.** Six suspects were tied to the crime through the exchange accounts that received the ransom. Exchange KYC (identity verification) was the attribution bridge from on-chain addresses to physical identities.
+## Root-cause evidence
 
-## What this example tells contributors
-
-- **Physical extortion with crypto ransom is a T5 sub-type.** Unlike purely digital extortion (ransomware), kidnapping involves physical violence or threat of violence. OAK T5 should distinguish "physical extortion ransom" from "digital extortion ransom" — the reporting channels and response urgency are different (immediate physical danger vs. data/system lockout).
-- **Rapid exchange reporting is the critical success factor for ransom freezes.** The 40% freeze rate ($800K/$2M) was achieved because Binance Security was engaged while funds were still on the exchange. The detection-to-reporting latency determines the freeze percentage.
-- **Kidnapping + crypto = dual-jurisdiction investigation.** The kidnapping is prosecuted in France (physical jurisdiction), while the crypto tracing involves exchanges in multiple jurisdictions. Cross-jurisdictional coordination is inherent to these cases.
+- **Technique:** OAK-T5.009
+- **Source:** <https://x.com/zachxbt/status/2046911569532231725>; <https://www.dexerto.com/kick/crypto-sleuth-zachxbt-helped-catch-kidnappers-after-streamer-targeted-in-2m-ransom-plot-3355253/>; <https://news.bitcoin.com/zachxbt-freeze-800k-french-streamer-kidnapping-ransom/>
+- **Source type:** independent-researcher
+- **Confidence:** reported
+- **Evidence:** ZachXBT, who took part in the tracing, says a family member was kidnapped and a \$2M ransom paid; two news outlets repeat his account and add the abduction details. No court or police document was opened. The coin, addresses and the date of the arrests are undisclosed.
 
 ## Public references
 
-- [ZachXBT — TeufeurS Kidnapping / $800K Frozen (X/Twitter)](https://x.com/zachxbt/status/2046911569532231725)
-- Victim: TeufeurS (French streamer). $2M ransom paid.
-- $800K frozen with Binance Security. Six suspects identified.
+- ZachXBT, post on X (2026-04-22): <https://x.com/zachxbt/status/2046911569532231725>
+- Dexerto, "Crypto sleuth ZachXBT helped catch kidnappers after streamer targeted in \$2M ransom plot": <https://www.dexerto.com/kick/crypto-sleuth-zachxbt-helped-catch-kidnappers-after-streamer-targeted-in-2m-ransom-plot-3355253/>
+- Bitcoin.com News, "ZachXBT Helped Freeze \$800K After French Streamer's Dad Was Kidnapped in Crypto Ransom Plot" (2026-04-23): <https://news.bitcoin.com/zachxbt-freeze-800k-french-streamer-kidnapping-ransom/>

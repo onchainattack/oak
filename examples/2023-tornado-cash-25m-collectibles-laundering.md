@@ -1,75 +1,44 @@
-# Tornado Cash → Magic: The Gathering Cards — $25M Collectibles Laundering — 2023
+# Tornado Cash withdrawals spent on Magic: The Gathering cards — suspected Uranium Finance proceeds — Ethereum — 2023
 
-**Loss:** 11,200+ ETH (~$25M) withdrawn from Tornado Cash in 110 transactions of exactly 100 ETH each, across 11 destination addresses. Majority spent on Magic: The Gathering (MTG) trading cards via a US-based broker.
-**OAK Techniques observed:** **OAK-T7.001** (Mixer-Routed Hop) — primary; 110 withdrawals of exactly 100 ETH across 11 addresses, with an ETH→WETH→transfer→unwrap sequence appended as a purpose-free obfuscation hop. A canonical case for T7.001's *linkage-heuristic* surface: attribution to the Uranium Finance exploiter rests entirely on deposit/withdrawal matching by timing and amount-class (52×100 ETH in on Mar 6 & 14, 52×100 ETH out on Mar 7 & 15). **OAK-T7.002** (CEX Deposit-Address Layering) — downstream USDC to Kraken, Bitpay, Coinbase deposit addresses. **OAK-T8.003** (On-Chain Transaction Graph De-Anonymization) — the Dune depositor-matching and the Instagram→OpenSea broker correlation are the attribution surface. **Not mapped:** the terminal leg — conversion to physical collectibles via a crypto-accepting broker at deliberate 5–10% overpayment — has no Technique. Not T7.004, whose scope is on-chain NFT trades, not physical goods.
-**Attribution:** **pseudonymous** — individual linked by ZachXBT to the Uranium Finance exploit through temporal and structural Tornado Cash deposit/withdrawal matching (52×100 ETH pattern in March 2023).
+**Loss:** 11,200+ ETH (about \$25M) withdrawn from Tornado Cash over 2023 by one person, most of it spent on Magic: The Gathering (MTG) cards, per [ZachXBT](https://x.com/zachxbt/status/1732790450350703052). The source of funds is an inference: the Uranium Finance exploit (about \$50M, April 2021; see [2021-04-uranium-finance.md](2021-04-uranium-finance.md)). In February 2025 ZachXBT put the portion laundered through cards at \$10.5M ([post](https://twitter.com/zachxbt/status/1894242208779256020)); the two figures are different measures and are not reconciled in the sources.
 
-**Key teaching point:** The MTG card case demonstrates the **physical collectibles as laundering exit** pattern with a highly specific detection methodology: (a) the 110×100 ETH withdrawal pattern from Tornado is a mechanical signature — always exactly 100 ETH, across 11 addresses; (b) the ETH→WETH wrap→unwrapped→USDC→broker path is a multi-hop obfuscation chain (each hop erodes tracing confidence); (c) the broker was identified through an OpenSea-Instagram username correlation; (d) the buyer was overpaying by 5-10% for MTG cards (anomalous pricing behavior); (e) the Uranium Finance link was established through Dune analytics — comparing top Tornado depositors with withdrawal patterns. Detection approach: collectibles brokers who accept crypto are a concentrated detection surface; anomalous overpayment is a red flag (legitimate collectors optimize for price); Tornado withdrawal round-number patterns (always 100 ETH) are a behavioral signature.
+**OAK Techniques observed:** **OAK-T7.001** (Mixer-Routed Hop — *primary*; withdrawals from Tornado Cash in 100 ETH increments, per [The Block](https://www.theblock.co/news/defi/2023-12-08-uranium-finance-hacker-may-have-cashed-out-via-magic-the-gathering-cards-zachxbt-says-266790)). **OAK-T7.002** (CEX Deposit-Address Layering — some funds went to deposit addresses at Kraken, Bitpay and Coinbase, per The Block). **OAK-T8.003** (On-Chain Transaction Graph De-Anonymization — the link to the Uranium hacker rests on deposit/withdrawal timing and amounts). The conversion into physical collectibles through a broker has no OAK Technique; none of the rejected candidates fit.
+
+**Attribution:** **inferred-weak** — ZachXBT links the card buyer to the Uranium Finance exploiter by timing and amount; The Block (relayed) says the timing suggests they might well be the same person. The thread itself says the analysis could be incorrect, per a [relayed summary](https://threadreaderapp.com/scrolly/1732790450350703052). Later US prosecution of the Uranium exploiter is covered in [2021-2023-uranium-finance-exploit-seizure.md](2021-2023-uranium-finance-exploit-seizure.md).
+
+**Key teaching point:** **Exchanges, brokers and sellers of high-value collectibles should flag buyers who pay upfront in crypto, overpay and stay anonymous, and screen payers for Tornado Cash exposure.** The Block reports the buyer paid 5-10% over market, sent crypto to the broker upfront and never revealed identity to sellers.
 
 ## Summary
 
-Throughout 2023, ZachXBT monitored an individual who executed a systematic Tornado Cash laundering operation:
+On December 7, 2023 ZachXBT [posted](https://x.com/zachxbt/status/1732790450350703052) that he had monitored someone who withdrew 11,200+ ETH from Tornado Cash during the year and spent most of it on MTG cards. Per [The Block](https://www.theblock.co/news/defi/2023-12-08-uranium-finance-hacker-may-have-cashed-out-via-magic-the-gathering-cards-zachxbt-says-266790), the ETH was swapped to WETH, moved to a new address, swapped to USDC and partly used to buy cards through an unnamed US-based broker; some funds went to Kraken, Bitpay and Coinbase. A [relayed summary of the thread](https://threadreaderapp.com/scrolly/1732790450350703052) adds that withdrawals went to 11 addresses and that the broker was identified through a matching Instagram username and OpenSea profile. The post links the funds to the Uranium hack through Tornado Cash deposits and withdrawals in March 2023.
 
-**Withdrawal pattern:** 110 withdrawals of exactly 100 ETH each from Tornado Cash, distributed across 11 destination addresses. The round-number consistency (always 100 ETH, never 99.5 or 100.3) is a behavioral fingerprint — automated or scripted withdrawals.
+## Timeline (UTC)
 
-**Obfuscation chain per withdrawal:**
+Stages: **Take** (2021 exploit, see sibling file) → **Preparation/Money** (mixer, swaps) → **Cash-out** (cards, exchanges) → **Response** (public analysis). Times are undisclosed; dates are from the cited pages.
 
-1. Withdraw 100 ETH from Tornado Cash
-2. Wrap ETH → WETH
-3. Transfer WETH to a new address
-4. Unwrap WETH → ETH
-5. Swap ETH → USDC
-6. Send USDC to MTG broker
-
-The wrapping/unwrapping hop (steps 2-4) serves no economic purpose — it's purely an obfuscation layer to add a hop between the Tornado withdrawal and the USDC conversion.
-
-**Broker identification:** The US-based MTG broker who accepts crypto was identified through an Instagram username that matched their OpenSea profile — a cross-platform identity correlation.
-
-**MTG purchasing behavior:** The buyer spent millions on starter decks, Alpha sets, and sealed boxes, consistently overpaying by 5-10%. Legitimate collectors optimize for price; overpayment suggests the buyer's priority is speed of conversion, not value.
-
-**Source of funds — Uranium Finance link:** ZachXBT traced the Tornado deposits to the Uranium Finance hacker ($50M exploit, April 2021). The evidence:
-
-- March 6 & 14, 2023: Uranium hacker deposits 52×100 ETH to Tornado Cash
-- March 7 & 15, 2023: The MTG buyer withdraws 52×100 ETH from Tornado Cash
-- The exact temporal matching (deposit one day, withdrawal the next) and identical 100 ETH round-number pattern link the deposit and withdrawal to the same entity.
-
-The trail from Tornado Cash through to Kraken, Bitpay, and Coinbase deposit addresses provides additional tracing surfaces.
-
-## Timeline
-
-| When | Event | OAK ref |
+| When | What happened | OAK |
 |---|---|---|
-| 2021-04 | Uranium Finance exploited for ~$50M on BSC | **T9 exploit** |
-| 2022-10-04 | Uranium hacker deposits 5.01 ETH to Aztec (privacy tool) | **T7 privacy layer** |
-| 2023-03-06, 14 | Uranium hacker deposits 52×100 ETH to Tornado Cash | **T7 mixer deposit** |
-| 2023-03-07, 15 | MTG buyer withdraws 52×100 ETH from Tornado Cash | **T7 mixer withdrawal** |
-| 2023 (throughout) | 110×100 ETH withdrawn from Tornado to 11 addresses. Wrapped/unwrapped → USDC → MTG broker | **T7 obfuscation chain** |
-| 2023 (throughout) | MTG cards purchased: starter decks, Alpha sets, sealed boxes. 5-10% overpayment | **T7 collectibles conversion** |
-| 2023 (throughout) | USDC flows to Kraken, Bitpay, Coinbase deposit addresses | **T7 CEX consolidation** |
-| 2023-12-07 | ZachXBT publishes investigation linking MTG buyer to Uranium Finance hacker | (public disclosure) |
+| 2021-04-28 | Uranium Finance exploited, about \$50M ([The Block](https://www.theblock.co/news/defi/2023-12-08-uranium-finance-hacker-may-have-cashed-out-via-magic-the-gathering-cards-zachxbt-says-266790)) | see [sibling](2021-04-uranium-finance.md) |
+| 2023-03-06 and 2023-03-14 | Per ZachXBT, the Uranium hacker deposits 52 x 100 ETH to Tornado Cash on each date ([The Block](https://www.theblock.co/news/defi/2023-12-08-uranium-finance-hacker-may-have-cashed-out-via-magic-the-gathering-cards-zachxbt-says-266790)) | T7.001 |
+| 2023-03-07 and 2023-03-15 | The monitored person receives 52 x 100 ETH from Tornado Cash (same source) | T7.001, T8.003 |
+| 2023 (dates undisclosed) | ETH to WETH, to a new address, to USDC; USDC to a US-based MTG broker; buyer pays 5-10% over market, upfront (same source) | — |
+| 2023 (dates undisclosed) | Some funds sent to Kraken, Bitpay and Coinbase deposit addresses (same source) | T7.002 |
+| 2023-12-07 | ZachXBT publishes the analysis ([X](https://x.com/zachxbt/status/1732790450350703052)) | response |
+| 2025-02-25 | ZachXBT notes \$31M seized by US law enforcement and \$10.5M laundered via cards ([X](https://twitter.com/zachxbt/status/1894242208779256020)) | response |
 
-## What defenders observed
+Key addresses: full addresses are in the thread but not on the pages opened for this pass; undisclosed here.
 
-- **100 ETH round-number withdrawal as behavioral signature:** Automated or scripted withdrawals almost always use round numbers. Human withdrawals vary (99.5, 100.3, 101.7). The mechanical consistency of exactly 100 ETH every time is an automation fingerprint.
-- **Wrapping/unwrapping as a purposeless hop:** The ETH→WETH→ETH hop has zero economic function — it exists solely to add a blockchain transaction between Tornado withdrawal and USDC conversion. Purpose-free hops are a reliable laundering indicator.
-- **Overpayment as urgency signal:** Paying 5-10% above market for collectibles is irrational for a collector but rational for a launderer who values conversion speed over price. The overpayment is itself a detection signal.
-- **Cross-platform identity correlation (Instagram→OpenSea):** The broker was identified by matching an Instagram username to an OpenSea profile. Threat actors and their facilitators often reuse usernames across platforms — this is a standard OSINT technique.
-- **Temporal deposit/withdrawal matching:** The one-day gap between Uranium hacker deposits and MTG buyer withdrawals (March 6→7, March 14→15) is the attribution link. This is a Dune analytics-powered on-chain clustering primitive.
+## Root-cause evidence
 
-## What this example tells contributors
-
-- **Round-number mixer withdrawals are a detection signature.** Tornado Cash withdrawals in exact round numbers (100 ETH, 50 ETH, 10 ETH) repeated identically suggest automated/scripted laundering. OAK T7 detection specs should include "round-number withdrawal consistency" as a behavioral detection parameter.
-- **Wrapping/unwrapping as purposeless obfuscation is detectable.** Any transaction sequence where an asset is wrapped and immediately unwrapped has no economic purpose. This is a low-false-positive laundering indicator applicable across all chains with wrapped asset contracts.
-- **Collectibles brokers who accept crypto are a T7 detection data source.** Unlike CEXs, collectibles brokers typically have no blockchain analytics integration. US-based MTG/card/art brokers who accept crypto payments are a discrete, monitorable set. OAK detection data sources should enumerate them.
-- **Overpayment percentage is a laundering urgency metric.** Paying above market rate for physical assets is uneconomic for collectors but economic for launderers. The overpayment percentage quantifies laundering urgency — higher overpayment = faster conversion priority.
-- **Temporal deposit/withdrawal matching via Dune analytics.** The technique: query Dune for top Tornado Cash depositors → match deposit timing and amounts to withdrawal timing and amounts → one-day gap + identical amounts = same entity. This is a replicable investigation methodology for T7 attribution.
+- **Technique:** OAK-T7.001
+- **Source:** <https://www.theblock.co/news/defi/2023-12-08-uranium-finance-hacker-may-have-cashed-out-via-magic-the-gathering-cards-zachxbt-says-266790>; <https://x.com/zachxbt/status/1732790450350703052>
+- **Source type:** news
+- **Confidence:** reported
+- **Evidence:** One investigator's thread, relayed by The Block the next day. The link to the Uranium exploit is timing and amount matching, not proof; the thread contents beyond its first post were read through a summary.
 
 ## Public references
 
-- [ZachXBT — Tornado Cash → MTG Cards Investigation (X/Twitter)](https://x.com/zachxbt/status/1732790450350703052)
-- Withdrawal pattern: 110×100 ETH to 11 addresses.
-- Obfuscation chain: Wrap WETH → transfer → unwrap → USDC → broker.
-- MTG broker identified via Instagram/OpenSea username correlation.
-- Linked to Uranium Finance hacker: 52×100 ETH deposit/withdrawal temporal match (March 2023).
-- Funds also flow to Kraken, Bitpay, Coinbase deposit addresses.
-- Dune analytics query by @bax1337 used for Tornado depositor analysis.
+- The Block, "Uranium Finance hacker may have cashed out via 'Magic: The Gathering' cards, ZachXBT says" (2023-12-08): <https://www.theblock.co/news/defi/2023-12-08-uranium-finance-hacker-may-have-cashed-out-via-magic-the-gathering-cards-zachxbt-says-266790>
+- ZachXBT, thread opening (2023-12-07): <https://x.com/zachxbt/status/1732790450350703052>
+- Thread Reader summary of the thread: <https://threadreaderapp.com/scrolly/1732790450350703052>
+- ZachXBT (2025-02-25): <https://twitter.com/zachxbt/status/1894242208779256020>

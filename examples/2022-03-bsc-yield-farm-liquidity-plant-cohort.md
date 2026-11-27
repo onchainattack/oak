@@ -9,7 +9,7 @@
 
 The 2022 BSC yield-farming ecosystem produced a recurring and structurally uniform token-launch pattern: a project would deploy a token contract with yield-farming branding, seed a PancakeSwap LP with the token paired against BNB or BUSD, market the yield-farming opportunity to attract retail LP contributions, then withdraw the deployer's token-side liquidity once sufficient paired-asset depth accumulated. The LP was structurally a single-sided deposit trap from genesis — the token side (controlled by the deployer) represented the dominant LP value, and the paired-asset side (contributed by retail) was the extraction target.
 
-The pattern is the canonical T2.001 instantiation for 2022, distinct from the T1.001 (Modifiable Tax / Anti-sell) pattern of the 2021 SafeMoon wave (`examples/2021-03-safemoon.md`) and from the T2.002 (Locked-Liquidity Spoof) pattern exemplified by AnubisDAO (`examples/2021-10-anubisdao.md`). The structural signature — deployer-seeded token-side depth, retail-filled paired-asset side, deployer withdrawal — recurs across dozens of 2022 BSC yield-farm launches and is the load-bearing T2.001 worked example for the year.
+The pattern is the canonical T2.001 instantiation for 2022, distinct from the T2.002 (Locked-Liquidity Spoof) pattern exemplified by SafeMoon (`examples/2021-03-safemoon.md`) and AnubisDAO (`examples/2021-10-anubisdao.md`). The structural signature — deployer-seeded token-side depth, retail-filled paired-asset side, deployer withdrawal — recurs across dozens of 2022 BSC yield-farm launches and is the load-bearing T2.001 worked example for the year.
 
 ## Timeline (UTC)
 
@@ -27,4 +27,4 @@ The pattern is the canonical T2.001 instantiation for 2022, distinct from the T1
 
 ## Discussion
 
-The 2022 BSC single-sided LP plant cohort is included as the structural T2.001 anchor for 2022. The case closes the T2×2022 near-threshold gap at v0.1 and is the canonical deposited-trap sub-pattern of T2.001, structurally distinct from the 2021 SafeMoon T1.001/T2.002 pattern and from the 2023+ cross-chain deployer-cluster T2 patterns. Contributors writing future T2.001 pages should treat the 2022 BSC yield-farm cohort as the reference sub-pattern for the single-sided LP plant deployed at token launch.
+The 2022 BSC single-sided LP plant cohort is included as the structural T2.001 anchor for 2022. The case closes the T2×2022 near-threshold gap at v0.1 and is the canonical deposited-trap sub-pattern of T2.001, structurally distinct from the 2021 SafeMoon T2.002 pattern and from the 2023+ cross-chain deployer-cluster T2 patterns. Contributors writing future T2.001 pages should treat the 2022 BSC yield-farm cohort as the reference sub-pattern for the single-sided LP plant deployed at token launch.

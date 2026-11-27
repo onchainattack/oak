@@ -1,43 +1,45 @@
-# Mark Cuban — Public Figure Wallet Social Engineering Compromise — 2024-06
+# Mark Cuban — wallet theft by social engineering, linked by an investigator to the Genesis-creditor theft group — Ethereum — 2024-06-23
 
-**Loss:** Crypto assets stolen from Mark Cuban's public wallet `markcuban.eth` via social engineering. Same device indicators linked to the $243M Genesis Creditor theft (Malone Lam, Veer Chetal, Jeandiel Serrano).
-**OAK Techniques observed:** **OAK-T8.005** (Operational Security Procedural Failure) — primary, and on the *attacker's* side: identical device indicators (browser fingerprint, IP ranges, session metadata) were reused across this compromise and the \$243M Genesis Creditor theft, producing the attribution bridge that linked the two. This is the file's own teaching point. **Compromise mechanism: not mapped.** The record does not establish the vector — the file says only that the attacker "likely" impersonated a service provider or support entity. T15.001 is ruled out by its own boundary text: its victim is operator-side personnel whose access gates a downstream signing surface serving third-party customers; an end-user wallet-holder is the case T15.001 explicitly carves out. No T4 sub-Technique is supportable without an established primitive.
-**Attribution:** **confirmed** — linked via device indicators to Malone Lam (Greavys) and associates, the same group behind the $243M Genesis Creditor theft. ZachXBT investigation published May 2025.
+**Loss:** Undisclosed. [ZachXBT](https://x.com/zachxbt/status/1923465312529416702) says Cuban lost "crypto assets" from his public wallet `markcuban.eth` on 2024-06-23; no opened page gives an amount. A contemporaneous [CryptoSlate report](https://cryptoslate.com/zachxbt-helps-secure-arrests-in-243m-social-engineering-attack-on-one-person/) (2024-09-19) describes a different June 2024 event: Cuban's Google account compromised after a phone call, recovered within 24 hours. It does not mention a wallet loss.
 
-**Key teaching point:** The Mark Cuban wallet compromise demonstrates the **device fingerprint cross-case linkage** pattern: the Cuban compromise (June 2024) and the $243M Genesis Creditor theft (August 2024) were linked through identical device indicators used during the attacks. The threat actors reused the same devices/infrastructure across multiple high-value targets, creating a forensic bridge between cases. Detection approach: device fingerprinting (browser fingerprint, IP ranges, session metadata) from wallet interactions should be preserved and cross-referenced across cases; repeat device usage by threat actors is an attribution primitive that links seemingly unrelated incidents.
+**OAK Techniques observed:** none — the mechanism is not sourced. The only source for the wallet theft says "social engineering scam" and gives no method, and the one contemporaneous report describes a Google-account takeover rather than a wallet theft. The investigator's device-indicator link between cases is an attribution claim, not an attack Technique, so it is not mapped.
+
+**Attribution:** **inferred-weak.** [ZachXBT](https://x.com/zachxbt/status/1923465312529416702) says the "exact same device indicators" appear in this theft and the \$243M Genesis-creditor theft "across multiple transactions where funds were laundered", and that a superseding indictment unsealed the day before hints at involvement of Malone Lam and a second defendant with a matching date and amount. No opened government page mentions Cuban; [The Block's report on the indictment](https://www.theblock.co/post/354633/federal-prosecutors-charge-12-more-in-alleged-263-million-usd-crypto-racketeering-ring) does not mention him.
+
+**Key teaching point:** **Keep a wallet whose ENS name identifies its owner away from anything an impersonator can talk you into: no signing or seed entry on a "support" call, and a separate cold or multi-party wallet for large holdings.** The wallet was public and tied to a famous owner, so an attacker could size the target before contact. The same investigator links the laundering of this theft to another group's thefts by shared device indicators; the evidence for that link is in screenshots on his post, not in an opened document.
 
 ## Summary
 
-On June 23, 2024, Mark Cuban — billionaire investor and public figure — fell victim to a social engineering scam that resulted in crypto assets being stolen from his publicly known wallet `markcuban.eth`.
+On 2025-05-16 [ZachXBT wrote](https://x.com/zachxbt/status/1923465312529416702) that, while working on the \$243M Genesis-creditor theft, his team found that on 2024-06-23 Mark Cuban "fell victim to a social engineering scam" losing crypto from `markcuban.eth`, and that the device indicators matched across transactions where funds were laundered. He published the theft address [`0x733ea491051929d0b6619425e088d210deb5cbe6`](https://etherscan.io/address/0x733ea491051929d0b6619425e088d210deb5cbe6). The post carries three images that this pass could not read as text.
 
-During the investigation of the $243M Genesis Creditor theft (August 2024), ZachXBT and investigators uncovered additional evidence: the Mark Cuban wallet compromise involved the exact same device indicators as the Genesis Creditor theft. This linked the Cuban compromise to Malone Lam (Greavys), Veer Chetal (Wiz), and Jeandiel Serrano (Box) — the same threat actor group.
+The only independent contemporaneous report found describes a June 2024 Google-account compromise, not a wallet loss, and says Cuban posted that someone phoned him ([CryptoSlate](https://cryptoslate.com/zachxbt-helps-secure-arrests-in-243m-social-engineering-attack-on-one-person/)). Whether it is the same event as the wallet theft is not established by an opened page. The same report says no information indicated Cuban was a victim in the \$243M case.
 
-The Cuban wallet was a public ENS name (`markcuban.eth`) — anyone could see his on-chain activity, token holdings, and transaction history. The attackers used this public information to craft a targeted social engineering approach, likely impersonating a service provider, exchange, or support entity relevant to Cuban's known holdings.
+## Timeline (UTC)
 
-## Timeline
+Stages: **Entry** → **Take** → **Money** → **Response**. Only the date comes from sources; no times are public.
 
-| When | Event | OAK ref |
+| When | What happened | OAK |
 |---|---|---|
-| 2024-06-23 | Mark Cuban's wallet `markcuban.eth` compromised via social engineering | **T4 social engineering** |
-| 2024-06-23 | Crypto assets stolen from Cuban's wallet | **T6 wallet compromise** |
-| 2024-08-19 | Same group executes $243M Genesis Creditor theft | (linked case) |
-| 2025-05-16 | ZachXBT publishes investigation linking Cuban compromise to Genesis Creditor group via device indicators | (public disclosure) |
+| 2024-06-23 | Cuban's public wallet `markcuban.eth` is drained after a social-engineering approach; method and assets undisclosed ([ZachXBT](https://x.com/zachxbt/status/1923465312529416702)) | none — method undisclosed |
+| 2024-06 (date undisclosed) | Separately reported: Cuban's Google account compromised after a phone call and recovered within 24 hours ([CryptoSlate](https://cryptoslate.com/zachxbt-helps-secure-arrests-in-243m-social-engineering-attack-on-one-person/)); relation to the wallet theft not established | none — different account type |
+| Undisclosed | Stolen funds laundered through transactions that ZachXBT says share device indicators with the Genesis-creditor theft; destinations undisclosed | — |
+| 2025-05-15 | Superseding indictment unsealed in the related RICO case, adding 12 defendants ([The Block](https://www.theblock.co/post/354633/federal-prosecutors-charge-12-more-in-alleged-263-million-usd-crypto-racketeering-ring)); the report does not mention Cuban | response |
+| 2025-05-16 | ZachXBT publishes the link and the theft address | response |
 
-## What defenders observed
+Key addresses:
 
-- **Public wallet = public target profile.** `markcuban.eth` was a publicly known ENS name. The attacker could research Cuban's entire on-chain portfolio — token holdings, DeFi positions, NFT collections — before making contact. The wallet's publicity enabled targeted reconnaissance.
-- **Device indicators as cross-case forensic bridge.** The same device fingerprints (browser characteristics, IP ranges, session timing patterns) appeared in both the Cuban compromise and the Genesis Creditor theft. Device reuse by threat actors is an operational security failure that enables case linkage.
-- **High-net-worth individual + public wallet = high-value target.** Public figures with known ENS names are a distinct victim profile from exchange users or retail traders. The attacker can size the target before engaging, ensuring high ROI per attack.
+- Theft address (Ethereum) — [`0x733ea491051929d0b6619425e088d210deb5cbe6`](https://etherscan.io/address/0x733ea491051929d0b6619425e088d210deb5cbe6), per [ZachXBT](https://x.com/zachxbt/status/1923465312529416702)
 
-## What this example tells contributors
+## Root-cause evidence
 
-- **Device fingerprinting is a T8 attribution data source.** Browser fingerprints, IP ranges, OS/browser version strings, and session metadata collected during the attack constitute a forensic profile. When the same profile appears across multiple incidents, those incidents are linked to the same threat actor. OAK T8 (Attribution) should include "device fingerprint cross-case matching" as an attribution technique.
-- **Public ENS names are a victim targeting vector.** ENS names that resolve to known individuals create a target list for social engineering. The ENS maps an identity to a wallet, enabling personalized reconnaissance. This is a T4 targeting primitive — the attacker selects victims by ENS identity, not by wallet balance alone.
-- **High-value individual victims are a distinct T6 sub-pattern.** The social engineering of a billionaire with a known wallet differs from mass phishing — it's targeted, researched, and likely involves impersonation of services the specific individual uses. T6 should distinguish "targeted high-net-worth individual compromise" from "mass credential harvesting."
+- **Technique:** none — method undisclosed
+- **Source:** <https://x.com/zachxbt/status/1923465312529416702>; <https://cryptoslate.com/zachxbt-helps-secure-arrests-in-243m-social-engineering-attack-on-one-person/>
+- **Source type:** independent-researcher
+- **Confidence:** reported
+- **Evidence:** One investigator's post states the date, the "social engineering scam" label and the device-indicator link; no operator, victim or government page opened confirms a wallet loss. The one contemporaneous news report describes a Google-account takeover. Open: loss amount, method, whether the two June 2024 events are one.
 
 ## Public references
 
-- [ZachXBT — Mark Cuban Compromise / Genesis Creditor Link (X/Twitter)](https://x.com/zachxbt/status/1923465312529416702)
-- Mark Cuban wallet: `markcuban.eth` (Ethereum).
-- Linked to: Malone Lam (Greavys), Veer Chetal (Wiz), Jeandiel Serrano (Box).
-- Same device indicators as $243M Genesis Creditor theft (August 2024).
+- ZachXBT, X post (2025-05-16): <https://x.com/zachxbt/status/1923465312529416702>
+- CryptoSlate, "ZachXBT helps secure arrests in \$243 million social engineering attack on one person" (2024-09-19): <https://cryptoslate.com/zachxbt-helps-secure-arrests-in-243m-social-engineering-attack-on-one-person/>
+- The Block, "Federal prosecutors charge 12 individuals in \$263 million crypto scheme targeting early Genesis investor" (2025-05-16): <https://www.theblock.co/post/354633/federal-prosecutors-charge-12-more-in-alleged-263-million-usd-crypto-racketeering-ring>

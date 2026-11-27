@@ -1,11 +1,14 @@
 oak_techniques: [OAK-T17.005]
 spec_id: oak-detection-T17.005
 version: 0.1.0
-maturity: observed
+maturity: deprecated
 maintainer: "@iZonex"
 license: Apache-2.0
 
 scope: |
+  DEPRECATED 2026-11-27: the mechanism is documented only in a research paper
+  (IACR ePrint 2022/445); no incident was found. Kept for reference; see the
+  Technique tombstone.
   Detect TWAP oracle price manipulation conducted across multiple
   consecutive blocks via proposer-controlled sequencing (MEV-Boost
   builder coordination, validator collusion, or proposer-bribery).

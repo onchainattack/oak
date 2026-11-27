@@ -1,111 +1,65 @@
-# 2025 Rekt.Uncovered Incidents Cohort — 23 Incidents — Aggregate ~$14.2B (incl. Lubian $14.8B legacy) / ~$297M excl. Lubian
+# 2025 Rekt.news Mid-Range Incidents Cohort — 25 incidents with no OAK file of their own — 2020–2025
 
-**OAK Techniques observed:** OAK-T9.004, OAK-T9.001, OAK-T9.011, OAK-T11.001, OAK-T15.002, OAK-T5.003, OAK-T5.005, OAK-T16.002, OAK-T12.002
+**Loss:** no cohort total is given, because no opened page carries one. Per-member figures are the ones each linked [Rekt](https://rekt.news/leaderboard/) article states, from \$170K (Hacken) to \$27M (BigONE), plus the LuBian mining-pool theft, which Arkham values at about \$3.5B at the time and about \$14.5B at 2025 prices ([Cointelegraph](https://cointelegraph.com/news/3-5b-btc-heist-retroactively-uncovered-arkham)).
 
-**Attribution:** **unattributed** (aggregate cohort).
-**Loss:** Aggregate ~$14.2B across 23 incidents spanning 2025. The Lubian BTC mining-pool disappearance ($14.8B at 2025 valuation, 127,426 BTC event from December 2020) dominates the dollar figure; excluding Lubian, the remaining 22 incidents aggregate ~$297M. Loss range (ex-Lubian): $170K to $27M.
+**OAK Techniques observed:** **OAK-T11.014** (Operator Privileged-Key Compromise — Zoth, Credix, GriffinAI, GANA, Moby Trade, Orange Finance, Hacken, BrincFi, LNDFi), **OAK-T9.004** (Access-Control Misconfiguration — Cork, AlexLab II, ArcadiaFi), **OAK-T9.016** (Contract Accounting / State-Invariant Flaw — Abracadabra II and III, BetterBank, Odin.fun, MobiusDAO, The Idols NFT), **OAK-T9.011** (Precision-Loss Rounding — Bunni), **OAK-T9.001** (Oracle Price Manipulation — New Gold Protocol), **OAK-T15.001** (Ionic Money), **OAK-T15.002** (BigONE, as SlowMist describes it), **OAK-T15.003** (Woo X), **OAK-T7.001** (Tornado Cash hops reported for several members). Lubian and Drained By Design map to no Technique (see the table).
 
-**Key teaching point:** These 23 incidents, sourced from rekt.news but not present in DeFiLlama, fill coverage gaps across CEX security (BigONE $27M supply-chain attack, Woo X $14M), DeFi protocol exploits at mid-range scale (AlexLab II $16.18M, Cork Protocol $12M, Bunni $8.4M rounding bug, Zoth $8.4M admin-key, Ionic Money $6.9M, BetterBank $5M reward-logic flaw, Credix $4.5M Sonic admin-key, ArcadiaFi $3.6M), admin-key and privilege-escalation exploits (GANA Payment $3.1M, GriffinAI $3M, LNDFi $1.18M DPRK), cold-case retroactives (BrincFi $1.1M, Lubian $14.8B), NFT scams (The Idols NFT $324K), and DPRK-linked operations (LNDFi, Moby Trade, Orange Finance). The cohort reinforces the structural pattern: **admin-privilege exploits and private-key compromises remain the dominant attack vectors at all scales, and CEX security incidents are systematically underrepresented in DeFi-focused databases.**
+**Attribution:** **unattributed** for every member. LNDFi's own post-mortem blames an undercover North Korean IT worker; the Rekt article treats that as plausible but unverified, so OAK does not attribute it. Odin.fun's founder blamed users linked to groups in China; Rekt disputes that.
+
+**Key teaching point:** **Most members here were not exotic bugs: nine were a single privileged key or role that one party held and that left their control, and six were contract bookkeeping that a caller with every right to call it could get wrong. The control is one key that cannot change contract logic alone (a timelock and a multi-party signer set), and an invariant test over the accounting.** Rekt reports that Orange Finance's multisig was configured to execute with a single signature.
 
 ## Summary
 
-## Timeline
+Rekt.news published articles on the incidents below. None had an `examples/` file when this one was written. Each row was rebuilt from the linked article only. Rekt is an editorial outlet with an anonymous author; where an article relays a statement from the operator or a security firm, the row says so. Addresses and transaction hashes are printed in full in each linked article and are not repeated here.
 
-| When | Event | OAK ref |
+## Timeline (UTC)
+
+Stages across the cohort: **Flaw or entry** (key or role compromise, logic flaw, social engineering), **Take** (the drain), **Money** (swaps, bridges, Tornado Cash), **Response**. Dates are the incident dates the linked article gives; where the article gives none, that is said.
+
+| When | What happened | OAK |
 |---|---|---|
-| 2020-12-20 | Lubian: 127,426 BTC (~$3.5B at time) vanishes from Lubian's BTC mining pool; discovered by Arkham Intelligence in 2025; funds untouched on-chain — $14.8B at 2025 valuation | **T11.005** (operator-side platform fraud — mining-pool operator disappearance), **T5.005** (treasury-management exit) |
-| 2025-01-08 | Moby Trade: private key leak on Arbitrum; $1M extracted | **T11.001** (private key compromise) |
-| 2025-01-07 | Orange Finance: private key leak; $843K extracted (event dated 2024-01-07 per rekt) | **T11.001** (private key compromise — cold-case surfacing) |
-| 2025-01-14 | The Idols NFT: NFT project exploit; $324K extracted | **T12.002** (fake-mint / counterfeit collection) |
-| 2025-02-04 | Ionic Money: DeFi exploit on Mode Network; $6.94M extracted | **T9.004** (access-control misconfiguration) |
-| 2025-03-21 | Zoth: admin-privilege exploit; $8.4M extracted | **T9.004** (admin-key compromise / privilege escalation) |
-| 2025-03-25 | Abracadabra II: MIM stablecoin exploit; $12.9M extracted; audited by Guardian Audits | **T9.004** (access-control misconfiguration), **T9.011** (potential rounding/arithmetic) |
-| 2025-05-09 | LNDFi: admin-privilege exploit; $1.18M extracted; DPRK OAK-G01 attributed (event dated 2021-05-09 — cold case surfaced 2025) | **T9.004** (admin-key compromise), **OAK-G01** (DPRK) |
-| 2025-05-11 | MobiusDAO: DAO exploit; $2.15M extracted | **T16** (governance attack), **T9.004** (access-control misconfiguration) |
-| 2025-05-28 | Cork Protocol: DeFi exploit; $12M extracted | **T9.004** (access-control misconfiguration) |
-| 2025-06-06 | AlexLab II: DeFi exploit (second AlexLab incident); $16.18M extracted | **T9.004** (access-control misconfiguration) |
-| 2025-06-20 | Hacken: bridge key compromise; $170K extracted | **T11.001** (bridge validator key compromise) |
-| 2025-07-15 | ArcadiaFi: DeFi exploit; $3.6M extracted; audited by Pashov Audit Group | **T9.004** (access-control misconfiguration) |
-| 2025-07-15 | BigONE: CEX supply-chain attack; $27M extracted | **T11.001** (signing-vendor compromise), **T15.002** (supply-chain vendor-pipeline compromise) |
-| 2025-07-28 | Woo X: CEX exploit; $14M extracted | **T11.001** (CEX key compromise) |
-| 2025-08-04 | Credix: admin-privilege exploit on Sonic; $4.5M extracted | **T9.004** (admin-key compromise) |
-| 2025-08-12 | Odin.Fun: DeFi exploit on ICP (Internet Computer Protocol) / Bitcoin DeFi; $7M extracted | **T9.004** (access-control misconfiguration on non-EVM chain) |
-| 2025-08-13 | Drained By Design: Coinbase-linked MEV + ERC-20 approval exploit; $550K extracted | **T9.004** (ERC-20 approval surface), **T5.004** (MEV extraction) |
-| 2025-08-26 | BetterBank: reward-logic flaw; $5M extracted; audit classification: "Out of Scope" | **T9.004** (reward-logic access-control gap), **T6.004** (audit-scope exclusion) |
-| 2025-09-01 | Bunni: rounding-bug exploit; $8.4M extracted | **T9.011** (precision-loss rounding attack) |
-| 2025-09-17 | New Gold Protocol: price-manipulation exploit; $2M extracted | **T9.001** (oracle price manipulation) |
-| 2025-09-24 | GriffinAI: admin-privilege exploit; $3M extracted | **T9.004** (admin-key compromise) |
-| 2025-10-04 | Abracadabra III: MIM logic bug (third Abracadabra incident); $1.8M extracted | **T9.004** (access-control / logic-bug chain) |
-| 2025-11-20 | GANA Payment: admin-privilege exploit; $3.1M extracted | **T9.004** (admin-key compromise) |
-| 2025-12-14 | BrincFi: cold-case exploit surfaced (event from 2021-12-14); $1.1M extracted | **T9.004** (access-control misconfiguration — cold-case surfacing) |
+| 2020-12-28 | LuBian, the sixth-largest BTC mining pool at the time, loses 127,426 BTC (about 90% of its holdings). Arkham reports it retroactively in 2025; neither LuBian nor the hacker disclosed it. Arkham says the pool appears to have used a key-generation algorithm vulnerable to brute force and that this may be the weakness exploited; the article does not confirm it. [Cointelegraph](https://cointelegraph.com/news/3-5b-btc-heist-retroactively-uncovered-arkham) | none — cause unconfirmed (suspected weak key generation) |
+| 2021-12-14 | BrincFi: one transaction moves ownership of the staking contract to the attacker, the deployer then upgrades it to an implementation with a `rescueTokens()` function; 290 ETH plus BRC and gBRC drained, then swapped and sent through Tornado Cash. Beosin attributes it to private-key compromise; BrincFi alleges in a civil suit that a former head of development planned it, which is an allegation. [Rekt](https://rekt.news/brincfi-rekt-coldcase) | **T11.014**, T7.001 |
+| 2025-01-07 to 01-08 | Orange Finance (Arbitrum): a compromised admin key upgrades the contracts and drains about \$843K; the follow-up found the multisig could execute with one signature. The article gives no exact date (the Rekt leaderboard lists 2024-01-07). [Rekt](https://rekt.news/orange-finance-rekt) | **T11.014** |
+| 2025-01-08 | Moby Trade (Arbitrum): a stolen proxy admin key is used to upgrade contracts and drain two vaults, about \$1.0M in the article's final tally; SEAL911 rescued a further \$1.47M in USDC. [Rekt](https://rekt.news/mobytrade-rekt) | **T11.014** |
+| 2025-01-14 | The Idols NFT: per TenArmor as relayed by Rekt, `_beforeTokenTransfer()` deleted the sender's `claimedSnapshots` when sender and receiver were the same address with balance exactly 1, allowing repeated reward claims; about 97 stETH (about \$324K). [Rekt](https://rekt.news/theidolsnft-rekt) | **T9.016** |
+| 2025-02-04 | Ionic Money (Mode Network): attackers posing as Lombard Finance staff got a counterfeit LBTC listed as collateral, minted 250 fake LBTC and borrowed other assets; about \$7M (1,204 ETH bridged and sent to Tornado Cash, 38.34 MBTC still in loans). Ionic blamed social engineering. [Rekt](https://rekt.news/ionic-money-rekt) | **T15.001**, T7.001 |
+| 2025-03-21 | Zoth: per Rekt, the attacker first compromised the deployer wallet and admin credentials, upgraded the `USD0PPSubVaultUpgradeable` proxy and withdrew about \$8.4M (8.85M USD0++), swapped to DAI. [Rekt](https://rekt.news/zoth-rekt) | **T11.014** |
+| 2025-03-25 | Abracadabra II (Arbitrum GMX cauldrons): a failed GMX deposit left tokens in the OrderAgent; self-liquidation cleared the position but not the order, so the attacker borrowed against ghost collateral; 6,260 ETH (about \$13M). Abracadabra said the contracts were audited by Guardian Audits; Guardian told Rekt it missed the flaw. [Rekt](https://rekt.news/abracadabra-rekt2) | **T9.016** |
+| 2025-05-09 | LNDFi (Sonic): a modified Aave V3 fork let any Pool Admin call `transferUnderlyingTo`; the change was deployed on 2025-03-29 and the drain began 41 days later; about \$1.18M, bridged to Ethereum and BSC within ten minutes. The official post-mortem blames a developer it says was an undercover DPRK IT worker; Rekt calls this unverified. [Rekt](https://rekt.news/LNDFi-rekt) | **T11.014** |
+| 2025-05-11 | MobiusDAO (BSC): the price function returned a value already scaled to 18 decimals and the contract scaled it again, so a 0.001 BNB deposit minted about 9.73 quadrillion MBU; about \$2.15M, moved through 21 Tornado Cash transfers of 100 BNB. [Rekt](https://rekt.news/mobiusdao-rekt) | **T9.016**, T7.001 |
+| 2025-05-28 | Cork Protocol: attacker created a fake market using a real DS token as redemption asset; `CorkHook` `beforeSwap` could be called by anyone with custom hook data; 3,761 wstETH (about \$12M). Sherlock said CorkHook was not in its audit and Runtime Verification said hook verification was out of scope. [Rekt](https://rekt.news/cork-protocol-rekt) | **T9.004** |
+| 2025-06-06 | AlexLab II (Stacks): per Exvul as relayed by Rekt, a malicious token's transfer ran through `as-contract` so the vault appeared as sender; AlexLab reported \$8,373,227, Rekt's tally is over \$16.18M. [Rekt](https://rekt.news/alexlab-rekt2) | **T9.004** |
+| 2025-06-20 | Hacken ($HAI bridge, BSC and Ethereum): a minter-role key, reportedly left on a decommissioned DigitalOcean server, minted 900M $HAI; about \$170K realised. Hacken's report said the incident was not a hack. [Rekt](https://rekt.news/hacken-rekt) | **T11.014** |
+| 2025-07-15 | ArcadiaFi (Base): an unchecked `router.call(data)` in `SwapLogic._swapViaRouter()` let the attacker pass arbitrary calldata; about \$3.6M in two waves, 840 ETH of the first bridged to Ethereum via Across. Of four audits, Rekt says only Pashov's scope included the Rebalancer and it closed the issue as unexploitable. [Rekt](https://rekt.news/arcadiafi-rekt) | **T9.004** |
+| 2025-07-15 | BigONE: about \$27M across five chains. SlowMist described a supply-chain attack that compromised the production network; BigONE's statement called it a third-party attack on its hot wallet. No private keys were reported stolen. BigONE said it froze part of the assets. [Rekt](https://rekt.news/bigone-rekt) | **T15.002** (per SlowMist) |
+| 2025-07-24 | Woo X: per Woo X's later disclosure as relayed by Rekt, phishing compromised a team member's device, then the development environment, then the hot wallets; about \$14M, nine user accounts; Woo X said it would compensate from its treasury. [Rekt](https://rekt.news/woox-rekt) | **T15.003** |
+| 2025-08-04 to 08-05 | Credix (Sonic): a compromised admin account, granted roles about six days earlier, used the BRIDGE role to mint unbacked acUSDC and borrowed against it; about \$4.5M per Cyvers, bridged to Ethereum via deBridge. Credix later reported a parley with the exploiter. [Rekt](https://rekt.news/credix-rekt) | **T11.014** |
+| 2025-08-12 | Odin.fun (Internet Computer): attackers deposited worthless tokens, skewed AMM price ratios and withdrew BTC; about \$7M (58.2 BTC). [Rekt](https://rekt.news/odin-fun-rekt) | **T9.016** |
+| 2025-08-13 | Coinbase fee wallet: broad ERC-20 approvals had been granted to 0x's permissionless Settler contract; a bot used them to pull about 168 token types and swap them to ETH; Blockscope puts the loss at about \$550K, other outlets at about \$300K per Rekt. Coinbase said no customer funds were affected. [Rekt](https://rekt.news/drained-by-design) | none — operator-set approvals on a permissionless contract, no signature solicited |
+| 2025-08-25 or 08-26 | BetterBank (PulseChain): the attacker built a PulseX pair of FAVOR and a worthless token; the tax logic applied only to pairs designated official, so the bonus-minting paid no tax; about \$5M. Zokyo had flagged the issue before launch and BetterBank rated it low priority. The article says Monday morning (25th); the Rekt leaderboard lists the 26th. [Rekt](https://rekt.news/betterbank-rekt) | **T9.016** |
+| 2025-09-01 | Bunni (Ethereum, Unichain): rounding errors in the rebalancing logic of its custom Liquidity Distribution Function on Uniswap V4, with one balance reduced to 25 wei; about \$8.4M. Bunni paused all contracts and published a post-mortem. [Rekt](https://rekt.news/bunni-rekt) | **T9.011** |
+| 2025-09-17 | New Gold Protocol (BSC): a flash loan manipulated the PancakeSwap reserves that `getPrice()` read, then a sell fee plus `sync()` cut the pool's token reserve; about \$2M, 444 ETH sent into Tornado Cash. [Rekt](https://rekt.news/newgold-protocol-rekt) | **T9.001**, T7.001 |
+| 2025-09-24 | GriffinAI (BNB Chain): an admin address was made to call `setPeer`, registering a malicious Ethereum contract as LayerZero peer; the attacker minted 5B GAIN against a stated 1B cap and sold 147.5M for 2,955 BNB (about \$3M). Rekt says phishing is possible but unconfirmed. [Rekt](https://rekt.news/griffinai-rekt) | **T11.014**, T7.001 |
+| 2025-10-04 | Abracadabra III (Ethereum): in six deprecated CauldronV4 contracts, `cook()` actions `[5, 0]` reset the `needsSolvencyCheck` flag so the solvency check was skipped; 1,793,755 MIM (about \$1.8M). [Rekt](https://rekt.news/abracadabra-rekt3) | **T9.016**, T7.001 |
+| 2025-11-20 | GANA Payment (BSC): a leaked owner key and an EIP-7702 delegator contract; ownership rotated through eight addresses and the reward rate set to an extreme value before withdrawal; \$3.1M per Rekt, whose own flow figures do not reconcile with that total. GoPlus suggests social engineering or phishing. [Rekt](https://rekt.news/gana-payment-rekt) | **T11.014**, T7.001 |
 
-## Incident summaries by technique family
+## Where several members share one control
 
-### T9.004 — Access-Control Misconfiguration / Admin-Key Compromise (13 incidents, ~$90M aggregate ex-Lubian)
+- **Admin or deployer key, single holder.** Orange Finance, Moby Trade, Zoth, Credix, GriffinAI, GANA, Hacken, BrincFi and LNDFi all end with one privileged key or role doing what the contract allowed. Rekt reports Orange Finance's multisig executed on a single signature, and Credix's admin role grants went through the multisig about six days before the drain. The articles do not say whether any member ran a timelock or an alert on upgrades, ownership transfers or role grants.
+- **Audit scope.** Cork (CorkHook not in Sherlock's audit), AlexLab II (audits covered a system not yet live) and ArcadiaFi (one of four audits covered the Rebalancer) each had a drained component outside or at the edge of audit scope, per the articles. BetterBank's pre-launch audit flagged the issue and the team rated it low priority.
+- **Repeat incidents.** Abracadabra has two articles in this cohort (March and October 2025). Rekt's leaderboard also lists an earlier Abracadabra article from January 2024 that is not covered here.
 
-The dominant class among the 2025 uncovered incidents. Admin-key and privilege-escalation exploits span the full range of DeFi protocol types:
+## Root-cause evidence
 
-**DeFi protocol admin-key / privilege escalation:** Zoth ($8.4M), Cork Protocol ($12M), AlexLab II ($16.18M), ArcadiaFi ($3.6M), Ionic Money ($6.94M), Credix ($4.5M), GANA Payment ($3.1M), GriffinAI ($3M), Odin.Fun ($7M), BetterBank ($5M — reward-logic gap classified as out-of-scope by auditors)
-
-**Stablecoin protocol exploits:** Abracadabra II ($12.9M, audited by Guardian Audits), Abracadabra III ($1.8M — third incident, suggesting systemic security gaps)
-
-**DPRK-linked cold case:** LNDFi ($1.18M, DPRK OAK-G01 attributed) — incident originally from May 2021, surfaced in 2025
-
-**Cold-case retroactive:** BrincFi ($1.1M) — incident from December 2021, surfaced in 2025
-
-### T11.001 / T15.002 — CEX and Infrastructure Compromise (4 incidents, ~$42.8M aggregate)
-
-**BigONE ($27M)** — the largest non-Lubian incident in this cohort. CEX supply-chain attack: the attacker compromised the exchange's signing infrastructure via a third-party vendor pipeline (T15.002). This is the canonical 2025 CEX supply-chain attack case — the exchange itself was not directly compromised; the vendor that supplied software to the exchange was.
-
-**Woo X ($14M)** — CEX key compromise. Second major CEX incident of 2025, reinforcing the pattern that centralised exchange security remains a load-bearing surface independent of DeFi protocol security.
-
-**Moby Trade ($1M)** and **Orange Finance ($843K)** — smaller-scale private-key-leak incidents at the protocol level.
-
-**Hacken ($170K)** — bridge key compromise at a security-auditing firm's own bridge infrastructure — an ironic T11.001 case where the victim was itself a security auditor.
-
-### T9.011 — Precision-Loss / Rounding Attacks (1 incident, $8.4M)
-
-**Bunni ($8.4M)** — rounding-bug exploit on a DeFi protocol. The incident is structurally similar to the Hundred Finance / Sonne Finance T9.011 class: integer-arithmetic rounding direction exploited for extraction.
-
-### T9.001 — Oracle / Price Manipulation (1 incident, $2M)
-
-**New Gold Protocol ($2M)** — price-manipulation exploit, canonical T9.001 at mid-range scale.
-
-### T16 — Governance Attack (1 incident, $2.15M)
-
-**MobiusDAO ($2.15M)** — DAO governance exploit, likely a hostile-vote or proposal-manipulation attack.
-
-### T12.002 / NFT (1 incident, $324K)
-
-**The Idols NFT ($324K)** — NFT project exploit, likely a fake-mint or counterfeit-collection pattern.
-
-### T5.003 / T5.005 — Exit / Mining Pool (1 incident, $14.8B)
-
-**Lubian ($14.8B at 2025 valuation)** — 127,426 BTC (~$3.5B in December 2020) vanished from Lubian's BTC mining pool in one of the largest single-event crypto thefts ever. Arkham Intelligence discovered the funds sitting untouched on-chain in 2025 — the mining pool operator disappeared with the assets, which remain unmoved five years later. This is simultaneously a T11.005 (operator-side platform fraud) and T5.005 (treasury-management exit) case — the mining pool was the platform, and the operator's disappearance constituted the exit.
-
-### Special categories (2 incidents)
-
-**Drained By Design ($550K)** — Coinbase-linked MEV + ERC-20 approval exploit. This case bridges T9.004 (standing-approval surface) and T5.004 (MEV extraction), illustrating how ERC-20 approvals interact with MEV infrastructure to create novel extraction surfaces.
-
-**BetterBank ($5M)** — reward-logic flaw classified as "Out of Scope" by auditors. This is a T6.004 (audit-scope exclusion) case structurally identical to Makina (2026): the attack vector that killed the protocol was explicitly listed as not covered by the audit.
-
-## Discussion
-
-The 2025 uncovered cohort fills a significant gap in the OAK taxonomy's incident coverage. These 23 incidents were present in rekt.news but absent from DeFiLlama, which explains why they were missed in earlier coverage passes. The cohort spans several categories that DeFiLlama systematically underrepresents:
-
-1. **CEX security incidents** (BigONE $27M, Woo X $14M): DeFiLlama focuses on DeFi protocols; CEX hacks are a distinct category tracked more comprehensively by rekt.news. BigONE's supply-chain attack is the canonical 2025 case of T15.002 — the attacker did not compromise BigONE directly but compromised a software vendor whose product BigONE relied on.
-
-2. **Mid-range DeFi exploits ($1M–$16M)**: DeFiLlama's coverage is comprehensive above ~$5M but becomes spottier in the $1M–$5M range. The rekt.news data fills this gap with AlexLab II ($16.18M), Cork Protocol ($12M), Bunni ($8.4M), Zoth ($8.4M), Odin.Fun ($7M), Ionic Money ($6.94M), BetterBank ($5M), Credix ($4.5M), ArcadiaFi ($3.6M), and others.
-
-3. **Cold-case surfacings**: LNDFi (2021 event surfaced 2025), BrincFi (2021 event surfaced 2025), Lubian (2020 event surfaced 2025). These are incidents whose forensic analysis was published years after the event — a pattern that will continue as blockchain analytics tools improve and historical exploits are retroactively attributed.
-
-4. **DPRK-linked operations**: LNDFi ($1.18M, OAK-G01) demonstrates that DPRK threat actors are active at the sub-$2M scale as well as the headline-grabbing $100M+ operations.
-
-5. **NFT-specific exploits**: The Idols NFT ($324K) is one of the few NFT-project-specific exploits in the dataset, reflecting the NFT market's reduced activity in 2025 relative to 2021–2022.
-
-The Abracadabra series (II at $12.9M, III at $1.8M) is the cohort's most striking illustration of **recurring exploitation at the same protocol**: three separate incidents (I in the main DeFiLlama dataset, II and III in this cohort) across 2025, suggesting that post-incident remediation after the first exploit did not close the full exploit surface. The Guardian Audits audit on Abracadabra II did not prevent a third incident — a pattern consistent with the audit-scope-gap and remediation-incompleteness problems observed across the taxonomy.
+- **Technique:** OAK-T11.014 and OAK-T9.016 (primary classes); per-member IDs in the table
+- **Source:** the per-member Rekt articles linked in the table; <https://cointelegraph.com/news/3-5b-btc-heist-retroactively-uncovered-arkham>
+- **Source type:** news
+- **Confidence:** reported
+- **Evidence:** One editorial outlet per member, relaying operator statements and security-firm analyses (SlowMist, Cyvers, TenArmor, Exvul, Beosin, Zokyo, Blockscope). No member here has an operator post-mortem opened by OAK, so none is confirmed. Open: how the keys were obtained in Zoth, Credix, GriffinAI, GANA and Moby; the real cause of the LuBian loss; BigONE's entry point (supply-chain per SlowMist, third-party attack per BigONE).
 
 ## Public references
 
-- All incidents sourced from [Rekt.news leaderboard](https://rekt.news/leaderboard/) — 295 articles covering DeFi and CEX exploits through May 2026
-- Cross-reference: T9.004 at `techniques/T9.004-access-control-misconfiguration.md`; T9.001 at `techniques/T9.001-oracle-price-manipulation.md`; T9.011 at `techniques/T9.011-precision-loss-rounding-attack.md`; T11.001 at `techniques/T11.001-third-party-signing-vendor-compromise.md`; T15.002 at `techniques/T15.002-supply-chain-vendor-pipeline-compromise.md`; T5.005 at `techniques/T5.005-treasury-management-exit.md`; T16 at `techniques/`; T12.002 at `techniques/T12.002-fake-mint-counterfeit-collection.md`
+- Rekt, "Leaderboard" (lists the members and their dates): <https://rekt.news/leaderboard/>
+- Cointelegraph, LuBian heist uncovered by Arkham (2025-08-02): <https://cointelegraph.com/news/3-5b-btc-heist-retroactively-uncovered-arkham>
+- Rekt articles (one per row above): <https://rekt.news/woox-rekt>, <https://rekt.news/bigone-rekt>, <https://rekt.news/bunni-rekt>, <https://rekt.news/cork-protocol-rekt>, <https://rekt.news/alexlab-rekt2>, <https://rekt.news/abracadabra-rekt2>, <https://rekt.news/abracadabra-rekt3>, <https://rekt.news/zoth-rekt>, <https://rekt.news/ionic-money-rekt>, <https://rekt.news/betterbank-rekt>, <https://rekt.news/credix-rekt>, <https://rekt.news/arcadiafi-rekt>, <https://rekt.news/griffinai-rekt>, <https://rekt.news/gana-payment-rekt>, <https://rekt.news/mobytrade-rekt>, <https://rekt.news/orange-finance-rekt>, <https://rekt.news/odin-fun-rekt>, <https://rekt.news/mobiusdao-rekt>, <https://rekt.news/hacken-rekt>, <https://rekt.news/theidolsnft-rekt>, <https://rekt.news/newgold-protocol-rekt>, <https://rekt.news/LNDFi-rekt>, <https://rekt.news/brincfi-rekt-coldcase>, <https://rekt.news/drained-by-design>

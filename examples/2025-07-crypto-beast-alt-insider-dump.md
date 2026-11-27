@@ -1,42 +1,41 @@
-# ALT Token — Influencer Insider Dump — 2025-07-14
+# $ALT token — 45 connected wallets sold \$11M+ into a market-cap crash after an influencer denied involvement — 2025-07-14
 
-**Loss:** $190M market cap → $3M (98.4% crash). 45+ connected insider wallets sold $11M+ in a single day.
-**OAK Techniques observed:** OAK-T3.003 (Pump and Dump Coordination) — primary; OAK-T3.004 (Influencer Amplified Promotion and Dump) — primary.
-**Attribution:** **confirmed** — @cryptobeastreal (Crypto Beast), who publicly denied involvement while 45+ connected wallets under his control sold.
+**Loss:** Market cap fell from \$190M to \$3M on 2025-07-14, and 45+ connected wallets sold \$11M+ of $ALT that day, per [ZachXBT's thread opener](https://x.com/zachxbt/status/1947641028720398488). A [cryptonews.net report (6 August 2025)](https://cryptonews.net/news/security/31387868/) gives the price move as \$0.19 to \$0.003 within a few hours, a 97% drop, and says the 45 wallets held 3% of all $ALT. Losses to retail buyers: undisclosed.
 
-**Key teaching point:** The ALT case demonstrates the **insider-denial + coordinated multi-wallet dump** pattern: the influencer publicly denies being behind the token while 45+ wallets on-chain are provably connected to the same funding source. The denial is itself part of the attack — it buys time for insider wallets to exit while retail holds. Detection approach: cluster wallets by funding source, monitor for synchronized sell-offs across the cluster during influencer denial posts.
+**OAK Techniques observed:** **OAK-T3.004** (Influencer-Amplified Promotion-and-Dump, *primary*, per ZachXBT's allegation). The investigator says a crypto influencer's wallet and 45 wallets that sold during the crash share one funding source, while the influencer denied being behind the token ([ZachXBT](https://x.com/zachxbt/status/1947641028720398488); [cryptonews.net](https://cryptonews.net/news/security/31387868/)). See [`techniques/T3.004-influencer-amplified-promotion-and-dump.md`](../techniques/T3.004-influencer-amplified-promotion-and-dump.md). The opened pages do not describe the promotion itself (its channels, dates or content), so that half of the Technique is undisclosed here.
+
+**Attribution:** **inferred-weak.** ZachXBT, an independent on-chain investigator, says the wallets are connected to the X account @cryptobeastreal. Per [cryptonews.net](https://cryptonews.net/news/security/31387868/), the link is a Celestia wallet address the account's owner once posted as his own and later deleted. The influencer said the crash came from big traders, not from him, per the same report. No court or regulator action is reported on the opened pages.
+
+**Key teaching point:** **Cluster the sellers by funding source before accepting a denial.** If wallets that sell together trace back to an address the promoter has publicly claimed, a "not me" post does not change who controlled the supply. Check this from the wallet's first funding transaction, not from the promoter's statements.
 
 ## Summary
 
-On July 14, 2025, the ALT token crashed from a $190M market cap to $3M (0.19 → 0.003) after insiders sold a large percentage of the total supply. Crypto Beast (@cryptobeastreal) had aggressively promoted $ALT on X and Telegram earlier that month. After the crash, he publicly denied being behind the token or the dump.
+On 2025-07-14 the price of $ALT fell from \$0.19 to \$0.003 ([cryptonews.net](https://cryptonews.net/news/security/31387868/)). On 2025-07-22 ZachXBT opened a thread titled as an investigation into how the @cryptobeastreal account scammed followers by lying about not being behind the crash, saying 45+ connected insider wallets sold \$11M+ on 2025-07-14 ([X post](https://x.com/zachxbt/status/1947641028720398488)). Per [cryptonews.net](https://cryptonews.net/news/security/31387868/), the investigator linked the wallets to a Celestia address the influencer had posted and deleted; from May to July 2025 that address sent funds to smaller wallets through Binance, KuCoin, HTX and Sideshift, and on 2025-07-14 the smaller wallets sold a large amount of $ALT within minutes. Only the first post of the thread and one news report were opened for this file; the thread's remaining posts, including any addresses, were not.
 
-ZachXBT's investigation revealed that 45+ connected insider wallets — all traceable to the same funding source — sold $11M+ on July 14. The influencer's promotion posts were deleted after the dump.
+## Timeline (UTC)
 
-The case illustrates the standard insider dump playbook: (1) accumulate supply across many wallets, (2) promote aggressively via influencer channels, (3) sell all at peak, (4) deny involvement, (5) delete promotional content.
+Stages: **Funding** (May to July 2025), **Take** (the sell-off), **Response** (denial and disclosure). Dates come from the cited pages; times are undisclosed except where shown.
 
-## Timeline
-
-| When | Event | OAK ref |
+| When | What happened | OAK |
 |---|---|---|
-| 2025-07 early | Crypto Beast aggressively promotes $ALT on X and Telegram | **T3.004 influencer amplification** |
-| 2025-07-14 | ALT crashes from $190M → $3M market cap (0.19 → 0.003). 45+ connected insider wallets sold $11M+ | **T3.003 coordinated dump** |
-| 2025-07-14 post-crash | Crypto Beast publicly denies being behind the token. Promotion posts deleted | (cover-up) |
-| 2025-07-22 | ZachXBT publishes investigation with on-chain wallet clustering of all 45+ insider wallets | (public disclosure) |
+| May to July 2025 | A Celestia wallet the influencer had linked to himself sends funds to smaller wallets through Binance, KuCoin, HTX and Sideshift ([cryptonews.net](https://cryptonews.net/news/security/31387868/)); the wallet addresses are undisclosed on the opened pages | none — funding of the wallet cluster |
+| Before 2025-07-14 | Promotion of $ALT to followers: not described on the opened pages. Undisclosed | **T3.004** (alleged) |
+| 2025-07-14 | $ALT falls from \$0.19 to \$0.003 within a few hours; the 45 wallets sell \$11M+ within minutes ([cryptonews.net](https://cryptonews.net/news/security/31387868/); [ZachXBT](https://x.com/zachxbt/status/1947641028720398488)) | **T3.004** |
+| After 2025-07-14 | The influencer says the crash was caused by big traders, not him, and deactivates his X account for a short period ([cryptonews.net](https://cryptonews.net/news/security/31387868/)) | none — denial |
+| 2025-07-22 12:53 | ZachXBT publishes the investigation thread ([X post](https://x.com/zachxbt/status/1947641028720398488)) | disclosure |
+| By 2025-08-06 | The account's owner returns under another username ([cryptonews.net](https://cryptonews.net/news/security/31387868/)) | none |
 
-## What defenders observed
+Key addresses: the Celestia funding address and the 45 selling wallets are not printed on the pages opened for this file. Undisclosed here; the full list is in ZachXBT's thread, which this file does not reproduce.
 
-- **Single funding source → 45+ wallets:** All insider wallets were funded from a common source on-chain, making the cluster identifiable even through wallet fragmentation.
-- **Synchronized sell timing:** All 45+ wallets sold within the same trading window, producing an unnatural sell-side concentration that is statistically distinct from organic retail selling.
-- **Promotion-to-dump latency:** The crash occurred days after the most aggressive promotion, giving insiders time to exit at peak while retail was still absorbing the promotional content.
-- **Post-dump content deletion:** The influencer deleted promotion posts after the dump — a behavioral signal that the promotion was not organic community support but coordinated extraction.
+## Root-cause evidence
 
-## What this example tells contributors
-
-- **Wallet clustering by funding source defeats fragmentation.** The attacker used 45+ wallets to obscure the insider concentration, but all were funded from a single identifiable source. T3 detection should monitor for multi-wallet clusters with common funding + synchronized sell-offs.
-- **The denial is part of the MO.** Public denial of involvement while on-chain evidence shows coordinated selling from connected wallets is a recurring pattern (see also: DJT token insiders, RIVER manipulation). T3 technique pages should catalogue denial-as-cover as a behavioral indicator.
-- **Influencer promotion-post deletion is a retrospective signal.** When an influencer deletes promotion posts after a token crashes, it indicates the promotion was not organic. This is a post-hoc signal useful for attribution and actor profiling, not real-time detection.
+- **Technique:** OAK-T3.004
+- **Source:** <https://x.com/zachxbt/status/1947641028720398488>; <https://cryptonews.net/news/security/31387868/>
+- **Source type:** independent-researcher
+- **Confidence:** reported
+- **Evidence:** ZachXBT's thread, relayed by one news report, ties the sellers to one funding wallet and says that wallet was linked to the influencer. The findings are the investigator's, published eight days after the crash, and the influencer disputes them. No second independent trace was opened.
 
 ## Public references
 
-- [ZachXBT — Crypto Beast ALT Investigation (X/Twitter)](https://twitter.com/zachxbt/status/1947038843278774272)
-- On-chain wallet cluster: 45+ connected wallets documented in ZachXBT thread.
+- ZachXBT, [thread opener on the $ALT crash](https://x.com/zachxbt/status/1947641028720398488) (2025-07-22).
+- cryptonews.net, ["Crypto Beast Returns After $ALT Crash, ZachXBT Probes"](https://cryptonews.net/news/security/31387868/) (2025-08-06, republishing cryptonewsz.com).

@@ -1,49 +1,43 @@
-# StarkNet STRK Pre-Token Anticipation Phishing — 2023–2024
+# StarkNet STRK airdrop phishing — fake "Starknet Airdrop" claim sites with drainer code, promoted on X — StarkNet / Ethereum — 2023-12 to 2024-06
 
-**Loss:** not quantified by any source cited here. The earlier figures (~\$2M+ cumulative; ~\$500 to ~\$250K per victim) had no source and were removed. [pcriskstrk] documents a fake "Starknet Airdrop" claim site with drainer code and reports no loss amounts.
-**OAK Techniques observed:** **OAK-T4.009** (Pre-token Brand-Anticipation Phishing — the canonical pre-token anticipation pattern at one of the largest L2 ecosystems. StarkWare publicly signalled STRK token plans for over two years before the February 2024 airdrop; the extended signalling window created a prolonged phishing exposure surface.) **OAK-T6.001** (Source-Verification Mismatch — fake "STRK claim" sites presented themselves as official StarkNet Foundation claim portals; the divergence between the front-end-displayed claim UI and the actual drainer-contract backend is the canonical T6.001 pattern at the pre-token layer.) **OAK-T4.008** (Fake-DEX Clone-Frontend Phishing — structurally adjacent; the attacker's claim portal is a clone of what users expect an airdrop claim UI to look like, distributed through the same social/ad-platform channels as T4.008.)
-**Attribution:** **pseudonymous** — no actor or drainer-kit attribution is established by the sources cited here; the earlier Inferno / Angel affiliate attribution is unverified.
-**Corrected 2026-10-11:** removed the unsourced ~\$2M+ loss figure, the Inferno / Angel attribution, invented example domains and unverified distribution-channel claims; only the existence of fake STRK claim sites with drainer code is sourced.
+**Loss:** not quantified by any source. [PCrisk](https://www.pcrisk.com/removal-guides/28671-starknet-airdrop-scam) lists the damage only as loss of sensitive private information and monetary loss, with no amounts.
 
-**Key teaching point:** **The STRK pre-token anticipation phishing cohort is the largest L2-scale instance of the T4.009 pattern.** StarkWare's extended pre-launch signalling window (2022–February 2024) created the longest pre-token phishing exposure surface in the L2 ecosystem: over two years of "STRK token is coming" messaging internalised by the user base, during which attacker-operated "STRK claim" sites appeared chronologically credible. The structural lesson generalises from the EigenLayer (restaking) and zkSync (ZK-rollup) cohorts: the longer the pre-launch signalling window, the more attacker-operated claim portals look like expected ecosystem infrastructure rather than phishing anomalies. The load-bearing mitigation — platform-side canonical-claim-URL pre-announcement combined with pre-launch defensive domain registration — was not operationalised by StarkWare during the pre-launch window.
+**OAK Techniques observed:** none — the opened pages show a fake airdrop claim site with drainer code, promoted on X, but no opened page dates the STRK token launch or the pre-launch signalling, so the pre-token-anticipation mechanism cannot be shown from them. Wallet connection followed by approval of a drainer contract is described by [PCrisk](https://www.pcrisk.com/removal-guides/28671-starknet-airdrop-scam); the page does not say which approval type was used.
+
+**Attribution:** **unattributed** — no operator or drainer kit is named in the sources read.
+
+**Key teaching point:** **Treat any "check your eligibility" site that asks for a wallet connection and a contract approval as hostile, and check the claim URL against one the project announced itself.** [PCrisk](https://www.pcrisk.com/removal-guides/28671-starknet-airdrop-scam) describes a site that asked visitors to connect a wallet to check eligibility for \$STRK, and then to approve a contract with drainer code; the Starknet co-founder separately warned on 2024-02-11 that an emailed STRK airdrop claim was a scam ([Eli Ben-Sasson](https://x.com/EliBenSasson/status/1756571198043963523), via fxtwitter).
 
 ## Summary
 
-StarkWare, the developer of StarkNet (a ZK-rollup L2 on Ethereum), publicly signalled plans for a native STRK governance token starting in 2022. The token's role in protocol governance, staking, and fee payment was discussed in StarkWare blog posts, community calls, and ecosystem presentations across 2022–2023. The STRK token was officially deployed and airdropped to eligible users in February 2024.
+[PCrisk](https://www.pcrisk.com/removal-guides/28671-starknet-airdrop-scam) (guide dated 2024-06-19, updated) describes a fake cryptocurrency giveaway promoted on X that imitates a Starknet airdrop of \$STRK and asks visitors to connect their wallet to check eligibility. According to the guide, the visitor is asked to approve a malicious smart contract containing drainer code, which then gains the ability to execute unauthorized transactions and transfer funds to the attacker. The guide lists four domains, starknet-network.website, reward-now.org, stark-claim.net and provisions-starknet-io-argent.pages.dev, and names Avira, Combo Cleaner, Cyradar, Kaspersky and Sophos as flagging starknet-network.website as phishing or malicious. It says screenshot filenames indicate samples from December 2023, 2024-01-08 and 2024-06-19; this is PCrisk's own dating of samples, not of campaign start or end. It names X posts, misleading ads and unwanted applications as distribution routes; only the X promotion is tied to this specific scam.
 
-During the ~2-year pre-launch window, attacker-operated phishing sites claiming to be the "official STRK airdrop claim portal" proliferated. The phishing infrastructure followed the standard pre-token anticipation pattern established by the EigenLayer and zkSync cohorts:
-
-1. **Domain registration following StarkWare signalling events.** Within days of each major StarkWare announcement referencing STRK token plans, new typosquat / near-miss domains appeared combining "starknet," "strk," "airdrop," "claim," and "token".
-
-2. **Drainer-backend connection.** The claim portal prompted users to connect their wallet and "verify eligibility" — the wallet-connection triggered a Permit2 / `approve` / `setApprovalForAll` transaction routed to drainer code ([pcriskstrk]; the specific drainer-kit lineage is unverified).
-
-3. **Social-platform amplification.** Links to the fake claim portals were promoted on X/Twitter ([pcriskstrk]; other channels such as Telegram, Discord and search ads are unverified) — the same multi-channel distribution surface as T4.008 but targeted at the StarkNet ecosystem's anticipation of the STRK token event.
-
-The phishing campaigns were effective because StarkNet's extended pre-launch signalling created a structural ambiguity: users knew STRK was coming, the ecosystem had been discussing it for over a year, and the appearance of a "claim portal" during this window was chronologically plausible. The legitimate STRK airdrop claim portal (`provisions.starknet.io`) was not announced until the February 2024 airdrop date — meaning there was no canonical ground-truth URL for users to verify against during the entire pre-launch window.
-
-After the February 2024 airdrop, the phishing surface shifted from pre-token anticipation to post-airdrop impersonation (fake "additional STRK claim" / "STRK staking" portals), but the structural pattern remained the same: the attacker's claim portal exploited the ambiguity created by the ecosystem's own token-related signalling.
-
-The STRK cohort is structurally distinguished from the EigenLayer and zkSync cohorts by the duration of the pre-launch window (~2 years vs. ~12 months for zkSync and ~6 months for EigenLayer), making it the longest-duration T4.009 exposure surface documented at v0.1.
+On 2024-02-11 06:49 UTC, [Eli Ben-Sasson posted](https://x.com/EliBenSasson/status/1756571198043963523) a scam alert saying an email from "strk-labs" claiming an STRK airdrop is a scam. No loss, victim count or transaction is reported in either source.
 
 ## Timeline (UTC)
 
-| When | Event | OAK ref |
+Neither source gives times, victim transactions or fund movements. Those stages are undisclosed.
+
+| When | What happened | OAK |
 |---|---|---|
-| 2022 | StarkWare publicly signals STRK token plans; token's role in governance, staking, and fee payment discussed in blog posts and community calls | (ambiguity window opens) |
-| 2022–2023 | STRK token plans reiterated in ecosystem presentations and community AMAs; user base internalises expectation of future airdrop | T4.009 (prolonged signalling) |
-| 2023-Q4 onward (earliest dated evidence in [pcriskstrk]: a December 2023 screenshot) | Attacker-operated "STRK claim" / "StarkNet airdrop" phishing sites proliferate, tracking StarkWare's public signalling events | T4.009 + T6.001 |
-| 2024-02 | Official STRK airdrop launched via `provisions.starknet.io`; phishing surface shifts to post-airdrop impersonation | T4.009 (post-airdrop transition) |
-| 2024-Q1–Q2 | Post-airdrop impersonation campaigns ("additional STRK claim," "STRK staking") continue through the drainer-kit distribution infrastructure | T4.009 |
+| 2023-12 | Earliest sample dated by PCrisk's screenshot filenames of the fake "Starknet Airdrop" site ([PCrisk](https://www.pcrisk.com/removal-guides/28671-starknet-airdrop-scam)) | — |
+| 2024-01-08 | Second PCrisk sample date | — |
+| Undisclosed | Victim connects a wallet to check eligibility and approves a contract with drainer code; contract addresses and transactions undisclosed | — |
+| Undisclosed | Drained funds move to the attacker; destination and amounts undisclosed | — |
+| 2024-02-11 06:49 | Starknet co-founder warns that an emailed STRK airdrop from "strk-labs" is a scam ([X](https://x.com/EliBenSasson/status/1756571198043963523)) | response |
+| 2024-06-19 | PCrisk publishes its guide listing four domains and vendor detections | response |
+
+Key addresses: none. No contract or wallet address is printed in the sources read.
+
+## Root-cause evidence
+
+- **Technique:** none
+- **Source:** <https://www.pcrisk.com/removal-guides/28671-starknet-airdrop-scam>; <https://x.com/EliBenSasson/status/1756571198043963523>
+- **Source type:** security-firm
+- **Confidence:** reported
+- **Evidence:** PCrisk, a malware-removal publisher, describes the fake claim site and drainer contract; the Starknet co-founder's post confirms scam claims of an STRK airdrop existed in February 2024. Not established by these pages: losses, the drainer kit, the operator, and any pre-launch signalling window.
 
 ## Public references
 
-- `[pcriskstrk]` — PCrisk, "How to spot fake giveaways like 'Starknet Airdrop'" (2024-06-19): <https://www.pcrisk.com/removal-guides/28671-starknet-airdrop-scam>
-- StarkWare Foundation official STRK token announcement and airdrop details (February 2024)
-- Community reporting on fake STRK claim portals (r/StarkNet, StarkNet Discord, X/Twitter)
-- Inferno / Angel drainer-kit operator-cluster attribution (see T4.008 for drainer-kit lineage)
-
-## Discussion
-
-The STRK cohort anchors the pre-token anticipation phishing pattern at the L2 ecosystem scale. While EigenLayer (restaking) and zkSync (ZK-rollup) provided the initial T4.009 cohort anchors, the StarkNet case demonstrates that the pattern is not confined to a specific DeFi vertical — it generalises to any L1/L2 ecosystem with a publicly signalled but not-yet-deployed governance token. The extended signalling window (~2 years) makes the STRK cohort the longest-duration T4.009 exposure surface: the attacker's claim portals had over 24 months of chronologically plausible operation before the official airdrop provided a ground-truth URL.
-
-The mitigation lesson is structurally identical to the EigenLayer and zkSync cases but more operationally acute due to the window duration: platform-side canonical-claim-URL pre-announcement and pre-launch defensive domain registration are not optional hardening measures — they are load-bearing defenses whose absence creates a standing, multi-year phishing surface. StarkWare did not operationalise either mitigation during the pre-launch window, and the attacker infrastructure filled the resulting ambiguity.
+- PCrisk, "Starknet Airdrop Scam" removal guide (2024-06-19): <https://www.pcrisk.com/removal-guides/28671-starknet-airdrop-scam>
+- Eli Ben-Sasson, X post (2024-02-11): <https://x.com/EliBenSasson/status/1756571198043963523>
