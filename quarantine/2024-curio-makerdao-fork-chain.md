@@ -1,3 +1,7 @@
+> **MERGED 2026-11-27 into `examples/2024-03-curio.md`** — a duplicate entry for the same incident. Not part of the OAK corpus; kept for the record.
+
+**Merged into:** 2024-03-curio
+
 # Curio DAO MakerDAO fork-chain governance exploit — Ethereum — 2024-03-23
 
 **Loss:** ~\$16M. The attacker exploited a voting-power flaw in Curio's DSChief-derived governance contract to give themselves elevated privileges, then minted ~1 billion CGT tokens through a delegatecall to a malicious contract registered as the project's exec library. The loss was the attacker's unauthorised CGT issuance and the value extracted from it, not collateral drained from vaults.

@@ -58,4 +58,4 @@ Key addresses:
 - `[goplusxpost2026]` — GoPlus Security, "GoPlus Security Alert" (2026-10-31): <https://x.com/GoPlusSecurity/status/2116443510412865653>
 - `[slowmisthacked2026]` — SlowMist Hacked, Flap entry (2026-10-31): <https://hacked.slowmist.io/>
 - `[rektradar20261031]` — RektRadar (secondary), "Web3 daily exploits 31 Oct 2026: Flap, Kintsu DNS StepDrainer": <https://www.rektradar.xyz/web3-daily-exploits-31-oct-2026-flap-kintsu-dns-stepdrainer/>
-- Structural parallels: [`examples/2022-08-curve-dns-hijack.md`](2022-08-curve-dns-hijack.md), [`examples/2023-12-galxe-dns.md`](2023-12-galxe-dns.md).
+- Structural parallels: [`examples/2022-08-curve-dns-hijack.md`](2022-08-curve-dns-hijack.md), [`examples/2023-10-galxe-dns-registrar-account-hijack.md`](2023-10-galxe-dns-registrar-account-hijack.md).

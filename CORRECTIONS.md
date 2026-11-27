@@ -64,6 +64,47 @@ If something on OAK is wrong about you or your work, write to us. We'll fix it.
 
 ## Correction log
 
+### 2026-11-27 — 29 examples whose only pinned source was a general report: 28 rewritten, 1 quarantined, 2 duplicates merged
+
+These files cited one specific URL, but it was a general paper or annual report, not a page about the incident (one arXiv paper stood as the source for BonqDAO, KyberSwap, GMX V1, Yearn, Platypus, Curio and the Compound vote). Each was checked against pages found and opened for the incident, and rewritten from those pages with inline links. Of 259 addresses and transaction hashes in the two batches' files, 254 were found in the raw text of a cited page; the other five sit beside sources that refuse automated fetches and exist on-chain.
+
+| File | Main claims corrected |
+|---|---|
+| `2025-02-infini` | No arrest by Hong Kong police: the sources show a civil suit and injunction served on-chain. No recovery is reported. Removed from OAK-G01. |
+| `2023-02-platypus` | "Brothers arrested 2023-02-23 and charged" → French police announced two arrests on 2023-02-24, with no names and no charges reported. About \$2.4M was recovered by BlockSec and about \$1.5M frozen. |
+| `2023-08-cypher` | The "Hailey" persona, a January 2025 arrest and a DOJ indictment are on no page opened; removed. |
+| `2021-07-thorchain` | Two exploits (about \$4.9M found 2021-07-16, about \$8M on 2021-07-22) and one white-hat find; the third "ChefDAO" incident and returned funds were not real. OAK-T10.001 → OAK-T10.002.001. |
+| `2023-10-galxe-dns-registrar-account-hijack` (was `2023-12-galxe-dns`) | One incident on 2023-10-06, about \$148K–\$160K stolen. The "December 2023, \$246K" second incident does not exist; \$396K was the refund total. |
+| `2023-04-yearn-yusdt-misconfigured-fulcrum-token` (was `2023-02-yearn-v2`) | 2023-04-13, not 2023-02-02; yUSDT pointed at the wrong Fulcrum token. No flash loan; no negotiated recovery. |
+| `2024-06-coinstats-wallet-infrastructure-breach` (was `…coinstats-snap`) | No source mentions a MetaMask Snap. CoinStats reports intrusions into several services and 1,590 wallets' keys stolen, about \$2.2M, not \$1M; no reimbursement figure. |
+| `2024-07-compound-vote-takeover` | Proposal 289 passed 682,191 to 633,636 and was cancelled on 2024-07-29 by agreement, not defeated in a timelock window. No delegation cluster or Governor flaw is sourced. OAK-T16.003 and OAK-T9.003 dropped. |
+| `2024-07-bittensor-pypi-package-coldkey-theft` (was `2024-08-bittensor-coldkey-cohort`) | "32 cold keys" was a misreading of about 32,000 TAO (about \$8M). One incident on 2024-07-02 through a malicious PyPI release, not a cohort. Tornado Cash removed. |
+| `2024-11-dexx-custody-key-leak-user-wallets-drained` (was `2024-09-dexx-cohort`) | 2024-11-16, not September. Loss unsettled, above \$16M–\$20M, not \$2.5M. A leaked custody key per CertiK and SlowMist; the "database intrusion" story removed. |
+| `2025-03-1inch-resolver` | The bug was in 1inch's own Fusion v1 settlement contract (a calldata length underflow), not an outdated third-party resolver. Technique now `none`. |
+| `2024-01-concentric` | A single deployer wallet, not a multisig. The OAK-G01 attribution has no source; removed from OAK-G01. Tornado Cash removed. |
+| `2024-09-indodax` | Mechanism is disputed between SlowMist and Cyvers; the Lazarus link is one firm's suspicion. Removed from OAK-G01. The laundering chain removed. |
+| `2018-06-coinrail` | No opened page attributes the theft; removed from OAK-G01. Loss now given per token from TechCrunch. |
+| `2021-04-easyfi` | Token is EASY, not "EZ"; the founder's name was wrong; tokens were taken from pools, not minted. |
+| `2023-11-kyberswap` | \$55.2M in total (\$48.67M to the main exploiter, \$6.56M to front-run bots); about \$5.17M returned by bot operators. Not reentrancy. |
+| `2023-08-balancer-v2` | A rounding error in Linear Pools exploited on 2023-08-27, not reentrancy on 08-22; more than \$2.12M per BlockSec. OAK-T9.005 → OAK-T9.011. |
+| `2023-04-allbridge` | A payout miscalculation under liquidity skew; 1,500 BNB returned; a second attacker took about \$160K. |
+| `2023-02-bonqdao` | No flash loan; two oracle reports by a 10-TRB staker. About \$1M realised of \$120M nominal. |
+| `2024-03-curio` | The flash loan, storage collision, three-hour pause and bounty return are unsourced; removed. About \$16M nominal against about \$178K realised. |
+| `2025-07-gmx-v1` | Reentrancy through the order-execution payout, per GMX. Returned amounts differ by source; the "LPs made whole" claim removed. OAK-T11.013 dropped. |
+| `2025-04-zksync-airdrop` | First mint 2025-04-13, by a 1-of-1 Safe calling `sweepUnclaimed()`; 90% returned on 2025-04-23 after a safe-harbor offer, not within 24 hours. |
+| `2025-04-loopscale` | All funds returned (5,726,725 USDC and 1,211 SOL); \$2.9M was an interim figure. |
+| `2025-04-kiloex` | A permissionless forwarder `execute`, per the post-mortem as relayed; the flash loan and Pyth details removed. |
+| `2022-09-wintermute-profanity-cohort` | \$3.3M on 2022-09-16 and 732 ETH on 2022-09-25; the OAK-G01 speculation and the "tail into 2023" removed. |
+| `2022-07-nirvana-finance` | How the price was moved is not agreed between sources; the wind-down claim removed. |
+| `2022-02-pixelmon-reveal` (was `2022-05-…`) | Mint 2022-02-07, reveal 2022-02-26. No theft or exploit is sourced, so all four Techniques are dropped. Whether it belongs in OAK is an open question. |
+| `2026-06-openmonero-hosting-server-root-access-hot-wallet-drain` (was `…server-misconfig-wallet-rpc…`) | The firewall and wallet-RPC story is on no page. The operator blames the hosting provider's dashboard; the account is disputed. About 200 XMR. |
+
+**Quarantined:** `2024-03-ether-fi-profanity-entropy-cohort`. No record of a 2023–2024 Profanity cohort, and nothing about ether.fi.
+
+**Merged as duplicates:** `2024-curio-makerdao-fork-chain` → `2024-03-curio`; `2024-06-uwu-bittensor` → `2024-07-bittensor-pypi-package-coldkey-theft`.
+
+**Not yet aligned:** technique pages that still describe the old versions. See ROADMAP Next 2.
+
 ### 2026-11-27 — 31 examples with no openable source: 30 rewritten from the sources, 1 quarantined, 4 duplicates merged
 
 `python3 tools/check_sourcing.py --tier refs-unpinned` listed 31 examples whose every citation was a site's home page, an account profile or a placeholder. Each was checked against pages found and opened for the incident. All 31 contradicted those pages on at least one material point, so each was rewritten from the opened pages only, with inline links; details the pages do not carry were removed. Two files were renamed because their names stated the wrong date or mechanism.

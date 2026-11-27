@@ -1,3 +1,7 @@
+> **MERGED 2026-11-27 into `examples/2024-07-bittensor-pypi-package-coldkey-theft.md`** — a duplicate entry for the same incident. Not part of the OAK corpus; kept for the record.
+
+**Merged into:** 2024-07-bittensor-pypi-package-coldkey-theft
+
 # Bittensor `bittensor` PyPI supply-chain coldkey-exfiltration compromise — Bittensor / TAO — 2024-07-02
 
 **Loss:** approximately \$8M extracted in TAO from Bittensor coldkey holders whose machines installed the malicious `bittensor` PyPI package release (v6.12.2) during the late-June / early-July 2024 vulnerable window. The exfiltrated coldkey private keys were used by the attacker to drain affected wallets of TAO holdings; the cumulative drained value at TAO spot price during the extraction window was approximately \$8M. The affected cohort was the subset of Bittensor users who pip-installed the affected version during the vulnerable window — not the entire Bittensor user base — and the realised-loss bound is determined by the affected cohort's TAO holdings, not by the network's total TAO supply or staked weight.
