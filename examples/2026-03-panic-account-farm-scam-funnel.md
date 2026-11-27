@@ -1,47 +1,42 @@
-# Panic-Account Farm — $0 Direct Loss / Scam Traffic Funnel via Doomposting — 2026-03
+# Panic-account farm — a network of 10+ X accounts posted viral war and politics panic to drive traffic to crypto scams, including a pump-and-dump token — X / on-chain — 2026-03
 
-**Loss:** No direct loss figure — the operation manufactured viral panic to drive traffic → crypto scams (fake giveaways, phishing links). 10+ coordinated accounts with purchased followers posting doom content multiple times per day.
-**OAK Techniques observed:** none — a coordinated inauthentic account network as a phishing distribution surface has no Technique at v0.x. T4.007 is the nearest neighbour, but its load-bearing property is that the attacker's spend is denominated in the platform's native asset and converts directly into visibility; here the spend is off-platform account purchase and the visibility is farmed organically — adjacent, not the same primitive. T15.006 does not hold either: the accounts were purchased rather than compromised, and the operators post as fabricated personas rather than exploiting a verification signal on a real brand. No on-chain artefact, no named extraction primitive, and \$0 direct loss are established. Candidate gap, which the file argues itself: coordinated inauthentic account network as scam infrastructure.
-**Attribution:** **pseudonymous** — 10+ account network identified. Individual operators not publicly named. ZachXBT investigation published March 2026.
+**Loss:** **not reported as a total.** ZachXBT said on-chain evidence suggests the pump-and-dump scheme "profited six figures" ([The Daily Hodl](https://dailyhodl.com/2026/03/26/coordinated-network-of-x-accounts-manufacturing-geopolitical-panic-to-fuel-pump-and-dump-crypto-scams-zachxbt/)). No victim count or addresses are published on the pages OAK opened.
 
-**Key teaching point:** The panic-account farm demonstrates the **manufactured-reality-to-scam-funnel** pattern: the operators purchased X/Twitter accounts with existing followers, used them to post doom-content about war and politics to generate viral engagement, reposted content from alt accounts to create the illusion of multiple independent voices, and then — once the panic content had generated traffic — promoted fake giveaways and scam links. The doom-content is the traffic engine; the scams are the monetization. Detection approach: cross-reference accounts that alternate between high-engagement doom/panic content and crypto scam promotion; the content transition from "WW3 imminent" to "claim your airdrop" is the detection signal.
+**OAK Techniques observed:** none — a coordinated network of purchased social accounts used as scam distribution has no Technique page. The nearest ones do not fit: the native-app social-phishing Technique turns the attacker's own platform spend into visibility, while here the reach was farmed with engagement bait; the verified-account-compromise Technique needs a hijacked real brand, while here the accounts were bought and posed as news voices. Candidate gap: coordinated inauthentic account network as scam infrastructure.
+
+**Attribution:** **unattributed.** ZachXBT does not name the operators in the thread OAK opened ([ZachXBT thread, post 1](https://x.com/zachxbt/status/2035989255395082589)).
+
+**Key teaching point:** **An account that switches from war and politics panic to a giveaway or a token promotion is a scam signal, so check an account's recent posts before engaging.** ZachXBT's own practice, per [The Daily Hodl](https://dailyhodl.com/2026/03/26/coordinated-network-of-x-accounts-manufacturing-geopolitical-panic-to-fuel-pump-and-dump-crypto-scams-zachxbt/), is to review recent posts and account details before engaging with content.
 
 ## Summary
 
-In March 2026, ZachXBT uncovered a coordinated network of 10+ X/Twitter accounts manufacturing viral panic about war and politics as a traffic engine for crypto scams.
+On 2026-03-23 ZachXBT [posted](https://x.com/zachxbt/status/2035989255395082589) that he had uncovered a coordinated network of 10+ accounts manufacturing viral panic about war and politics to drive traffic to crypto scams. His listed strategy: purchase accounts with followers, doompost multiple times per day, repost content from alt accounts, promote a fake giveaway or scam, change username ([same post](https://x.com/zachxbt/status/2035989255395082589)). [The Daily Hodl](https://dailyhodl.com/2026/03/26/coordinated-network-of-x-accounts-manufacturing-geopolitical-panic-to-fuel-pump-and-dump-crypto-scams-zachxbt/) reports he linked the accounts to fake giveaways and a pump-and-dump scam, that ten accounts in the cluster promoted the token $ORAMAMA on 2026-02-22 and never posted about it again, and that X appeared to have suspended all 16 scam accounts he found.
 
-**The operation:**
+## Timeline (UTC)
 
-1. **Purchase accounts with followers:** Acquire existing X accounts that already have follower counts (bypassing the need to build audience from scratch).
-2. **Doompost multiple times per day:** Post alarming content about war, politics, and global catastrophe — content that generates high engagement (retweets, quote tweets, replies) because fear is the most shareable emotion.
-3. **Repost from alt accounts:** Each account reposts content from the other accounts in the network, creating the illusion of multiple independent voices all saying the same thing. This is a synthetic consensus.
-4. **Monetize the traffic → crypto scams:** Once a post goes viral, edit it or reply to it with a fake crypto giveaway, phishing link, or scam token promotion. The viral reach of the doompost is now channeled to the scam.
+Stages: **Prepare** (accounts bought), **Lure** (panic posts and reposts), **Take** (scam promotion), **Response** (disclosure, suspensions). Dates come from the two cited pages; times and the account list are undisclosed there.
 
-The doom-content and the crypto scams appear disconnected to casual observation — the operational connection is only visible by tracing the account network and observing the content transition pattern.
-
-## Timeline
-
-| When | Event | OAK ref |
+| When | What happened | OAK |
 |---|---|---|
-| Pre-Mar 2026 | 10+ accounts with purchased followers begin coordinated doomposting | **T4 coordinated inauthentic behavior** |
-| 2026-03 (ongoing) | Viral posts monetized via fake giveaways and scam links | **T2 scam monetization** |
-| 2026-03-23 | ZachXBT publishes investigation uncovering the network | (public disclosure) |
+| Before 2026-02-22 (undisclosed) | The operators purchase accounts that already have followers ([ZachXBT](https://x.com/zachxbt/status/2035989255395082589)). | none — account purchase and network setup have no Technique page |
+| Before 2026-02-22 (undisclosed) | The accounts doompost several times a day about war and politics and repost content from alt accounts; The Daily Hodl reports the posts reach millions of views ([The Daily Hodl](https://dailyhodl.com/2026/03/26/coordinated-network-of-x-accounts-manufacturing-geopolitical-panic-to-fuel-pump-and-dump-crypto-scams-zachxbt/)). | none — coordinated inauthentic reach has no Technique page |
+| 2026-02-22 | Ten accounts in the cluster promote the pump-and-dump token $ORAMAMA, then never post about it again; on-chain evidence suggests the scheme profited six figures ([The Daily Hodl](https://dailyhodl.com/2026/03/26/coordinated-network-of-x-accounts-manufacturing-geopolitical-panic-to-fuel-pump-and-dump-crypto-scams-zachxbt/)). Token contract and wallets: undisclosed. | none — pump-and-dump promotion, no on-chain step published |
+| 2026-03-23 07:57 | ZachXBT publishes the thread ([post 1](https://x.com/zachxbt/status/2035989255395082589)). | response |
+| By 2026-03-26 | X appears to have suspended all 16 scam accounts he found ([The Daily Hodl](https://dailyhodl.com/2026/03/26/coordinated-network-of-x-accounts-manufacturing-geopolitical-panic-to-fuel-pump-and-dump-crypto-scams-zachxbt/)). | response |
 
-## What defenders observed
+Key addresses:
 
-- **Doom-content as the traffic engine.** War and political panic generate the highest engagement rates on social media. The operators chose doom-content not because they care about politics — but because fear is the optimal content strategy for reach. The content strategy is purely instrumental.
-- **Alt-account repost network as synthetic consensus.** When 10 accounts all post similar doom-content and repost each other, a user scrolling sees multiple "independent" voices confirming the same narrative. The network creates a false reality — the user doesn't know all 10 accounts are controlled by the same operators.
-- **Content transition as the detection signal.** The same account that posts "World War 3 is starting" at 9 AM posts a crypto scam link at 2 PM. The transition from doom-content to financial scam is the behavioral fingerprint that distinguishes a scam account from a genuine political commentator.
-- **Purchased accounts = pre-existing trust.** Buying accounts with existing followers bypasses the trust-building phase. The followers already trust the account (from its previous, legitimate content), making the pivot to scam promotion more effective.
+- None published on the opened pages. Account handles, the $ORAMAMA contract and the profit wallets are undisclosed.
 
-## What this example tells contributors
+## Root-cause evidence
 
-- **Coordinated inauthentic behavior (CIB) as scam infrastructure is a T4 sub-type.** The 10-account network is infrastructure, not a single scammer. The capital investment (purchasing accounts) and content strategy (doomposting) are operationalized. T4 should include "coordinated inauthentic account network" as a sub-pattern — the detection surface is the inter-account repost graph, not individual account content.
-- **Content pivot detection: doom → crypto scam.** An account that switches from political doomposting to crypto promotion is a high-precision scam signal. This is detectable through content topic modeling — when an account's topic distribution shifts from "politics/war" to "crypto/scam" within a short time window, flag it.
-- **Synthetic consensus is detectable through repost graph analysis.** When N accounts exclusively repost each other and share the same content themes, they form a clique in the repost graph. Clique detection on the account-repost graph identifies coordinated networks before they pivot to scams.
+- **Technique:** none — the pages describe a social-distribution operation, not a code or key flaw.
+- **Source:** <https://x.com/zachxbt/status/2035989255395082589>; <https://dailyhodl.com/2026/03/26/coordinated-network-of-x-accounts-manufacturing-geopolitical-panic-to-fuel-pump-and-dump-crypto-scams-zachxbt/>
+- **Source type:** independent-researcher
+- **Confidence:** reported
+- **Evidence:** ZachXBT's own thread states the strategy; The Daily Hodl relays the $ORAMAMA, six-figure and 16-account details from his follow-up posts. The underlying on-chain evidence was not opened by OAK.
 
 ## Public references
 
-- [ZachXBT — Panic-Account Scam Network Investigation (X/Twitter)](https://x.com/zachxbt/status/2035989255395082589)
-- 10+ coordinated accounts. Purchased followers. Doomposting multiple times per day.
-- Monetization: fake giveaways, phishing links, scam token promotions.
+- ZachXBT, first post of the thread (2026-03-23): <https://x.com/zachxbt/status/2035989255395082589>
+- The Daily Hodl, "Coordinated Network of X Accounts Manufacturing Geopolitical Panic To Fuel Pump-and-Dump Crypto Scams: ZachXBT" (2026-03-26): <https://dailyhodl.com/2026/03/26/coordinated-network-of-x-accounts-manufacturing-geopolitical-panic-to-fuel-pump-and-dump-crypto-scams-zachxbt/>

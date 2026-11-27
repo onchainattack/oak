@@ -10,7 +10,7 @@
 
 ## Summary
 
-SlowMist flagged the exploit on 2026-10-25.
+SlowMist flagged the exploit on 2026-10-25 ([SlowMist alert](https://x.com/SlowMist_Team/status/2114290073546219799)): about \$21.9K was lost, and a proposal backed by about 0.000055% of voting power moved YapeFactory's `feeToSetter` role to the attacker because WorkersUnion's quorum was zero. [Coinfomania](https://coinfomania.com/yapeswap-suffers-21-9k-loss-from-governance-exploit/) repeats the alert, dated 2026-10-25, and reports no Yapeswap response.
 
 ## Timeline (UTC)
 
@@ -18,7 +18,7 @@ Read it as three stages. **Get in**: a governance contract with zero quorum. **P
 
 | When | What happened | OAK |
 |---|---|---|
-| Before 2026-10-25 (undisclosed) | WorkersUnion, Yapeswap's governance contract, has zero quorum, so any proposal that gets a vote passes. Since when is not published. | **T9.003** |
+| Before 2026-10-25 (undisclosed) | WorkersUnion, Yapeswap's governance contract, has zero quorum ([SlowMist](https://x.com/SlowMist_Team/status/2114290073546219799)). Since when is not published. | **T9.003** |
 | 2026-10-25 (preparation undisclosed) | Funding of the attacker address is not published. | — |
 | 2026-10-25 (time undisclosed) | A proposal backed by about 0.000055% of voting power passes and transfers YapeFactory's `feeToSetter` role to the attacker. | **T9.003** |
 | same sequence | The attacker installs a Registry (contract [`0x327bf6dfc38a79393f78866c705193c39b04be01`](https://etherscan.io/address/0x327bf6dfc38a79393f78866c705193c39b04be01)) whose `latestVault()` returns fake vaults while `vaults()` still lists the real ones. | **T9.003** |
@@ -89,9 +89,10 @@ What the trace adds beyond the sources:
 - **Source:** <https://x.com/SlowMist_Team/status/2114290073546219799>
 - **Source type:** security-firm
 - **Confidence:** reported
-- **Evidence:** SlowMist's trace analysis of the proposal, role transfer and Registry swap.
+- **Evidence:** SlowMist's alert states the zero quorum, the role transfer and the Registry swap. Coinfomania's 2026-10-25 article restates the alert and adds no independent analysis. No Yapeswap post-mortem was found.
 
 ## Public references
 
-- `[slowmistyape2026]` — SlowMist TI alert (2026-10-25): <https://x.com/SlowMist_Team/status/2114290073546219799>
-- `[etherscanyape2026]` — exploit transaction: <https://etherscan.io/tx/0x4c741568cc12b23b382db409b0a38a4cfb6c708904f0c2ce7bad2e4fa7179e1e>
+- SlowMist TI alert (2026-10-25): <https://x.com/SlowMist_Team/status/2114290073546219799>
+- Coinfomania, Yapeswap loss report (2026-10-25): <https://coinfomania.com/yapeswap-suffers-21-9k-loss-from-governance-exploit/>
+- Exploit transaction: <https://etherscan.io/tx/0x4c741568cc12b23b382db409b0a38a4cfb6c708904f0c2ce7bad2e4fa7179e1e>

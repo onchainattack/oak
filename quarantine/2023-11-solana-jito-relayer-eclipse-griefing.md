@@ -1,3 +1,5 @@
+> **QUARANTINED 2026-11-27 — not part of the OAK corpus.** A source pass found no public record of an eclipse attack on Jito relayers or Jito-connected validators in 2023; the file cites nothing that shows the incident happened, and its stake share, epoch count and loss figures are on no page. It is kept here, outside `examples/`, and can return if a source documents an incident.
+
 # Solana Jito relayer eclipse griefing — Solana — November 2023
 
 **Loss:** **Aggregate mid-five-figure SOL-equivalent in missed leader-slot rewards and liveness-fault penalties.** Affected validators running the Jito-Solana client were eclipsed from the Jito relayer network for 2–3 epochs, causing them to miss leader slots (forfeiting the block reward and any MEV tips) and to incur Solana's downtime penalties for missed vote transactions. Individual validator losses ranged from low-three-figure to low-four-figure SOL-equivalent depending on the validator's stake weight and the number of leader slots scheduled during the eclipse window. The aggregate extraction across the affected validator set is estimated in the mid-five-figure SOL-equivalent range.

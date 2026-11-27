@@ -30,7 +30,7 @@ This is a textbook OAK-T4.002 case because the compromise sits between the user'
 - **What *was* compromised:** the served front-end, via an unauthorized Cloudflare Worker route deployed using a Cloudflare API key that had been pre-issued against an unverified account and later silently activated.
 - **What the user signed:** an ERC-20 `approve` transaction whose actual spender did not match the protocol's canonical interaction set — the canonical OAK-T4.002 indicator listed in the Technique page.
 
-This case differs from the Curve Finance DNS hijack of August 2022 (`[rektcurve2022]`) in the entry vector but is the same Technique. Curve was compromised at the registrar's nameserver layer; BadgerDAO was compromised at the edge-compute / hosting layer one hop closer to the user. Both produce the same on-chain signature — a spike in `approve` events from a known-protocol's user base going to a non-protocol spender.
+This case differs from the Curve Finance DNS hijack of August 2022 (`[rektcurve2022]`) in the entry vector but is the same Technique. Curve lost DNS control at the nameserver or provider layer (where is disputed); BadgerDAO was compromised at the edge-compute / hosting layer one hop closer to the user. Both produce the same on-chain signature — a spike in `approve` events from a known-protocol's user base going to a non-protocol spender.
 
 ## What defenders observed and learned
 
@@ -42,7 +42,7 @@ This case differs from the Curve Finance DNS hijack of August 2022 (`[rektcurve2
 
 The BadgerDAO and Curve incidents together argue that **OAK-T4.002 should be sub-classified by entry vector**, because the defensive controls differ even though the on-chain signature is the same:
 
-- **T4.002 sub-vector A — DNS / registrar-level compromise** (canonical example: Curve Finance, 2022-08, `[rektcurve2022]`). Mitigations live with the registrar and DNS provider: registry-lock, change-control on nameserver settings, 2FA at the registrar, monitoring of public DNS-change feeds for protocol domains.
+- **T4.002 sub-vector A — DNS-level compromise** (canonical example: Curve Finance, 2022-08, `[rektcurve2022]`). Mitigations live with the registrar and DNS provider: registry-lock, change-control on nameserver settings, 2FA at the registrar, monitoring of public DNS-change feeds for protocol domains.
 - **T4.002 sub-vector B — Edge-compute / hosting / CDN compromise** (canonical example: BadgerDAO, 2021-12, this case). Mitigations live with the CDN / hosting provider: API-key inventory and rotation, scoped permissions, alerting on CDN-Worker / route / page-rule changes, and account-lifecycle hygiene (which in this case was the upstream weakness in Cloudflare's signup flow).
 
 Both sub-vectors emit the same on-chain signal — a spike in permit / approve grants to a non-canonical spender from a known protocol's user base — so the **on-chain detection methodology is shared** while the **mitigation methodology splits**. Contributors writing future T4.002 examples should explicitly state which sub-vector applies. A worked example that says only "frontend was compromised" without stating the layer (DNS, CDN, edge compute, hosting bucket, supply-chain dependency, browser-extension, etc.) is under-specified for the Mitigations section to be actionable.

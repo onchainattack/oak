@@ -1,45 +1,42 @@
-# @blknoiz06 Impersonation — $2.6M Meme Coin Reply Phishing — 2024-03
+# @blknoiz06 impersonation — reply-jacking drainer presale — X / Solana — 2024-03-16
 
-**Loss:** $2.6M+ from victims in a single day (March 16, 2024). Largest single victim lost ~$1.2M.
-**OAK Techniques observed:** none — reply-jacking by an *external impersonator account* has no Technique at v0.x. T15.006 is ruled out by its own boundary text: it requires the attacker to control the verified account, whereas here a lookalike handle replied to an uncompromised account's posts. T15.005 fails for the same reason — no operator channel was taken over. T4.007 is the nearest neighbour but its defining primitive is *paid* visibility denominated in the platform's native asset; the record shows only organic reply placement. The extraction primitive is not established. Candidate gap: external-impersonator reply-jacking as a T4 distribution surface.
-**Attribution:** **pseudonymous** — theft address `BUYgBfavHoGbfGYseyTWpzqKNeeYFjoJsgxiQcH4in4v` identified on Solana. Impersonator account not publicly named.
+**Loss:** **>$2.6M** on 2024-03-16, largest single victim about $1.2M, per [ZachXBT, X](https://x.com/zachxbt/status/1769150002490638597). [BeInCrypto](https://beincrypto.com/crypto-scammer-steals-2-6-million) reports about $250K more by 2024-03-17, almost $3M in total. No recovery is reported on the opened pages.
 
-**Key teaching point:** The @blknoiz06 impersonation demonstrates the **reply-jacking phishing** pattern: the attacker created an account impersonating a well-known crypto trader (@blknoiz06) and replied to each of his posts with phishing links. Since the impersonator's reply appeared directly under the real @blknoiz06's content, victims saw the reply in context and assumed it was from the real account. The meme coin trading frenzy amplified effectiveness — users were conditioned to act fast (buy within seconds of a mention), reducing the time spent verifying account authenticity. Detection approach: monitor for new accounts with names visually similar to high-follower crypto accounts that are replying to the real account's posts with token addresses or links; the reply-to-real-post pattern is an automated detection signal.
+**OAK Techniques observed:** none — an external lookalike account replying under an uncompromised account's posts has no Technique in OAK. The account takeover Technique does not apply because the real account was not controlled by the attacker. The nearest paid-visibility phishing Technique does not apply because the opened pages show organic replies, not paid placement. Candidate gap: external-impersonator reply-jacking as a distribution surface.
+
+**Attribution:** **unattributed** — theft address [`BUYgBfavHoGbfGYseyTWpzqKNeeYFjoJsgxiQcH4in4v`](https://solscan.io/account/BUYgBfavHoGbfGYseyTWpzqKNeeYFjoJsgxiQcH4in4v) as published by [ZachXBT](https://x.com/zachxbt/status/1769150002490638597). The impersonator is not named on opened pages.
+
+**Key teaching point:** **Treat any link or token presale in a reply under a trader's post as hostile, and block or restrict replies on high-reach accounts.** [BeInCrypto](https://beincrypto.com/crypto-scammer-steals-2-6-million) reports some targeted figures limited who could reply and added images disclaiming links they did not post.
 
 ## Summary
 
-On March 16, 2024, an account impersonating prominent crypto trader @blknoiz06 stole $2.6M+ in a single day. The technique was simple but high-yield:
+On 2024-03-16 ZachXBT posted that "An account impersonating @blknoiz06 phished >$2.6M today" by replying to each of the trader's posts during the meme coin craze ([ZachXBT, X](https://x.com/zachxbt/status/1769150002490638597)). Per [BeInCrypto](https://beincrypto.com/crypto-scammer-steals-2-6-million), the replies promoted a presale for a token called $BULL; the link led to a wallet drainer, and participants were told to send between 1 and 3 SOL. The same article reports about $250K more was stolen by the next day and that Scam Sniffer found other fake accounts impersonating other projects. The real account's owner is quoted by BeInCrypto as saying he does not launch coins.
 
-1. **Create impersonator account:** Account with a name visually similar to @blknoiz06 (e.g., @blknoizO6 with a zero, or similar handle variations).
-2. **Reply to every real post:** The impersonator replied to each of @blknoiz06's posts with phishing links or token addresses. The reply appeared directly under the real content.
-3. **Meme coin urgency as amplification:** During the March 2024 meme coin craze, @blknoiz06's posts about tokens were closely watched by traders trying to enter positions early. The impersonator's reply — appearing to be from the influencer himself — directed victims to a phishing site or scam token.
-4. **Single largest victim: $1.2M.** One wallet lost $1.2M, nearly half the total haul.
+## Timeline (UTC)
 
-The attack exploits a fundamental trust dynamic of social media: users scan replies under trusted accounts and assume the reply is from a real person engaging with the content, not an impersonator. The blue checkmark/verification system was intended to prevent this, but impersonator accounts can still reply to verified accounts' posts.
+Stages: **Entry** (lookalike account), **Execution** (reply presale and drain), **Money** (single theft address), **Response**. Times of day undisclosed on opened pages; ZachXBT's post is dated 2024-03-16.
 
-## Timeline
-
-| When | Event | OAK ref |
+| When | What happened | OAK |
 |---|---|---|
-| 2024-03-16 | Impersonator account replies to @blknoiz06's posts. $2.6M stolen in one day | **T4 reply-jacking phishing** |
-| 2024-03-16 | ZachXBT posts community alert. Theft address published | (public alert) |
+| Before 2024-03-16 (undisclosed) | Impersonator account created with a handle one letter off the real one ([BeInCrypto](https://beincrypto.com/crypto-scammer-steals-2-6-million) does not give the handle; it is not stated on opened pages) | none — see Techniques |
+| 2024-03-16 | Impersonator replies under @blknoiz06's posts promoting a $BULL presale; link leads to a wallet drainer | none |
+| 2024-03-16 | More than $2.6M phished; largest victim about $1.2M of SOL | none |
+| 2024-03-16 | ZachXBT posts alert with the theft address ([X](https://x.com/zachxbt/status/1769150002490638597)) | response |
+| 2024-03-17 | About $250K more stolen after the alert ([BeInCrypto](https://beincrypto.com/crypto-scammer-steals-2-6-million)) | none |
 
-## What defenders observed
+Key addresses:
 
-- **Reply-under-real-post as the trust mechanism:** Victims didn't need to click a link in a DM or email — they saw the reply under content from an account they already trusted. The context (reply to real @blknoiz06 post) provided the credibility.
-- **Single-day yield: $2.6M.** The attack was not sustained — it extracted maximum value in a single day before the impersonator account was reported and removed. Flash phishing: hit hard, one day, then abandon the account.
-- **Meme coin meta as attack amplifier:** In a trading environment where "buy within 30 seconds of mention" is standard behavior, verification time drops to near zero. The attacker exploited the market's speed expectation.
-- **Solana as the phishing chain:** The theft address was on Solana, consistent with the meme coin activity being concentrated on Solana during this period.
+- Theft address (Solana) — [`BUYgBfavHoGbfGYseyTWpzqKNeeYFjoJsgxiQcH4in4v`](https://solscan.io/account/BUYgBfavHoGbfGYseyTWpzqKNeeYFjoJsgxiQcH4in4v)
 
-## What this example tells contributors
+## Root-cause evidence
 
-- **Reply-jacking is a distinct T4 sub-technique from DM phishing.** The victim doesn't receive a message — they see a reply in their feed. The trust comes from the context (under a trusted account's post), not from a direct communication. T4 should distinguish "reply-jacking" from "direct message phishing" — different detection surfaces (public replies vs. private messages).
-- **High-follower account reply monitoring is a detection primitive.** For any account with >100K followers in crypto, monitoring replies for accounts with similar names posting links or token addresses is an automated detection rule. The impersonator must reply publicly to reach victims, making the attack surface publicly observable.
-- **Flash phishing exploits the account suspension latency.** The attacker knows the impersonator account will be reported and removed within hours — the attack is designed to extract maximum value within that window. The detection-to-takedown latency IS the attack surface.
+- **Technique:** none
+- **Source:** <https://x.com/zachxbt/status/1769150002490638597>; <https://beincrypto.com/crypto-scammer-steals-2-6-million>
+- **Source type:** independent-researcher
+- **Confidence:** reported
+- **Evidence:** ZachXBT states the impersonation, reply method, total and address; BeInCrypto adds the $BULL presale, the drainer link and the follow-on $250K. The drainer's mechanism (approval or direct transfer) and fund onward movement are undisclosed.
 
 ## Public references
 
-- [ZachXBT — @blknoiz06 Impersonation Alert (X/Twitter)](https://x.com/zachxbt/status/1769150002490638597)
-- Theft address (Solana): `BUYgBfavHoGbfGYseyTWpzqKNeeYFjoJsgxiQcH4in4v`
-- Largest single victim: ~$1.2M.
-- @blknoiz06: prominent crypto trader, target of impersonation.
+- ZachXBT, 2024-03-16 (X): <https://x.com/zachxbt/status/1769150002490638597>
+- BeInCrypto, updated 2024-03-18: <https://beincrypto.com/crypto-scammer-steals-2-6-million>

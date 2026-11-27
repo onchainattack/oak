@@ -1,46 +1,41 @@
-# Verified Organization Phishing — Fake Verified Org Account Farms on X/Twitter — 2023-08
+# X Verified Organizations — gold-checkmark accounts used to post crypto phishing — X (Twitter) / chain-agnostic — 2023-08-27
 
-**Loss:** Ongoing. 12 fake verified organization accounts identified in a 48-hour period alone (August 2023). Cumulative losses from verified org phishing across the ecosystem are in the tens of millions.
-**OAK Techniques observed:** **OAK-T15.006** (Impersonation via Verified Social-Account Compromise) — primary; existing gold-checkmarked X Verified Organization accounts were purchased or compromised, rebranded to match legitimate crypto protocols while retaining the verification badge, then used to distribute phishing links. The load-bearing trust surface is the platform's verification signal itself. **Boundary note:** the *purchased*-account path reaches T15.006's end state through a legitimate transaction rather than a compromise — same mechanism, same trust surface, but a genuine extension worth recording on the Technique page. **Not tagged:** the downstream drain primitive is not established (the file says only "clicks → wallet drained"). **Not T8.004** despite "account farms" in the filename — T8.004 is scoped to the exchange-account identity layer.
-**Attribution:** **pseudonymous** — account farm operators not publicly identified. X/Twitter's verified organization program created the new attack surface.
+**Loss:** undisclosed in total. [CryptoPotato](https://cryptopotato.com/crypto-scammers-using-gold-verfication-on-x-twitter-are-out-of-control-says-zachxbt/) reports that an investigator said losses from malicious links promoted through paid ads by these accounts are often in the 5 figures until the accounts get taken down, and gives no confirmed total. No victim wallet or transaction is printed on an opened page.
 
-**Key teaching point:** The verified organization phishing wave demonstrates the **platform verification as attack surface** pattern: X/Twitter's "Verified Organizations" program was intended to make impersonation harder (gold checkmark = real organization), but it created a black market for verified org accounts. Scammers purchase or compromise verified org accounts, then rebrand them as crypto projects (matching profile picture, display name, bio) while retaining the gold checkmark. The victim sees a verified account and trusts it, unaware that the verification was for a different organization entirely. Detection approach: monitor for verified org accounts that recently changed their display name or handle to match a known crypto brand; rapid rebranding of a verified account is the detection signal.
+**OAK Techniques observed:** none — the opened pages describe phishing posted from gold-checkmark accounts impersonating real businesses, and say many of the accounts are sold on Telegram. They do not say whether the accounts were compromised or bought and rebranded, and they do not describe the drain step. The compromise technique for verified accounts therefore cannot be shown to fit, and no downstream drain technique is established.
+
+**Attribution:** **unattributed.** [ZachXBT's post](https://x.com/zachxbt/status/1695929732158636422) names no operator; [CryptoPotato](https://cryptopotato.com/crypto-scammers-using-gold-verfication-on-x-twitter-are-out-of-control-says-zachxbt/) reports that many of the accounts are sold on Telegram channels before being launched on crypto Twitter, per ZachXBT and other users.
+
+**Key teaching point:** **Do not treat a gold checkmark as proof that an account belongs to the project it names.** [ZachXBT](https://x.com/zachxbt/status/1695929732158636422) said the Verified Organizations program had created a new black market for accounts, with no easy way to report and take them down. Treat any verified-account post that asks for a wallet interaction as untrusted until the project's own site or docs confirm it.
 
 ## Summary
 
-On August 27, 2023, ZachXBT called out 12 fake verified organization accounts on X/Twitter that were impersonating crypto projects and protocols — all in a single 48-hour period.
+On 2023-08-27 at 22:42 UTC, investigator ZachXBT [posted](https://x.com/zachxbt/status/1695929732158636422) that phishing spam from fake verified organizations on Twitter had "gotten out of control", that he was showing 12 accounts from the past 48 hours alone, and that verified orgs, meant to make it harder for scammers, had "just created a new black market for accounts". He addressed the post to X and its premium account.
 
-**The attack mechanism:**
+[CryptoPotato](https://cryptopotato.com/crypto-scammers-using-gold-verfication-on-x-twitter-are-out-of-control-says-zachxbt/) reports the 12 accounts carried gold checkmarks and impersonated real businesses, that organizations pay $1,000 a month to keep a gold checkmark, and that most of the accounts promoted fake token airdrops. Which brands were impersonated, how the accounts were obtained and what was drained are undisclosed on the opened pages.
 
-1. **Acquire verified org account:** Purchase or compromise an existing verified organization account (gold checkmark) on X/Twitter.
-2. **Rebrand to crypto project:** Change the display name, profile picture, bio, and header to match a legitimate crypto protocol, exchange, or influencer. The gold checkmark remains.
-3. **Post phishing links:** From the now-rebranded verified account, post phishing links, fake airdrop announcements, or "claim your tokens" scams.
-4. **Victim sees gold checkmark → trusts → clicks → wallet drained.**
+## Timeline (UTC)
 
-The Verified Organizations program was X/Twitter's response to the blue checkmark impersonation problem (where anyone could buy a blue check for $8). But it created a new, more dangerous problem: scammers now acquire gold-checkmarked accounts (which carry even MORE trust) and rebrand them.
+**Entry** (accounts obtained), **execution** (phishing posts), **funds** (undisclosed), **response** (public callout). The only dated point is the post.
 
-## Timeline
-
-| When | Event | OAK ref |
+| When | What happened | OAK |
 |---|---|---|
-| 2023-08-27 | 12 fake verified org accounts identified in 48-hour period by ZachXBT | **T4 verified org phishing** |
-| 2023-08-27 | Public callout to X/Twitter @premium to address the systemic issue | (community response) |
+| Before 2023-08-27 (undisclosed) | Gold-checkmark accounts are acquired; per ZachXBT and other users many are sold on Telegram ([CryptoPotato](https://cryptopotato.com/crypto-scammers-using-gold-verfication-on-x-twitter-are-out-of-control-says-zachxbt/)) | none — acquisition path not established |
+| Within the 48 hours before 2023-08-27 22:42 | 12 gold-checkmark accounts post phishing impersonating real businesses ([ZachXBT](https://x.com/zachxbt/status/1695929732158636422)) | none — see Techniques |
+| Undisclosed | Victim wallets are drained through the links; losses are reported as often in the 5 figures per campaign ([CryptoPotato](https://cryptopotato.com/crypto-scammers-using-gold-verfication-on-x-twitter-are-out-of-control-says-zachxbt/)) | none — undisclosed |
+| 2023-08-27 22:42 | ZachXBT posts the 12 accounts and calls on X to act ([post](https://x.com/zachxbt/status/1695929732158636422)) | response |
 
-## What defenders observed
+Key addresses: undisclosed on the opened pages.
 
-- **Gold checkmark = higher trust, higher yield for scammers.** The verified org badge conveys MORE authority than a blue check, making phishing from a gold-checkmarked account more effective than from an unverified or blue-check account. The platform's trust signal is the attack surface.
-- **Rebranded accounts, not fake new accounts.** The scammers didn't create new accounts — they acquired EXISTING verified org accounts and changed their identity. The account history (creation date) looks legitimate because it IS a legitimate old account — just rebranded.
-- **Black market for verified org accounts.** The Verified Organizations program costs $1,000/month — a cost that scammers are willing to pay because the gold checkmark's phishing yield exceeds the subscription cost. The program's pricing does not deter malicious use.
-- **48-hour volume: 12 accounts.** At 12 fake accounts per 48 hours, the scale of the operation suggests an organized account farm, not individual opportunistic scammers.
+## Root-cause evidence
 
-## What this example tells contributors
-
-- **Platform verification programs are a T11 supply chain attack surface.** The verification credential is issued by the platform (X/Twitter) to an organization, but the platform's verification process does not prevent the verified org from being rebranded to a different identity. The credential is transferable in practice if not in policy. OAK T11 should include "platform verification credential compromise" as a sub-type.
-- **Rapid rebranding of verified accounts is a detection primitive.** A verified org account that changes display name, handle, and profile picture to match a crypto brand within a short time window is a phishing account in transition. This is detectable through account metadata monitoring.
-- **Gold checkmark phishing has a higher conversion rate than blue check phishing.** The trust differential between gold and blue verification means gold-checkmarked phishing accounts should be weighted as higher severity in detection systems.
+- **Technique:** none
+- **Source:** <https://x.com/zachxbt/status/1695929732158636422>; <https://cryptopotato.com/crypto-scammers-using-gold-verfication-on-x-twitter-are-out-of-control-says-zachxbt/>
+- **Source type:** independent-researcher
+- **Confidence:** reported
+- **Evidence:** A same-day post by an investigator, with screenshots of 12 accounts, and one news article repeating it. They establish that gold-checkmark accounts posted crypto phishing and that accounts are traded; they do not establish how accounts were obtained or how victims were drained.
 
 ## Public references
 
-- [ZachXBT — Verified Org Phishing Wave Alert (X/Twitter)](https://x.com/zachxbt/status/1695929732158636422)
-- 12 fake verified org accounts in 48 hours (August 27, 2023).
-- X/Twitter Verified Organizations program: $1,000/month gold checkmark.
+- ZachXBT, X post (2023-08-27): <https://x.com/zachxbt/status/1695929732158636422>
+- CryptoPotato, "Crypto Scammers Using Gold Verification on X (Twitter) Are Out of Control, Says ZachXBT": <https://cryptopotato.com/crypto-scammers-using-gold-verfication-on-x-twitter-are-out-of-control-says-zachxbt/>

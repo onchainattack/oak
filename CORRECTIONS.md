@@ -64,6 +64,41 @@ If something on OAK is wrong about you or your work, write to us. We'll fix it.
 
 ## Correction log
 
+### 2026-11-27 — Fourth source pass: the last 54 examples with one real source; 48 checked in place, 4 quarantined, 2 duplicates merged
+
+This closes the backlog of examples whose citations pointed nowhere or to a single page (156 files in four passes). 29 of the 54 are from 2026, where the one source was usually the true primary; those needed small edits. The older ones needed the usual rewrite.
+
+**Quarantined (4).** `2023-11-solana-jito-relayer-eclipse-griefing` (no public record of the incident); `2024-02-stader-ethx-lst-discount` (its source says ETHx had no significant depeg); `2024-07-compound-cross-chain-governance-relay` (a 2023 pre-deployment audit, no exploit); `2023-07-italian-gov-email-twitter-legal-portal` (no crypto theft, key or wallet).
+
+**Merged (2).** `2024-02-blur-wash-trading-ring` → `2023-02-blur-airdrop-wash-cohort`; `2024-06-opensea-royalty-shift` → `2023-08-opensea-operator-filter-sunset`. Both were second entries for a 2023 event, misdated to 2024.
+
+**Rewritten, with the main change.**
+
+| File | Was | Now |
+|---|---|---|
+| `2021-11-squid` | LP drain (T5.001), modifiable tax, ~\$3.38M | creators sold while other holders could not sell (T1.006); 55 Tornado Cash deposits per TRM (T7.001); per-incident loss undisclosed |
+| `2022-03-paraluni` | oracle manipulation (T9.001) | reentrancy (T9.005) with a flash loan, per CertiK and BlockSec |
+| `2022-08-curve-dns-hijack` | registrar credential compromise (T15.004), Tornado Cash, actor OAK-G02 | how the DNS was changed is disputed between Curve and a DNS specialist; T4.002 only; no laundering route or actor on any opened page |
+| `2010-08-bitcoin-value-overflow-bug` | wrong transaction id, two outputs, an attacker address | transaction `4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b`, three outputs, unattributed (Bitcoin Wiki) |
+| `2011-06-allinvain-first-major-bitcoin-theft`, `2011-07-mybitcoin` | "first documented", "canonical exit scam", later USD valuations | entry method unestablished; breach versus exit unproven; no Technique |
+| `2024-05-gcrclassic-hack-hyperliquid-insider-longs` | \$3.3M profit | \$3.3M was position size; about \$34,000 netted on one trade and \$3,500 lost on the other |
+| `2024-01-cointelegraph-walletconnect-email-phishing` | lookalike-domain email, no Technique | sent through a compromised third-party email provider (T15.002, reported) |
+| `2023-09-caesars-ransomware-12m-seizure` | \$12M seized by law enforcement on 2024-05-02 | \$12M of a \$15M ransom recovered by investigators, per a WIRED journalist's post |
+| `2021-05-dfinity-icp-vesting-cliff-dump` | monthly vesting unlocks, Arkham 2022 | plaintiffs allege insider tokens were not locked; Arkham's June 2021 report shows transfers to exchanges, not sales; `disputed`, no Technique |
+| `2025-03-hyperliquid-whale-illicit-trading` | a named person with "prior convictions", suspect address | no person named; a deliberate liquidation of a ~\$200M long cost the vault about \$4M; no Technique |
+| `2025-12-polymarket-ufo-declassification-disputed-uma-resolution` (renamed) | UMA vote capture (T9.006.001) | Polymarket's newsletter and CryptoSlate give conflicting accounts; no opened page shows voter capture; `disputed` |
+| `2026-07-defituna-zero-collateral-position-health-check-fake-pool` (renamed) | mechanism undisclosed, "product seams" (T9.004) | a zero-collateral position passed the health check and swapped through an attacker-made pool (T9.016), per CertiK and BlockSec; losses socialized across depositors |
+| `2026-07-triple-a-hot-wallet-compromise…` | key-management failure, T15.004 + T5.001 | entry vector undisclosed; \$9.3M to \$11.8M depending on the firm; no Technique |
+| `2026-03-venus-protocol-supply-cap-donation-attack` | T17.001; \$3.7M headline | T9.011 + T9.001; about \$2.15M bad debt per Venus's post-mortem |
+| `2026-09-long-custodial-bridge…` | keeper read a single RPC | primary and backup endpoints; the backup was over quota that morning; full same-day timeline and hashes from the operator |
+| `2026-10-hifi-finance…` | ~\$1M, "no Hifi statement" | the team's own estimate is ~\$20,000 (unreconciled with the analyst's ~\$1M); team statement added |
+| `2026-08-usm-defund-split…` | flash-loaned `fund()` then 64 `defund()` calls | SlowMist's account only: split redemptions against an arithmetic-mean price; no flash loan on any opened page |
+| `2026-05-joe-agent-removeliquidity-reentrancy` (renamed from 2026-06) | early June, ~\$45K | 2026-05-27; amounts, addresses and hash from DARKNAVY; USD figure dropped |
+
+Names of people not charged on any opened page were removed from `2024-03-ticker-airdrop-developer-supply-sale` and `2024-03-nuddies-nft-fake-hack-royalty-wallet-exchange-transfer` (both renamed), `2026-05-labtrade-insider-manipulation`, `2026-05-dsj-exchange-ponzi-collapse` and `2025-03-hyperliquid-whale-illicit-trading`. Smaller edits to the remaining 2026 files (unsourced USD figures, quotation marks around paraphrase, a corroborating page added) are in the commit.
+
+Verification: all quoted strings pass `check_quotes.py` where the source is readable; all 82 addresses and hashes this pass added were found in the raw text of a cited page. One agent reported sending a single request with a browser user-agent header to four OpenSea pages before re-reading the rule against it; it re-fetched them without the header and used only those results.
+
 ### 2026-11-27 — Four Techniques with no documented incident deprecated: OAK-T7.006, OAK-T10.004, OAK-T16.004, OAK-T7.010
 
 The third source pass left these four with few or no examples. Each remaining example was checked against its sources, and a separate search looked for any documented incident of the shape the page describes. None was found for any of the four, so each page is now a tombstone (ID kept, never reused), as OAK-T9.012, OAK-T16.003 and OAK-T17.005 are.

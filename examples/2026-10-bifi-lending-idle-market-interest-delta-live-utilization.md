@@ -14,7 +14,7 @@ The exploit ran on 2026-10-17 at 05:43 UTC (blocks 26210255–26210256, on-chain
 
 ## Timeline (UTC)
 
-Read it as three stages. **Get in**: a market left idle for 36 days. **Prepare**: an exploit contract. **Take**: a front-run replay with a flash loan. Times are from Defimon.
+Read it as three stages. **Get in**: a market left idle for 36 days. **Prepare**: an exploit contract. **Take**: a front-run replay with a flash loan. Blocks and the mechanism are from [Defimon](https://x.com/DefimonAlerts/status/2111725425554571750); clock times are from OAK's on-chain trace.
 
 | When | What happened | OAK |
 |---|---|---|
@@ -24,8 +24,8 @@ Read it as three stages. **Get in**: a market left idle for 36 days. **Prepare**
 | same transaction | The attacker deposits the loan in growing tranches, then borrows 30M to push utilization up. Every call charges the 36-day interest at the utilization it just set. | **T9.016** |
 | same transaction | A repay/withdraw loop cashes out the inflated deposit interest. The cycle runs twice and takes 165.6K USDT. | **T9.016** |
 | same transaction | The USDT is swapped to WETH: 165,574.514633 USDT go to pool [`0x4e68ccd3e89f51c3074ca5072bbac773960dfa36`](https://etherscan.io/address/0x4e68ccd3e89f51c3074ca5072bbac773960dfa36) for 68.05720311 WETH, which is unwrapped in the same transaction (traced by OAK). | — |
+| 2026-10-18 07:45:50 | [Defimon publishes its detection](https://x.com/DefimonAlerts/status/2111725425554571750) (about \$165.4K lost). | response |
 | 2026-10-18 17:21:59 | c0ffeebabe.eth sends 159,103.654838 USDC to the BiFi USDT handler: [`0x9702900bc441039c7e6937a3f3e94251072bda380bdcba38ecf6c7c3e6efeaeb`](https://etherscan.io/tx/0x9702900bc441039c7e6937a3f3e94251072bda380bdcba38ecf6c7c3e6efeaeb) (traced by OAK). | response |
-| 2026-10-18 07:45:50 | Defimon publishes its detection (about \$165.4K lost). | response |
 | after 2026-10-18 (undisclosed) | No BiFi statement, pause or recovery appears in the cited sources. | response |
 
 Key addresses:

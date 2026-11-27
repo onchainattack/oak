@@ -1,4 +1,4 @@
-# Arcus — a bug in transfers between a user's own subaccounts let one new account record a balance far larger than it held, then withdraw 2,234,391 USDG — Arcus Labs / Arcus exchange (Robinhood Chain per Arcus FAQ; withdrawal chain undisclosed) — 2026-11-09
+# Arcus — a bug in transfers between a user's own subaccounts let one new account record a balance far larger than it held, then withdraw 2,234,391 USDG — Arcus Labs / Arcus exchange (withdrawal chain undisclosed) — 2026-11-09
 
 **Loss:** **\$2,234,391** (2,234,391 USDG), per the operator: "\$2,234,391 USDG was withdrawn on-chain before withdrawals were stopped." A further **\$3M** of requested withdrawals "was held by the bridge's on-chain rate limit, never paid out, and later reversed." The operator states: "The temporary shortfall has been fully covered by Arcus Labs from the company's treasury." No other user balances, positions or orders were affected (operator).
 
@@ -10,7 +10,7 @@
 
 ## Summary
 
-On 2026-11-09 at around 22:07 ET (03:07 UTC on 11-10), a newly created account used a bug in how Arcus handled transfers between a user's own subaccounts to record a balance far larger than it held, and requested withdrawals against it. Arcus's monitoring flagged the withdrawals at 22:15 ET; platform-wide withdrawals were paused at 23:07 ET and the fix was deployed at 23:37 ET. Arcus published its incident report on 2026-11-10. SlowMist's hacked-incident list records the same facts, classed as "Accounting Bug", and adds nothing independent.
+On 2026-11-09 at around 22:07 ET (03:07 UTC on 11-10), a newly created account used a bug in how Arcus handled transfers between a user's own subaccounts to record a balance far larger than it held, and requested withdrawals against it. Arcus's monitoring flagged the withdrawals at 22:15 ET; platform-wide withdrawals were paused at 23:07 ET and the fix was deployed at 23:37 ET. Arcus published its incident report on 2026-11-10. DeFi Prime reported the same facts on 2026-11-11 from the operator's report and says it did not reconcile the transfers on-chain ([DeFi Prime](https://defiprime.com/arcus-subaccount-bug-withdrawals)). The report's opening says the bug was detected and fixed "within one hour", while its own timeline puts the fix at 11:37 PM ET, 82 minutes after the 10:15 PM monitoring alert (DeFi Prime notes the same gap).
 
 ## Timeline (UTC)
 
@@ -43,7 +43,7 @@ Key addresses:
 - DAI holding EOA — [`0x9a30f6a596f3354ecb90d6bd3a2a16750dcf13d0`](https://etherscan.io/address/0x9a30f6a596f3354ecb90d6bd3a2a16750dcf13d0)
 - Unlabelled ETH recipient — [`0xa91fe480c2062afb18df55ac6adfa0104633a3e2`](https://etherscan.io/address/0xa91fe480c2062afb18df55ac6adfa0104633a3e2)
 
-Not found: the Arcus-side withdrawal transactions in USDG, the bridge contract address and the chain it runs on. Arcus's page names no chain or hash, and OAK has no Robinhood Chain explorer configured. The address's later activity (from 2026-11-12) is mostly address-poisoning noise and is not treated as exploiter movement.
+Not found: the Arcus-side withdrawal transactions in USDG, the bridge contract address and the chain it runs on. Arcus's page names no chain or hash, and OAK has no explorer configured for the unnamed chain. The address's later activity (from 2026-11-12) is mostly address-poisoning noise and is not treated as exploiter movement.
 
 ## Fund flow
 
@@ -74,13 +74,12 @@ The flow starts at the exploiter's Ethereum address because that is the only on-
 ## Root-cause evidence
 
 - **Technique:** OAK-T9.016
-- **Source:** <https://arcus.xyz/blog/arcus-incident-report-november-9-2026>; <https://hacked.slowmist.io/>
+- **Source:** <https://arcus.xyz/blog/arcus-incident-report-november-9-2026>; <https://defiprime.com/arcus-subaccount-bug-withdrawals>
 - **Source type:** operator
 - **Confidence:** confirmed
-- **Evidence:** Confirmed at the level the operator discloses. Arcus: "a newly created account exploited a bug in how the exchange handled transfers between a user's own subaccounts"; "Under specific conditions, the bug let the account record a balance far larger than it actually held"; "The incident only involved a single account; no other accounts were affected"; the fix "was reviewed by our security partners, along with related checks across the codebase." Not disclosed: the exact conditions, whether the ledger is on-chain or off-chain, the withdrawal chain and transactions, and the bridge address. SlowMist's list repeats the operator's account ("Accounting Bug") and is not independent.
+- **Evidence:** Confirmed at the level the operator discloses. Arcus: "a newly created account exploited a bug in how the exchange handled transfers between a user's own subaccounts"; "Under specific conditions, the bug let the account record a balance far larger than it actually held"; "The incident only involved a single account; no other accounts were affected"; the fix "was reviewed by our security partners, along with related checks across the codebase." Not disclosed: the exact conditions, whether the ledger is on-chain or off-chain, the withdrawal chain and transactions, and the bridge address. DeFi Prime repeats the operator's account, says the report gives no trigger conditions and no code change, and did not reconcile the transfers on-chain, so it is not independent.
 
 ## Public references
 
 - `[arcus2026]` — Arcus, "Arcus Incident Report: November 9, 2026" (2026-11-10): <https://arcus.xyz/blog/arcus-incident-report-november-9-2026>
-- `[slowmist2026]` — SlowMist Hacked, entry dated 2026-11-09, "Accounting Bug", \$2,234,391: <https://hacked.slowmist.io/>
-- `[arcusfaq]` — Arcus site FAQ ("a decentralized exchange built in partnership with Robinhood on Robinhood Chain"): <https://arcus.xyz>
+- `[defiprime2026]` — DeFi Prime, "Arcus covers $2,234,391 withdrawal exploit after subaccount bug" (2026-11-11): <https://defiprime.com/arcus-subaccount-bug-withdrawals>

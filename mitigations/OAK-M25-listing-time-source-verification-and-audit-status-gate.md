@@ -46,5 +46,5 @@ The class is `venue` rather than `detection` because the mitigation requires ven
 - `[torres2019]` — foundational honeypot-detection methodology underpinning the static-analysis leg.
 - `[chainalysis2025rug]` — listing-surface scale context for the OAK-T1 / OAK-T2 cluster.
 - `[certikfakeaudit]` — fake-audit-claim case material informing the audit-attestation leg.
-- `[trmsquid2021]` — SQUID modifiable-fee case; illustrative of the listing-time fee-mutability check.
+- `[trmsquid2021]` — SQUID sell-blocked token case.
 - `[slowmist2024report]` — 2024 ecosystem report covering listing-surface and project-self-claim attack share.

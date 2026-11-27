@@ -1,31 +1,33 @@
-# zkLink Nova — the L1 Arbitrator did not clear a claimed message hash, so a public relayer's hash was reused to install a forged withdrawal root — zkLink Nova / Ethereum — 2026-10-29
+# zkLink Nova — the L1 Arbitrator did not clear a claimed message hash, so a public relayer's hash was reused to install a forged withdrawal root — zkLink Nova / Ethereum — 2026-10-28
 
-**Loss:** **~\$783K** from the ZkLink and L1ERC20Bridge escrow contracts on Ethereum (SlowMist).
+**Loss:** **~\$783K** from the ZkLink and L1ERC20Bridge escrow contracts on Ethereum (SlowMist). Blockaid estimated ~\$786K ([Crypto Economy](https://crypto-economy.com/zklink-nova-bridge-loses-786k-in-exploit/)); The Defiant valued the main withdrawal transaction at \$778,625.84 ([Cryptonews](https://cryptonews.net/news/security/33668316/)). The sources do not agree on a final figure.
 
 **OAK Techniques observed:** **OAK-T10.002** (Message-Verification Bypass — *primary*. Per SlowMist, `Arbitrator.claimMessage` did not clear the transient `finalizeMessageHash` or require a fresh authenticated callback per call. Through the publicly callable, authorised `SyncL2TxHashRelayer` the attacker first set a valid hash, then reused it with `EthereumGateway.sendMessage` as the claim target. That ran `ZkLink.syncBatchRoot` under the legitimate gateway identity, installed an attacker-chosen `l2LogsRootHashes` root, and the attacker withdrew with forged proofs. See [`techniques/T10.002-message-verification-bypass.md`](../techniques/T10.002-message-verification-bypass.md)). No key was compromised.
 
 **Attribution:** **pseudonymous.**
 
-**Key teaching point:** **Authentication that lives in transient state must be consumed when used.** One valid message authorised a second, different call because the "this message was verified" flag outlived the message.
+**Key teaching point:** **Authentication that lives in transient state must be consumed when used.** One valid message authorised a second, different call because the flag marking the message as verified outlived the message.
 
 ## Summary
 
-SlowMist flagged the exploit on 2026-10-29 with two Ethereum transactions. Attacker addresses [`0xaca0655a11200a80d33d0e48786317304cde5718`](https://etherscan.io/address/0xaca0655a11200a80d33d0e48786317304cde5718) and [`0xDAB137F390dF77caA97fd492540E973fd5e2F8c8`](https://etherscan.io/address/0xDAB137F390dF77caA97fd492540E973fd5e2F8c8); vulnerable Arbitrator [`0x1ee09a2caa0813a5183f90f5a6d0e4871f4c6002`](https://etherscan.io/address/0x1ee09a2caa0813a5183f90f5a6d0e4871f4c6002).
+SlowMist flagged the exploit on 2026-10-29 with two Ethereum transactions; the first withdrawal had run at 22:21:35 UTC on 2026-10-28 (traced by OAK, and matching the 6:21 p.m. ET reported by [Cryptonews](https://cryptonews.net/news/security/33668316/)). Blockaid described an attacker using a public relayer to inject a forged batch root and then finalize withdrawals to attacker-chosen recipients ([Crypto Economy](https://crypto-economy.com/zklink-nova-bridge-loses-786k-in-exploit/)), consistent with SlowMist's root cause. On 2026-10-29 zkLink said it had identified an exploit of the Nova Arbitrator contract on Ethereum and Optimism, offered a 20% white-hat bounty with no further action if funds were returned ([zkLink](https://x.com/zkLink_Official/status/2115731883313254565)), then suspended block production, emergency-patched the affected contracts and temporarily disabled withdrawals ([zkLink](https://x.com/zkLink_Official/status/2115792847098216545)). Attacker addresses [`0xaca0655a11200a80d33d0e48786317304cde5718`](https://etherscan.io/address/0xaca0655a11200a80d33d0e48786317304cde5718) and [`0xDAB137F390dF77caA97fd492540E973fd5e2F8c8`](https://etherscan.io/address/0xDAB137F390dF77caA97fd492540E973fd5e2F8c8); vulnerable Arbitrator [`0x1ee09a2caa0813a5183f90f5a6d0e4871f4c6002`](https://etherscan.io/address/0x1ee09a2caa0813a5183f90f5a6d0e4871f4c6002).
 
 ## Timeline (UTC)
 
-Read it as three stages. **Flaw**: a message-verified flag that outlives the message. **Take**: populate a hash, reuse it to install a forged root, withdraw with forged proofs. **After**: nothing public beyond the alert. Times are from the SlowMist alert.
+Read it as three stages. **Flaw**: a message-verified flag that outlives the message. **Take**: populate a hash, reuse it to install a forged root, withdraw with forged proofs. **After**: alert, then zkLink's containment. Times are from the SlowMist alert unless marked as traced by OAK.
 
 | When | What happened | OAK |
 |---|---|---|
 | Before 2026-10-29 (since when: undisclosed) | `Arbitrator.claimMessage` does not clear the transient `finalizeMessageHash` or require a fresh authenticated callback for each call. The `SyncL2TxHashRelayer` is publicly callable yet authorised, so anyone can populate a valid hash. | **T10.002** |
 | Before the exploit (undisclosed) | Funding and preparation of the two attacker addresses are not published. | — |
-| 2026-10-29 (before 02:41 UTC) | Through `SyncL2TxHashRelayer` the attacker first populates a valid message hash. | **T10.002** |
-| 2026-10-29 (same sequence) | The attacker reuses the hash while substituting `EthereumGateway.sendMessage` as the claim target. This runs `ZkLink.syncBatchRoot` under the legitimate gateway identity and installs an attacker-chosen `l2LogsRootHashes` root. No key is compromised. | **T10.002** |
-| 2026-10-29 (same sequence) | Using forged proofs against that root, the attacker withdraws about **\$783.1K** from the ZkLink and L1ERC20Bridge escrow contracts. SlowMist lists two Ethereum transactions, [`0x4f3c23e75b9134e8cae5a462550daad42fbbc19242567fcc34c0a035e297462c`](https://etherscan.io/tx/0x4f3c23e75b9134e8cae5a462550daad42fbbc19242567fcc34c0a035e297462c) and [`0x8a7e38b9c2a7a40981317ba87fbaa2e50527ec412cefc2fb4c9e3184f8848ae9`](https://etherscan.io/tx/0x8a7e38b9c2a7a40981317ba87fbaa2e50527ec412cefc2fb4c9e3184f8848ae9), without saying which step each is. | — |
+| 2026-10-28 (before 22:21 UTC) | Through `SyncL2TxHashRelayer` the attacker first populates a valid message hash. | **T10.002** |
+| 2026-10-28 (same sequence) | The attacker reuses the hash while substituting `EthereumGateway.sendMessage` as the claim target. This runs `ZkLink.syncBatchRoot` under the legitimate gateway identity and installs an attacker-chosen `l2LogsRootHashes` root. No key is compromised. | **T10.002** |
+| 2026-10-28 and 2026-10-29 | Using forged proofs against that root, the attacker withdraws about **\$783.1K** from the ZkLink and L1ERC20Bridge escrow contracts. SlowMist lists two Ethereum transactions, [`0x4f3c23e75b9134e8cae5a462550daad42fbbc19242567fcc34c0a035e297462c`](https://etherscan.io/tx/0x4f3c23e75b9134e8cae5a462550daad42fbbc19242567fcc34c0a035e297462c) and [`0x8a7e38b9c2a7a40981317ba87fbaa2e50527ec412cefc2fb4c9e3184f8848ae9`](https://etherscan.io/tx/0x8a7e38b9c2a7a40981317ba87fbaa2e50527ec412cefc2fb4c9e3184f8848ae9), without saying which step each is. | — |
 | 2026-10-28 22:21:35 and 2026-10-29 01:43:11 | Traced by OAK: the two listed transactions are the withdrawals, the first from attacker 1 (22.43 ETH plus nine tokens) and the second from attacker 2 (216.4M ZKL). The first predates the alert by about four hours. | T10.002 |
 | 2026-10-28 22:28 to 2026-10-29 05:53 | Traced by OAK: attacker 1 sells the tokens, spreads 303 ETH over three wallets and swaps it to DAI (about 702K DAI held by transfer events). Attacker 2 sells 22M of 216M ZKL on CoW Protocol and Uniswap V4. See Fund flow. | — |
-| 2026-10-29 02:41:32 | SlowMist TI alert. No zkLink pause, statement, post-mortem or compensation plan appears in the cited sources: undisclosed. | response |
+| 2026-10-29 02:41:32 | SlowMist TI alert ([SlowMist](https://x.com/SlowMist_Team/status/2115635114638250409)). | response |
+| 2026-10-29 09:06 | zkLink confirms an ongoing exploit of the Arbitrator on Ethereum and Optimism and offers a 20% bounty ([zkLink](https://x.com/zkLink_Official/status/2115731883313254565)). | response |
+| 2026-10-29 13:08 | zkLink suspends block production, patches contracts and disables withdrawal channels ([zkLink](https://x.com/zkLink_Official/status/2115792847098216545)). A post-mortem and compensation plan are not in the opened sources: undisclosed. | response |
 
 Key addresses:
 
@@ -112,9 +114,12 @@ What the trace adds beyond the sources:
 - **Source:** <https://x.com/SlowMist_Team/status/2115635114638250409>
 - **Source type:** security-firm
 - **Confidence:** reported
-- **Evidence:** SlowMist's trace analysis names the function, the reused transient hash, the relayer path and the forged root; no zkLink post-mortem yet.
+- **Evidence:** SlowMist's trace analysis names the function, the reused transient hash, the relayer path and the forged root. Blockaid (via Crypto Economy) independently describes a forged batch root injected through a public relayer. zkLink confirms an Arbitrator exploit but has published no post-mortem in the opened sources.
 
 ## Public references
 
-- `[slowmistzklink2026]` — SlowMist TI alert (2026-10-29): <https://x.com/SlowMist_Team/status/2115635114638250409>
-- `[etherscanzklink2026]` — exploit transaction: <https://etherscan.io/tx/0x4f3c23e75b9134e8cae5a462550daad42fbbc19242567fcc34c0a035e297462c>
+- SlowMist TI alert (2026-10-29): <https://x.com/SlowMist_Team/status/2115635114638250409>
+- zkLink on X (2026-10-29): <https://x.com/zkLink_Official/status/2115731883313254565> and <https://x.com/zkLink_Official/status/2115792847098216545>
+- Crypto Economy, Blockaid alert (2026-10-29): <https://crypto-economy.com/zklink-nova-bridge-loses-786k-in-exploit/>
+- Cryptonews (2026-10-29): <https://cryptonews.net/news/security/33668316/>
+- Exploit transaction: <https://etherscan.io/tx/0x4f3c23e75b9134e8cae5a462550daad42fbbc19242567fcc34c0a035e297462c>

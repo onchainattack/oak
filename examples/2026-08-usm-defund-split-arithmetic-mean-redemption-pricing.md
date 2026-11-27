@@ -1,50 +1,51 @@
-# USM — redeeming the same position in 64 slices paid more than redeeming it once, because the redemption price was an arithmetic mean over the path rather than a function of the position — USM Protocol (Ethereum) — 2026-08-10
+# USM — redeeming the same FUM in 64 small calls paid more than one large redemption, because the redemption price was an arithmetic mean that lacked split invariance — USM (Ethereum) — 2026-08-10
 
-**Loss:** **~\$136K (70.83 ETH)** on **2026-08-10** — small in absolute terms and the reason to record it is the mechanism, not the amount. The protocol had not issued a public statement at the time of reporting, and no post-mortem has been published.
+**Loss:** **~70.83 ETH** ([SlowMist](https://x.com/SlowMist_Team/status/2086644725143183639)). USD value differs by source: about \$136K in a weekly roundup relayed by OAK's earlier version of this file (that page could not be opened), about \$250,000 in [Edgex's report](https://pro.edgex.exchange/en-US/news/article/usm-defi-pricing-logic-exploit). USM had announced no plans on upgrades, compensation or pricing changes at the time of [Coinfomania's report](https://coinfomania.com/usm-suffers-70-83-eth-loss-due-to-pricing-logic-flaw/).
 
-**OAK Techniques observed:** **OAK-T9.002** (Flash-Loan-Enabled Exploit — the *enabling* Technique. The attacker borrowed atomically to call `fund()` at size, moving USM's **internal** pricing far enough that the redemption path became profitable. No external market and no oracle were touched. See [`techniques/T9.002-flash-loan-enabled-exploit.md`](../techniques/T9.002-flash-loan-enabled-exploit.md)). **OAK-T9.011** (Precision-Loss / Rounding Attack — *closest existing class, and an imperfect fit that OAK records with the mismatch stated*. The extraction came from **splitting one redemption into 64 small `defund()` calls**, each priced by an **arithmetic mean** that made the sum of the parts worth more than the whole. The T9.011 family covers accounting-math defects whose value accrues **across many small transactions**, which is exactly the shape here — but the underlying defect is **path-dependence in the pricing function**, not rounding direction in integer division. See [`techniques/T9.011-precision-loss-rounding-attack.md`](../techniques/T9.011-precision-loss-rounding-attack.md), and the **T9.011.001 split-invariance forward candidate** proposed in [`TAXONOMY-GAPS.md`](../TAXONOMY-GAPS.md)). **OAK-T9.001** (Oracle Price Manipulation) explicitly does **not** apply: the price the attacker moved was USM's own internal accounting, not a feed.
+**OAK Techniques observed:** **OAK-T9.011** (Precision-Loss / Rounding Attack, *closest existing class, an imperfect fit*. [SlowMist](https://x.com/SlowMist_Team/status/2086644725143183639) attributes the profit to a pricing function lacking split invariance, combined with per-redemption state contraction and integer rounding. The value accrues across many small calls, as in T9.011, but the primary defect is path-dependent pricing, not rounding direction. See [`techniques/T9.011-precision-loss-rounding-attack.md`](../techniques/T9.011-precision-loss-rounding-attack.md) and the split-invariance candidate in [`TAXONOMY-GAPS.md`](../TAXONOMY-GAPS.md)). No oracle was named in any opened page, so the oracle-manipulation Technique is not declared. Whether a flash loan was used is not stated on any opened page.
 
-**Attribution:** **pseudonymous.** No named individual or group, no published addresses, and no link to a tracked OAK actor.
+**Attribution:** **pseudonymous.** SlowMist lists an attacker EOA, an attacker contract and a profit receiver (below); no named individual or group is reported.
 
-**Key teaching point:** **A redemption function must return the same total value whether it is called once or a hundred times — and "average price over the path" quietly violates that.** USM priced each `defund()` against an arithmetic mean, so a large redemption was charged against the full price impact it caused, while sixty-four small redemptions were each charged against a small slice of it. The same FUM position, the same block, two different payouts. This is a **testable invariant**, not a subtle one: for any position size *X* and any split *X = x₁ + … + xₙ*, executing the parts must never pay more than executing the whole, net of fees. It can be asserted in a property-based test, checked by a fuzzer in minutes, and stated as an explicit design requirement for any bonding curve, AMM, vault, or redemption path with size-dependent pricing. The wider point is about **which minimalism is safe**. USM is deliberately governance-free — no admin, no pause, no parameter knobs — a design that removes an entire family of key- and governance-compromise risks and OAK records several incidents where exactly that family did the damage. But governance-free also means **no lever to pull when the maths is wrong**: no pause, no fee adjustment, no upgrade, no emergency parameter change. Choosing that trade demands correspondingly heavier pre-deployment proof of the invariants, because **the arithmetic is the only control the protocol has.**
+**Key teaching point:** **A redemption function must pay the same total whether called once or many times.** [SlowMist](https://x.com/SlowMist_Team/status/2086644725143183639) says `defund()` priced a single redemption with the arithmetic mean of the current and estimated final FUM sell prices, so 64 small calls returned more ETH than one large call for the same FUM amount. The invariant is testable: for any split of a position, the parts must not out-pay the whole, net of fees. A protocol with no pause or upgrade path needs such properties proven before deployment; whether USM has such levers is not stated on an opened page.
 
 ## Summary
 
-**USM** is a minimalist, decentralised, **ETH-backed stablecoin** on Ethereum, known for a **no-governance** design: no admin keys, no pause, no parameters to tune. The system runs two tokens — **USM**, the stable side, and **FUM**, the leveraged/funding side. `fund()` deposits ETH and mints FUM; `defund()` burns FUM and returns ETH. Both are priced from the protocol's **internal** state rather than an external oracle.
-
-On **2026-08-10**, an attacker used a **flash loan** to call `fund()` at a size large enough to move USM's internal pricing, then redeemed **the same FUM amount split across 64 small `defund()` calls** rather than one large one. Because the redemption path priced each call using an **arithmetic mean**, the sequence of small redemptions extracted **more ETH than a single equivalent redemption would have permitted**. The excess — about **70.83 ETH (~\$136K)** — was the profit.
-
-Nothing external was manipulated. There was no oracle, no external market, no compromised key, and no governance action. The defect was entirely in **how the redemption price responds to being split**, and the flash loan served only to make the position large enough for the gap to be worth harvesting.
-
-USM had **not issued a public statement** at the time of reporting. Public accounts describe this as the first significant exploit against the protocol in 2026.
+On 2026-08-10, [SlowMist](https://x.com/SlowMist_Team/status/2086644725143183639) (post at 02:44 UTC) reported a loss of about 70.83 ETH at USM. It named the cause as a pricing logic flaw in `ethFromDefund()`, used by `defund()`: single redemptions are priced at the arithmetic mean of the current and estimated final FUM sell prices, with no split invariance. Combined with per-redemption state contraction (`adjShrinkFactor`) and integer rounding, 64 small `defund()` calls returned more ETH than one large call for the same FUM amount. [Coinfomania](https://coinfomania.com/usm-suffers-70-83-eth-loss-due-to-pricing-logic-flaw/) and [Edgex](https://pro.edgex.exchange/en-US/news/article/usm-defi-pricing-logic-exploit) relay the same mechanism and report no USM statement. No post-mortem from USM was found.
 
 ## Timeline (UTC)
 
-| When | Event | OAK ref |
+Entry: none needed, the function was callable by anyone. Preparation, exact times and fund movement after the extraction are undisclosed in the opened pages.
+
+| When | What happened | OAK |
 |---|---|---|
-| (standing) | USM's redemption path prices `defund()` by an arithmetic mean, making total payout dependent on how a redemption is split | (standing T9.011 surface) |
-| 2026-08-10 | Attacker takes a flash loan and calls `fund()` at size, moving USM's internal pricing | **T9.002** |
-| 2026-08-10 (same transaction sequence) | The same FUM amount is redeemed through 64 small `defund()` calls instead of one, extracting more ETH than a single call would allow | **T9.011 (split-invariance violation)** |
-| 2026-08-10 | ~70.83 ETH (~\$136K) extracted; flash loan repaid | (outcome) |
-| post-event | No public statement from USM; no post-mortem; governance-free design leaves no pause or parameter lever | **(open)** |
+| Before 2026-08-10 (standing) | `defund()` prices a single redemption at the arithmetic mean of current and estimated final FUM sell prices, without split invariance ([SlowMist](https://x.com/SlowMist_Team/status/2086644725143183639)). | **T9.011** |
+| 2026-08-10 (time undisclosed) | The attacker contract calls `defund()` 64 times for the same FUM amount, returning more ETH than one large call; exploit transaction [`0xfae5e751b8ce01457cbb6b529839f24a0cff50faaabcbd0fd02ca0cf559b050e`](https://etherscan.io/tx/0xfae5e751b8ce01457cbb6b529839f24a0cff50faaabcbd0fd02ca0cf559b050e) ([SlowMist](https://x.com/SlowMist_Team/status/2086644725143183639)). | **T9.011** |
+| 2026-08-10 | About 70.83 ETH is the loss; SlowMist lists a profit receiver address. Onward movement is undisclosed. | — |
+| 2026-08-10 02:44 | [SlowMist publishes its alert](https://x.com/SlowMist_Team/status/2086644725143183639). | response |
+| after 2026-08-10 | No statement, pause, compensation or fix from USM appears in the opened pages ([Coinfomania](https://coinfomania.com/usm-suffers-70-83-eth-loss-due-to-pricing-logic-flaw/)). | response |
 
-## What defenders observed
+Key addresses (all from [SlowMist](https://x.com/SlowMist_Team/status/2086644725143183639)):
 
-- **Pre-event (split-invariance is a property test, and it is cheap).** "Executing a position in *n* parts must not out-earn executing it in one" is directly expressible as a fuzz property over size-dependent pricing paths. Any protocol whose price depends on trade size — bonding curves, AMMs, vault redemptions, mint/burn pairs — should carry this assertion in its test suite (M02, M16).
-- **Pre-event (arithmetic-mean pricing is the specific smell).** Averaging start and end prices across a single call charges a large trade for its full impact while charging small trades for slices of theirs. Convexity in the price function then pays for fragmentation. Where an average is used for user-facing pricing, the safe form integrates the actual curve rather than averaging endpoints.
-- **At-event (64 calls in one sequence is a loud, cheap signal).** Repeated identical calls to a redemption entrypoint from one address inside a single block or transaction bundle has almost no legitimate population. A per-address, per-block call-count alarm on value-bearing entrypoints catches this shape independently of the underlying maths (M11).
-- **At-event (flash-loan involvement was incidental, not causal).** The loan set the position size; it did not create the defect, and a well-capitalised attacker could have done the same unfunded. Treating this as "a flash-loan attack" would point remediation at flash-loan defences that do not close it — the fix is in the pricing function (M16).
-- **Response (no governance means no response).** No pause was available, no parameters could be adjusted, and no upgrade path existed. The design deliberately removed the levers that other protocols reach for after an incident, which converts every un-caught arithmetic defect into a permanent one until users exit voluntarily.
+- Attacker EOA — [`0xb92b2e47680c89da8f951b8963ef469f461a50fc`](https://etherscan.io/address/0xb92b2e47680c89da8f951b8963ef469f461a50fc)
+- Attacker contract — [`0x5a5e29ba89663a3558273354e990426f3cac7de7`](https://etherscan.io/address/0x5a5e29ba89663a3558273354e990426f3cac7de7)
+- Victim contract (USM) — [`0x2a7fff44c19f39468064ab5e5c304de01d591675`](https://etherscan.io/address/0x2a7fff44c19f39468064ab5e5c304de01d591675)
+- Profit receiver — [`0xe3c6346b6f282029312d2caf4677ef39beabbf99`](https://etherscan.io/address/0xe3c6346b6f282029312d2caf4677ef39beabbf99)
+
+## What defenders can take from it
+
+- A fuzz property that executing a position in n parts must not out-earn executing it in one applies to any size-dependent pricing path ([SlowMist's](https://x.com/SlowMist_Team/status/2086644725143183639) root cause is exactly its violation).
+- Repeated calls to one redemption entrypoint in one transaction (64 here) are a cheap alert shape.
+
+## Root-cause evidence
+
+- **Technique:** OAK-T9.011
+- **Source:** <https://x.com/SlowMist_Team/status/2086644725143183639>
+- **Source type:** security-firm
+- **Confidence:** reported
+- **Evidence:** SlowMist's same-day alert names the function, the arithmetic-mean pricing, `adjShrinkFactor`, rounding and the 64-call count; Coinfomania and Edgex relay it. No operator statement or post-mortem exists in the opened pages.
 
 ## Public references
 
-- `[cryptotimesweek0816]` — The Crypto Times, "Crypto Whale Loses \$25.6M Again as Weekly Hacks Cross \$37M" (the weekly roundup entry: USM Protocol, 2026-08-10, \$136K / 70.83 ETH, characterised as a pricing-logic flaw in the defund path lacking "split invariance"; also the mechanism detail — a flash loan used to call `fund()` and manipulate internal pricing, then the same FUM amount split into 64 small `defund()` calls extracting more ETH than a single large call, against a redemption function whose arithmetic-mean pricing rewarded exactly that split pattern — plus USM's profile as a minimalist no-governance ETH-backed stablecoin and the absence of any public statement): <https://www.cryptotimes.io/2026/08/16/crypto-whale-loses-25-6m-again-as-weekly-hacks-cross-37m/>
-- `[slowmistzoneusm2026]` — SlowMist Hacked (zone entry, 2026-08-10, USM, \$136,000, "Smart Contract Vulnerability"): <https://hacked.slowmist.io/>
-
-## Discussion
-
-USM is worth a corpus slot at \$136K because it names an invariant the corpus did not previously have an anchor for. OAK already covers **rounding-direction** defects (T9.011) and **flash-loan enablement** (T9.002), but the failure here is neither — this entry is the field anchor for the **OAK-T9.011.001** forward candidate (*split-invariance violation in size-dependent pricing*), and the failure here is neither: the arithmetic is not losing precision, and the loan is not the lever. The property that broke is **split invariance** — the requirement that a position's value be independent of the number of transactions used to realise it. That property governs a large and growing surface: bonding curves, AMM redemptions, vault share pricing, mint/burn pairs, and any redemption path with size-dependent pricing. It is proposed as **T9.011.001** in `TAXONOMY-GAPS.md` and needs a second independent anchor before promotion; contributors encountering an incident where **calling the same function n times beat calling it once** should map it there.
-
-The governance question this raises is genuinely two-sided and OAK takes no position on it. Governance-free design eliminates admin-key compromise, malicious upgrades, and hostile proposals — real classes with large anchors in this corpus. It also eliminates every post-incident lever. USM could not pause, could not reprice, and could not upgrade; the only available response was for users to exit. That is a coherent choice, but it changes where the assurance budget must go: a protocol that cannot be corrected after deployment needs its invariants **proved before** deployment, and split invariance is exactly the kind of property that formal methods and property-based fuzzing find quickly when someone thinks to ask.
-
-The last observation is about severity versus signal. A \$136K loss will not appear in any annual ranking, and the temptation is to skip it. But the mechanism generalises far beyond its loss: the same defect in a redemption path holding nine figures pays out nine figures, and the attacker's cost is a flash loan plus 64 calls either way. OAK's inclusion rule follows mechanism novelty rather than headline size, and this is the case that rule exists for.
+- SlowMist on X (2026-08-10): <https://x.com/SlowMist_Team/status/2086644725143183639>
+- Coinfomania, "USM suffers 70.83 ETH loss due to pricing logic flaw": <https://coinfomania.com/usm-suffers-70-83-eth-loss-due-to-pricing-logic-flaw/>
+- Edgex news, "USM Loses 70.83 ETH to Pricing Logic Flaw in Defund Function": <https://pro.edgex.exchange/en-US/news/article/usm-defi-pricing-logic-exploit>

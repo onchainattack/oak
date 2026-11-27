@@ -46,7 +46,7 @@ OAK's existing T9.001 (price-feed oracle manipulation) does not cover this attac
 
 ## What this example tells contributors
 
-The Ukraine mineral deal market is the canonical *first* of a now-documented cohort of Polymarket-UMA resolution-manipulation cases. Subsequent cases (Zelenskyy suit July 2025, UFO declassification December 2025, US-Iran ceasefire April 2026, Iran-strike journalist coercion March 2026) belong to the same Technique class.
+The Ukraine mineral deal market is the canonical *first* of a now-documented cohort of Polymarket-UMA resolution-manipulation cases. Subsequent cases (Zelenskyy suit July 2025, US-Iran ceasefire April 2026, Iran-strike journalist coercion March 2026) belong to the same Technique class.
 
 Contributors writing the v0.x T9.006 entry should anchor on this incident as the structural-novelty proof and use the Zelenskyy and Iran cases as cohort evidence. The journalist-coercion case (March 2026) is the most unsettling sub-pattern (.003) because it extends the attack vector into physical coercion of off-chain humans.
 

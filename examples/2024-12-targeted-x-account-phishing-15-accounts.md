@@ -1,49 +1,42 @@
-# Organization-Targeted Phishing — 15+ X Accounts Compromised via Email Phishing — 2024-12
+# X account phishing campaign — emails impersonating the X team took over 15+ accounts and promoted meme coin scams — X / Solana, Ethereum — 2024-11-26 to 2024-12-24
 
-**Loss:** $500K+ stolen over one month (December 2024). 15+ X/Twitter accounts compromised — including Kick, Cursor, Alex Blania, The Arena, Brett — by sending targeted phishing emails impersonating the X/Twitter team.
-**OAK Techniques observed:** **OAK-T15.005** (Operator-Communication-Channel Takeover) — primary; 15+ operator brand X accounts were taken over via credential-harvesting emails impersonating the X platform team, then used to post scam content under the operators' own handles. T15.005 enumerates brand-handle X compromise as in-scope, and its adjudication rule — if the attacker manipulated public communications under the operator's brand, the case is T15.005 — resolves the boundary against T15.004, whose surface is DNS/registrar/cloud/IDP infrastructure rather than a public channel. **OAK-T15.006** (Impersonation via Verified Social-Account Compromise) — secondary; the accounts were verified, and the file's own mitigation (FIDO2/WebAuthn on verified org accounts) is T15.006's highest-leverage control. **Not tagged:** the downstream extraction is not resolved to a T4 primitive.
-**Attribution:** **pseudonymous** — threat actor not publicly identified. Phishing emails impersonated X/Twitter to harvest account credentials.
+**Loss:** **~\$500K** over about a month, per [ZachXBT](https://x.com/zachxbt/status/1871543397875671099), repeated by [Crypto Briefing](https://cryptobriefing.com/compromised-x-accounts-meme-coin-scam/). No source opened here gives a per-account breakdown or the wallets that received the money. Recovery: none reported.
 
-**Key teaching point:** The December 2024 phishing wave demonstrates the **platform-team impersonation → account takeover** pattern: the attacker sends phishing emails impersonating the X/Twitter team (e.g., "Your account has a policy violation. Click here to verify."), harvests the credentials of high-follower organization accounts (Kick, Cursor, Alex Blania, The Arena, Brett), then uses the compromised accounts to post scam content. The impersonation is of the PLATFORM'S OWN TEAM, not a crypto project — making it effective against organizations that don't hold crypto but have valuable distribution power. Detection approach: any email claiming to be from a platform's team that requests credential entry should be verified through the platform's official app/website, not through email links; organizations with verified accounts should use hardware security keys (FIDO2/WebAuthn) for platform authentication, which are phishing-resistant.
+**OAK Techniques observed:** **OAK-T15.005** (Operator-Communication-Channel Takeover — *primary, per ZachXBT*). The attacker sent targeted phishing emails that impersonated the X team to steal credentials, then used the taken-over brand accounts to launch meme coin scams ([ZachXBT](https://x.com/zachxbt/status/1871543397875671099)). See [`techniques/T15.005-operator-communication-channel-takeover.md`](../techniques/T15.005-operator-communication-channel-takeover.md). The sources opened do not say the accounts were verified, so the verified-account impersonation Technique is not claimed.
+
+**Attribution:** **unattributed** — [ZachXBT](https://x.com/zachxbt/status/1871543397875671099) writes of "a threat actor" and links the takeovers by a shared deployer address, per [Crypto Briefing](https://cryptobriefing.com/compromised-x-accounts-meme-coin-scam/). No name or arrest is reported.
+
+**Key teaching point:** **Protect the email address that recovers a brand X account with a security key, and treat any email claiming to come from X as untrusted until the same notice appears inside the X app.** The lure was a fake copyright notice that pushed victims to a phishing site where they reset their password and 2FA ([Crypto Briefing](https://cryptobriefing.com/compromised-x-accounts-meme-coin-scam/)). ZachXBT advised security keys for 2FA on important accounts and not reusing email addresses across services ([Crypto Briefing](https://cryptobriefing.com/compromised-x-accounts-meme-coin-scam/)).
 
 ## Summary
 
-In December 2024, a threat actor compromised 15+ high-profile X/Twitter accounts over a one-month period, stealing ~$500K. The compromised accounts included:
+On 2024-12-24 ZachXBT reported that a threat actor had stolen about \$500K over the past month by compromising 15+ X accounts, naming Kick, Cursor, Alex Blania, The Arena and Brett among them ([ZachXBT](https://x.com/zachxbt/status/1871543397875671099)). Crypto Briefing adds that the emails used fake copyright infringement notices, that victims reset their 2FA and passwords on phishing sites, that all the takeovers connected to a single deployer address used for each scam, and that the attacker moved assets between Solana and Ethereum to hide the funding source ([Crypto Briefing](https://cryptobriefing.com/compromised-x-accounts-meme-coin-scam/)). A Cryptorank news roundup citing Coinpaper gives RuneMine as the first incident on Nov 26 and Kick as the latest on Dec 24, says posts used the caption "Incoming Transmission" to promote fraudulent tokens and contract addresses, and says Neutron publicly acknowledged its attack ([Cryptorank](https://cryptorank.io/news/feed/0d034-phishing-attack-hijacks-15-x-accounts-and-nets-half-a-million-dollars)). The same roundup says six deployer addresses were used; neither it nor Crypto Briefing prints them.
 
-- **Kick** — streaming platform
-- **Cursor** — AI code editor company
-- **Alex Blania** — Worldcoin/World executive
-- **The Arena** — crypto project
-- **Brett** — meme coin account
+## Timeline (UTC)
 
-The attack vector was consistent: targeted phishing emails impersonating the X/Twitter team. The emails claimed a policy violation or account security issue and directed recipients to a credential-harvesting page.
+**Entry**: phishing emails. **Preparation**: token deployments, undisclosed. **Execution**: posts from the taken-over accounts. **Money**: bridged between Solana and Ethereum. **Response**: the public alert. The sources give dates, not times.
 
-Once compromised, the accounts were used to post scam content (fake token launches, phishing links, giveaway scams) to their followers. The accounts' follower counts — not their crypto holdings — were the asset being stolen.
-
-## Timeline
-
-| When | Event | OAK ref |
+| When | What happened | OAK |
 |---|---|---|
-| 2024-12 (over ~1 month) | 15+ X accounts compromised via targeted phishing emails impersonating X/Twitter team | **T4 platform-team impersonation** |
-| 2024-12 | Compromised accounts used to post scam content. $500K+ stolen from followers | **T4 distribution power abuse** |
-| 2024-12-24 | ZachXBT publishes community alert identifying the campaign | (public disclosure) |
+| 2024-11-26 | RuneMine is named as the first incident ([Cryptorank](https://cryptorank.io/news/feed/0d034-phishing-attack-hijacks-15-x-accounts-and-nets-half-a-million-dollars)). | **T15.005** |
+| 2024-11-26 to 2024-12-24 | Targeted emails impersonating the X team, with fake copyright notices, lead account owners to phishing sites where credentials, password and 2FA are taken ([ZachXBT](https://x.com/zachxbt/status/1871543397875671099), [Crypto Briefing](https://cryptobriefing.com/compromised-x-accounts-meme-coin-scam/)). | **T15.005** |
+| 2024-11-26 to 2024-12-24 | The taken-over accounts post meme coin scams; each scam token comes from the one deployer address ([Crypto Briefing](https://cryptobriefing.com/compromised-x-accounts-meme-coin-scam/)). | **T15.005** |
+| 2024-12-24 | Kick is the latest account named ([Cryptorank](https://cryptorank.io/news/feed/0d034-phishing-attack-hijacks-15-x-accounts-and-nets-half-a-million-dollars)). | **T15.005** |
+| 2024-12-24 13:08 | ZachXBT posts the alert (post timestamp via api.fxtwitter.com) ([ZachXBT](https://x.com/zachxbt/status/1871543397875671099)). | response |
+| after 2024-12-24 | Funds: assets moved between Solana and Ethereum ([Crypto Briefing](https://cryptobriefing.com/compromised-x-accounts-meme-coin-scam/)); destination wallets undisclosed. | — |
 
-## What defenders observed
+Key addresses: undisclosed. The deployer address is referred to but not printed on any page opened.
 
-- **Platform-team impersonation, not crypto-brand impersonation.** The phishing emails claimed to be from X/Twitter — not from a crypto project. The target organizations (Kick, Cursor) don't hold crypto in their X accounts — the attacker wanted their FOLLOWER DISTRIBUTION POWER, not their wallets.
-- **Diverse target set — streaming, AI, crypto, meme coins.** The 15+ targets spanned industries, suggesting the attacker was going after verified/high-follower accounts regardless of niche. Follower count was the selection criterion, not crypto relevance.
-- **15 accounts in one month = industrial scale.** Compromising 15 accounts in 30 days (one every 2 days) indicates automated credential harvesting and account takeover, not manual one-off attacks.
-- **Platform-team impersonation is effective because the threat is credible.** "Your account violated X policy" is a message that any organization with a verified account takes seriously. The urgency to resolve the issue overrides normal credential hygiene.
+## Root-cause evidence
 
-## What this example tells contributors
-
-- **Platform-team impersonation is a T4 sub-type distinct from crypto-brand impersonation.** The attacker pretends to be the platform (X/Twitter), not a crypto project. The victim's motivation is not greed (airdrop claim) but fear (account suspension). T4 should distinguish "platform-team impersonation → credential harvest" from "crypto-brand impersonation → wallet drain."
-- **Hardware security keys (FIDO2/WebAuthn) prevent credential phishing.** Phishing-resistant MFA (hardware keys, not SMS or TOTP codes) prevents attackers from logging in even if they harvest the password. Organizations with valuable X accounts should enforce hardware key authentication.
-- **Account takeover for distribution power is a T6 sub-pattern.** The attacker doesn't want the account's crypto — they want its followers. The damage is to the followers who trust the compromised account's posts. T6 should distinguish "account takeover for asset theft" from "account takeover as distribution infrastructure."
+- **Technique:** OAK-T15.005
+- **Source:** <https://x.com/zachxbt/status/1871543397875671099>; <https://cryptobriefing.com/compromised-x-accounts-meme-coin-scam/>; <https://cryptorank.io/news/feed/0d034-phishing-attack-hijacks-15-x-accounts-and-nets-half-a-million-dollars>
+- **Source type:** independent-researcher
+- **Confidence:** reported
+- **Evidence:** ZachXBT states the method (phishing emails impersonating the X team) and the loss; Crypto Briefing and Cryptorank relay it and add the copyright-notice lure. Only the first post of ZachXBT's thread was opened; the rest of the thread, the deployer address and the per-account losses were not.
 
 ## Public references
 
-- [ZachXBT — 15+ X Account Phishing Campaign Alert (X/Twitter)](https://x.com/zachxbt/status/1871850877734715553)
-- Compromised accounts: Kick, Cursor, Alex Blania, The Arena, Brett, +10 more.
-- $500K+ stolen from followers of compromised accounts.
-- Phishing vector: emails impersonating X/Twitter team.
+- ZachXBT, X post 1/3 (2024-12-24): <https://x.com/zachxbt/status/1871543397875671099>
+- Crypto Briefing, "Threat actor steals half a million via 15 compromised X accounts: ZachXBT" (2024-12-24): <https://cryptobriefing.com/compromised-x-accounts-meme-coin-scam/>
+- Cryptorank, news roundup citing Coinpaper (2024-12-25): <https://cryptorank.io/news/feed/0d034-phishing-attack-hijacks-15-x-accounts-and-nets-half-a-million-dollars>

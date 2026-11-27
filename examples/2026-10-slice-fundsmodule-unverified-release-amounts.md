@@ -63,9 +63,10 @@ What the trace adds beyond the sources:
 - **Source:** <https://x.com/SlowMist_Team/status/2112746806585274454>
 - **Source type:** security-firm
 - **Confidence:** reported
-- **Evidence:** SlowMist's trace analysis of the release call.
+- **Evidence:** SlowMist's trace analysis of the release call, published the day after the on-chain transaction. Same-day-style third-party analysis; Slice has not confirmed it in any page OAK opened.
 
 ## Public references
 
-- `[slowmistslice2026]` — SlowMist TI alert (2026-10-21): <https://x.com/SlowMist_Team/status/2112746806585274454>
-- `[basescanslice2026]` — exploit transaction: <https://basescan.org/tx/0x02b039a6345348d984e4a0b70dd233127772206e61ce82c390c4709c0b8d790a>
+- SlowMist TI alert (2026-10-21 03:24 UTC; tags the Slice account, loss ~\$41k, names attacker, FundsModule proxy and implementation): <https://x.com/SlowMist_Team/status/2112746806585274454>
+- Exploit transaction cited by SlowMist: <https://basescan.org/tx/0x02b039a6345348d984e4a0b70dd233127772206e61ce82c390c4709c0b8d790a>
+- Coinfomania, "FundsModule suffers \$41k loss following exploit" (2026-10-21): a relay of the SlowMist post, not independent; it names the same attacker address, gives no chain and no project statement: <https://coinfomania.com/fundsmodule-suffers-41k-loss-following-exploit-confirms/>

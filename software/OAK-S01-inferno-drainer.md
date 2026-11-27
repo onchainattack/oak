@@ -20,7 +20,6 @@ The defining lifecycle event is the **November 26, 2023** Telegram-announced shu
 
 - [`examples/2024-10-inferno-drainer-handover.md`](../examples/2024-10-inferno-drainer-handover.md) — service-level worked example covering the operating window through the November 26, 2023 shutdown announcement and the subsequent affiliate / kit re-emergence under successor branding (Angel Drainer / OAK-S02 the most prominent continuation).
 - Aggregate ecosystem metrics from `[slowmist2024report]` ($494M is the 2023 wallet-drainer ecosystem total across all operators collectively, not an Inferno-specific or 2024-specific figure; ~$55.48M peak single theft attributed to Inferno or its affiliates within that period).
-- Cross-category (not Inferno-specific) reference for the T4.002 entry-vector pattern that recurred across G02 affiliates: [`examples/2022-08-curve-dns-hijack.md`](../examples/2022-08-curve-dns-hijack.md).
 
 ## Detection / attribution signals
 

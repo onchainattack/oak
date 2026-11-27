@@ -1,6 +1,6 @@
 # WAX Multi-Chain Bridge — a negative max_fee cancelled the debit while the full withdrawal was still paid out on Solana and Ethereum — WAX / Solana / Ethereum — 2026-10-22
 
-**Loss:** **~\$90.5K** (SlowMist).
+**Loss:** **~\$90.5K** ([SlowMist](https://x.com/SlowMist_Team/status/2113290086808990182)). [Phemex](https://phemex.com/news/article/wax-multichain-bridge-exploited-attacker-extracts-75000-in-crosschain-assets-100687), citing Blockaid monitoring data, puts it at about \$75,000: roughly 52,986 USDC, 21,558 USDT, 840 DAI, 2.55 WETH and 0.11 WBTC across five transactions. The two figures are not reconciled.
 
 **OAK Techniques observed:** **OAK-T9.016** (Contract Accounting-State Invariant Flaw — *primary*. `eth.token::withdraw` on WAX did not enforce `max_fee ≥ 0` before debiting `quantity + max_fee`. With `max_fee = -quantity` the debit was zero while the withdrawal amount stayed whole; the configured fee was zero, so the fee check was skipped. The bridge emitted withdrawal logs and paid out on Solana and Ethereum. See [`techniques/T9.016-contract-accounting-state-invariant-flaw.md`](../techniques/T9.016-contract-accounting-state-invariant-flaw.md)). The cross-chain messaging itself worked; the source-side burn was wrong.
 
@@ -10,11 +10,11 @@
 
 ## Summary
 
-SlowMist flagged the exploit on 2026-10-22.
+[SlowMist flagged the exploit on 2026-10-22](https://x.com/SlowMist_Team/status/2113290086808990182). Phemex reported it the same day, with the bridge contracts on Solana and Ethereum releasing tokens that were withdrawn on WAX without the underlying assets being paid for, and said the full scope was still under investigation ([Phemex](https://phemex.com/news/article/wax-multichain-bridge-exploited-attacker-extracts-75000-in-crosschain-assets-100687)).
 
 ## Timeline (UTC)
 
-Read it as three stages. **Flaw**: the WAX `eth.token::withdraw` action did not check the sign of `max_fee`. **Take**: withdrawals with a negative fee debit nothing, and the bridge pays out in full on Solana and Ethereum. **Aftermath**: nothing published beyond the alert. SlowMist's alert is the only source and it gives no transaction hashes.
+Read it as three stages. **Flaw**: the WAX `eth.token::withdraw` action did not check the sign of `max_fee`. **Take**: withdrawals with a negative fee debit nothing, and the bridge pays out in full on Solana and Ethereum. **Aftermath**: nothing published beyond the alert. SlowMist's alert gives no transaction hashes, and the Phemex report gives none either.
 
 | When | What happened | OAK |
 |---|---|---|
@@ -22,7 +22,7 @@ Read it as three stages. **Flaw**: the WAX `eth.token::withdraw` action did not 
 | Before 2026-10-22 (undisclosed) | The attacker uses the WAX account `fasdfas.al`, with receiving addresses on Solana ([`4H1piNZ8LsYhZGYhkbJDbPDSghxRj3HWxJqVz5dve8Q7`](https://solscan.io/account/4H1piNZ8LsYhZGYhkbJDbPDSghxRj3HWxJqVz5dve8Q7)) and Ethereum ([`0x01664E199991b2F3fe412c2DE5B9b7A0dcDc5070`](https://etherscan.io/address/0x01664E199991b2F3fe412c2DE5B9b7A0dcDc5070)). Funding and testing are not published. | — |
 | 2026-10-22 (undisclosed times) | The attacker calls withdraw with `max_fee = -quantity`, so the debit is zero while the full withdrawal amount is kept. The bridge emits withdrawal logs, and corresponding payouts occur on Solana from the bridge account ([`8cqv3kRg1ivwPNrGGrvJANXb6RPik6XEhnBzs18tPcKC`](https://solscan.io/account/8cqv3kRg1ivwPNrGGrvJANXb6RPik6XEhnBzs18tPcKC)) and on Ethereum from the bridge contract ([`0x24b22B031Ae1B5a6b09F9a0FD33613a40e0d70e6`](https://etherscan.io/address/0x24b22B031Ae1B5a6b09F9a0FD33613a40e0d70e6)). About \$90.5K in total. | **T9.016** |
 | Undisclosed | Where the withdrawn funds went afterward is not published. | — |
-| 2026-10-22 15:23 | SlowMist publishes the alert. No statement, pause or fix by WAX was found in the cited source. | — |
+| 2026-10-22 15:23 | SlowMist publishes the alert. No statement, pause or fix by WAX appears on either opened page. | — |
 
 Key addresses:
 
@@ -44,3 +44,4 @@ Key addresses:
 ## Public references
 
 - `[slowmistwax2026]` — SlowMist TI alert (2026-10-22): <https://x.com/SlowMist_Team/status/2113290086808990182>
+- `[phemexwax2026]` — Phemex, report on the WAX multichain bridge exploit (2026-10-22; Blockaid-based figure of about \$75,000): <https://phemex.com/news/article/wax-multichain-bridge-exploited-attacker-extracts-75000-in-crosschain-assets-100687>

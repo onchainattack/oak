@@ -1,49 +1,41 @@
-# GCR Classic Hack → $3.3M Insider Longs on Hyperliquid — 2024-05
+# GCRClassic X account takeover — posts from a hijacked account after pre-opened Hyperliquid longs — X / Hyperliquid — 2024-05-26
 
-**Loss:** $3.3M in leveraged insider trading profits via Hyperliquid perpetual futures. Attacker opened $2.3M ORDI and $1M ETHFI longs minutes before hacking @GCRClassic X account and posting about those assets, profiting from the price movement.
-**OAK Techniques observed:** **OAK-T15.006** (Impersonation via Verified Social-Account Compromise) — primary; the verified account was compromised and used to post about ORDI and ETHFI under its own verification signal, which is what moved the price. **Market half: not mapped.** The realised extraction — \$2.3M ORDI and \$1M ETHFI leveraged longs opened *minutes before* the compromise, profiting from a price move the attacker then caused — has no Technique. T17.001–T17.005 are ruled out: the perp book was not manipulated, the *information* was. T9.006.004 is scoped to subjective-resolution prediction markets. T3.003/T3.004 require a willing promoter whose own reach is the amplifier; here the reach was hijacked and the extraction was perp PnL, not a spot supply dump. Candidate gap: derivatives pre-positioning ahead of an attacker-caused information release.
-**Attribution:** **inferred-strong** — connected to the $CAT meme coin team on Solana. Minutes before the GCRClassic hack, an address tied to the team opened $2.3M ORDI and $1M ETHFI longs on Hyperliquid.
+**Loss:** **no victim loss figure published.** The harm is market manipulation by an account takeover. [Cointelegraph](https://cointelegraph.com/news/memecoin-team-gcr-hack-zachxbt) reports the ORDI position netted roughly $34,000 and the ETHFI position lost $3,500 before it was closed; [Web3 is Going Just Great](https://www.web3isgoinggreat.com/single/cat-memecoin-team-hacks-gcr) gives the same figures. The $2.3M and $1M figures are position sizes, not profit.
 
-**Key teaching point:** The GCR Classic hack demonstrates the **derivatives pre-positioning** pattern: the attacker didn't just hack a high-profile X account to post about tokens — they opened leveraged long positions on those tokens MINUTES BEFORE the hack. When the compromised account posted about ORDI and ETHFI, the prices moved, and the attacker's pre-opened longs became profitable. This is insider trading executed through account compromise as the information-release mechanism. Detection approach: monitor for large derivative positions opened on low-activity tokens immediately before a high-profile influencer account posts about those specific tokens — the timing correlation is the detection signal.
+**OAK Techniques observed:** **OAK-T15.006** (Impersonation via Verified Social-Account Compromise — *primary*; per [Cointelegraph](https://cointelegraph.com/news/memecoin-team-gcr-hack-zachxbt) ZachXBT attributed the breach to a SIM swap, and posts about ORDI and ETHFI were then made from the account. See [`techniques/T15.006-impersonation-via-verified-social-account-compromise.md`](../techniques/T15.006-impersonation-via-verified-social-account-compromise.md)). **Market half: not mapped.** Opening leveraged perp longs minutes before an attacker-caused post has no Technique in OAK: it is neither a perp-book manipulation nor a promoter-led dump, and the extraction was perp PnL. Candidate gap: derivatives pre-positioning ahead of an attacker-caused information release.
+
+**Attribution:** **inferred-weak** — ZachXBT links the team behind the Solana memecoin CAT to the hack and to the Hyperliquid positions ([ZachXBT, X](https://x.com/zachxbt/status/1795082820177498349)). Cointelegraph reports the evidence as an investigator's findings, and the team's response is not on the opened pages. No charges are reported.
+
+**Key teaching point:** **Treat a sudden token call from a hacked or recovering influencer account as unverified, and watch for perp positions opened minutes earlier on the same assets.** The Hyperliquid positions were visible on-chain before the posts, which is how the link was drawn.
 
 ## Summary
 
-On May 26, 2024, the X/Twitter account of @GCRClassic (a prominent crypto trader/influencer) was hacked. The attacker used the account to post about specific tokens, causing price movements.
+On 2024-05-26 the X account of @GCRClassic was taken over. ZachXBT posted on 2024-05-27 that minutes before the hack an address tied to the team behind the CAT meme coin opened $2.3M ORDI and $1M ETHFI longs on Hyperliquid ([ZachXBT, X](https://x.com/zachxbt/status/1795082820177498349)). Per [Cointelegraph](https://cointelegraph.com/news/memecoin-team-gcr-hack-zachxbt), the team had on 2024-05-24 allegedly manipulated its own coin launch to control more than 63% of CAT supply and sold more than $5 million of CAT, with part of the funds deposited into Hyperliquid. A post about ORDI from the account spiked the price; a second post about ETHFI did not move the market as expected and the position was closed at a $3,500 loss. [Web3 is Going Just Great](https://www.web3isgoinggreat.com/single/cat-memecoin-team-hacks-gcr) notes ZachXBT said positions on centralized exchanges, which are not publicly visible, may also exist.
 
-The forensic breakthrough: minutes BEFORE the hack, an address tied to the $CAT meme coin team on Solana opened leveraged long positions on Hyperliquid:
+## Timeline (UTC)
 
-- $2.3M ORDI long
-- $1M ETHFI long
+Stages: **Preparation** (funding and positions), **Entry** (account takeover), **Execution** (posts), **Response**. Exact times undisclosed on opened pages.
 
-The tokens posted about from the compromised @GCRClassic account were ORDI and ETHFI — exactly the tokens the attacker had pre-positioned longs on. The price movement from the GCRClassic posts made those longs profitable.
-
-The $CAT meme coin team connection suggests the hack was executed by or in coordination with the same group.
-
-## Timeline
-
-| When | Event | OAK ref |
+| When | What happened | OAK |
 |---|---|---|
-| 2024-05-26 (minutes before hack) | Address tied to $CAT team opens $2.3M ORDI and $1M ETHFI longs on Hyperliquid | **T12 derivative pre-positioning** |
-| 2024-05-26 | @GCRClassic X account hacked. Posts about ORDI and ETHFI. Prices move | **T6 account compromise** |
-| 2024-05-26 | Long positions profit from price movement. $3.3M+ in insider trading profits | **T12 insider extraction** |
-| 2024-05-27 | ZachXBT publishes investigation linking hack to $CAT meme coin team | (public disclosure) |
+| 2024-05-24 | Team allegedly manipulates its own CAT launch to hold more than 63% of supply, sells over $5M of CAT ([Cointelegraph](https://cointelegraph.com/news/memecoin-team-gcr-hack-zachxbt)) | — |
+| 2024-05-26, minutes before the takeover | Address tied to the team opens $2.3M ORDI and $1M ETHFI longs on Hyperliquid ([ZachXBT, X](https://x.com/zachxbt/status/1795082820177498349)) | none — no Technique for derivatives pre-positioning |
+| 2024-05-26 | @GCRClassic X account taken over; ZachXBT attributes it to a SIM swap ([Cointelegraph](https://cointelegraph.com/news/memecoin-team-gcr-hack-zachxbt)) | **T15.006** |
+| 2024-05-26 | Posts about ORDI (price spikes, about $34,000 gained) and ETHFI (market does not react, $3,500 lost, position closed) | **T15.006** |
+| 2024-05-27 | ZachXBT publishes the investigation ([thread start](https://x.com/zachxbt/status/1795082820177498349)) | response |
 
-## What defenders observed
+Key addresses: none printed in full on the opened pages (undisclosed). The thread's later posts, which may carry them, were not opened.
 
-- **Derivatives pre-positioning as the smoking gun.** The attacker didn't just hack an account and post — they placed financial bets that would profit from those specific posts. The derivative positions on Hyperliquid were public (on-chain or exchange order book data) and revealed the premeditation.
-- **Hyperliquid as the insider trading venue.** Hyperliquid is a decentralized perpetual futures exchange. The attacker chose it because derivative positions can be opened with leverage (amplifying returns from small price movements) and because on-chain derivative platforms may have less market surveillance than centralized exchanges.
-- **Specific token selection = pre-planned information asymmetry.** The attacker opened longs on ORDI and ETHFI specifically — the same tokens posted about from the compromised account. This is not random — the tokens were selected because a post from @GCRClassic about them would move their price. The token selection IS the insider information.
-- **$CAT meme coin team connection.** The address that opened the derivative positions was tied to the $CAT meme coin team, linking the account compromise to an existing token operation.
+## Root-cause evidence
 
-## What this example tells contributors
-
-- **Derivatives pre-positioning before market-moving posts is a T12 detection primitive.** When derivative positions are opened on low-liquidity tokens minutes before a high-profile account posts about those tokens, the timing correlation is a near-zero-false-positive insider trading signal. OAK T12 detection specs should include "derivative position opening → influencer post about same token → position closure" as a timing-based detection pattern.
-- **Hyperliquid and on-chain derivatives platforms are T12 detection data sources.** On-chain derivative position data is public and can be monitored for anomalous large positions on low-activity tokens. This is a detection advantage over centralized exchanges (where order book data is private).
-- **Account compromise as information-release mechanism for insider trading.** The @GCRClassic hack was not for direct theft — it was for the INFORMATION DISTRIBUTION POWER of the account. This is T6 (account compromise) in service of T12 (market manipulation), not T5 (asset drain).
+- **Technique:** OAK-T15.006
+- **Source:** <https://x.com/zachxbt/status/1795082820177498349>; <https://cointelegraph.com/news/memecoin-team-gcr-hack-zachxbt>
+- **Source type:** independent-researcher
+- **Confidence:** reported
+- **Evidence:** ZachXBT's thread ties the address to the team and the positions to the account takeover; Cointelegraph reports the SIM-swap claim. The takeover method is the investigator's attribution, not confirmed by the account owner on opened pages, and the owner's own statement was not opened.
 
 ## Public references
 
-- [ZachXBT — GCR Classic Hack / Hyperliquid Insider Longs (X/Twitter)](https://x.com/zachxbt/status/1795082820177498349)
-- @GCRClassic: hacked X/Twitter account, used to post about ORDI and ETHFI.
-- Hyperliquid: decentralized perpetual futures exchange where $3.3M insider longs were opened.
-- $CAT meme coin team connection: address tied to team opened positions minutes before hack.
+- ZachXBT, 2024-05-27, thread start (X): <https://x.com/zachxbt/status/1795082820177498349>
+- Cointelegraph, 2024-05-27: <https://cointelegraph.com/news/memecoin-team-gcr-hack-zachxbt>
+- Web3 is Going Just Great, 2024-05-27: <https://www.web3isgoinggreat.com/single/cat-memecoin-team-hacks-gcr>

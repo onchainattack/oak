@@ -1,6 +1,6 @@
 # TranchePool — at the UTC day rollover a scheduled principal payment was booked as received, which reopened the borrower's draw limit — Fence Finance / Valinor Digital / Oatfi TranchePool / Avalanche — 2026-10-28
 
-**Loss:** **~1.013M USDC** (SlowMist), drawn a second time with identical calldata.
+**Loss:** **~1.013M USDC** ([SlowMist](https://x.com/SlowMist_Team/status/2115281126516490514)), drawn a second time with identical calldata. Blockfence and DEV Community give about $1.01M.
 
 **OAK Techniques observed:** **OAK-T9.016** (Contract Accounting-State Invariant Flaw — *primary*. Per SlowMist, settlement at the UTC day rollover treated a **scheduled** principal payment as **received** and subtracted it from recorded outstanding principal although no USDC was repaid. The draw function (`0x8e27c105`) checks requests against *funded − outstanding*, so 1.013M USDC of draw capacity reappeared and the same draw went through twice. See [`techniques/T9.016-contract-accounting-state-invariant-flaw.md`](../techniques/T9.016-contract-accounting-state-invariant-flaw.md)).
 
@@ -10,7 +10,7 @@
 
 ## Summary
 
-Two Avalanche transactions on 2026-10-28 drew 1.013M USDC each against vulnerable contract [`0xe25cb545bdd47a8ec2d08001cb5661b00d47621a`](https://snowscan.xyz/address/0xe25cb545bdd47a8ec2d08001cb5661b00d47621a).
+Two Avalanche transactions, 2026-10-27 23:56:41 and 2026-10-28 00:00:03, ran the same draw of about 1.013M USDC against vulnerable contract [`0xe25cb545bdd47a8ec2d08001cb5661b00d47621a`](https://snowscan.xyz/address/0xe25cb545bdd47a8ec2d08001cb5661b00d47621a). OAK's trace shows the first nets to zero for the pool (flash-loan round trip) and the second takes the funds. SlowMist [posted the alert](https://x.com/SlowMist_Team/status/2115281126516490514) on 2026-10-28 03:14 UTC. Blockaid first described the incident as flash-loan manipulation of tranche shares; SlowMist's settlement-logic reading was later supported by an independent fork replay, per [Blockfence](https://blockfence.io/avalanche-tranche-vault-exploited-for-1-01-million-in-usdc/) and [DEV Community](https://dev.to/pandasecurity/tranchepool-exploit-a-midnight-rollover-drained-101m-55c0). As of 2026-10-28 Blockfence reports no confirmed recovery and says SlowMist has not established each associated party's responsibilities.
 
 ## Timeline (UTC)
 
@@ -69,19 +69,21 @@ What the trace adds beyond the sources:
 - **Where the money went.** Within 5 minutes of the second draw the attacker address burned all of it through Circle's CCTP V2 TokenMessenger: 250,000.175563 USDC at 00:03:41 ([`0x0e974743161ddb166d5ad698b9a2b0c9ca2ddf5f569a532e6c5665ce2c92218b`](https://snowscan.xyz/tx/0x0e974743161ddb166d5ad698b9a2b0c9ca2ddf5f569a532e6c5665ce2c92218b)) and 763,374.83664 USDC at 00:05:22 ([`0x51bb85e171585a2ec7ec7bd918cd6a08e916e38f79cf2a17b5e5211ee3b9f397`](https://snowscan.xyz/tx/0x51bb85e171585a2ec7ec7bd918cd6a08e916e38f79cf2a17b5e5211ee3b9f397)), total 1,013,375.012203 USDC. The burn calldata names destination domain 5 (Solana) and one 32-byte mint recipient, `0xacd18ae91c387c3140b2c3b4a67b9b01a09554d76796c05b2d5e18478b56006a`, which OAK decodes as Solana address `CdcSnXuySy92HizRwWgvFPzWL2V1rCNnbWH6yfLv2ocm`. Both transactions use the same recipient. The Solana leg is not traced: provider not implemented. That the mint happened is not checked.
 - **The first transaction does not drain the pool.** In `0x19ab145e7f771549ca2f1da4b1768d7f728834015b2480ddb5be19c9769899fd` the attack contract borrows 1,013,353.611686 USDC from a USDC aToken proxy (`0x625e7708f30ca75bfd92586e17077590c60eb4cd`), pays it into the pool, receives the same amount back, and repays 1,013,860.288492 USDC. The 506.676806 difference matches a 0.05% flash-loan fee, and the attacker had pre-funded 506.676807 USDC to the contract 2 minutes earlier. The pool's net balance change in that transaction is zero. The net loss to the pool happens only in the second transaction, where the pool sends 1,013,353.611686 USDC out. OAK read the loan source and the fee from the transfers, and the fee match is an inference.
 - **Timing conflict.** The timeline said the first draw came after 00:00 UTC on 10-28. On-chain it is 2026-10-27 23:56:41 and the second is 2026-10-28 00:00:03. That fits the day-rollover story: the first runs before the rollover, the second right after it.
-- **Amounts.** The bridged total (1,013,375.012203) is 21.400516 USDC above the pool's single outflow (1,013,353.611687). The extra comes from the attacker's own small USDC balance (about 528 USDC swapped from AVAX at 23:49). SlowMist's "1.013M USDC drawn twice" is therefore a single net loss of about 1.013M USDC, not 2.03M.
+- **Amounts.** The bridged total (1,013,375.012203) is 21.400516 USDC above the pool's single outflow (1,013,353.611687). The extra comes from the attacker's own small USDC balance (about 528 USDC swapped from AVAX at 23:49). SlowMist's report of the same 1.013M USDC draw twice is therefore a single net loss of about 1.013M USDC, not 2.03M.
 - **Funding.** The attacker address was funded with 111.8294 AVAX at 22:42 and 22:45 on 2026-10-27 by `0x4e75e27e5aa74f0c7a9d4897dc10ef651f3a3995`, an unlabelled address active since January 2022 that OAK did not trace further. The attacker then sent 65 AVAX to a router-like address (`0x337685fdab40d39bd02028545a4ffa7d287cc3e2`, swapping into about 573 USDC) and 12 AVAX to a gas wallet (`0xc5240a03c44d26626b659e7e595b6c512f7ccc09`), which forwarded only a few AVAX. These dust moves are not drawn.
 - **Limits.** Nothing leaves the Avalanche leg other than the CCTP burns. No pause, recovery or return appears in the on-chain activity of the attacker, the attack contract or the pool within the window to 2026-10-31.
 
 ## Root-cause evidence
 
 - **Technique:** OAK-T9.016
-- **Source:** <https://x.com/SlowMist_Team/status/2115281126516490514>
+- **Source:** <https://x.com/SlowMist_Team/status/2115281126516490514>; <https://dev.to/pandasecurity/tranchepool-exploit-a-midnight-rollover-drained-101m-55c0>
 - **Source type:** security-firm
 - **Confidence:** reported
-- **Evidence:** SlowMist's trace analysis of the two draws and the rollover settlement.
+- **Evidence:** SlowMist's trace analysis of the two draws and the rollover settlement. DEV Community (summarising an independent fork replay by Sentinelle AI) reports the second draw reverts at 23:59:59 UTC and succeeds at 00:00:00 UTC with the same calldata, which fits a time-dependent accounting bug; it notes its analysis rests on calldata, transfers and replays, not the Solidity. Blockaid's first reading (flash-loan share inflation) was superseded. Source code was not opened, so the mechanism stays reported.
 
 ## Public references
 
 - `[slowmisttranche2026]` — SlowMist TI alert (2026-10-28): <https://x.com/SlowMist_Team/status/2115281126516490514>
 - `[snowscantranche2026]` — second draw: <https://snowscan.xyz/tx/0x3f6b23292a2e9c2956c7ac56d0b1f79b0271b49edec2156d2675ddf1de058c77>
+- `[blockfencetranche2026]` — Blockfence, "Avalanche Tranche Vault Exploited for $1.01 Million in USDC" (2026-10-28): <https://blockfence.io/avalanche-tranche-vault-exploited-for-1-01-million-in-usdc/>
+- `[devtobtranche2026]` — DEV Community, "TranchePool Exploit: A Midnight Rollover Drained $1.01M": <https://dev.to/pandasecurity/tranchepool-exploit-a-midnight-rollover-drained-101m-55c0>

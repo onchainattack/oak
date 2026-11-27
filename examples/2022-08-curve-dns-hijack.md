@@ -1,53 +1,43 @@
-# Curve Finance frontend DNS hijack — Ethereum — 2022-08
+# Curve Finance — front-end DNS hijack served a cloned site that asked users to approve a malicious contract — curve.fi / Ethereum — 2022-08-09
 
-**Attribution:** **pseudonymous** — no public actor attribution at OAK v0.1 cutoff.
+**Loss:** **~\$570K** per user reports ([Chain Bulletin](https://chainbulletin.com/curve-finance-finds-and-resolves-site-exploit): about $570,000; [Cointelegraph](https://cointelegraph.com/news/breaking-curve-finance-team-warns-users-to-avoid-using-site-until-further-notice): over $573,000). Curve made no official statement of the amount on the Chain Bulletin page. Recovery: undisclosed.
 
-**Loss:** \~\$575K from users who interacted with the cloned UI during the incident window.
-**OAK Techniques observed:** OAK-T4.002 (Compromised Front-End Permit Solicitation) — primary; **OAK-T15.004** (Operator-Side Credential Compromise) — canonical anchor for the **registrar / DNS sub-shape** of T15: the load-bearing compromise was the operator's domain-registrar credential surface (`iwantmyname`), used to redirect the Curve domain's DNS resolution and serve a cloned UI from the legitimate domain. **OAK-T6** (Defense Evasion) — modifier: the frontend / DNS-layer compromise is structurally a defense-evasion that bypasses the protocol's smart-contract integrity baseline by serving a cloned UI from the protocol's primary domain. T4.002 lists OAK-T6 as a secondary parent tactic for exactly this structural reason; the Curve case is the canonical first-documented T4.002 incident and is the dated anchor for the T6 modifier framing on the front-end-compromise sub-class. OAK-T7.001 (Mixer-Routed Hop) downstream as the proceeds were routed through Tornado Cash (per public reporting of the laundering route).
-**OAK-Gnn:** [OAK-G02 Drainer-as-a-Service operators](../actors/OAK-G02-drainer-services.md) — service-layer-adjacent T4.002 case; cited on the OAK-G02 actor page as the canonical service-layer-adjacent registrar-side compromise example. The per-incident operator was not publicly tied to a named drainer-service brand, but the cloned-UI-served-from-compromised-DNS pattern is structurally adjacent to the drainer-service substrate at *inferred-weak* confidence.
-**Status:** registrar-side compromise (`iwantmyname` nameserver) identified and corrected; protocol redirected `.fi` to neutral nameservers and operated from an alternate domain (`curve.finance`) until stabilised.
+**OAK Techniques observed:** **OAK-T4.002** (Compromised Front-End Permit Solicitation — *primary*). The curve.fi domain was pointed at a cloned site that asked visitors to approve a malicious contract ([Chain Bulletin](https://chainbulletin.com/curve-finance-finds-and-resolves-site-exploit), [AiCoin](https://www.aicoin.com/en/article/310093?lang=en)). Curve's smart contracts were not reported as affected. See [`techniques/T4.002-compromised-frontend-permit-solicitation.md`](../techniques/T4.002-compromised-frontend-permit-solicitation.md). An operator-credential Technique is not declared: where the DNS control was lost is disputed (see Root-cause evidence). A mixer laundering Technique is not declared: no opened page mentions the route of the funds.
 
-**Key teaching point:** **The Curve DNS hijack (August 2022) is the canonical T4.002 case demonstrating that a DeFi protocol can be fully secure at the smart-contract layer while being fully compromised at the front-end layer via registrar-side DNS attack.** The protocol's smart contracts were untouched — the exploit operated entirely at the DNS/domain layer, serving a cloned UI from the legitimate domain. The incident motivated the industry-wide adoption of registry-lock and DNS-change-control practices across major DeFi protocols, and remains the most-cited reference case for the principle that front-end security is a distinct security surface from smart-contract security.
+**Attribution:** **unattributed** — no opened page names an actor.
 
-## Timeline (UTC unless noted)
-
-| When | Event | OAK ref |
-|---|---|---|
-| 2022-08 (pre-incident) | Curve Finance operates with `curve.fi` as primary domain; DNS hosted via `iwantmyname` registrar without registry-lock | (standing T4.002 surface — registrar as attack vector) |
-| 2022-08 (incident window) | Attacker compromises `iwantmyname` nameserver; redirects `curve.fi` DNS to attacker-controlled server hosting a cloned Curve UI | T4.002 (front-end compromise via DNS hijack) |
-| 2022-08 (incident window) | Users interact with cloned UI served from `curve.fi`; signing prompts route approval grants to attacker-controlled contract | T4.002 (permit/approval solicitation from compromised front-end) |
-| 2022-08 (incident window) | Attacker extracts ~$575K from users who signed during the active window; proceeds routed through Tornado Cash | T7.001 (mixer-routed laundering downstream) |
-| 2022-08 (post-incident) | Curve team redirects `.fi` to neutral nameservers; protocol operates from `curve.finance` until DNS control restored | (defender response — DNS redirection) |
-| 2022-08 (post-incident) | Curve and broader DeFi ecosystem adopt registry-lock and DNS-change-control practices | (industry-wide defensive posture shift) |
+**Key teaching point:** **Lock the domain and the DNS path of your front-end the way you lock a contract: registry lock on the domain, change alerts on nameserver and A-record changes, and a published list of the canonical contract addresses wallets can check against.** Curve's second domain, curve.exchange, stayed up because it used a different DNS provider ([Cointelegraph](https://cointelegraph.com/news/breaking-curve-finance-team-warns-users-to-avoid-using-site-until-further-notice)); a user could not tell the cloned site from the real one without checking the contract they were approving.
 
 ## Summary
 
-In August 2022, an attacker served a cloned Curve Finance UI from the protocol's primary domain by compromising the upstream DNS nameserver at the protocol's registrar (`iwantmyname`). Users who interacted with the cloned UI during the active window were prompted to approve a malicious contract via the wallet signing flow; approximately \$575K was extracted from users who signed during the window. The Curve team responded by redirecting `.fi` to neutral nameservers, taking the affected site offline while regaining control, and operating from `curve.finance` in the interim.
+On 2022-08-09 Curve warned on Twitter not to use its front-end and said the nameserver was compromised ([Cointelegraph](https://cointelegraph.com/news/breaking-curve-finance-team-warns-users-to-avoid-using-site-until-further-notice)). Per [Chain Bulletin](https://chainbulletin.com/curve-finance-finds-and-resolves-site-exploit), the attacker redirected curve.fi to a cloned site at an IP the attacker controlled, and the clone added an approval request to a malicious contract. Curve told anyone who had approved contracts in the previous few hours to revoke them, and said the issue was found and reverted about an hour after the first warning ([Chain Bulletin](https://chainbulletin.com/curve-finance-finds-and-resolves-site-exploit)). Curve said its DNS provider iwantmyname was likely hacked and that it changed its nameserver ([Cointelegraph](https://cointelegraph.com/news/breaking-curve-finance-team-warns-users-to-avoid-using-site-until-further-notice)); another source quotes TCPshield's Steven Ferguson as saying early investigation suggested this did not appear to be a hijack at the registrar level ([AiCoin](https://www.aicoin.com/en/article/310093?lang=en)).
 
-## OAK-T4.002 mapping
+## Timeline (UTC)
 
-This is a textbook OAK-T4.002 case because the compromise occurred at the front-end / DNS layer rather than at the protocol's smart-contract layer:
+Stages: **Entry** (DNS) → **Execution** (cloned site, approvals) → **Money** → **Response**. Times are not given on the opened pages; only the date is.
 
-- **What was *not* compromised:** Curve's smart contracts.
-- **What *was* compromised:** the path between the user's browser and the protocol's intended UI, via a registrar-side nameserver compromise.
-- **What the user signed:** an authorisation whose actual scope did not match the protocol's normal interaction patterns — the canonical OAK-T4.002 indicator.
+| When | What happened | OAK |
+|---|---|---|
+| Before 2022-08-09 (undisclosed) | The point where DNS control was lost is undisclosed; Curve said the nameserver was compromised and its provider iwantmyname was likely hacked ([Cointelegraph](https://cointelegraph.com/news/breaking-curve-finance-team-warns-users-to-avoid-using-site-until-further-notice)) | **T4.002** |
+| 2022-08-09 | curve.fi resolves to an attacker-controlled IP serving a clone that asks for approval of a malicious contract ([Chain Bulletin](https://chainbulletin.com/curve-finance-finds-and-resolves-site-exploit)) | **T4.002** |
+| 2022-08-09 | Users who signed grant approvals to the contract [`0x9eb5f8e83359bb5013f3d8eee60bdce5654e8881`](https://etherscan.io/address/0x9eb5f8e83359bb5013f3d8eee60bdce5654e8881), which Curve told users to revoke ([AiCoin](https://www.aicoin.com/en/article/310093?lang=en)); users reported about $570K taken ([Chain Bulletin](https://chainbulletin.com/curve-finance-finds-and-resolves-site-exploit)) | **T4.002** |
+| After 2022-08-09 | Where the stolen funds went: undisclosed on the opened pages | — |
+| 2022-08-09 | Curve warns users off the front-end, points them to curve.exchange (different DNS provider), tells them to revoke recent approvals, switches nameservers and says the issue was found and reverted about an hour after the first warning ([Chain Bulletin](https://chainbulletin.com/curve-finance-finds-and-resolves-site-exploit), [Cointelegraph](https://cointelegraph.com/news/breaking-curve-finance-team-warns-users-to-avoid-using-site-until-further-notice)) | response |
 
-## What defenders observed
+Key addresses:
 
-- **Pre-event:** registrar-side controls (registry-lock, 2FA, change-control on nameserver settings) at upstream DNS provider were the relevant exposure surface; no on-chain artefact would have shown anomaly until the cloned UI was live.
-- **At-event:** spike in permit-grant events from a known-protocol's user base going to a non-protocol contract — the OAK-T4.002 detection signal listed in the Technique page.
-- **Post-event:** funds traced to centralized exchanges and to Tornado Cash, mapping the downstream as an OAK-T7.001 event chained to the T4.002 source.
+- Malicious contract users were told to revoke — [`0x9eb5f8e83359bb5013f3d8eee60bdce5654e8881`](https://etherscan.io/address/0x9eb5f8e83359bb5013f3d8eee60bdce5654e8881) (as printed by [AiCoin](https://www.aicoin.com/en/article/310093?lang=en))
 
-## What this example tells contributors writing future Technique pages
+## Root-cause evidence
 
-- **OAK-T4.002 may exist without any contract bug at the protocol.** A common mis-classification is to attribute incidents to the protocol's contracts when the compromise was at the front-end / DNS layer. Examples should be precise about *where* the compromise happened.
-- **T4.002 detection often requires inputs from outside the on-chain telemetry surface.** Public DNS / hosting change-control feeds are part of the detection methodology, not on-chain data alone. The Curve incident is a good example of a Technique that benefits from coordinating with traditional CTI sources.
-- **Mitigations should be split between protocol-side (registry-lock, change-control) and user-side (verify destination contract against canonical lists before signing).**
+- **Technique:** OAK-T4.002
+- **Source:** <https://chainbulletin.com/curve-finance-finds-and-resolves-site-exploit>; <https://cointelegraph.com/news/breaking-curve-finance-team-warns-users-to-avoid-using-site-until-further-notice>; <https://www.aicoin.com/en/article/310093?lang=en>
+- **Source type:** news
+- **Confidence:** reported
+- **Evidence:** The pages relay Curve's own same-day posts: the front-end and nameserver were affected, the issue was reverted, and users should revoke approvals. That the front-end was replaced by a clone asking for approvals is consistent across the three pages. Disputed: where DNS control was lost. Curve said iwantmyname was likely hacked; one source quotes TCPshield saying it did not appear to be a registrar-level hijack. Not established on the opened pages: the exact amount, the receiving addresses, and the laundering route.
 
 ## Public references
 
-- `[rektcurve2022]` — rekt.news forensic write-up.
-
-## Discussion
-
-The Curve incident has had outsized influence on the OAK-T4.002 page's Mitigations section because the responsible defensive controls (registrar-side registry-lock, DNS change-control, canonical-contract publication for wallet allowlists) were not novel — they were widely-recommended practices that the broader DeFi protocol set had not uniformly implemented. The post-incident wave of registry-lock adoption across major DeFi protocols suggests this incident moved the baseline of expected defensive posture; contributors writing post-2022 T4.002 examples should evaluate the affected protocol's defensive posture against this updated baseline rather than the pre-2022 one.
+- Chain Bulletin, "Curve Finance Finds and Resolves Site Exploit" (2022-08-10): <https://chainbulletin.com/curve-finance-finds-and-resolves-site-exploit>
+- Cointelegraph, Curve Finance team warns users to avoid the site (2022-08-09): <https://cointelegraph.com/news/breaking-curve-finance-team-warns-users-to-avoid-using-site-until-further-notice>
+- AiCoin, "Here's What Happened During Curve Finance's Hijacking That Put Funds at Risk": <https://www.aicoin.com/en/article/310093?lang=en>

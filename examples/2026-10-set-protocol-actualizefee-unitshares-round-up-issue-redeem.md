@@ -1,6 +1,6 @@
 # Set Protocol — `actualizeFee()` rounded unit shares up by one with no fee minted, and issue-then-redeem pocketed the difference — Set Protocol vault / Ethereum — 2026-10-06
 
-**Loss:** **~5.08 ETH (~\$13.7K)**, per SlowMist.
+**Loss:** **~5.08 ETH**, per [SlowMist](https://x.com/SlowMist_Team/status/2107382337654951943) and [Coinfomania](https://coinfomania.com/set-protocol-faces-5-08-eth-exploit-loss-amid-security-flaw/).
 
 **OAK Techniques observed:** **OAK-T9.011** (Precision-Loss / Rounding Attack — *primary*, per SlowMist. `actualizeFee()` recalculated `unitShares` with **upward rounding even though no fee was minted**, moving it from 4,927 to 4,928. The attacker issued set tokens before the update and redeemed the same quantity after it, taking the collateral created by the one-unit increase; **Uniswap v4 flash accounting** supplied temporary liquidity to scale it. See [`techniques/T9.011-precision-loss-rounding-attack.md`](../techniques/T9.011-precision-loss-rounding-attack.md)). Preparation and cash-out: **OAK-T7.001** (Tornado Cash funding of the attacker EOA; 0.75 ETH sent through MetaBridge; traced by OAK).
 
@@ -10,7 +10,7 @@
 
 ## Summary
 
-On 2026-10-06 an attack contract issued into a Set Protocol vault ([`0x5b67871c3a857de81a1ca0f9f7945e5670d986dc`](https://etherscan.io/address/0x5b67871c3a857de81a1ca0f9f7945e5670d986dc)), triggered the fee actualisation that bumped `unitShares` by one, and redeemed, repeating with flash-accounted liquidity (tx [`0xaca5f83ff3a206209f3d213c33d04e6febe345f6ad52ef476bd1c0ee1505ba65`](https://etherscan.io/tx/0xaca5f83ff3a206209f3d213c33d04e6febe345f6ad52ef476bd1c0ee1505ba65)).
+On 2026-10-06 ([SlowMist alert](https://x.com/SlowMist_Team/status/2107382337654951943)) an attack contract issued into a Set Protocol vault ([`0x5b67871c3a857de81a1ca0f9f7945e5670d986dc`](https://etherscan.io/address/0x5b67871c3a857de81a1ca0f9f7945e5670d986dc)), triggered the fee actualisation that bumped `unitShares` by one, and redeemed, repeating with flash-accounted liquidity (tx [`0xaca5f83ff3a206209f3d213c33d04e6febe345f6ad52ef476bd1c0ee1505ba65`](https://etherscan.io/tx/0xaca5f83ff3a206209f3d213c33d04e6febe345f6ad52ef476bd1c0ee1505ba65)).
 
 ## Timeline (UTC)
 
@@ -22,7 +22,7 @@ Read it as three stages. **Flaw**: `actualizeFee()` re-rounds `unitShares` upwar
 | Before 2026-10-06 (undisclosed) | Preparation: the attacker EOA [`0x506440728d84eb22809dc9464bc8189618a1c5b6`](https://etherscan.io/address/0x506440728d84eb22809dc9464bc8189618a1c5b6) deploys the attack contract [`0x016feaaa25ab8325e233bc8a2c25055bee0b2f6e`](https://etherscan.io/address/0x016feaaa25ab8325e233bc8a2c25055bee0b2f6e). Funding source and deployment time are not published. | — |
 | 2026-10-06 (time undisclosed) | In one transaction ([`0xaca5f83ff3a206209f3d213c33d04e6febe345f6ad52ef476bd1c0ee1505ba65`](https://etherscan.io/tx/0xaca5f83ff3a206209f3d213c33d04e6febe345f6ad52ef476bd1c0ee1505ba65)) the attack contract issues set tokens from the vault [`0x5b67871c3a857de81a1ca0f9f7945e5670d986dc`](https://etherscan.io/address/0x5b67871c3a857de81a1ca0f9f7945e5670d986dc) before the fee update, using Uniswap v4 flash accounting as temporary liquidity. | **T9.011** |
 | 2026-10-06 (same transaction) | `actualizeFee()` runs and raises `unitShares` from 4,927 to 4,928 although no fee was minted. | **T9.011** |
-| 2026-10-06 (same transaction) | The attacker redeems the same quantity after the update and takes the collateral created by the one-unit increase. The loss is about 5.08 ETH (about \$13.7K). | **T9.011** |
+| 2026-10-06 (same transaction) | The attacker redeems the same quantity after the update and takes the collateral created by the one-unit increase. The loss is about 5.08 ETH. | **T9.011** |
 | 2026-10-06 07:17:35 (traced by OAK) | Before the exploit, the attacker EOA receives 0.09787518 ETH from the Tornado Cash 0.1 ETH pool (tx [`0x691b04f78de9469b2abfb6b32219bab211a190269b65c213d7d10fbfa6b9f7cc`](https://etherscan.io/tx/0x691b04f78de9469b2abfb6b32219bab211a190269b65c213d7d10fbfa6b9f7cc)). | T7.001 |
 | 2026-10-06 07:36:47 (traced by OAK) | The exploit transaction lands. The attack contract borrows 25,044.67345809 ETH from the Uniswap v4 pool manager, issues, redeems, repays, and forwards the 5.08314866 ETH profit to the attacker EOA. | **T9.011** |
 | 2026-10-06 08:21:23 to 16:43:47 (traced by OAK) | The EOA sends 4.9 ETH to a swap helper contract `0x254a023bf5e9099e1472402ad59748086d6632bd` (0.47344328 ETH and 69,957.07424517 BANA come back) and 0.75076744 ETH into MetaBridge. | — |
@@ -86,8 +86,9 @@ Limits and open points:
 - **Source:** <https://x.com/SlowMist_Team/status/2107382337654951943>
 - **Source type:** security-firm
 - **Confidence:** reported
-- **Evidence:** SlowMist: `actualizeFee()` rounded `unitShares` up (4,927 → 4,928) with no fee minted; issue-before / redeem-after extracted the difference. No project post-mortem.
+- **Evidence:** SlowMist: `actualizeFee()` rounded `unitShares` up (4,927 → 4,928) with no fee minted; issue-before / redeem-after extracted the difference. Coinfomania (2026-10-06) restates the loss and the `actualizeFee()` rounding flaw without the figures and reports no official response. No project post-mortem.
 
 ## Public references
 
-- `[slowmistsetprotocol2026]` — SlowMist on X, Set Protocol alert (2026-10-06): <https://x.com/SlowMist_Team/status/2107382337654951943>
+- SlowMist on X, Set Protocol alert (2026-10-06): <https://x.com/SlowMist_Team/status/2107382337654951943>
+- Coinfomania, Set Protocol loss report (2026-10-06): <https://coinfomania.com/set-protocol-faces-5-08-eth-exploit-loss-amid-security-flaw/>

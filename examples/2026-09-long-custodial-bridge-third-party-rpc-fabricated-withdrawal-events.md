@@ -1,49 +1,58 @@
-# Long — the keeper believed a withdrawal had happened on Arc because the RPC it asked said so, and the RPC was not telling the truth — Long / custodial bridge / Arc → Robinhood Chain — 2026-09-14
+# Long — the keeper read Arc through one RPC endpoint while its backup was over quota, and that endpoint served fabricated withdrawal events — Long / custodial bridge / Arc → Robinhood Chain — 2026-09-14
 
-**Loss:** **46.7928 WETH (~\$118,000)**, released from Long's **Robinhood Chain vault**. **No user lost funds:** Long **halted the keeper**, **rebuilt its verification procedures**, and **replenished the vault out of platform revenue the same day**. **No on-chain contract was exploited and no cryptographic key was compromised.** The operator's loss is the realised figure; the class's reach is not bounded by it.
+**Loss:** **46.7928 WETH (about \$118,000)**, released from Long's **Robinhood Chain WETH vault** in a single payout ([Long post-mortem](https://x.com/Longdotsupply/status/2099743494994899052)). Long says no user lost funds, the vault was refilled from platform revenue the same day, and nothing on-chain was breached: the fabricated events entered through the RPC channel, "not through our contracts, our keys or our vaults".
 
-**OAK Techniques observed:** **OAK-T10.002.001** (Off-chain Observer Source-Event Forgery — *primary*, sub-shape **(c) infrastructure-level source forgery**. Long's **keeper** — the off-chain observer that decides a source-chain event occurred and releases from the destination vault on the strength of it — was fed **fabricated Arc withdrawal events by a third-party RPC**. The keeper parsed correctly and acted correctly on what it was told; **the events it was told about did not exist**. See [`techniques/T10.002.001-off-chain-observer-source-event-forgery.md`](../techniques/T10.002.001-off-chain-observer-source-event-forgery.md)).
+**OAK Techniques observed:** **OAK-T10.002.001** (Off-chain Observer Source-Event Forgery, *primary*, sub-shape **(c) infrastructure-level source forgery**. Long's keeper, the off-chain process that watches Arc burns and releases the matching asset from the vault, was served fabricated withdrawal events by its primary RPC endpoint. See [`techniques/T10.002.001-off-chain-observer-source-event-forgery.md`](../techniques/T10.002.001-off-chain-observer-source-event-forgery.md)).
 
-**Explicitly not OAK-T10.001** (Validator / Signer-Key Compromise) and **explicitly not OAK-T10.002** in its contract-side form: the operator states no keys were compromised and no on-chain contract was exploited. The custodial vault did exactly what its keeper instructed, and the keeper did exactly what its data source described.
+**Attribution:** **unattributed.** Long does not name the RPC provider and says it is "still under investigation" whether the provider's infrastructure was compromised or the data was altered in transit ([post-mortem](https://x.com/Longdotsupply/status/2099743494994899052)). Long publishes an Ethereum address that holds the proceeds (below); no actor is named.
 
-**Attribution:** **unattributed.** No actor named, no on-chain identifiers published, and no statement on whether the third-party RPC was **compromised, malicious, or simply wrong**. That distinction is unresolved in the public record and is material — it separates an intrusion from a vendor-integrity failure — so OAK records it as open rather than assuming an attacker.
-
-**Key teaching point:** **A keeper that reads one RPC has outsourced the definition of reality to a vendor, and vendors are not part of most people's threat models.** Everything in this design was sound by conventional review: contracts uncompromised, keys uncompromised, the keeper's logic correct. The failure was entirely in the **premise** — that the source chain had been observed rather than merely described by one provider. The controls are cheap at this scale and are the same ones the class's largest anchor needed: **query two or more independently operated RPC providers and require agreement before release**; **fail closed when the source set shrinks** rather than proceeding on whatever answers; and **reconcile custody before paying** — a withdrawal asserted on Arc that never moved value there cannot survive a locked-versus-issued check. The operational grade note is that the team **halted, rebuilt verification, and made the vault whole the same day**, which is the right sequence and the reason a mechanism worth studying cost users nothing.
+**Key teaching point:** **A payout path that accepts one data source as proof has outsourced the definition of reality to that source.** Long's own account is that the keeper's safeguards "were built to stop replays and duplicate payouts" and "were not built to question the data source itself"; a second endpoint existed but was over its daily quota, so for a short window the primary was the only reader ([post-mortem](https://x.com/Longdotsupply/status/2099743494994899052)). Controls: verify every order against chain state from several independent sources before funds move and again after, fail closed when the second source is missing, and cap order size and hourly volume. Long adopted these after the incident.
 
 ## Summary
 
-**Long** runs a **custodial bridge** with a **keeper** — an off-chain process that watches a source chain for withdrawal events and, when it sees one, releases the corresponding assets from a destination-side vault.
+Long runs a custodial bridge: users burn tokens on Arc to redeem, and a keeper watches for those burns and releases the matching asset from a vault on Robinhood Chain ([post-mortem](https://x.com/Longdotsupply/status/2099743494994899052)). The keeper read Arc through RPC endpoints, because Arc's official public mainnet endpoints were not yet live; it used the standard public RPC the ecosystem relied on, with a second endpoint as backup.
 
-On **2026-09-14**, a **third-party RPC provider supplied that keeper with fabricated withdrawal events on Arc**. The keeper accepted them and released **46.7928 WETH (about \$118,000)** from Long's **Robinhood Chain vault**. Nothing on-chain was exploited: the contracts behaved correctly, and no key was compromised.
+On the morning of 2026-09-14 the backup was over its daily quota, and for a short window the keeper read Arc through the primary endpoint alone. In that window the primary served fabricated withdrawal events that used Long's contract addresses, event format and vault balances. No tokens were burned on Arc and the supply never dropped. The keeper checked that the withdrawal had not been paid before and released 46.7928 WETH. Three more fabricated withdrawals in other assets were attempted in the same minutes; all three reverted on-chain ([post-mortem](https://x.com/Longdotsupply/status/2099743494994899052)).
 
-Long **halted the keeper**, **rebuilt its verification procedures**, and **replenished the vault from platform revenue the same day**, so **users sustained no losses**.
+## Timeline (UTC)
 
-## Timeline (2026-09-14)
+Read it as three stages. **Get in**: the keeper depends on one live RPC for Arc. **Take**: fabricated events, one successful payout. **Aftermath**: keeper stopped, rebuilt and the vault refilled the same day. Times are from Long's post-mortem; the attacker's preparation is undisclosed.
 
-| When | Event | OAK ref |
+| When | What happened | OAK |
 |---|---|---|
-| (standing) | Long's **keeper** releases from the **Robinhood Chain vault** on the strength of **Arc withdrawal events**, as reported by a **third-party RPC** | (latent single-source dependency) |
-| 2026-09-14 | RPC supplies the keeper **fabricated Arc withdrawal events** | **T10.002.001 — infrastructure-level source forgery** |
-| 2026-09-14 | Keeper releases **46.7928 WETH (~\$118,000)** against withdrawals that never occurred | **T10.002.001 exploitation** |
-| 2026-09-14 | **Keeper halted**; verification procedures rebuilt | (containment) |
-| 2026-09-14 | Vault **replenished from platform revenue**; **no user losses** | (operator remediation) |
+| Before 2026-09-14 (standing) | The keeper reads Arc through RPC endpoints (a primary and a backup), with only replay and duplicate-payout checks on top. | latent single-source dependency |
+| 2026-09-14, morning (undisclosed) | The backup endpoint is over its daily quota; for a short window the keeper reads Arc through the primary alone ([post-mortem](https://x.com/Longdotsupply/status/2099743494994899052)). | none — configuration state, not an attacker step |
+| 2026-09-14, in that window (undisclosed) | The primary endpoint serves fabricated withdrawal events. How the provider came to serve them is under investigation. | **T10.002.001** |
+| 2026-09-14 07:07 | The keeper releases 46.7928 WETH from the vault to the attacker's address; fraudulent payout tx [`0x865d75c01046b5d17b107132f5e1257806f2e31e976e3dc8a9d937b9e7522995`](https://robinhoodchain.blockscout.com/tx/0x865d75c01046b5d17b107132f5e1257806f2e31e976e3dc8a9d937b9e7522995). Three further fabricated withdrawals in other assets revert. | **T10.002.001** |
+| 2026-09-14 07:10 | Monitoring flags the WETH vault as under-collateralised. | response |
+| 2026-09-14 07:13 | Keeper stopped; no further payouts possible. | response |
+| 2026-09-14 07:30 to 11:00 | Forensics, keeper rebuilt with a new verification pipeline. | response |
+| 2026-09-14 11:31 | Hardened keeper live; about 1,000 queued orders audited (0 invalid) and settled. | response |
+| 2026-09-14 15:29 and 15:47 | Vault refilled from platform revenue: 12 WETH ([`0xaa71a4ee225a999a640033b61286624329ab8c85a14aee332da05fa1c1364840`](https://robinhoodchain.blockscout.com/tx/0xaa71a4ee225a999a640033b61286624329ab8c85a14aee332da05fa1c1364840)), then 30.9828 WETH ([`0x6740b08e4d2e950b2d07ce75152dbac05c447478f49cbc5195109f53f1ea23c3`](https://robinhoodchain.blockscout.com/tx/0x6740b08e4d2e950b2d07ce75152dbac05c447478f49cbc5195109f53f1ea23c3)); a third refill of 3.82 WETH ([`0xbc7d44e1b18535bf6038d9d42454c51b79c22f115a585d135792a3ec6b1b30df`](https://robinhoodchain.blockscout.com/tx/0xbc7d44e1b18535bf6038d9d42454c51b79c22f115a585d135792a3ec6b1b30df)) is also listed. | response |
+| 2026-09-14 16:31 and 18:12 | Bridge fully reopened with new limits; on-chain caps tightened across all assets. | response |
+| By 2026-09-15 (time undisclosed) | The attacker has bridged the WETH to Ethereum through Jumper/LI.FI and Relay, per Long; about 44.96 ETH still sits at the Ethereum address. | none — exit route, not a catalogued step |
+| 2026-09-15 06:13 | Long publishes the post-mortem and offers whitehat terms: return 42.11 ETH (90 percent) by 2026-09-18 12:00 UTC and keep the rest as a bounty. Whether anything was returned is not on an opened page. | response |
 
-## What defenders observed
+Key addresses:
 
-- **The whole trust model reduced to one vendor relationship, and nothing in a contract audit would show it.** Long's contracts were fine. Its keys were fine. The security of the vault rested on a **question an audit does not ask** — where does the keeper get its view of the source chain, and how many independent parties have to agree before it acts? Reviewing the on-chain surface of a custodial bridge and declaring it sound is a **category error** when the release decision lives off-chain.
-- **"Compromised, malicious, or wrong" are three very different incidents with one symptom.** A third-party RPC serving false events could be an intrusion (as at the class's largest anchor), a hostile provider, or an infrastructure defect returning garbage. The public record does not say which. **The control is identical in all three cases** — require agreement across independently operated sources — which is a rare instance where you can fix the problem without first attributing it.
-- **Same-day make-whole from platform revenue is the part worth copying.** Halt, rebuild verification, replenish, disclose — in that order, inside a day, at a size the operator could absorb. The reason this incident has a small public footprint is that it was handled before it became a user-facing event, which is also why it very nearly did not enter the record at all.
-- **The public footprint is thin and that is a finding about the corpus, not about the incident.** This case appears in **SlowMist's incident database and in the operator's own disclosure**, and essentially nowhere else — no press coverage, no third-party forensic write-up. An incident feed filtered by dollar value or by news volume drops it entirely, and with it the second anchor for the sub-shape behind a **\$292M** loss five months earlier.
+- WETH vault (Robinhood Chain): [`0xf24b3e387b545874763298122d6bd57a26ddde50`](https://robinhoodchain.blockscout.com/address/0xf24b3e387b545874763298122d6bd57a26ddde50)
+- Attacker address (Ethereum, as published by Long): [`0xbc3333665007e4b4c830937c0cd85e47eb54dccf`](https://etherscan.io/address/0xbc3333665007e4b4c830937c0cd85e47eb54dccf)
+- Long's return address (Ethereum): [`0xd66447a19e7bcfe56fbd22354ef9bf30f48eafdc`](https://etherscan.io/address/0xd66447a19e7bcfe56fbd22354ef9bf30f48eafdc)
 
-## Public references
+Funds snapshot: per Long, about 44.96 ETH remained at the attacker's Ethereum address when the post-mortem was written. OAK has not traced this independently; the Robinhood Chain explorer was not readable from OAK's tooling.
 
-- `[slowmistzonelong2026]` — SlowMist Hacked database, Long entry (2026-09-14; *"Long's custodial bridge released 46.7928 WETH (about \$118,000) from its Robinhood Chain vault after a third-party RPC fed the keeper fabricated Arc withdrawal events"*; recorded as a supply-chain attack; no on-chain contract or key compromise; keeper halted, verification rebuilt, vault replenished from platform revenue the same day, no user losses): <https://hacked.slowmist.io/>
-- `[longdisclosure2026]` — Long (@Longdotsupply), operator incident disclosure on X, cited as the source for the database entry above: <https://x.com/Longdotsupply/status/2099743494994899052>
+## Root-cause evidence
+
+- **Technique:** OAK-T10.002.001
+- **Source:** <https://x.com/Longdotsupply/status/2099743494994899052>
+- **Source type:** operator
+- **Confidence:** reported
+- **Evidence:** Long's own post-mortem, published the day after the incident. It states the mechanism (fabricated events through the primary RPC, no burn, no supply change) and that the provider's compromise is unresolved. No independent forensic write-up was opened.
 
 ## Discussion
 
-This is the **second anchor for sub-shape (c)** of `OAK-T10.002.001` — **infrastructure-level source forgery**, where the observer's *data source* is subverted so that it parses correctly and reasons correctly over events that never occurred — after **KelpDAO / LayerZero** (2026-04-18, 116,500 rsETH / ~\$292M), where poisoned RPC nodes reported a burn on Unichain that never happened and a single DVN attested to it honestly.
+This is the second anchor for sub-shape (c) of T10.002.001, after [KelpDAO / LayerZero](2026-04-kelpdai-rseth-bridge-layerzero-compromise.md), where the data source an observer relied on was likewise subverted. Here the keeper's logic worked on what it was told; the open question is whether the provider was compromised, the data altered in transit, or something else, and the control is the same in each case: require agreement across independently operated sources.
 
-The pairing is the reason this \$118K incident earns a file. The KelpDAO case is easy to file under *state-actor capability* and set aside: six weeks of pre-positioning, a socially-engineered developer, memory-patched nodes, a DoS to strip redundancy, DPRK attribution. Long demonstrates that **none of that is required**. Strip out the tradecraft and the class reduces to a single architectural fact — **a keeper that trusts one RPC provider** — which is a default configuration, not an exotic one. The two anchors bracket the range: **\$292M with UNC4899 at one end, \$118K with an unattributed vendor failure at the other, one mechanism.**
+## Public references
 
-The unresolved question here is also the more interesting one. At KelpDAO the source was subverted by an intruder. At Long, **nobody has said whether the RPC was compromised, hostile, or merely broken** — and because the keeper had no second opinion, all three produce the same outcome. That is the strongest available argument for stating the mitigation in terms of **source agreement rather than source trustworthiness**: a bridge that requires two independently operated providers to agree does not need to know which of the three happened, and a bridge that requires one has no way to find out.
+- Long (@Longdotsupply), post-mortem of the 2026-09-14 WETH incident, with vault, payout, refill and attacker addresses: <https://x.com/Longdotsupply/status/2099743494994899052>

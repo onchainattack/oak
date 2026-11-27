@@ -1,47 +1,43 @@
-# Email Impersonation Phishing Wave — CoinTelegraph/WalletConnect/Token Terminal Impersonation — 2024-01
+# Cointelegraph, WalletConnect, Token Terminal and De.Fi — fake-airdrop phishing emails sent through a third-party email provider — Multichain — 2024-01-23
 
-**Loss:** $580K+ stolen from victims who received phishing emails impersonating CoinTelegraph, WalletConnect, Token Terminal, and DeFi team email accounts.
-**OAK Techniques observed:** none — email-channel brand impersonation has no T4 distribution surface at v0.x. T4.008 requires paid ad inventory plus a counterfeit DEX UI; T4.007 requires the platform's own engagement-weighted mechanic; T4.009 requires a pre-token information gap. Email is covered by none of them. The on-chain extraction primitive is also not established — the file records only "drained wallets" — so no T4.001/T4.004/T4.005 tag is supportable. Candidate T4 gap: information/infrastructure-tool brand impersonation over email, as the file's own contributor note argues. **Not T4.006** despite WalletConnect being impersonated: T4.006's entry vector is session establishment with a malicious dApp, not brand impersonation in an email.
-**Attribution:** **pseudonymous** — theft address `0xe7D13137923142A0424771E1778865b88752B3c7` identified. Attacker identity unknown.
+**Loss:** **~\$580K** drained to one address, per [ZachXBT's alert](https://x.com/zachxbt/status/1749758932095205638) (2024-01-23). [Cointelegraph](https://cointelegraph.com/news/coordinated-crypto-investor-phishing-campaign-email-alert) reports the figure as a running total held at one multichain address across 280 tokens, about 86% of it in ETH (227 ETH). Recovery: none reported on the opened pages.
 
-**Key teaching point:** The January 2024 phishing wave demonstrates the **infrastructure-tool brand impersonation** pattern: the attacker impersonated NOT a wallet or exchange (where users expect to send money), but the communication and infrastructure tools that users trust for INFORMATION — CoinTelegraph (news), WalletConnect (connection protocol), Token Terminal (analytics), and DeFi team emails. Victims who received an email appearing to be from one of these trusted sources were directed to a phishing site. The impersonated brands were chosen because users have legitimate email relationships with them (newsletters, protocol notifications, airdrop announcements). Detection approach: monitor for newly registered domains visually similar to crypto media/infrastructure brands that are sending email; DMARC/SPF/DKIM validation on inbound emails from these domains would catch the impersonation.
+**OAK Techniques observed:** **OAK-T15.002** (Supply-Chain / Vendor-Pipeline Compromise — *primary*, *reported*, not confirmed by the vendor). The emails went out under the real sender addresses of several projects, and the projects and Cointelegraph point to a breach at a shared upstream vendor, the email service provider MailerLite, rather than to lookalike domains alone ([Protos](https://protos.com/nearly-580k-drained-with-cointelegraph-wallet-connect-fake-airdrop/), [Cointelegraph](https://cointelegraph.com/news/coordinated-crypto-investor-phishing-campaign-email-alert)). MailerLite had not confirmed the breach when these pages were written. See [`techniques/T15.002-supply-chain-vendor-pipeline-compromise.md`](../techniques/T15.002-supply-chain-vendor-pipeline-compromise.md). The on-chain drain method (approval, permit or plain transfer) is not described on the opened pages, so no on-chain Technique is declared; Blockaid links the drainer to Angel Drainer ([Cointelegraph](https://cointelegraph.com/news/coordinated-crypto-investor-phishing-campaign-email-alert)).
+
+**Attribution:** **pseudonymous** — receiving address [`0xe7D13137923142A0424771E1778865b88752B3c7`](https://etherscan.io/address/0xe7D13137923142A0424771E1778865b88752B3c7) ([ZachXBT](https://x.com/zachxbt/status/1749758932095205638)). No actor is named on the opened pages.
+
+**Key teaching point:** **Treat the email service provider as part of your security perimeter: put hardware-backed MFA and API-key rotation on the provider account, and publish in advance that you never run airdrops by email.** The recipients' mail filters could not help, because the messages came from addresses the projects really use ([Cointelegraph](https://cointelegraph.com/news/coordinated-crypto-investor-phishing-campaign-email-alert)); the one reliable check for a reader is the rule that a project's announced channels, not an email link, are where an airdrop is claimed.
 
 ## Summary
 
-In January 2024, a phishing email campaign was detected impersonating multiple trusted crypto brands simultaneously:
+On 2024-01-23 ZachXBT posted a [community alert](https://x.com/zachxbt/status/1749758932095205638) that phishing emails were being sent that appeared to come from CoinTelegraph, Wallet Connect, Token Terminal and DeFi team emails, with about $580K stolen so far. [Cointelegraph](https://cointelegraph.com/news/coordinated-crypto-investor-phishing-campaign-email-alert) names the impersonated senders as Cointelegraph, WalletConnect, Token Terminal and De.Fi, and says the emails promoted token airdrops. [Protos](https://protos.com/nearly-580k-drained-with-cointelegraph-wallet-connect-fake-airdrop/) lists the lures: a tenth-anniversary airdrop for Cointelegraph, a customer reward for WalletConnect, and staking options for De.Fi. Both outlets say the sender access came through a third-party email provider; Cointelegraph names MailerLite and says Hudson Rock reported finding CRYPTBOT infostealer malware on a MailerLite employee's computer. MailerLite said it was investigating. WalletConnect said the email was not issued by it or its affiliates. De.Fi said it was moving its databases to another provider.
 
-- **CoinTelegraph** — crypto news media (users receive newsletter emails)
-- **WalletConnect** — wallet connection protocol (users receive connection notification emails)
-- **Token Terminal** — crypto analytics platform (users receive report emails)
-- **DeFi team emails** — project team communications (users receive airdrop/governance emails)
+## Timeline (UTC)
 
-The phishing emails directed recipients to a malicious site that drained wallets. The common element: all impersonated brands are ones that users LEGITIMATELY expect to receive emails from. The phishing emails blended into the victim's normal inbox experience.
+Stages: **Entry** (email provider) → **Execution** (phishing emails, drain) → **Money** → **Response**. Only the date is public; no times are given on the opened pages.
 
-The multi-brand approach (4+ brands simultaneously) increased the attack surface — a victim who wouldn't click a fake CoinTelegraph email might click a fake WalletConnect email, and vice versa.
-
-## Timeline
-
-| When | Event | OAK ref |
+| When | What happened | OAK |
 |---|---|---|
-| 2024-01-23 | Phishing emails sent impersonating CoinTelegraph, WalletConnect, Token Terminal, DeFi teams | **T4 email brand impersonation** |
-| 2024-01-23 | $580K+ stolen. Theft address `0xe7D13...` published | **T5 asset drain** |
-| 2024-01-23 | ZachXBT posts community alert | (public alert) |
+| Before 2024-01-23 (undisclosed) | Attackers gain the ability to send mail as the four projects. Reported route: a breach of MailerLite, which MailerLite had not confirmed ([Protos](https://protos.com/nearly-580k-drained-with-cointelegraph-wallet-connect-fake-airdrop/)); Hudson Rock reported infostealer malware on a MailerLite employee's computer ([Cointelegraph](https://cointelegraph.com/news/coordinated-crypto-investor-phishing-campaign-email-alert)) | **T15.002** |
+| 2024-01-23 (time undisclosed) | Emails with fake airdrop links reach recipients under the Cointelegraph, WalletConnect, Token Terminal and De.Fi names ([Cointelegraph](https://cointelegraph.com/news/coordinated-crypto-investor-phishing-campaign-email-alert)) | **T15.002** |
+| 2024-01-23 (time undisclosed) | Victims' funds are drained to [`0xe7D13137923142A0424771E1778865b88752B3c7`](https://etherscan.io/address/0xe7D13137923142A0424771E1778865b88752B3c7); about $580K by the time of ZachXBT's post ([Protos](https://protos.com/nearly-580k-drained-with-cointelegraph-wallet-connect-fake-airdrop/)) | none — drain method undisclosed |
+| After 2024-01-23 | Movement of the funds from that address: undisclosed on the opened pages | — |
+| 2024-01-23 | ZachXBT posts the alert; WalletConnect warns users; MailerLite says it is investigating; Cointelegraph's page was updated at 14:45 UTC ([Cointelegraph](https://cointelegraph.com/news/coordinated-crypto-investor-phishing-campaign-email-alert)) | response |
 
-## What defenders observed
+Key addresses:
 
-- **Infrastructure brands, not exchange brands, as the impersonation vector.** Users are trained to be suspicious of emails claiming to be from exchanges ("Your Binance account is locked"). They are less suspicious of emails from media platforms, analytics tools, and wallet protocols — which are seen as information sources, not financial endpoints.
-- **Multi-brand campaign = broader victim net.** Impersonating 4+ brands in a single campaign captures victims across different user segments (newsletter readers, DeFi users, protocol governance participants).
-- **Email as the attack vector, not X/Twitter or Discord.** While most crypto phishing moved to social media, email remains effective because users have established trust relationships with newsletter and notification senders. The email channel has less community monitoring than social media.
+- Receiving address (multichain) — [`0xe7D13137923142A0424771E1778865b88752B3c7`](https://etherscan.io/address/0xe7D13137923142A0424771E1778865b88752B3c7)
 
-## What this example tells contributors
+## Root-cause evidence
 
-- **Infrastructure-tool brand impersonation is a distinct T4 sub-pattern from exchange impersonation.** CoinTelegraph, WalletConnect, and Token Terminal are NOT places users send money — they're sources of information. The phishing email exploits the user's trust in the information source, not in a financial custodian. T4 should distinguish "financial platform impersonation" from "information/infrastructure tool impersonation."
-- **Multi-brand phishing campaigns maximize victim coverage.** Using 4+ brands in one campaign captures victims across different user segments. The detection response: when a phishing domain is identified, check for sister domains targeting related brands — they're likely part of the same campaign.
-- **Email DMARC/DKIM/SPF validation is a pre-victim detection layer.** Phishing emails from domains impersonating known brands will fail DMARC/DKIM/SPF validation if the receiving email server checks these records. This is a protocol-level mitigation that requires no blockchain integration.
+- **Technique:** OAK-T15.002
+- **Source:** <https://cointelegraph.com/news/coordinated-crypto-investor-phishing-campaign-email-alert>; <https://protos.com/nearly-580k-drained-with-cointelegraph-wallet-connect-fake-airdrop/>; <https://x.com/zachxbt/status/1749758932095205638>
+- **Source type:** news
+- **Confidence:** reported
+- **Evidence:** Both news pages say the senders' access came through a third-party email provider and name MailerLite as the likely one; neither shows a statement from MailerLite confirming it. The same-day reporting is the only evidence. Not established: how the attackers got into the provider, which accounts they reached, how many emails went out, and how the drain transaction worked.
 
 ## Public references
 
-- [ZachXBT — Email Phishing Wave Alert (X/Twitter)](https://x.com/zachxbt/status/1749758932095205638)
-- Theft address: `0xe7D13137923142A0424771E1778865b88752B3c7`
-- Impersonated brands: CoinTelegraph, WalletConnect, Token Terminal, DeFi team emails.
-- $580K+ stolen.
+- ZachXBT, community alert (X, 2024-01-23): <https://x.com/zachxbt/status/1749758932095205638>
+- Cointelegraph, coordinated phishing campaign alert (2024-01-23, updated 14:45 UTC): <https://cointelegraph.com/news/coordinated-crypto-investor-phishing-campaign-email-alert>
+- Protos, "Nearly $580K drained with Cointelegraph, Wallet Connect fake airdrop" (2024-01-23): <https://protos.com/nearly-580k-drained-with-cointelegraph-wallet-connect-fake-airdrop/>

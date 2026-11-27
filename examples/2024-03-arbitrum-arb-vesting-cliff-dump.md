@@ -45,7 +45,7 @@ The cliff unlock itself was contractually legitimate — every recipient exercis
 
 ## What this example tells contributors writing future Technique pages
 
-- **ARB March 2024 is the highest-dollar-volume T5.006 anchor at v0.1.** The \~$2.2B unlock at a single cliff and the \~41% first-month decline make it the clearest T5.006 signal in the 2023–2025 active window. The DFINITY/ICP May 2021 anchor (`examples/2021-05-dfinity-icp-vesting-cliff-dump.md`) is the earlier case and the deeper drawdown (\~95%), but ARB is the larger dollar-volume unlock and is more recent.
+- **ARB March 2024 is the highest-dollar-volume T5.006 anchor at v0.1.** The \~$2.2B unlock at a single cliff and the \~41% first-month decline make it the clearest T5.006 signal in the 2023–2025 active window. The DFINITY/ICP May 2021 case (`examples/2021-05-dfinity-icp-vesting-cliff-dump.md`) is earlier and fell further (from $630 to as low as $27 within about a month), but it rests on allegations of insider sales, not an established vesting-cliff mechanism.
 - **T5.006 is distinct from T5.005 despite co-occurrence.** The 2023 AIP-1 treasury-transfer controversy is a T5.005 / T16 boundary matter; the cliff-dump sell-pressure is T5.006. They are separate events with different load-bearing primitives — the cliff is a schedule-driven sell-pressure event; the governance controversy is a treasury-authority dispute.
 - **The "no contract broken" surface is the defining T5.006 characteristic.** Contributors distinguishing T5.006 from T5.001 / T5.002 (LP drains) and T5.003 (hidden-mint dilution) should anchor on contractual legitimacy: T5.006 recipients are exercising rights they were granted, and the defensive question is about *coordination* and *disposal velocity*, not about *unauthorised extraction*.
 
@@ -57,4 +57,4 @@ The cliff unlock itself was contractually legitimate — every recipient exercis
 - Cross-reference: T5.006 (Vesting Cliff Dump) at `techniques/T5.006-vesting-cliff-dump.md`.
 - Cross-reference: T5.005 (Treasury-Management Exit) at `techniques/T5.005-treasury-management-exit.md`.
 - Cross-reference: T16 (Governance / Voting Manipulation) overview.
-- Cross-reference: `examples/2021-05-dfinity-icp-vesting-cliff-dump.md` — DFINITY/ICP May 2021 cliff dump (earlier anchor, deeper drawdown, smaller dollar-volume unlock).
+- Cross-reference: `examples/2021-05-dfinity-icp-vesting-cliff-dump.md` — DFINITY/ICP May 2021 alleged insider sales (allegations; not declared as T5.006).

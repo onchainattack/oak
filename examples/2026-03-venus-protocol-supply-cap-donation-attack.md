@@ -1,54 +1,59 @@
-# Venus Protocol Supply-Cap Donation-Attack Exploit — BNB Chain — 2026-03-15
+# Venus Protocol — direct token donations bypass the THE supply cap and inflate collateral value, leaving bad debt on thin liquidity — Venus Protocol (Core Pool) / BNB Chain — 2026-03-15
 
-**OAK Techniques observed:** OAK-T9.011, OAK-T17.001
+**Loss:** **~\$2.15M in bad debt** (about 1.18M CAKE and 1.84M THE), per [Venus's post-mortem](https://community.venus.io/t/the-market-incident-post-mortem/5712) as summarised by [rekt.news](https://rekt.news/venus-protocol-rekt4) and [The Block](https://www.theblock.co/news/ecosystems/2026-03-15-venus-protocol-left-with-roughly-2m-in-bad-debt-after-exploit-manipulates-thenas-the-token-price-393622). The post-mortem itself gives about \$2.15M in one section, about \$2.18M in another and about \$2M in its conclusion. The assets taken from Venus were worth \$5.07M, per EmberCN as relayed by [The Block](https://www.theblock.co/news/ecosystems/2026-03-15-venus-protocol-left-with-roughly-2m-in-bad-debt-after-exploit-manipulates-thenas-the-token-price-393622); rekt.news says the widely reported \$3.7M is net extracted after liquidation. Venus says it will cover the bad debt ([rekt.news](https://rekt.news/venus-protocol-rekt4)).
 
-**Attribution:** **unattributed** (aggregate cohort).
-**Loss:** $3.7M in extracted borrowed assets; $2.15M in unrecoverable bad debt (1.18M CAKE + 1.84M THE that no liquidation proceeds could cover); $5.07M gross extracted against ~$16.29M in attacker-funded accumulation capital (7,447 ETH via Tornado Cash + $9.92M borrowed from Aave). The attacker's on-chain P&L appears negative or break-even; the working hypothesis (per Venus's risk manager Allez Labs) is that the on-chain loss was offset by a short perpetual position on THE at a CEX.
+**OAK Techniques observed:** **OAK-T9.011** (Precision-Loss Rounding Attack, whose aliases include "donation attack" — *primary*. Supply caps were enforced only on the `mint` path, so ~36M THE sent directly to the vTHE contract raised the exchange rate about 3.81x without minting vTokens and without any cap check, per [BlockSec](https://blocksec.com/blog/venus-thena-donation-attack) and the [post-mortem](https://community.venus.io/t/the-market-incident-post-mortem/5712). OAK maps the donation primitive here; the page is written for ERC-4626 share-price rounding, so the fit is by alias, not by rounding. See [`techniques/T9.011-precision-loss-rounding-attack.md`](../techniques/T9.011-precision-loss-rounding-attack.md)). **OAK-T9.001** (Oracle Price Manipulation — *secondary*. Buying THE on thin markets pushed the price the oracle accepted from about \$0.26 toward about \$0.51, which let the position borrow against inflated collateral, per [BlockSec](https://blocksec.com/blog/venus-thena-donation-attack)). A cross-venue arbitrage Technique is not declared: no opened page describes a victim cohort on a lagging venue.
 
-**Key teaching point:** The Venus Protocol Rekt IV case is the canonical **dismissed-audit-finding exploitation** worked example for OAK. Code4rena flagged the donation-attack supply-cap bypass in May 2023 with a working proof of concept; Venus assessed it as "supported behavior with no negative side effects" and did not remediate. The same vector was exploited on Venus's ZKSync deployment in February 2025 ($717K net bad debt). Venus still did not patch the BNB Chain Core Pool. On March 15, 2026, an attacker who spent nine months accumulating 84% of the THE supply cap executed the exact attack described in the 2023 audit finding. The sequence — auditors flag, team dismisses, attacker exploits, team absorbs loss, attacker exploits again — is the definitive reference case for why audit-finding dismissal is itself a standing security surface.
+**Attribution:** **unattributed.** The primary supplier address is [`0x1a35bd28efd46cfc46c2136f878777d69ae16231`](https://bscscan.com/address/0x1a35bd28efd46cfc46c2136f878777d69ae16231); it was funded from Tornado Cash (7,447 ETH across 77 Tornado Cash transactions from June 2025, per [rekt.news](https://rekt.news/venus-protocol-rekt4)). No identity is published in the opened pages.
+
+**Key teaching point:** **Enforce a supply cap on every path that raises a market's balance, not only on `mint`, and cap how much of an illiquid asset one wallet can supply.** Venus's post-mortem lists "enforce supply cap checks on all balance increases" as a short-term fix ([post-mortem](https://community.venus.io/t/the-market-incident-post-mortem/5712)). The same donation vector was raised in a May 2023 Code4rena audit and judged supported behaviour, per [The Block](https://www.theblock.co/news/ecosystems/2026-03-15-venus-protocol-left-with-roughly-2m-in-bad-debt-after-exploit-manipulates-thenas-the-token-price-393622) and the post-mortem as quoted by [rekt.news](https://rekt.news/venus-protocol-rekt4).
 
 ## Summary
 
-## Timeline
+On 2026-03-15 an address that had built a THE position over about nine months, to about 84% of the 14.5M supply cap, sent about 36M THE straight to the vTHE contract. That inflated the exchange rate about 3.81x, and the position then borrowed CAKE and BNB in a recursive borrow, swap and donate loop while the THE price rose on thin markets ([post-mortem](https://community.venus.io/t/the-market-incident-post-mortem/5712), [BlockSec](https://blocksec.com/blog/venus-thena-donation-attack)). When buying stopped, THE fell to about \$0.22 and the collateral was liquidated into an order book too thin to cover the debt. An on-chain researcher flagged the attack first, ahead of Venus's first statement ([The Block](https://www.theblock.co/news/ecosystems/2026-03-15-venus-protocol-left-with-roughly-2m-in-bad-debt-after-exploit-manipulates-thenas-the-token-price-393622), [rekt.news](https://rekt.news/venus-protocol-rekt4)).
 
-| When | Event | OAK ref |
+## Timeline (UTC)
+
+Stages: **Flaw** (cap enforced only on mint, known since 2023), **Preparation** (nine-month accumulation), **Execution** (donation and borrow loop), **Money** (borrowed assets, liquidation), **Response**. Times are from the [post-mortem](https://community.venus.io/t/the-market-incident-post-mortem/5712) and [BlockSec](https://blocksec.com/blog/venus-thena-donation-attack).
+
+| When | What happened | OAK |
 |---|---|---|
-| 2023-05 | Code4rena audit contest of Venus Isolated Pools documents the donation-attack supply-cap bypass in detail (finding M-10), with a working proof of concept; Venus assesses it as "supported behavior with no negative side effects" | (audit-finding dismissal — standing T9.011 surface) |
-| 2025-02 | Donation attack hits Venus's ZKSync deployment using nearly identical mechanics (wUSDM exchange rate manipulated via direct ERC-4626 donation); Venus absorbs $717K net bad debt; BNB Chain Core Pool shares the same vulnerability; Venus does not patch it | (prior exploit — same vector, different chain) |
-| 2025-06 | Attacker wallet receives 7,447 ETH (~$16.29M) across 77 Tornado Cash transactions; ETH deposited as collateral on Aave; ~$9.92M in stablecoins borrowed and used to quietly accumulate THE on open market over 9 months | (accumulation phase — T17.001 pre-positioning) |
-| 2026-03-15 (pre-attack) | Community members flag the accumulation address as suspicious; Venus allegedly takes no action because each individual deposit is technically within the rules | (missed detection window) |
-| 2026-03-15 11:55 UTC | Attacker executes coordinated direct transfers of ~36M THE to the vTHE contract via six wallets, bypassing the mint()-enforced supply cap; vTHE exchange rate inflates 3.81×; collateral value jumps from ~$3.3M to >$12M | **T9.011** (donation attack — supply-cap bypass via direct ERC-20 transfer to vault contract) |
-| 2026-03-15 (continuing) | Recursive borrow loop: deposit THE → borrow CAKE/BNB/BTCB/USDC → buy more THE on thin DEX liquidity → transfer to vTHE (bypassing cap again) → borrow more; THE spot price pushed from ~$0.26 to nearly $4 | **T17.001** (cross-venue price distortion — DEX spot manipulated while TWAP oracle converges) |
-| 2026-03-15 (~37 min window) | Venus's BoundValidator rejects the spiking Binance feed for ~37 minutes as divergence exceeds acceptable range; only when attacker sustains buy pressure across multiple venues to force feed convergence does the BoundValidator accept the new rate (~$0.51, vs $4 spot peak) | (oracle resistance — TWAP eventually converges) |
-| 2026-03-15 (peak) | Position peaks at 53.2M THE collateral against 6.67M CAKE, 2,801 BNB, 1.97K WBNB, 1.58M USDC, 20 BTCB borrowed | (peak extraction) |
-| 2026-03-15 (liquidation) | Health factor deteriorates as sell pressure mounts; 53.2M THE liquidated into an order book with near-zero depth; THE collapses to $0.22 (below pre-attack $0.26); $30M nominal collateral value evaporates; $2.15M bad debt left in protocol | (liquidation — T17.001 unwind) |
-| 2026-03-15 (real-time) | William Li identifies the attack pattern in real time (modeled this exact attack class in a 2023 academic paper), flags the attacker's address, and shorts THE for ~$15K profit; Blockaid issues community alert ("delegated borrowing abuse") | (community detection — 2 hours before Venus's first public statement) |
-| 2026-03-15 (response) | Venus pauses THE borrows and withdrawals; sets Collateral Factor to zero across six additional markets (BCH, LTC, UNI, AAVE, FIL, TWT) where a single wallet holds >60% of supplied collateral | (containment) |
-| 2026-03-17 | Venus / Allez Labs publish official post-mortem confirming: the vector "was identified in a prior Code4rena audit but was assessed as having 'no negative side effects' and was not remediated" | (root-cause confirmation) |
+| 2023-05 | A Code4rena audit contest of Venus Isolated Pools documents the donation attack as finding M-10 with a proof of concept; the team calls it supported behaviour with "no negative side effects" ([rekt.news](https://rekt.news/venus-protocol-rekt4)) | **T9.011** (standing surface) |
+| 2025-02 | A donation attack on Venus's ZKSync deployment manipulates the wUSDM exchange rate; net loss \$716,789 ([rekt.news](https://rekt.news/venus-protocol-rekt4)). The article says the BNB Chain Core Pool shared the vulnerability and was not patched | T9.011 (earlier incident) |
+| 2025-06 onward | The attacker's wallet receives 7,447 ETH (about \$16.29M) across 77 Tornado Cash transactions, deposits it on Aave, borrows about \$9.92M and buys THE ([rekt.news](https://rekt.news/venus-protocol-rekt4)) | — |
+| 2026-03-15 11:00 | The primary address holds 12,234,411 THE, about 84% of the 14.5M cap | — |
+| 2026-03-15 ~11:55 | The attack contract, in one transaction ([`0x4f477e941c12bbf32a58dc12db7bb0cb4d31d41ff25b2457e6af3c15d7f5663f`](https://bscscan.com/tx/0x4f477e941c12bbf32a58dc12db7bb0cb4d31d41ff25b2457e6af3c15d7f5663f)), donates about 36M THE to vTHE and borrows CAKE and BNB | **T9.011** |
+| 2026-03-15 ~11:55 to ~12:32 | The oracle's BoundValidator rejects the spiking Binance feed for about 37 minutes, until both feeds converge near \$0.51 | **T9.001** |
+| 2026-03-15 ~12:00 to 12:42 | Borrow, swap, donate loop; supplied THE rises from 49,525,348 (341% of cap) to a peak of 53,230,145 (367%) at block 86738236 | **T9.011**, T9.001 |
+| 2026-03-15 12:04 | The attack contract's position is liquidated | — |
+| 2026-03-15 after 12:42 | THE falls to about \$0.22; about 42M THE is liquidated into a thin book; bad debt about \$2.15M | — |
+| 2026-03-15 (undisclosed time) | Venus pauses THE borrows and withdrawals and sets collateral factors to zero in at-risk markets, including BCH, LTC, UNI, AAVE, POL, FIL, TWT and lisUSD ([post-mortem](https://community.venus.io/t/the-market-incident-post-mortem/5712)). rekt.news puts Venus's first statement about two hours after the researcher's alert | response |
+| 2026-03-17 | Venus publishes the post-mortem; remediation list includes a governance proposal for the bad debt, coordination with law enforcement on the funding trail, and a full re-audit of the core pool | response |
+| Undisclosed | Funds taken from Venus: no exit path, Tornado Cash use or bridge movement was visible as of rekt.news's publication on 2026-03-18 | undisclosed |
 
-## Realised extraction
+Key addresses:
 
-$5.07M gross extracted (2,172 BNB, 1.516M CAKE, 20 BTCB) against ~$16.29M accumulation capital; on-chain P&L appears negative or break-even. The extracted funds remain parked in the attacker's wallet with no mixer activity as of publication. Venus absorbed $2.15M in unrecoverable bad debt. CEX perp hypothesis (short THE on a CEX, collect on the collapse to $0.22) is the active investigative thread per Allez Labs and EmberCN.
+- Primary supplier / attacker wallet — [`0x1a35bd28efd46cfc46c2136f878777d69ae16231`](https://bscscan.com/address/0x1a35bd28efd46cfc46c2136f878777d69ae16231)
+- Attack contract — [`0x737bc98f1d34e19539c074b8ad1169d5d45da619`](https://bscscan.com/address/0x737bc98f1d34e19539c074b8ad1169d5d45da619)
+- Attacker EOA (per [BlockSec](https://blocksec.com/blog/venus-thena-donation-attack) and Quill Audits via [rekt.news](https://rekt.news/venus-protocol-rekt4)) — [`0x43c743e316f40d4511762eedf6f6d484f67b2f82`](https://bscscan.com/address/0x43c743e316f40d4511762eedf6f6d484f67b2f82)
+- Tornado Cash-funded wallet (per BlockSec) — [`0x7a79969a0b9d51d922c4810d2950560360f6f234`](https://bscscan.com/address/0x7a79969a0b9d51d922c4810d2950560360f6f234)
+- Venus Core Pool Liquidator (per BlockSec) — [`0x0870793286aada55d39ce7f82fb2766e8004cf43`](https://bscscan.com/address/0x0870793286aada55d39ce7f82fb2766e8004cf43)
+
+## Attacker profit
+
+Sources agree the on-chain result looks unprofitable. BlockSec puts the attacker's retained assets at about \$5.21M against \$9.92M invested ([BlockSec](https://blocksec.com/blog/venus-thena-donation-attack)). The post-mortem says off-chain accounts, including other wallets or CEX positions, are being investigated ([post-mortem](https://community.venus.io/t/the-market-incident-post-mortem/5712)). rekt.news presents a CEX short-position theory as unverified and notes nothing on-chain shows such a position. Whether the strategy made money is therefore undisclosed.
+
+## Root-cause evidence
+
+- **Technique:** OAK-T9.011
+- **Source:** <https://community.venus.io/t/the-market-incident-post-mortem/5712>; <https://blocksec.com/blog/venus-thena-donation-attack>; <https://rekt.news/venus-protocol-rekt4>
+- **Source type:** operator
+- **Confidence:** confirmed
+- **Evidence:** Venus's post-mortem states that direct transfers to the market contract raise the exchange rate without passing `mintAllowed()`, where caps are enforced, and that thin THE liquidity let the attacker push the oracle price; BlockSec's independent write-up matches the sequence and gives the transaction and addresses. Open: the post-mortem's own bad-debt figures disagree, and the attacker's off-chain position is undisclosed.
 
 ## Public references
 
-- [rekt.news — Venus Protocol — Rekt IV](https://rekt.news/venus-protocol-rekt4) — primary forensic narrative.
-- [Venus Protocol official post-mortem (Allez Labs) — March 17, 2026](https://community.venus.io/) — confirms Code4rena finding dismissal as root cause.
-- [Code4rena Venus Isolated Pools audit contest — May 2023, finding M-10](https://code4rena.com/) — donation-attack supply-cap bypass documented with working PoC.
-- [Hacken post-incident advisory](https://x.com/HackenProof) — flags the Compound V2 fork supply-cap enforcement gap.
-- [EmberCN on-chain analysis](https://x.com/EmberCN) — attacker P&L analysis: "onchain alone, it doesn't look profitable."
-- [William Li real-time identification](https://x.com/WilliamLi) — modeled the attack class in a 2023 academic paper on role-play attack strategies in DeFi.
-- [Blockaid community alert](https://x.com/blockaid_) — "delegated borrowing abuse" classification.
-- Cross-reference: T9.011 at `techniques/T9.011-precision-loss-rounding-attack.md`.
-
-## Discussion
-
-Venus Protocol Rekt IV is the fourth major incident since 2021 for the same protocol on the same chain ($95M XVS price manipulation 2021, $14.2M LUNA crash 2022, $717K ZKSync donation attack 2025). The root cause — donation-attack supply-cap bypass via direct ERC-20 transfer to the vault contract — is the canonical T9.011 (Precision-Loss / Donation Attack) worked example for Compound V2 forks.
-
-The case is structurally instructive for three reasons:
-
-1. **Audit-finding dismissal as a standing security surface.** The 2023 Code4rena finding documented the exact mechanism with a working PoC. Venus assessed it as "no negative side effects." The ZKSync exploit in February 2025 proved otherwise with real money. Venus still did not patch the BNB Chain Core Pool. The 2026 exploit is the predictable third event in the chain. OAK contributors should treat audit-finding dismissal with a subsequent exploit as a strong signal for coverage priority.
-
-2. **The supply-cap enforcement gap is a cross-fork systemic vulnerability.** Hacken explicitly flagged this in the aftermath: "Attention Compound V2 forks: Verify whether direct token transfers to your cToken contracts bypass supply-cap logic." The mint()-only enforcement pattern is inherited by every Compound V2 fork; any fork that has not independently verified the transfer() path is exposed.
-
-3. **CEX-derivatives P&L asymmetry.** The attacker's on-chain operations appear unprofitable (borrowed $9.92M, extracted $5.07M). The working hypothesis — that the attacker shorted THE on a CEX and collected on the collapse — means the protocol loss ($2.15M bad debt) is independent of whether the attacker's strategy was profitable. The protocol absorbs the damage; the attacker's P&L is decoupled from on-chain forensics. This is a structural property of T9.011 + T17.001 composed attacks that OAK's detection guidance should address.
+- Venus, "THE Market Incident Post-Mortem" (2026-03-17): <https://community.venus.io/t/the-market-incident-post-mortem/5712>
+- BlockSec, "Venus Thena donation attack": <https://blocksec.com/blog/venus-thena-donation-attack>
+- rekt.news, "Venus Protocol - Rekt IV" (2026-03-18): <https://rekt.news/venus-protocol-rekt4>
+- The Block, "Venus Protocol left with roughly \$2M in bad debt after exploit manipulates Thena's THE token price" (2026-03-15): <https://www.theblock.co/news/ecosystems/2026-03-15-venus-protocol-left-with-roughly-2m-in-bad-debt-after-exploit-manipulates-thenas-the-token-price-393622>
