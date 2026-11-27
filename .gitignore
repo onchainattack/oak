@@ -75,3 +75,7 @@ vendor-outreach/
 .claude/worktrees/
 .tasks/
 .cache/
+
+# Network caches of the quality tools
+tools/.source-cache/
+tools/.link-cache.json

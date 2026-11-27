@@ -47,6 +47,13 @@ Every worked example dated 2026-10 or later must carry a `## Root-cause evidence
 
 `confirmed` needs the operator's own post-mortem or a government source that states the mechanism. `corroborated` needs two independent sources. One security firm's alert relayed by several outlets is `reported`, not `corroborated`. Use `disputed` when credible sources conflict, and say how. A same-day third-party analysis is never `confirmed`: OAK's KelpDAO and THORChain misclassifications both came from treating one as settled.
 
+## Quotes and citations on worked examples
+
+Two rules, both from the 2026-11 quality review ([`QUALITY-REVIEW.md`](QUALITY-REVIEW.md)).
+
+- **Quotation marks mean the source's exact words.** A quote is copied character for character from text the author read. Anything else is a paraphrase and carries no quotation marks. A summarising fetch returns a paraphrase, so text read that way is relayed, not quoted. Check with `npm run check:quotes -- examples/<file>.md` before committing; it fetches the cited sources and lists every quoted string it cannot find.
+- **A citation points at the page that carries the claim.** The post, the article, the advisory, the filing. A site's home page, a blog index, an account's profile or a placeholder is not a citation, in the file or in `citations.bib`. Each post of an X thread is cited by its own URL. When the source is a page that gets updated (an advisory, a tracker), say which date's version the figure comes from.
+
 ## Timeline, key addresses and fund flow on worked examples
 
 **The test for any example:** could a defender replay the incident from this file alone, and see that every step is a known Technique?

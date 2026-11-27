@@ -20,6 +20,7 @@ Read `template.md` in this skill's folder for the exact skeleton. The format rul
 ## Writing rules
 
 - **Facts come only from cited sources** or from your own on-chain check (`tools/explorer.py`, marked "traced by OAK"). If a stage is not public, write "undisclosed".
+- **Quotation marks mean the source's exact words.** Copy a quote character for character from text you read yourself. A page read through a summarising fetch gives you a paraphrase: write it without quotation marks and say it is relayed. Cite the page that carries the claim (the post, the article, the advisory), never a site's home page, and cite each post of an X thread by its own URL.
 - **Write addresses and tx hashes in full**, linked to the explorer for their chain (see `tools/chains.json` for URL templates). Never shorten them. If a source gives only a short form, keep it and add "(full address not published)".
 - **Timeline (UTC):** cover entry → preparation → execution → where the funds went → response. Each row carries a Technique, `response` or `—`. Put Key addresses after the table, one per role.
 - **Root-cause evidence:** use the operator or a government source for `confirmed`, two independent sources for `corroborated`, one non-operator source for `reported`. A same-day third-party analysis is never `confirmed`.
@@ -35,7 +36,8 @@ Run each of these:
 1. `python3 tools/check_timeline.py --file <file>`
 2. `python3 tools/check_root_cause.py --file <file>`
 3. `python3 tools/check_flow.py --file <file>`
-4. `npx markdownlint-cli2 <file>`
+4. `python3 tools/check_quotes.py <file>` (needs the network). Every quote it cannot find is either a paraphrase to unquote or a source to cite properly.
+5. `npx markdownlint-cli2 <file>`
 
 Then add the example to its primary Technique page under `### Additional incidents`. Also add it to the actor page's `## Observed Examples` if it is attributed to an OAK-Gnn actor. `npm run check` enforces both backlinks.
 

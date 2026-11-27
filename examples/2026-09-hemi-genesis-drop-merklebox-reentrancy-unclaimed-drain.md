@@ -29,7 +29,7 @@ The tokens were sold on Hemi's own DEXes into roughly **\$255,000**, then bridge
 | same day | Tokens liquidated on Hemi-native DEXes for **~\$255K**; attacker's own volume crushes the effective price | (extraction, liquidity-bounded) |
 | within ~1 day | Proceeds bridged over **LayerZero** to Ethereum, Arbitrum, BNB Smart Chain; mostly converted to **ETH** | **T7.003** |
 | 2026-09-08 | Hemi publishes post-mortem: damage confined to the claim contract; HEMI, veHEMI, hVM, tunnels unaffected; contract balance zero | (operator response, T+~1d) |
-| 2026-09-09 → 09-10 | **Upbit cancels its planned HEMI listing** days before launch, substituting two other tokens | (second-order impact) |
+| 2026-09-08 | **Upbit cancels its planned HEMI listing** 18 minutes before the planned 9:30 p.m. KST opening (notice updated at 9:12 p.m., per crypto.news), and lists two other tokens | (second-order impact) |
 
 ## What defenders observed
 

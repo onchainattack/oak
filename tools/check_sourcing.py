@@ -19,10 +19,12 @@ Severity tiers:
   refs-hollow   — the body cites something, but the Public references section
                   itself resolves to nothing.
 
-Report-only by default, and deliberately NOT wired into `npm run check`: the
-corpus currently carries a large unsourced backlog, and a check that fails from
-day one gets disabled rather than fixed. Use --ci --max <n> to ratchet a budget
-downward once the sweep is under way.
+Report-only by default. `npm run check` runs it as `--ci --max 0`: the unsourced
+backlog was cleared in 2026-10, so any finding now fails the check.
+
+Known limit (QUALITY-REVIEW.md, 2026-11-27): a bib key counts as resolvable when
+it has any URL, including a site's home page or a placeholder. Whether the URL
+points at a page about the incident is not checked here.
 
 Usage:
     python3 tools/check_sourcing.py                  # summary + counts by year

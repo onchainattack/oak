@@ -64,6 +64,18 @@ If something on OAK is wrong about you or your work, write to us. We'll fix it.
 
 ## Correction log
 
+### 2026-11-27 — Five facts corrected during the quality review
+
+Found by the source-fidelity sample in [`QUALITY-REVIEW.md`](QUALITY-REVIEW.md); each was confirmed against the cited source's text before the change.
+
+- **Nostra (2026-09):** the amount bridged to Ethereum included 1.3M DAI, not 1M (AMBCrypto and the dev.to write-up both say 1.3 million).
+- **Hemi (2026-09):** Upbit cancelled the HEMI listing on 2026-09-08, 18 minutes before the planned opening, not "days before launch" on 09-09 to 09-10 (crypto.news).
+- **Polymarket insider case (2026-01):** the timeline said the proceeds were withdrawn "2026-01-04 onward"; the DOJ says the same day as the operation, 2026-01-03, as the file's own summary already did.
+- **Taiko (2026-06):** the file credited SlowMist with tracing the attacker addresses; no cited source mentions SlowMist, and they credit Blockaid. The root cause was described as "confirmed by multiple independent write-ups"; it is press-reported, one source called it unconfirmed at the time, and no Taiko post-mortem was read.
+- **Caesars (2023-09):** the CISA advisory on Scattered Spider is AA23-320A, published 2023-11-16, as the cited URL shows. The file called it "AA23-352A" and dated it 2023-12-14 in four places.
+
+The review lists further files with material findings that are not corrected yet.
+
 ### 2026-11-26 — Sweep of 2026-11-17 → 11-26: paraphrases that stood inside quotation marks
 
 Fourteen examples were committed on 2026-11-26 (`2f77fdd`). A check the same day fetched every cited source and searched for each quoted string. About twenty were paraphrases, not the source's words. They were changed to the exact wording, or the quotation marks were removed and the text labelled as relayed. Files: the Stratum V1 / BGP hijack (four Braiins quotes), Wagyu / XMR1 (two Bitquery quotes), K3 Capital, Reental RNT Lend, Aramid Bridge (one bracketed insertion; the thread's posts are now cited individually), Fusionist and Cyber (text from The Block, which OAK could not open directly, is no longer quoted), Fluidkey (two quotes, fixed before the first commit). No figure, date or address changed. In the LUKSO file the sentence saying the removal steps were not available was replaced with the steps themselves.
