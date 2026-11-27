@@ -1,3 +1,7 @@
+> **MERGED 2026-11-27 into `examples/2023-09-caesars-entertainment.md`** — the recovery of part of the ransom is one fact about the same incident and is recorded there. Not part of the OAK corpus; kept for the record.
+
+**Merged into:** 2023-09-caesars-entertainment
+
 # Caesars Entertainment — ransom paid to Scattered Spider, about \$12M of it recovered by investigators — 2023-09
 
 **Loss:** Caesars paid a \$15M ransom, per [Andy Greenberg of WIRED](https://x.com/a_greenberg/status/1849831809841799617). The same post says ZachXBT and other investigators recovered \$12M of it, which Greenberg calls very likely the biggest-ever clawback of a ransom payment. The recovery is relayed from the WIRED reporting and no court, agency or operator record of it was opened; who held the \$12M and under what legal step (freeze, seizure, return) is undisclosed.

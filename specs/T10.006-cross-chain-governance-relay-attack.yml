@@ -1,11 +1,13 @@
 oak_techniques: [OAK-T10.006]
 spec_id: oak-detection-T10.006
 version: 0.2.0
-maturity: emerging
+maturity: deprecated
 maintainer: "@iZonex"
 license: Apache-2.0
 
 scope: |
+  DEPRECATED 2026-11-27: no documented incident of this shape was found in the
+  source passes. Kept for reference; see the Technique tombstone.
   Detect cross-chain governance relay attacks where an adversary exploits
   the message-relay infrastructure (LayerZero, Wormhole, Chainlink CCIP,
   Hyperlane, Axelar) to execute a governance action on a target chain that

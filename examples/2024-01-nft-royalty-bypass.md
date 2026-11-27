@@ -7,14 +7,13 @@
 
 ## Summary
 
-Through 2022-2024, NFT marketplace royalty enforcement transitioned from near-universal (OpenSea's operator filter enforcing creator royalties at the contract level) to structurally voluntary. Blur's October 2022 launch with a royalty-optional model was the catalyst; OpenSea's August 2023 sunset of its operator filter (see `examples/2023-08-opensea-operator-filter-sunset.md`) was the tipping point. By 2024, all major NFT marketplaces (OpenSea, Blur, Magic Eden, Tensor) operated with royalty-optional or royalty-minimal models, and creator royalty enforcement at the marketplace-contract layer had been effectively deprecated. The case is the canonical 2024 T12.003 worked example and the endpoint of the NFT royalty-bypass transition arc.
+Through 2022-2024, NFT marketplace royalty enforcement transitioned from near-universal (OpenSea's operator filter enforcing creator royalties at the contract level) to structurally voluntary. Blur's October 2022 launch with a royalty-optional model was the catalyst. By 2024, all major NFT marketplaces (OpenSea, Blur, Magic Eden, Tensor) operated with royalty-optional or royalty-minimal models, and creator royalty enforcement at the marketplace-contract layer had been effectively deprecated. The case is the canonical 2024 T12.003 worked example and the endpoint of the NFT royalty-bypass transition arc.
 
 ## Timeline (UTC)
 
 | When | Event | OAK ref |
 |---|---|---|
 | 2022-10 | Blur launches with royalty-optional model | T12.003 (catalyst) |
-| 2023-08 | OpenSea sunsets operator-filter royalty enforcement | T12.003 (tipping point) |
 | 2024 (full year) | All major marketplaces operate royalty-optional; creator royalties structurally unenforceable at marketplace layer | **T12.003** (endpoint) |
 
 ## Public references
@@ -26,4 +25,4 @@ Through 2022-2024, NFT marketplace royalty enforcement transitioned from near-un
 
 ## Discussion
 
-The 2024 NFT royalty landscape is the structural endpoint of the royalty-bypass transition arc that OAK documents across 2022 (Blur launch), 2023 (OpenSea operator-filter sunset), and 2024 (market-wide royalty-optional norm). The case is included at the structural/cohort level for T12.003 and closes the T12×2024 near-threshold gap at v0.1. The absence of protocol-level royalty enforcement (on-chain, at the token-contract or chain level) is the load-bearing structural observation; marketplace competition alone cannot sustain royalty enforcement when a single major venue can defect and capture volume.
+The 2024 NFT royalty landscape is the structural endpoint of the royalty-bypass transition arc that OAK documents across 2022 (Blur launch) and 2024 (market-wide royalty-optional norm). The case is included at the structural/cohort level for T12.003 and closes the T12×2024 near-threshold gap at v0.1. The absence of protocol-level royalty enforcement (on-chain, at the token-contract or chain level) is the load-bearing structural observation; marketplace competition alone cannot sustain royalty enforcement when a single major venue can defect and capture volume.

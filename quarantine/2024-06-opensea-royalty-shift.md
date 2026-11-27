@@ -1,4 +1,4 @@
-> **MERGED 2026-11-27 into `examples/2023-08-opensea-operator-filter-sunset.md`** — a second entry for OpenSea's 2023-08-17 royalty-enforcement change, misdated to 2024. Not part of the OAK corpus; kept for the record.
+> **MERGED 2026-11-27 into `2023-08-opensea-operator-filter-sunset.md`, which was itself quarantined the same day as no attack** — a second entry for OpenSea's 2023-08-17 royalty-enforcement change, misdated to 2024. Not part of the OAK corpus; kept for the record.
 
 **Merged into:** 2023-08-opensea-operator-filter-sunset
 

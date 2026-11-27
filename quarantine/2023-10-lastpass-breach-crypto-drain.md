@@ -1,3 +1,7 @@
+> **MERGED 2026-11-27 into `examples/2022-12-lastpass-vault-cohort.md`** — a subset of that cohort; its one sourced fact (about $4.4M from more than 25 victims on 2023-10-25) is now a row there, and its "$250M+ cumulative" figure had no source. Not part of the OAK corpus; kept for the record.
+
+**Merged into:** 2022-12-lastpass-vault-cohort
+
 # LastPass Breach → Crypto Drain — Multi-Victim Seed Phrase Exposure — 2023-10
 
 **Loss:** $4.4M+ drained from 25+ victims in a single day (October 25, 2023); cumulative losses from LastPass breach exceed $250M+ across the crypto victim population.

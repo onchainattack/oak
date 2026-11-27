@@ -15,9 +15,8 @@ scope: |
   held it is used through the standard's normal, correctly-implemented
   paths. Detection is therefore configuration-state monitoring plus a
   cross-deployment supply invariant — not message-verification analysis,
-  because no message verification fails. Excludes: T10.006 (a governance
-  action approved on one chain and relayed to another — here nothing is
-  relayed and no proposal exists); T10.002 (the verification predicate
+  because no message verification fails. Excludes: T10.006 (deprecated);
+  T10.002 (the verification predicate
   itself is bypassed); T11.001 (validator or signer key compromise);
   T9.004 covers the reachability flaw that usually grants the role and is
   cross-referenced rather than excluded.

@@ -18,8 +18,6 @@ On 2026-05-14 ZachXBT published a thread ([X, post 1](https://x.com/zachxbt/stat
 - **Market maker:** an unnamed counterparty with undisclosed terms; the sibling file linked below carries the exchange-side allegations.
 - **RIVER link:** a signer on several LAB team multisigs was funded by an insider ZachXBT linked on-chain to RIVER manipulation, who received more than $12 million of RIVER across two CEX deposit addresses ([The Block](https://www.theblock.co/news/ecosystems/2026-05-14-zachxbt-alleges-95-insider-control-of-lab-token-in-investigation-into-ai-terminals-6-billion-fdv-project-401290)).
 
-Related OAK file: [`2026-05-lab-bitget-market-maker-insider-supply-cohort.md`](2026-05-lab-bitget-market-maker-insider-supply-cohort.md).
-
 ## Timeline (UTC)
 
 Dates come from the cited pages; times of day are undisclosed except the posts' timestamps.
@@ -33,6 +31,7 @@ Dates come from the cited pages; times of day are undisclosed except the posts' 
 | 2026-05-11 to 2026-05-12 | Nearly 100 million LAB moved from Bitget to 10 addresses within a 12-hour window (The Block; Bitcoin.com News) | **T3.006** |
 | 2026-05-14 12:16 UTC | ZachXBT publishes the thread ([X](https://x.com/zachxbt/status/2054898749923860819)) | disclosure |
 | 2026-05-14 | No response from LABtrade or the named exchanges is reported; ZachXBT urges Bitget, Binance and Gate to freeze insider profits or delist ([The Block](https://www.theblock.co/news/ecosystems/2026-05-14-zachxbt-alleges-95-insider-control-of-lab-token-in-investigation-into-ai-terminals-6-billion-fdv-project-401290)) | response |
+| 2026-05-18 | ZachXBT publicly accuses Bitget of allowing market makers to run supply-control schemes on four tokens including LAB; by his account Bitget said only that it would investigate. The same report says wallets linked to the LAB team deposited 96 million LAB (about \$63M) to Bitget shortly before the price run, and puts the run at about \$0.68 to over \$4.00 in roughly five days ([Bitcoin.com News](https://news.bitcoin.com/zachxbt-bitget-supply-control-manipulation-rave-river-siren-lab-2026/)). These are his claims; the page does not quote Bitget. | disclosure |
 | 2026-07-08 10:23 UTC | ZachXBT: LAB fell 85% in 24 hours; "no action was taken by Binance, Bitget, & Gate earlier" ([X](https://x.com/zachxbt/status/2074801441500184621)) | response |
 
 Key addresses: none printed in full on the opened pages. The signer and borrower addresses listed in the earlier version of this file were not on any opened page and have been removed.
@@ -51,3 +50,4 @@ Key addresses: none printed in full on the opened pages. The signer and borrower
 - ZachXBT, "Update 2" (2026-07-08): <https://x.com/zachxbt/status/2074801441500184621>
 - The Block, "ZachXBT alleges 95% insider control of LAB token..." (2026-05-14): <https://www.theblock.co/news/ecosystems/2026-05-14-zachxbt-alleges-95-insider-control-of-lab-token-in-investigation-into-ai-terminals-6-billion-fdv-project-401290>
 - Bitcoin.com News (2026-05-15): <https://news.bitcoin.com/zachxbt-lab-token-insider-control-bitget-investigation-2026/>
+- Bitcoin.com News, follow-up on ZachXBT's accusations against Bitget (2026-05-18): <https://news.bitcoin.com/zachxbt-bitget-supply-control-manipulation-rave-river-siren-lab-2026/>

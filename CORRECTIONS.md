@@ -64,6 +64,27 @@ If something on OAK is wrong about you or your work, write to us. We'll fix it.
 
 ## Correction log
 
+### 2026-11-27 — OAK-T10.006 deprecated; three thin Techniques checked; seven flagged sibling files rewritten
+
+Follow-up to the fourth pass: the Technique pages it left resting on little, and the sibling files the passes had flagged without checking.
+
+| Technique | Result |
+|---|---|
+| `OAK-T10.006` Cross-Chain Governance Relay Attack | **deprecated.** Its last two examples (Stake DAO vsdCRV 2026-05, The Sandbox SAND 2026-08) are configuration-role captures on a LayerZero OFT (OAK-T10.009); each file already said the relay Technique did not fit. No forged or replayed governance message was found in a search. Nearest real cases, Poly Network 2021 and Hyperbridge 2026, are filed by how the message got through |
+| `OAK-T9.006.001` DVM Vote Capture | kept, one incident, **alleged**: the Ukraine mineral-deal market of March 2025. Two named accounts say one holder cast 5M UMA through three accounts, 25% of votes; a Polymarket user disputes it; Polymarket did not call it an attack on any page read in full; no tally or wallet list is public. Page reworded |
+| `OAK-T3.006` Insider Multi-Vector Supply Extraction | kept, one project, **alleged**: LAB, on one investigator's thread. The second LAB file was a duplicate and is merged. A firmer related case, Movement/MOVE (the project suspended a co-founder; an exchange banned the market maker), is already in OAK under another Technique and is noted in ROADMAP |
+| `OAK-T15.004`, DNS-hijack shape | checked, unchanged: three examples declare it (Galxe 2023-10, Flap/Kintsu 2026-10, Across 2026-11); only the Curve 2022 anchor was removed earlier |
+
+| File | Was | Now |
+|---|---|---|
+| `2023-09-caesars-entertainment` | Form 8-K "of 2023-09-07"; ALPHV/BlackCat; ~\$30M demand; a DOJ indictment naming Caesars; T7.002, T8.001 | the 8-K is signed 2023-09-14 and does not mention a ransom; entry by social engineering of an outsourced IT support vendor is in the filing; the ~\$15M payment rests on press reports and a journalist's post that \$12M was recovered; no page ties a ransomware family to Caesars; T5.008 only; a scope note says the crypto tie is the ransom |
+| `2024-08-genesis-creditor-social-engineering` | T4.007; hour offsets; "only one arrested" | the court record: 4,123.71908099 BTC (about \$245M) per the information in case 1:24-cr-00494; two arrests on the night of 2024-09-18; later pleas and a superseding indictment; the call-and-remote-access account rests on the investigator as relayed; no Technique declared for entry |
+| `2022-12-lastpass-vault-cohort` | "at least \$35M, ~150 victims, ~\$150M"; Scattered Spider; actor OAK-G03; median losses | Krebs (more than 150 victims, over \$35M since late 2022) and TRM (over \$35M traced in two later waves) measure different things and are not added; forfeiture complaint of 2025-03-06; attribution inferred-weak; LastPass disputes a proven link; timeline from LastPass's own notices |
+| `2023-02-blur-airdrop-wash-cohort` | T12.001 + T7.004; "multi-tens-of-percent"; comparison with X2Y2 | T12.001 only (reward farming is not laundering); CryptoSlam removed \$577M and later nearly \$824M; hildobby about \$345M, about 14% |
+| `2025-03-polymarket-uma-ukraine-mineral-deal`, `2025-2026-polymarket-subjective-oracle-resolution-manipulation-cohort` | vote capture as established; "~\$258M" total | allegation and its dispute; four members each linked to its own file; total removed |
+
+Removed from `examples/`: `2023-10-lastpass-breach-crypto-drain` (merged into the LastPass cohort; its one sourced fact is now a row there), `2026-05-lab-bitget-market-maker-insider-supply-cohort` (merged into `2026-05-labtrade-insider-manipulation`), `2023-09-caesars-ransomware-12m-seizure` (merged into `2023-09-caesars-entertainment`), `2023-08-opensea-operator-filter-sunset` (a published product-policy change, no attack).
+
 ### 2026-11-27 — Fourth source pass: the last 54 examples with one real source; 48 checked in place, 4 quarantined, 2 duplicates merged
 
 This closes the backlog of examples whose citations pointed nowhere or to a single page (156 files in four passes). 29 of the 54 are from 2026, where the one source was usually the true primary; those needed small edits. The older ones needed the usual rewrite.

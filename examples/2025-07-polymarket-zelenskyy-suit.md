@@ -39,7 +39,7 @@ This is qualitatively different from price-oracle manipulation (OAK-T9.001), whe
 
 ## What this example tells contributors
 
-Contributors writing v0.x OAK-T9.006.002 (resolution-spec ambiguity exploitation) should use Zelenskyy-suit as the canonical case alongside the Ukraine mineral deal (T9.006.001) and the Iran-strike journalist coercion (T9.006.003).
+Contributors writing v0.x OAK-T9.006.002 (resolution-spec ambiguity exploitation) should use Zelenskyy-suit as the T9.006.002 case alongside the alleged, disputed Ukraine mineral deal vote capture (T9.006.001) and the Iran-strike journalist coercion (T9.006.003).
 
 The mitigation surface is structurally limited:
 

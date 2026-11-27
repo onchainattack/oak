@@ -334,7 +334,7 @@ Ingestion:
 ### 2.7 `governance_events`
 
 **10 specs.** Governance proposal lifecycle events (created, queued, executed, cancelled).
-Used by T9.003, T10.006, T16.
+Used by T9.003, T16.
 
 Schema (per governance event):
 
@@ -885,7 +885,7 @@ Already covered.
 
 ### 2.21 `bridge_message_logs`
 
-**Used by T10.002, T10.006, T10.007.** Cross-chain message sent/received events.
+**Used by T10.002, T10.007.** Cross-chain message sent/received events.
 
 Schema (per message):
 

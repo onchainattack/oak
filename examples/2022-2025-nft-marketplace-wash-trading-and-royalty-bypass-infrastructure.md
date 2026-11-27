@@ -53,7 +53,6 @@ The marketplace that eliminates both surfaces — by enforcing royalties at the 
 | 2022-10-19 | Blur launches as pro-trader NFT marketplace with customizable royalty input (0.5% recommended minimum) | T12.003 (canonical marketplace launch) |
 | 2022-11 | OpenSea launches Operator Filter Registry as creator-side enforcement mechanism | T12.003 (mitigation attempt) |
 | 2022–2023 | Blur Points, LooksRare rewards, X2Y2 farming create volume-based incentive programmes; wash-trading infrastructure emerges at scale | T12.001 + T12.003 (linked emergence) |
-| 2023-08 | OpenSea announces sunset of Operator Filter enforcement (effective 2023-08-31); grace period through 2024-02-29 | T12.003 (enforcement deprecation) |
 | 2024-02-29 | Operator Filter Registry enforcement ends on OpenSea; marketplace-contract-layer royalty enforcement ceases as industry practice for dominant Ethereum NFT marketplaces | T12.003 (structural shift complete) |
 | 2022–2025 | Wash-trading infrastructure persists; marketplace-level wash-trade detection remains inconsistent across venues; effective royalty rates remain structurally depressed | T12.001 + T12.003 (ongoing) |
 
