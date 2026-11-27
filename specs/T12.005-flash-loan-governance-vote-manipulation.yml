@@ -19,7 +19,7 @@ scope: |
   voting power to pass a malicious proposal, and repays the flash loan
   within the same transaction. Detection operates at the same-block
   flash-loan + governance-event correlation layer. Excludes: T9.003
-  (governance attack — broad parent class); T16.003 (delegation-cluster
+  (governance attack — broad parent class); T16.003 (deprecated) (delegation-cluster
   vote takeover — uses delegation-graph manipulation, not flash loans);
   T12.004 (timelock-free upgrade — governance-design decision, not
   vote-power acquisition primitive).

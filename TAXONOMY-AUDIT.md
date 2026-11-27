@@ -84,7 +84,7 @@ Both need source research before either file is touched.
 
 ### A — T9.003 → T16.x migration (most concrete misclassification)
 
-**Current:** `techniques/T9.003-governance-attack.md` lives under T9 Smart-Contract Exploit. After T16 Governance / Voting Manipulation introduction, T9.003 is conceptually a parent of T16.001 / T16.002 / T16.003 / T16.004 / T16.005 — a generic ancestor class.
+**Current:** `techniques/T9.003-governance-attack.md` lives under T9 Smart-Contract Exploit. After T16 Governance / Voting Manipulation introduction, T9.003 is conceptually a parent of T16.001 / T16.002 / T16.004 / T16.005 — a generic ancestor class.
 
 **Problem:** T9.003 is now redundant. Worked examples that previously mapped to T9.003 now also map to T16.x. The dual mapping muddles the meaning of "T9 Smart-Contract Exploit" because governance attacks are *not* protocol-layer code-execution exploits — they are voting-power-against-protocol attacks.
 
@@ -164,7 +164,7 @@ Reassign each Tactic to one of these. T16 becomes Realization. T8 becomes Post-e
 ### D — T11.002 vs T15.002 overlap
 
 **T11.002:** Wallet-Software Distribution Compromise. Anchors: Atomic Wallet 2023, Ledger Connect Kit 2023.
-**T15.002:** Supply-chain vendor pipeline compromise. Anchors: same plus Solana web3.js 2024, Bybit 2025, Polymarket trader-tooling 2026, CoinStats 2024.
+**T15.002:** Supply-chain vendor pipeline compromise. Anchors: same plus Solana web3.js 2024, Bybit 2025, Polymarket trader-tooling 2026.
 
 **Problem:** T11.002 is a *type* of T15.002. They share anchors. Differentiating language ("wallet binary distribution" vs "general supply-chain") is not maintained consistently across both files.
 

@@ -13,7 +13,7 @@ scope: |
   time + no minimum proposal-to-execution delay (or delay < flash-
   loan window). Closing either condition closes the surface. Excludes:
   T16.002 (multi-block direct accumulation, position held throughout);
-  T16.003 (delegation-pull from multi-wallet cluster); T9.002 (flash-
+  T16.003 (deprecated) (delegation-pull from multi-wallet cluster); T9.002 (flash-
   loan precondition — composes); T9.003 (generic governance-attack
   parent); legitimate same-block governance flows on protocols with
   snapshot-based voting power.

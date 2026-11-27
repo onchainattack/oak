@@ -10,6 +10,12 @@ All notable changes to OAK are documented here. The format follows [Keep a Chang
 
 Recorded here rather than held to the next version bump because one item is a **reclassification consumers may have stored** — the same reasoning `VERSIONING.md` applies to deprecations.
 
+### Changed — OAK-T16.003 deprecated; OAK-T4.011 and OAK-T11.013 re-anchored (2026-11-27)
+
+**`OAK-T16.003` (Delegation-Cluster Vote Takeover) is deprecated** (tombstone kept, ID never reused). No documented incident has voting power gathered by delegation from a cluster of wallets and used to pass a hostile proposal. Its anchor, Compound Proposal 289, is an open-market accumulation filed under `OAK-T16.002` with confidence `disputed`; its other examples were quarantined. Consumers holding `OAK-T16.003` for Compound Proposal 289 should move it to `OAK-T16.002`.
+
+**`OAK-T4.011`** no longer describes a "malicious MetaMask Snap" at CoinStats, which no source reports. It now covers takeover of a vendor's own notification channel, led by the Ngrave incident of 2026-10-17 (new example). **`OAK-T11.013`** no longer uses GMX V1 (now `OAK-T9.005`) or Yearn; its lead example is the MakerDAO legacy auction keeper. `examples/2025-11-balancer-v2.md` moves from `OAK-T9.005` to `OAK-T9.011`. Details in `CORRECTIONS.md`.
+
 ### Changed — classification correction (read this first if you consume OAK classifications)
 
 **`examples/2026-04-kelpdai-rseth-bridge-layerzero-compromise.md` (KelpDAO / LayerZero, 2026-04-18, 116,500 rsETH / ~\$292M) is reclassified from `OAK-T10.001` to `OAK-T10.002.001`**, and its attribution is corrected from `pseudonymous` to **confirmed — DPRK TraderTraitor / UNC4899** (Mandiant, CrowdStrike, zeroShadow; named in LayerZero Labs' own incident report), now linked to `OAK-G01`.

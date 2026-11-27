@@ -29,7 +29,7 @@ For OAK's purposes the case is the canonical early-2021 BSC DeFi worked example 
 
 - **Pre-event (no LP-share-pricing-monitor).** No public-record indication of pre-event monitoring of LP-share-pricing manipulation; defenders monitoring BSC DeFi protocols in early 2021 did not have widely-deployed flash-loan-detection-and-LP-share-pricing-anomaly tooling.
 - **At-event (rapid forensic identification).** PeckShield + BlockSec + SlowMist published function-level on-chain traces within hours of the event; the LP-share-virtual-price-as-implicit-oracle subclass was identifiable from the on-chain trace alone within the same-day window.
-- **Post-event (no recovery).** Spartan Protocol did not produce a recovery-via-negotiation outcome of the type that became more common in the later-2022-onward period (Euler 2023, Tapioca 2024, Curio 2024). The May 2021 BSC DeFi cohort precedes the on-chain-message-channel-negotiation operating norm.
+- **Post-event (no recovery).** Spartan Protocol did not produce a recovery-via-negotiation outcome of the type that became more common in the later-2022-onward period (Euler 2023, Tapioca 2024). The May 2021 BSC DeFi cohort precedes the on-chain-message-channel-negotiation operating norm.
 
 ## What this example tells contributors writing future Technique pages
 

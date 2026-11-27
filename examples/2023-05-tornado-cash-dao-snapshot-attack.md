@@ -15,7 +15,7 @@ The Snapshot vote passed — the Sybil cluster's aggregated voting weight, combi
 
 The community recognised the governance takeover within approximately 24 hours. A counter-proposal was rapidly drafted and passed through Snapshot (with the community now aware of the Sybil-cluster pattern and mobilising legitimate TORN holders against it), restoring governance-control parameters to the pre-attack state. The extracted TORN tokens (~483,000 TORN, valued at ~$1.5M–$2M) were not recovered — the attacker retained the extracted tokens.
 
-The case is the most operationally complete T16.004 anchor bridging the off-chain-voting surface to on-chain dollar-extraction at v0.1 materiality threshold. The counter-proposal recovery mechanism — community mobilisation reversing a passed-but-not-procedurally-final governance takeover — mirrors the Compound Proposal 289 prevented-attempt pattern at the on-chain T16.003 layer, applied to the T16.004 off-chain-voting context.
+The case is the most operationally complete T16.004 anchor bridging the off-chain-voting surface to on-chain dollar-extraction at v0.1 materiality threshold. The counter-proposal recovery mechanism — community mobilisation reversing a passed-but-not-procedurally-final governance takeover — mirrors the negotiated cancellation of Compound Proposal 289 at the on-chain layer, applied to the T16.004 off-chain-voting context.
 
 ## Timeline (UTC)
 

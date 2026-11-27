@@ -13,7 +13,7 @@ scope: |
   probe sub-shape, Compound Proposal-289 direct-accumulation sub-shape.
   Excludes: T16.001 (single-block flash-loan acquisition, position not
   held outside window — snapshot mitigation closes T16.001 but not
-  T16.002); T16.003 (delegation-pull from multi-wallet cluster — co-
+  T16.002); T16.003 (deprecated) (delegation-pull from multi-wallet cluster — co-
   occurs and should both map); legitimate disclosed-beneficiary
   treasury operations.
 

@@ -1,11 +1,14 @@
 oak_techniques: [OAK-T16.003]
 spec_id: oak-detection-T16.003
 version: 0.1.0
-maturity: emerging
+maturity: deprecated
 maintainer: "@iZonex"
 license: Apache-2.0
 
 scope: |
+  DEPRECATED 2026-11-27: no documented incident of this shape was found; the
+  canonical anchor (Compound Proposal 289) is an open-market accumulation filed
+  under OAK-T16.002. Kept for reference; see the Technique tombstone.
   Detect multi-wallet → single-delegate concentration of voting weight
   over a multi-week accumulation window, used to clear quorum on a
   malicious proposal. Underlying token holdings remain distributed
