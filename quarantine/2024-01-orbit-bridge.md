@@ -1,3 +1,7 @@
+> **MERGED 2026-11-27 into `examples/2023-12-orbit-chain-bridge-exploit.md`** — a duplicate entry for the same incident. Not part of the OAK corpus; kept for the record.
+
+**Merged into:** 2023-12-orbit-chain-bridge-exploit
+
 # Orbit Bridge — Ethereum ↔ multi-chain — 2024-01-01
 
 **Loss:** \~\$81.5M from the Ethereum side of Orbit Bridge (the Korean cross-chain bridge operated by Ozys), spread across USDT, USDC, ETH, wBTC, and DAI. Orbit Bridge was the principal cross-chain bridge connecting the Klaytn / Orbit Chain ecosystem to Ethereum and other major chains.

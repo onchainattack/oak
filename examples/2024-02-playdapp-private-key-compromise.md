@@ -1,45 +1,43 @@
-# PlayDapp $290M Private Key Compromise — Gaming Platform Exploit — 2024-02
+# PlayDapp — PLA token minted by an unauthorised wallet, key compromise suspected — PlayDapp / Ethereum — 2024-02-09
 
-**Loss:** $290M (200M PLA tokens minted by attacker via compromised deployer key, then laundered). PLA token price collapsed ~90% post-exploit.
-**OAK Techniques observed:** OAK-T11.001 (Third-Party Signing Vendor Compromise) — private key compromise of the PLA token deployer address; OAK-T5.001 (Hard LP Drain) — attacker minted 200M new PLA tokens diluting existing holders; OAK-T7.002 (CEX Deposit-Address Layering) — attacker attempted to launder via centralized exchanges which were alerted and froze some addresses.
-**Attribution:** **pseudonymous** — attacker address identified on-chain. PlayDapp offered $1M whitehat bounty for return; attacker did not respond. Lazarus Group attribution not publicly confirmed as of v0.1.
+**Loss:** **~\$290M** at market prices when minted, in two mints: 200M PLA (\$36.5M) on 2024-02-09 and 1.59B PLA (\$253.9M) on 2024-02-12 ([Elliptic](https://www.elliptic.co/blog/crypto-gaming-platform-playdapp-suffers-290-million-breach)). These are newly minted tokens, not drained reserves: circulating supply was 577M PLA before, so Elliptic expects the attacker to struggle to sell near pre-hack prices ([Elliptic](https://www.elliptic.co/blog/crypto-gaming-platform-playdapp-suffers-290-million-breach)). Recovery: none reported; PlayDapp planned a snapshot migration ([The Block](https://www.theblock.co/post/277334/crypto-gaming-platform-playdapp-loses-290-million-worth-of-tokens-in-two-exploits-elliptic)).
 
-**Key teaching point:** The PlayDapp exploit demonstrates the **deployer-key-compromise → unlimited mint** pattern: the attacker gained access to the PLA token's deployer private key, which retained mint authority, and minted 200M PLA tokens (~$290M at pre-exploit valuation). The key management failure was structural: a deployer key with unbounded mint authority, no multisig requirement, no timelock, and no mint-cap ceiling. Detection approach: monitor token contracts for deployer-key-retained mint authority post-launch; flag any contract where the deployer EOA retains unbounded mint capability without timelock/multisig gating.
+**OAK Techniques observed:** **OAK-T11.014** (Operator Privileged-Key Compromise — *primary, reported*; Elliptic says the first mint is "believed" to stem from a private key compromise ([Elliptic](https://www.elliptic.co/blog/crypto-gaming-platform-playdapp-suffers-290-million-breach)); the same cause is suggested by PeckShield per [BleepingComputer](https://www.bleepingcomputer.com/news/security/hackers-steal-290-million-in-crypto-from-playdapp-gaming-platform/)). See [`techniques/T11.014-operator-privileged-key-compromise.md`](../techniques/T11.014-operator-privileged-key-compromise.md). **OAK-T5.003** (Hidden-Mint Dilution — the loss is new supply minted by an unauthorised wallet). **OAK-T7.002** (CEX Deposit-Address Layering — Elliptic says tokens were sent to cryptoasset exchanges and other accounts; exchanges not named).
+
+**Attribution:** **unattributed.** BleepingComputer says the scale has "hallmark traits" of Lazarus Group but does not confirm it, and the attack is not attributed to any known actor ([BleepingComputer](https://www.bleepingcomputer.com/news/security/hackers-steal-290-million-in-crypto-from-playdapp-gaming-platform/)).
+
+**Key teaching point:** **Do not leave an externally owned key with the power to mint an unbounded amount of a live token, and alert on any mint that exceeds a fraction of circulating supply.** Here the second mint was 1.59B against 577M in circulation ([Elliptic](https://www.elliptic.co/blog/crypto-gaming-platform-playdapp-suffers-290-million-breach)), and it came three days after the first.
 
 ## Summary
 
-On February 9, 2024, the PlayDapp gaming platform's PLA token contract was exploited. The attacker gained access to the deployer's private key — which retained mint authority over the PLA token — and minted 200M PLA tokens worth approximately $290M at pre-exploit market prices.
+On 2024-02-09 an unauthorised wallet minted 200M PLA ([Elliptic](https://www.elliptic.co/blog/crypto-gaming-platform-playdapp-suffers-290-million-breach)). PlayDapp said the PLA token contract had been hacked and moved its held tokens to a new wallet ([BleepingComputer](https://www.bleepingcomputer.com/news/security/hackers-steal-290-million-in-crypto-from-playdapp-gaming-platform/)). It sent on-chain messages offering a \$1M white-hat reward for return by 2024-02-13 03:00 ET, which the hacker did not take up ([The Block](https://www.theblock.co/post/277334/crypto-gaming-platform-playdapp-loses-290-million-worth-of-tokens-in-two-exploits-elliptic)). On 2024-02-12 the attacker minted 1.59B more PLA. How the key or access was obtained is undisclosed.
 
-PlayDapp publicly identified the attacker's address and offered a $1M whitehat bounty for return of the funds. The attacker did not respond. PlayDapp then announced a token migration (new PDA token via airdrop snapshot) and coordinated with exchanges (Binance, Coinbase, Gate.io, etc.) to freeze the attacker's deposit addresses where possible.
+## Timeline (UTC)
 
-The PLA token was delisted from major exchanges and the price collapsed ~90%. Snapshot-based migration to the replacement PDA token was executed in the following weeks.
+Stages: **Entry** (undisclosed) → **Take** (two mints) → **Money** → **Response**.
 
-## Timeline
-
-| When | Event | OAK ref |
+| When | What happened | OAK |
 |---|---|---|
-| 2024-02-09 | Attacker gains access to PLA token deployer private key | **T11.001 private key compromise** |
-| 2024-02-09 | 200M PLA tokens minted (~$290M) | **T5.001 mint dilution** |
-| 2024-02-10 | PlayDapp announces exploit, offers $1M whitehat bounty | (public disclosure) |
-| 2024-02-12 | Attacker deposits tokens to exchanges; some funds frozen | **T7.002 CEX deposit** |
-| 2024-02-13 | PlayDapp announces PDA token migration via snapshot | (remediation) |
-| 2024-02-16 | PLA trading halted on major exchanges | (exchange coordination) |
+| Before 2024-02-09 (undisclosed) | Attacker obtains the ability to mint PLA; a private key compromise is believed ([Elliptic](https://www.elliptic.co/blog/crypto-gaming-platform-playdapp-suffers-290-million-breach)) | **T11.014** (reported) |
+| 2024-02-09 | 200M PLA minted by an unauthorised wallet, \$36.5M at the time ([Elliptic](https://www.elliptic.co/blog/crypto-gaming-platform-playdapp-suffers-290-million-breach)); transaction hash undisclosed in sources read | **T5.003** |
+| 2024-02-09 to 02-10 | PlayDapp says the contract was hacked and moves its tokens to a new wallet ([BleepingComputer](https://www.bleepingcomputer.com/news/security/hackers-steal-290-million-in-crypto-from-playdapp-gaming-platform/)) | response |
+| 2024-02-10 | On-chain messages offering \$1M white-hat reward if returned by 2024-02-13 ([BleepingComputer](https://www.bleepingcomputer.com/news/security/hackers-steal-290-million-in-crypto-from-playdapp-gaming-platform/)) | response |
+| 2024-02-12 13:01:47 | 1.59B PLA minted, \$253.9M: [`0xc41687511e31f5612b73647c4b39e500e45dbfb2ae66789b7b8705d2336002f8`](https://etherscan.io/tx/0xc41687511e31f5612b73647c4b39e500e45dbfb2ae66789b7b8705d2336002f8) ([BleepingComputer](https://www.bleepingcomputer.com/news/security/hackers-steal-290-million-in-crypto-from-playdapp-gaming-platform/), [Elliptic](https://www.elliptic.co/blog/crypto-gaming-platform-playdapp-suffers-290-million-breach)) | **T5.003** |
+| 2024-02-12 | Elliptic says tokens are already being sent to exchanges and other accounts; no exchange or address named ([Elliptic](https://www.elliptic.co/blog/crypto-gaming-platform-playdapp-suffers-290-million-breach)) | T7.002 |
+| 2024-02-13 | PlayDapp pauses the PLA contract for a snapshot to migrate and suspends deposits and withdrawals; major exchanges freeze the hacker's wallets (exchanges unnamed) ([The Block](https://www.theblock.co/post/277334/crypto-gaming-platform-playdapp-loses-290-million-worth-of-tokens-in-two-exploits-elliptic), [BleepingComputer](https://www.bleepingcomputer.com/news/security/hackers-steal-290-million-in-crypto-from-playdapp-gaming-platform/)) | response |
 
-## What defenders observed
+Key addresses: none printed in full on the pages read; the minter wallet and PLA contract are undisclosed here.
 
-- **Deployer key retained unbounded mint authority.** The PLA token contract's deployer EOA retained `mint` capability without a multisig, timelock, or mint-cap ceiling. This is a T1-class structural vulnerability at the token-design layer that became a T11-class exploit at the custody layer.
-- **Exchange freeze coordination was partially effective.** Exchanges that received attacker-deposited PLA tokens froze accounts, but the attacker had already liquidated significant volume before the freeze window closed. Freeze response time was measured in days, not hours — slower than the Curve Finance freeze coordination benchmark.
-- **Snapshot-based token migration as post-exploit remediation.** PlayDapp airdropped PDA tokens to pre-exploit PLA holders based on a snapshot. Token migration is the nuclear option for token-contract compromise but is effective when the community supports it.
-- **Gaming platform risk surface is under-modeled in crypto-incident taxonomies.** PlayDapp was a gaming infrastructure provider, not a DeFi protocol. Its token was the primary on-chain artefact; the exploit was purely at the token-contract-deployer custody layer with no protocol-specific vulnerability.
+## Root-cause evidence
 
-## What this example tells contributors
-
-- **Deployer-key mint authority is a T1/T11 intersection surface.** Token contracts where the deployer EOA retains unbounded mint authority should be classified as elevated risk regardless of sector (DeFi, gaming, NFT). The control: multisig + timelock + mint-cap ceiling on any post-launch mint capability.
-- **Gaming-platform incidents are structurally similar to DeFi-token incidents at the custody layer.** OAK's T11 classification applies uniformly: whether the compromised deployer key belongs to a DeFi protocol, a gaming platform, or an NFT collection, the on-chain artefact (unauthorized mint from a deployer-controlled address) and the custody failure (single-EOA key with unbounded authority) are identical.
-- **Exchange freeze coordination time is the primary recovery rate determinant.** PlayDapp's days-scale freeze window resulted in lower recovery than Curve Finance's hours-scale window. The freeze-response SLA comparison between these cases should inform compliance-team operational benchmarks.
+- **Technique:** OAK-T11.014
+- **Source:** <https://www.elliptic.co/blog/crypto-gaming-platform-playdapp-suffers-290-million-breach>; <https://www.bleepingcomputer.com/news/security/hackers-steal-290-million-in-crypto-from-playdapp-gaming-platform/>
+- **Source type:** security-firm
+- **Confidence:** reported
+- **Evidence:** Elliptic calls a private key compromise "believed"; PlayDapp says the contract was hacked. No operator post-mortem on how the key was obtained was read. Price: PLA fell from \$0.18 to \$0.14 per BleepingComputer, and traded at \$0.15 on 2024-02-13 per The Block.
 
 ## Public references
 
-- [PlayDapp Official Announcement (February 2024)](https://playdapp.io/)
-- Attacker address identified on Ethereum; exchange deposits tracked to Binance, Coinbase, Gate.io.
-- PLA token contract: Ethereum mainnet; token migration to PDA executed February-March 2024.
+- Elliptic (2024-02-12): <https://www.elliptic.co/blog/crypto-gaming-platform-playdapp-suffers-290-million-breach>
+- The Block (2024-02-13): <https://www.theblock.co/post/277334/crypto-gaming-platform-playdapp-loses-290-million-worth-of-tokens-in-two-exploits-elliptic>
+- BleepingComputer (2024-02-13): <https://www.bleepingcomputer.com/news/security/hackers-steal-290-million-in-crypto-from-playdapp-gaming-platform/>

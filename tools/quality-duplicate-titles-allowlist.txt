@@ -33,3 +33,4 @@ distinct	2024-eigenlayer-restaking-airdrop.md	2024-2025-eigenlayer-airdrop-staki
 distinct	2025-08-btcturk.md	2024-06-btcturk.md	# same venue, two separate drains fourteen months apart
 distinct	2026-03-polymarket-iran-strike-journalist-coercion.md	2026-02-polymarket-iran-strike-idf-reservist-insider.md	# same market, different mechanisms: coercion of a resolution source vs operational-insider trading
 distinct	2026-11-across-protocol-registrar-social-engineering-domain-hijack-drainer-frontend.md	2026-07-across-solana-relayer-anchor-event-discriminator-forgery.md	# same protocol, two separate incidents: Solana relayer event forgery (July) vs registrar domain hijack (November)
+distinct	2024-07-li-finance.md	2022-03-li-fi-cbridge-facet-unchecked-external-call-approved-wallets-drained.md	# same protocol, two separate incidents: March 2022 unchecked external call on CBridgeFacet vs July 2024 facet exploit

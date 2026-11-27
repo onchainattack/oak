@@ -56,7 +56,6 @@ Operationally, Lazarus's modern crypto-theft playbook combines social engineerin
 - [`examples/2023-11-htx-heco-bridge.md`](../examples/2023-11-htx-heco-bridge.md) — HTX hot wallet + HECO Bridge
 - [`examples/2023-11-poloniex.md`](../examples/2023-11-poloniex.md) — Poloniex hot-wallet drain
 - [`examples/2024-01-concentric.md`](../examples/2024-01-concentric.md) — Concentric Finance multisig signing-key social-engineering compromise
-- [`examples/2024-01-orbit-bridge.md`](../examples/2024-01-orbit-bridge.md) — Orbit Bridge
 - [`examples/2024-02-fixedfloat.md`](../examples/2024-02-fixedfloat.md) — FixedFloat instant-swap hot-wallet drain
 - [`examples/2024-05-dmm-bitcoin.md`](../examples/2024-05-dmm-bitcoin.md) — DMM Bitcoin hot-wallet theft
 - [`examples/2024-09-bingx.md`](../examples/2024-09-bingx.md) — BingX hot-wallet drain

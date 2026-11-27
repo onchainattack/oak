@@ -64,6 +64,52 @@ If something on OAK is wrong about you or your work, write to us. We'll fix it.
 
 ## Correction log
 
+### 2026-11-27 — 31 examples with no openable source: 30 rewritten from the sources, 1 quarantined, 4 duplicates merged
+
+`python3 tools/check_sourcing.py --tier refs-unpinned` listed 31 examples whose every citation was a site's home page, an account profile or a placeholder. Each was checked against pages found and opened for the incident. All 31 contradicted those pages on at least one material point, so each was rewritten from the opened pages only, with inline links; details the pages do not carry were removed. Two files were renamed because their names stated the wrong date or mechanism.
+
+| File | Main claims corrected |
+|---|---|
+| `2024-11-thala` | No arrest by Hong Kong police and no Aptos validator freeze appear in any source: Thala froze \$11.5M of its own assets and the funds came back for a \$300K bounty. The flaw was a missing check that an unstake did not exceed the stake, not a reward-claim authority check. Attribution `confirmed-by-arrest` → unattributed. |
+| `2026-05-echo-protocol-ebtc-admin-key-compromise-unbacked-mint` (was `…ebtc-bridge-message-forgery`) | A compromised admin key minted 1,000 eBTC; no forged bridge message or committee signature. Echo burned the 955 eBTC the attacker still held. OAK-T10.002 → OAK-T11.014. |
+| `2022-03-li-fi-cbridge-facet-unchecked-external-call-approved-wallets-drained` (was `2022-07-li-fi-v1-diamond-facet-exploit`) | The incident was 2022-03-20, not July 2022. An unchecked external call spent 29 users' token approvals; it was not a post-audit diamond facet. 25 wallets were reimbursed. OAK-T9.008 dropped. |
+| `2024-10-tapioca` | The attacker did not return 94% for a bounty. The team took back about 996–1,000 ETH with a counter-exploit and revoked the bounty. Mechanism: ownership of the TAP vesting and USDO contracts, not a "DSO contract". |
+| `2024-09-deltaprime` | Arbitrum only; DeltaPrime said its Avalanche deployment was not vulnerable. Tornado Cash and a treasury reimbursement plan are not in the sources. |
+| `2024-04-pike-finance` | Exploits on 2024-04-26 (forged CCTP message, about \$299K) and 2024-04-30 (a pause upgrade reset the initialization flag), not 04-30 and 05-05 through Wormhole NTT. |
+| `2024-02-playdapp-private-key-compromise` | Two mints (200M PLA on 02-09, 1.59B PLA on 02-12), not one 200M mint worth \$290M. No exchange is named in the sources; the price fell from \$0.18 to \$0.14, not 90%. |
+| `2024-03-prisma-finance` | Missing input validation in `onFlashloan()` of `MigrateTroveZap`, not an unconstrained `delegatecall`; flash loans were used; three exploiters; a return of funds is not confirmed. |
+| `2024-06-velocore` | `velocore__execute()` had no caller check, so `feeMultiplier` could be changed; an underflow then minted excess LP tokens. Not a negative swap fee. |
+| `2024-06-uwu-lend` | The fallback oracle was priced from Curve pool states, not a Sushiswap pair; Tornado Cash funded the attacker and is not shown as the exit. |
+| `2024-06-holograph` | A former contractor used retained admin access; not an outside key theft. Tornado Cash removed. A Paris court convicted the person in November 2026 (not named here). |
+| `2024-05-gala-games` | A third-party contractor's access to a minter-role key, not a former employee. 5,912 ETH was returned and used to buy and burn GALA. |
+| `2024-08-nexera` | Proxy ownership taken and a withdraw function used; no mint-and-dump. Entry was a fake consulting offer with a malware test. About \$449K kept; the rest zeroed. |
+| `2024-09-banana-gun` | Banana Gun named a possible flaw in its Telegram message oracle, not an on-chain messenger contract. Ethereum and Solana bots; 11 users refunded. Technique now `none`. |
+| `2024-05-sonne-finance` | The \$6.5M was a further loss prevented, not funds recovered. The attacker executed a queued, permissionless timelock proposal. Tornado Cash and a wind-down removed. |
+| `2024-04-hedgey` | `cancelCampaign()` left an approval in place; the \$44.7M figure is split by chain (Arbitrum, illiquid BONUS tokens) and disputed by CertiK, not "contagion". |
+| `2024-03-woofi` | Paused 13 minutes after the attack; other chains were not paused; Tornado Cash removed. |
+| `2024-01-gamma-strategies-flash-loan-exploit` | No partial return; deposits were closed and withdrawals left open; cause was a price-change threshold set too wide. "40K ARB" removed. |
+| `2023-12-orbit-chain-bridge-exploit` | Ethereum vault only, not Klaytn and ICON; assets were 30M USDT, 10M DAI, 10M USDC, about 231 WBTC and about 9,500 ETH; key compromise is believed, not confirmed by a post-mortem. KNPA, KISA, a bounty and Chainalysis/TRM removed. |
+| `2023-08-steadefi` | Ownership transfer and owner-only functions, not a malicious upgrade; funds sat unmoved on Ethereum, not in Tornado Cash. |
+| `2023-04-sentiment` | 10% bounty and about 90% returned by 2023-04-06, not 5% and 95% within 24 hours. |
+| `2023-02-hopefinance` | 2023-02-20, \$1.86M; the multisig pointed the swap helper at a fake router. The "renounced" framing removed. |
+| `2022-08-optifi` | OptiFi said it would return all deposits; about 95% of the locked funds were a team member's. |
+| `2022-07-crema-finance` | Attribution was `confirmed` on the claim that the attacker gave their identity; no source says so. Returned 6,064 ETH and 23,967.9 SOL; kept 45,455 SOL. |
+| `2022-02-meter-bridge` | The ERC-20 deposit path for the wrapped native token skipped the lock; no `bridgeData` or `wrapDeposit`. Hundred Finance's \$3.3M loss added. |
+| `2022-01-qubit-bridge` | "206,809 qXETH" matches no source (77,162 per Rekt, 216,960.20 per Merkle Science); Tornado Cash was the funding, not the exit; no \$2M bounty. |
+| `2018-02-bitgrail` | The "re-push replay exploit" and multi-month drain are unsourced; the court found no safeguard against repeated withdrawals. Technique now `none`. |
+| `2015-02-bter` | The 7,170 BTC left a cold wallet and the cause was never disclosed. The 555 BTC "returned" removed. Technique now `none`. |
+
+**Quarantined:** `2025-03-sushiswap-delegation-governance-takeover`. No public record of the incident exists; its only citation was a Compound vote from July 2024.
+
+**Merged as duplicates** (moved to `quarantine/` with a `Merged into` line):
+
+- `2014-01-cryptsy` → `2016-01-cryptsy-exchange-collapse`. The 2017-07-27 default judgment (\$8.2M, 11,325.0961 BTC) was carried over; the merged file had dated it 2016-08-08.
+- `2014-09-mintpal` → `2014-10-moolah-alex-green-fraud`. The merged file claimed a Crown Court fraud conviction that no source reports.
+- `2024-01-orbit-bridge` → `2023-12-orbit-chain-bridge-exploit`. The merged file had no URL, a "7-of-10" signer threshold and a Lazarus attribution through Korean agencies, none of it sourced; its link on OAK-G01 was removed.
+- `2024-sonne-finance-14-month-exposure` → `2024-05-sonne-finance`.
+
+**Sibling text aligned:** OAK-T9.008 (the Li.Fi 2022 anchor), OAK-M35 (Tapioca), and five examples that listed Thala as a validator freeze, Tapioca as a bounty return or UwU Lend as a Sushiswap-pair case.
+
 ### 2026-11-27 — Five facts corrected during the quality review
 
 Found by the source-fidelity sample in [`QUALITY-REVIEW.md`](QUALITY-REVIEW.md); each was confirmed against the cited source's text before the change.

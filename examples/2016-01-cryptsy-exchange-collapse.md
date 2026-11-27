@@ -22,6 +22,7 @@ Per the indictment, Vernon moved abruptly to China around November 2015, shortly
 | ~2015-11 | Vernon allegedly moves to China `[irs22]` | |
 | 2016-01 | Cryptsy suspends trading and withdrawals, claims 13,000 BTC / 300,000 LTC theft `[cs16]` | T11.005 |
 | 2016-04 | Receiver appointed (S.D. Fla.); Vernon allegedly destroys customer database `[sa16]``[irs22]` | |
+| 2017-07-27 | Default judgment of \$8.2M against Vernon in the class action; the order covers 11,325.0961 BTC ([CoinDesk](https://www.coindesk.com/markets/2017/07/28/82-million-court-orders-default-judgment-against-cryptsy-ceo)) | |
 | 2022-01-26 | 17-count indictment announced `[irs22]` | |
 
 ## Realised extraction

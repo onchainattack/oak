@@ -1,3 +1,7 @@
+> **MERGED 2026-11-27 into `examples/2024-05-sonne-finance.md`** — a duplicate entry for the same incident. Not part of the OAK corpus; kept for the record.
+
+**Merged into:** 2024-05-sonne-finance
+
 # Sonne Finance VELO-market fork-vulnerability exploit — Optimism — 2024-05-14
 
 **Loss:** ~\$20M drained from Sonne Finance on Optimism. The attacker exploited the known Compound V2 empty-market donation/rounding bug (the class used against Hundred Finance in April 2023) on the new soVELO market, which went live through a governance proposal after its timelock expired. Sonne's post-mortem says it had normally listed new markets with a zero collateral factor to avoid this; here the proposal set a non-zero collateral factor (35% per published accounts of the proposal) on a fresh, empty market.
