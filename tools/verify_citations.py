@@ -39,6 +39,9 @@ import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from check_sourcing import pinned  # noqa: E402
+
 # Status-prefix labels emitted into the note.
 STATUS_VERIFIED = "verified"
 STATUS_CAVEAT = "verified-with-caveat"
@@ -67,8 +70,8 @@ USER_AGENT = (
 
 def curl_check(url: str, timeout: int = 12) -> tuple[int, str]:
     """Return (http_code, final_url). 0 means connection failed."""
-    if any(hint in url for hint in STUB_HINTS):
-        return -1, url  # sentinel: known stub, not worth checking
+    if any(hint in url for hint in STUB_HINTS) or not pinned(url):
+        return -1, url  # sentinel: stub, home page or profile; reachability proves nothing
     try:
         result = subprocess.run(
             [
@@ -99,7 +102,7 @@ def classify(code: int) -> tuple[str, str]:
     if code in (404, 410):
         return STATUS_BROKEN, "URL returns 404 at v0.1 audit; canonical article URL needs manual lookup."
     if code == -1:
-        return STATUS_BROKEN, "URL is a placeholder stub from auto-generation; canonical URL needs manual lookup."
+        return STATUS_NOT_PINNED, "URL is a placeholder, home page, section index or profile; the cited page needs manual lookup."
     return STATUS_UNREACHABLE, "URL unreachable at v0.1 audit (timeout / TLS / DNS failure); content may still exist."
 
 

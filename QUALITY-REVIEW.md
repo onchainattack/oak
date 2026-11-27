@@ -64,6 +64,8 @@ On the 45 files the checker found 104 quoted strings and could not find 81 of th
 
 Examples: [`examples/2015-02-bter.md`](examples/2015-02-bter.md) (five keys: three placeholders, two home pages; nothing in the file can be checked), [`examples/2023-12-galxe-dns.md`](examples/2023-12-galxe-dns.md), [`examples/2022-10-binance-bsc-bridge.md`](examples/2022-10-binance-bsc-bridge.md) (the operator post-mortem is "proposed" and points at a blog index), [`examples/2024-02-blur-wash-trading-ring.md`](examples/2024-02-blur-wash-trading-ring.md) (four of five keys have no URL).
 
+Update, same day: the check now exists (`python3 tools/check_sourcing.py`, tier `refs-unpinned`, and `--bib`). With account-profile URLs counted as well it finds 466 unpinned bibliography entries, 31 examples with no specific source and 126 with one; 377 notes were relabelled from "verified" to `url-not-pinned`.
+
 Fix. Rule: a citation must point at the page that carries the claim. Check: extend `check_sourcing.py` with a third tier, `refs-unpinned`, for files whose every source is a site root, a placeholder or URL-less; report it first, then gate it. Stop writing "verified" in `citations.bib` for a URL that is only reachable. Work: 21 files have nothing specific at all and 113 have one source; do those first.
 
 ### 2. Specifics that no cited source contains
