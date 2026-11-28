@@ -64,6 +64,31 @@ If something on OAK is wrong about you or your work, write to us. We'll fix it.
 
 ## Correction log
 
+### 2026-11-28 — OAK-T12.003 deprecated; the NFT royalty and wash-trading neighbours, the Zelenskyy market and MGM checked
+
+The last files the passes had flagged without checking, and the one Technique left with no attack-shaped example.
+
+| Technique / mitigation | Result |
+|---|---|
+| `OAK-T12.003` Royalty Bypass / Marketplace Manipulation | **deprecated.** A marketplace choosing not to pay a creator's royalty breaks no control and takes nothing from a wallet; the page itself called it a policy problem. A search for a circumvented enforcement mechanism (Operator Filter Registry, ERC-721C, Metaplex rule sets, Open Creator Protocol) found one borderline event, Blur listing blocked collections through a Seaport contract (news report of 2023-01-31, resting on unconfirmed posts), and no attack |
+| `OAK-M13` Long challenge window | re-mapped from the deprecated OAK-T10.004 to OAK-T9.006.002, where it was already listed as canonical; linked incident: the Polymarket UFO market (2025-12), for which CryptoSlate proposes longer challenge windows and higher proposer bonds (quote checked against the page) |
+
+| File | Was | Now |
+|---|---|---|
+| `2022-11-x2y2-looksrare-royalty-optional` | X2Y2 "settles on a 0.5% recommended-minimum royalty"; LooksRare dated "2022 (parallel)"; "multi-tens-of-percent reduction" | quarantined: a policy change, not an attack. For the record: X2Y2 returned to enforcing royalties on 2022-11-18 (CoinDesk via Yahoo), which the file left out; LooksRare's change was 2022-10-27 (The Block); the reduction figure has no source |
+| `2024-01-nft-royalty-bypass` | "all major marketplaces royalty-optional in 2024"; "hundreds of millions of dollars" | quarantined: names no 2024 event; all four sources are from 2023 and none carries a dollar figure |
+| `2024-04-nft-wrapper-royalty-circumvention-cohort` | wrapper protocols as a royalty-bypass cohort | quarantined: every reference marked "(proposed)", no URL; the file says the protocols "are not attackers" |
+| `2022-2025-nft-marketplace-wash-trading-and-royalty-bypass-infrastructure` | "hundreds of millions" of royalty loss; rate "from ~100% to <10%"; enforcement "ended 2024-02-29" | quarantined: no cohort of its own. The figures have no source; OpenSea stopped enforcing on 2023-08-31 for new collections (2024-02-29 applied only to existing collections on other chains). The Chainalysis study it cites is already on the OAK-T12.001 page |
+| `2022-01-looksrare-wash-trading-launch` | T12.001 + T3.002 + T2.001; "\$12.1M of LOOKS distributed daily"; a named seed investor | T12.001 only; Decrypt: the daily giveaway was worth more than \$12.1M at \$4.23 a token; launch 2022-01-10; CryptoSlam's more than \$8.3B and Decrypt's about 87% labelled as theirs; per-collection figures added; the investor described by role |
+| `2022-02-x2y2-marketplace-incentive-wash-cohort` → `2022-07-x2y2-fee-rebate-wash-trading` | a "cohort" from February 2022; T12.001 + T3.002 | one marketplace. X2Y2 launched in 2022-02 with staking-only rewards; the wash trading dates from late July 2022, after fees were reimbursed in X2Y2 tokens (Delphi Digital, 2022-09-22). T12.001 only |
+| `2022-01-looksrare-x2y2-wash-trading-cohort` | two incidents in one file; declared T7.004 and T5.002 | merged into the two files above; neither Technique fits reward farming |
+| `2025-07-polymarket-zelenskyy-suit` | top 10 voters with ~6.5M UMA (~30% of the vote); UMA market cap ~\$95M; "largest on record"; Reuters/AP/AFP; inferred-strong | none of those is on a page that could be opened; removed. Volume: Decrypt more than \$237M, CoinDesk more than \$160M and \$200M, all given. Decrypt says No was final on July 1; CoinDesk on July 7 says the final resolution was due July 8: not reconciled. Attribution unattributed |
+| `2023-09-mgm-resorts` | "refused the ransom"; "help-desk vishing"; "10-day outage"; a November 2024 indictment "naming MGM"; T5.008, T8.001, T8.002; confirmed | quarantined under OAK's scope rule: no source documents a cryptocurrency payment or a crypto loss. The four claims are on no opened page; the indictment covers 2021-09 to 2023-04 and its report does not link it to MGM. What held: about \$100M impact and under \$10M one-time costs per the Form 8-K |
+
+Sibling pages brought into line: OAK-T12.001, OAK-T3.002, OAK-T7.004, OAK-T5.002, OAK-T5.008, OAK-T8.001, OAK-T8.002, OAK-T9.006 and OAK-T9.006.002, actors OAK-G10 and OAK-G12, the Caesars, Blur and ransomware-cohort examples, the T12 Tactic page, `COVERAGE.md` and `CROSSWALK.md`.
+
+Not machine-verified: the MGM Form 8-K and two CoinDesk pages were read through a fetch tool but return 403/429 to `check_quotes.py`; no quotation marks rest on them.
+
 ### 2026-11-27 — OAK-T10.006 deprecated; three thin Techniques checked; seven flagged sibling files rewritten
 
 Follow-up to the fourth pass: the Technique pages it left resting on little, and the sibling files the passes had flagged without checking.
@@ -283,7 +308,7 @@ These files cited one specific URL, but it was a general paper or annual report,
 
 ### 2026-11-27 — Five facts corrected during the quality review
 
-Found by the source-fidelity sample in [`QUALITY-REVIEW.md`](QUALITY-REVIEW.md); each was confirmed against the cited source's text before the change.
+Found by the source-fidelity sample in [`QUALITY-REVIEW.md`](https://github.com/onchainattack/oak/blob/main/QUALITY-REVIEW.md); each was confirmed against the cited source's text before the change.
 
 - **Nostra (2026-09):** the amount bridged to Ethereum included 1.3M DAI, not 1M (AMBCrypto and the dev.to write-up both say 1.3 million).
 - **Hemi (2026-09):** Upbit cancelled the HEMI listing on 2026-09-08, 18 minutes before the planned opening, not "days before launch" on 09-09 to 09-10 (crypto.news).

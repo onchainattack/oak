@@ -1,8 +1,8 @@
 # OAK-M13 — Long Challenge Window with Economic Challenger Incentives
 
 **Class:** architecture
-**Audience:** protocol, designer (optimistic-bridge / rollup)
-**Maps to Techniques:** none — the only Technique it was mapped to (OAK-T10.004) was deprecated 2026-11-27 for lack of a documented incident
+**Audience:** protocol, designer (optimistic oracle / optimistic bridge / rollup)
+**Maps to Techniques:** OAK-T9.006.002
 
 ## Description
 
@@ -14,7 +14,8 @@ Economic incentive design is the load-bearing component. A challenger's expected
 
 ## How it applies
 
-- **Optimistic-bridge fraud-proof gap (Technique OAK-T10.004 deprecated 2026-11-27; no documented incident):** size the window from a written response-time-budget analysis; name and fund at least one independent challenger operator; publish challenger-set membership, bond balances, and last-heartbeat metrics; commission periodic adversarial drills exercising the fraud-proof path end-to-end on mainnet or high-fidelity testnet; ensure censorship-resistance such that the entity producing messages cannot also exclude fraud-proof transactions.
+- **OAK-T9.006.002 (Resolution-Spec Ambiguity Exploitation):** an optimistic oracle settles a proposed answer by default if nobody posts a bond inside the challenge window. For a market that turns on reading a government act, set a longer window and a higher proposer bond than the default. In the Polymarket UFO-declassification market (2025-12, [`examples/2025-12-polymarket-ufo-declassification-disputed-uma-resolution.md`](../examples/2025-12-polymarket-ufo-declassification-disputed-uma-resolution.md)), CryptoSlate describes a two-hour challenge window and bonds near \$750, and proposes exactly this: "Longer challenge windows on subjective government-action contracts would reduce time asymmetry. Higher proposer bonds would raise the cost of low-quality proposals." That market was disputed twice and still went to a token vote, so the control narrows the gap; it does not decide the vote.
+- **Optimistic bridges and rollups (no live Technique):** OAK-M13 was first written for the optimistic-bridge fraud-proof gap, OAK-T10.004, which was deprecated on 2026-11-27 because no incident is documented. The design guidance stands as design guidance: size the window from a written response-time budget; name and fund at least one independent challenger; publish challenger membership, bond balances and last-heartbeat metrics; exercise the fraud-proof path end to end; make sure the party producing messages cannot exclude fraud-proof transactions.
 
 ## Limitations
 
@@ -32,6 +33,7 @@ Economic incentive design is the load-bearing component. A challenger's expected
 
 ## Citations
 
+- CryptoSlate, on the Polymarket UFO market's two-hour challenge window, bonds and proposed changes: <https://cryptoslate.com/polymarket-faces-major-credibility-crisis-after-whales-forced-a-yes-ufo-vote-without-evidence/>
 - `[halbornnomadoptimistic2022]` — Halborn analysis of the Nomad bridge documents the optimistic-verification mechanism and its watcher-dependent security model.
 - `[bhuptanioptbridges2022]` — Connext architectural write-up introducing optimistic-bridge design and the 1-of-N honest-verifier assumption.
 - `[hollowvictory2025]` — academic analysis of dispute-game liveness-incentive insufficiency as a strategic-exploit surface.

@@ -1,3 +1,7 @@
+> **MERGED 2026-11-28 into `examples/2022-01-looksrare-wash-trading-launch.md`** — the file blended two incidents; LooksRare is recorded there and X2Y2 in `examples/2022-07-x2y2-fee-rebate-wash-trading.md`. It also declared two Techniques that do not fit reward farming. Not part of the OAK corpus; kept for the record.
+
+**Merged into:** 2022-01-looksrare-wash-trading-launch
+
 # LooksRare / X2Y2 wash-trading reward-farming cohort — Ethereum — 2022
 
 **Loss:** structural — NFT wash trading on LooksRare (from its January 2022 launch) and later on X2Y2 (volume surpassing OpenSea's from late July 2022) to farm token rewards. CryptoSlam identified more than \$8.3B of wash trading on LooksRare within about 18 days of launch, about 87% of its volume `[decryptlooks2]`. No aggregate cross-marketplace figure is established by the cited sources. The marketplace contracts functioned as designed; the failure was a token-incentive design that rewarded trading volume without checking whether it was genuine.

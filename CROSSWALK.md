@@ -75,7 +75,7 @@ The following 45 of OAK's 51 v0.1 Techniques have **no** OWASP SC Top 10 corresp
 - **OAK-T8 Operational Reuse** — T8.001 Common-Funder Cluster Reuse, T8.002 Cross-Chain Operator Continuity.
 - **OAK-T10 Bridge & Cross-Chain** — T10.001 Validator/Signer Key Compromise, T10.002 Message-Verification Bypass, T10.003 Cross-Chain Replay, T10.004 Optimistic-Bridge Fraud-Proof Gap, T10.005 Light-Client Verification Bypass. *(Bridge-infrastructure layer; OWASP SC Top 10 scopes contract-level vulnerabilities and does not separate the bridge-protocol surface.)*
 - **OAK-T11 Custody and Signing Infrastructure** — T11.001 Third-Party Signing/Custody Vendor Compromise, T11.002 Wallet-Software Distribution Compromise, T11.003 In-Use Multisig Smart-Contract Manipulation. *(Off-chain entry vector; out of OWASP scope.)*
-- **OAK-T12 NFT-Specific Patterns** — T12.001 NFT Wash-Trade Volume Inflation, T12.002 Fake-Mint/Counterfeit Collection, T12.003 Royalty Bypass/Marketplace Manipulation. *(Marketplace-moderation layer; out of OWASP scope.)*
+- **OAK-T12 NFT-Specific Patterns** — T12.001 NFT Wash-Trade Volume Inflation, T12.002 Fake-Mint/Counterfeit Collection. *(Marketplace-moderation layer; out of OWASP scope.)*
 
 ---
 

@@ -46,4 +46,3 @@ Key addresses:
 - Caesars Entertainment, [Form 8-K](https://www.sec.gov/Archives/edgar/data/1590895/000119312523235015/d537840d8k.htm), signed 2023-09-14 (sec.gov opened directly).
 - TechTarget, [Caesars Entertainment breached in social engineering attack](https://www.techtarget.com/searchsecurity/news/366552134/Caesars-Entertainment-breached-in-social-engineering-attack) (2023-09-14).
 - Andy Greenberg (WIRED), [X post](https://x.com/a_greenberg/status/1849831809841799617) (2024-10-25).
-- Related case, same period: [`2023-09-mgm-resorts.md`](2023-09-mgm-resorts.md).

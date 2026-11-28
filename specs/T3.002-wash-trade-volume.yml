@@ -55,7 +55,6 @@ output_alert: [oak_technique, pair_address, chain, cycle_share,
 test_fixtures:
   positive:
     - 2023-02-blur-airdrop-wash-cohort
-    - 2022-11-x2y2-looksrare-royalty-optional
   negative:
     - "Uniswap V3 WETH/USDC 0.05% pool — high volume, low cycle"
     - "Market-maker (Wintermute / GSR / Jump) inventory rebalance across owned wallets"

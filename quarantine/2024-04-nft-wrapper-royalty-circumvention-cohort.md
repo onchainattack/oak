@@ -1,3 +1,5 @@
+> **QUARANTINED 2026-11-28 — not part of the OAK corpus.** Wrapping an NFT into a fungible token is not an attack (OAK-T12.003 deprecated 2026-11-28), and every reference in the file is marked proposed, with no URL. It is kept here, outside `examples/`, and can return if a source documents an incident.
+
 # NFT wrapper / fractionalisation protocol royalty circumvention cohort — NFTX / FloorDAO / Sudoswap — Ethereum — 2022–2025
 
 **Loss:** structural — creator royalty revenue foregone through wrapper-based trading paths that bypass the original collection's royalty mechanism. Exact aggregate dollar loss is diffuse across collections, but the wrapper-path volume share across major NFT collections reached measurable percentages during the 2023–2024 royalty-bypass transition window. The loss is measured as foregone creator revenue rather than extracted funds.

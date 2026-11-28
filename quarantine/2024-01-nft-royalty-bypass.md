@@ -1,3 +1,5 @@
+> **QUARANTINED 2026-11-28 — not part of the OAK corpus.** A marketplace royalty policy is not an attack (OAK-T12.003 deprecated 2026-11-28). The file names no 2024 event, and none of its sources carries its loss figure of hundreds of millions of dollars. It is kept here, outside `examples/`, and can return if a source documents an incident.
+
 # NFT marketplace royalty-enforcement sunset and creator-revenue bypass — multi-chain (Ethereum, Solana, Bitcoin ordinals) — 2024
 
 **Loss:** structural — ongoing creator royalty revenue foregone across NFT marketplaces as major platforms moved to optional-royalty models during 2024. The cumulative creator-royalty loss across the NFT ecosystem is estimated in the hundreds of millions of dollars, though per-creator attribution is diffuse and the loss is measured as foregone revenue rather than extracted funds.

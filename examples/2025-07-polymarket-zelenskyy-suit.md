@@ -1,55 +1,46 @@
-# Polymarket Zelenskyy-suit market — UMA resolution-spec ambiguity — 2025-07
+# Polymarket Zelenskyy-suit market — UMA resolves "No" over a "consensus of credible reporting" rule — 2025-07
 
-**Loss:** ~$237M in disputed market volume (subsequently characterised at ~$160M in CoinDesk's secondary reporting). No funds drained; bettors who interpreted the market's stated rule one way (multiple credible outlets reported Zelenskyy in a suit at NATO June 24) lost their stakes when UMA voted otherwise.
-**OAK Techniques observed:** **OAK-T9.006.002** — Resolution-Spec Ambiguity Exploitation. The canonical worked-example anchor for the sub-Technique. Parent Technique: OAK-T9.006 (Subjective-Oracle Resolution Manipulation).
-**Attribution:** **inferred-strong**. The top 10 UMA voters held ~6.5M UMA (~30% of average vote). UMA's full market cap during the dispute window was ~$95M — less than half the disputed market's volume. Specific voter-bettor position-overlap analysis is in industry reporting; OAK does not name individual operators at v0.1.
+**Loss:** No funds were stolen or drained. [Decrypt](https://decrypt.co/329210/polymarket-rules-no-237m-bet-zelenskyys) reports more than \$237M in trading volume on the market. [CoinDesk](https://www.coindesk.com/markets/2025/07/07/polymarket-embroiled-in-usd160m-controversy-over-whether-zelensky-wore-a-suit-at-nato) (2025-07-07) says more than \$160M in the headline and article and over \$150M in its summary, and a [second CoinDesk piece](https://www.coindesk.com/markets/2025/07/09/this-isnt-decentralized-says-polymarket-power-user-as-zelenskyys-suit-controversy-unfolds) calls it a market of about \$200 million. The pages disagree and none gives a loss to "Yes" holders. CoinDesk reports the Yes price fell from \$0.19 to \$0.04.
 
-## Timeline (UTC unless noted)
+**OAK Techniques observed:** **OAK-T9.006.002** (Resolution-Spec Ambiguity Exploitation): the market resolved on a "consensus of credible reporting" standard and the oracle found that consensus not established. No opened page shows any voter acting for gain on a position; manipulation is alleged by critics only. See [`techniques/T9.006.002-resolution-spec-ambiguity-exploitation.md`](../techniques/T9.006.002-resolution-spec-ambiguity-exploitation.md).
 
-| When | Event | OAK ref |
-|---|---|---|
-| 2025-Q2 | Polymarket lists "Will Zelenskyy be photographed wearing a suit before June 30, 2025?" market; attracts ~$237M in volume during period of public attention to Ukrainian president's wardrobe | T9.006.002 (standing resolution-spec ambiguity surface — "wearing a suit" has no machine-checkable definition) |
-| 2025-06-24 | Zelenskyy attends NATO summit in clothing described as a suit by multiple major media outlets (Reuters, AP, AFP) | (real-world event — resolution input triggers YES interpretation per major media) |
-| 2025-06-24 → 2025-07-01 | YES probability stays elevated through dispute window; UMA voters prepare to adjudicate; top 10 voters hold ~6.5M UMA (~30% of average vote) | T9.006.002 (dispute window — voter-position correlation observable) |
-| 2025-07-01 | UMA voters resolve market NO, citing lack of "credible reporting consensus" — despite multiple major outlets reporting Zelenskyy in a suit | T9.006.002 (resolution-spec ambiguity exploitation — "credible reporting consensus" itself a subjective interpretation) |
-| 2025-07 onward | Industry coverage (CoinDesk "This Isn't Decentralized," Decrypt, The Defiant) documents the resolution as captured; market's volume ($237M) exceeded UMA market cap (~$95M) — oracle economically smaller than a single market it adjudicated | (public documentation — oracle-weight-vs-adjudicated-volume disequilibrium characterized) |
-| Continuing | Canonical T9.006.002 anchor demonstrating resolution-spec ambiguity exploitation at the largest-volume subjective-oracle market on record at the time | (canonical reference — resolution-spec ambiguity) |
+**Attribution:** **unattributed**. [CoinDesk](https://www.coindesk.com/markets/2025/07/07/polymarket-embroiled-in-usd160m-controversy-over-whether-zelensky-wore-a-suit-at-nato) quotes an X user saying whales are trying to rig the vote and reports that Yes supporters allege manipulation; it names no voter. The earlier version said attribution was inferred-strong from top-10 voter holdings (~6.5M UMA, ~30% of the vote) and a ~\$95M UMA market cap. No opened page carries either figure, so both are removed. [Decrypt](https://decrypt.co/329210/polymarket-rules-no-237m-bet-zelenskyys) gives no vote counts, voter counts or top-holder data.
 
-**Key teaching point:** **The Zelenskyy-suit market ($237M volume, July 2025) demonstrated that resolution-spec ambiguity is a structural attack surface, not an edge case — the oracle was economically smaller than a single market it adjudicated (UMA market cap ~$95M < $237M disputed volume).** "Wearing a suit" has no machine-checkable definition, and "credible reporting consensus" is itself a subjective claim that voters can adjudicate against the bettor majority's reading. The case established T9.006.002 as a first-class Technique sub-pattern: the spec is the vulnerability. Machine-checkable resolution criteria are the only structural mitigation — markets resolving on language are permanently exposed.
+**Key teaching point:** **A market that resolves on a subjective phrase is only as clear as its wording.** The question asked whether Zelenskyy would be "photographed or videotaped wearing a suit" and resolved on a "consensus of credible reporting" ([Decrypt](https://decrypt.co/329210/polymarket-rules-no-237m-bet-zelenskyys)); the outfit was a black jacket, matching trousers and a collared shirt, which many outlets called a suit. A market designer should name the evidence and the tie-break in the rule text before trading opens.
 
 ## Summary
 
-The Polymarket market "Will Zelenskyy be photographed wearing a suit before June 30, 2025?" attracted ~$237M in volume during a period of public attention to the Ukrainian president's wardrobe choices. On June 24, 2025, Zelenskyy attended a NATO summit in clothing that multiple major media outlets — including Reuters, AP, and AFP — described as a suit.
+Per [Decrypt](https://decrypt.co/329210/polymarket-rules-no-237m-bet-zelenskyys) (2025-07-09), the Polymarket market asked whether Zelenskyy would be "photographed or videotaped wearing a suit" between March 22 and June 30, and drew over \$237M in volume. On June 24 he appeared at a NATO event in the Netherlands in a black jacket, matching trousers and a collared shirt, which "numerous media outlets" described as a suit. An initial Yes outcome was challenged; after a second review it was overturned to No, and on July 1 UMA's oracle finalised No. Critics said this conflicted with media reports and visual evidence, and argued that token-weighted voting let large holders sway outcomes.
 
-Despite this reporting, UMA voters resolved the market NO on July 1, citing lack of "credible reporting consensus." The top 10 UMA voters held approximately 6.5M UMA tokens (~30% of the average vote) during the dispute window. UMA's market cap at the time (~$95M) was less than half the disputed market's volume — the oracle was economically smaller than a single market it adjudicated.
+[CoinDesk](https://www.coindesk.com/markets/2025/07/07/polymarket-embroiled-in-usd160m-controversy-over-whether-zelensky-wore-a-suit-at-nato) wrote on 2025-07-07 that the final resolution was scheduled for 00:00 UTC on 2025-07-08 and did not state the outcome, which differs from Decrypt's July 1 finalisation; the pages do not reconcile this. A [second CoinDesk article](https://www.coindesk.com/markets/2025/07/09/this-isnt-decentralized-says-polymarket-power-user-as-zelenskyys-suit-controversy-unfolds) says the market was set to resolve "No" although outlets including the BBC and New York Post described the outfit as a suit, cites IntotheBlock data that about 95% of UMA tokens are held by large holders, and quotes a Polymarket bettor on UMA's incentives to vote with the perceived majority. That page gives the outfit date as June 25, Decrypt as June 24; both are noted.
 
-This is the canonical example of resolution-spec ambiguity being exploited at scale. The market's wording — "wearing a suit" — has no machine-checkable definition, and "credible reporting consensus" is itself a subjective claim that voters can adjudicate against the bettor majority's reading.
+Related sibling files: [`2024-2025-polymarket-spec-ambiguity-dispute-cohort.md`](2024-2025-polymarket-spec-ambiguity-dispute-cohort.md) and [`2025-03-polymarket-uma-ukraine-mineral-deal.md`](2025-03-polymarket-uma-ukraine-mineral-deal.md).
 
-## Why this is structurally significant
+## Timeline (UTC)
 
-The Zelenskyy-suit market made the structural disequilibrium visible: **the oracle's total economic weight (UMA market cap) was smaller than the prize available for corrupting it (the market's volume)**. This is not a transient mispricing — it is a stable property of any subjective oracle adjudicating economically meaningful prediction markets. The larger Polymarket grows, the more profitable each individual oracle-corruption opportunity becomes, while the cost of acquiring veto-equivalent UMA voting power stays bounded by UMA's market cap.
+Times of day are undisclosed on the opened pages.
 
-This is qualitatively different from price-oracle manipulation (OAK-T9.001), where the manipulation cost scales with pool depth and the attacker must continuously fund a position. UMA-class manipulation is a one-time governance vote with a long-tail bounty.
+| When | What happened | OAK |
+|---|---|---|
+| 2025-03-22 | Start of the period the market covers ([Decrypt](https://decrypt.co/329210/polymarket-rules-no-237m-bet-zelenskyys)); listing date undisclosed | **T9.006.002** (rule wording) |
+| 2025-06-24 | Zelenskyy at a NATO event in the Netherlands in the outfit described as a suit ([Decrypt](https://decrypt.co/329210/polymarket-rules-no-237m-bet-zelenskyys)); CoinDesk gives June 25 | none — real-world event |
+| Undisclosed | Initial Yes outcome challenged; after a second review overturned to No ([Decrypt](https://decrypt.co/329210/polymarket-rules-no-237m-bet-zelenskyys)) | **T9.006.002** |
+| 2025-07-01 | UMA's oracle finalises "No" per Decrypt; community proposals for reassessment rejected | **T9.006.002** |
+| 2025-07-07 | CoinDesk: "Yes" price down from \$0.19 to \$0.04; final resolution scheduled 2025-07-08 00:00 UTC | response |
+| 2025-07-09 | Decrypt and a second CoinDesk article report the controversy | response |
 
-## What defenders observed
+Key addresses: none printed on any opened page. Fund flow: no funds moved illicitly.
 
-- **Pre-event:** the market specification did not include a machine-checkable resolution criterion. "Wearing a suit" requires a human judgment call. A defender designing a UMA-class oracle should treat any market title that includes a fashion / language / interpretive claim as elevated dispute risk.
-- **At-event:** the YES probability stayed elevated through the dispute window, then dropped on resolution. Standard CLOB monitoring caught the divergence between media consensus (which leaned YES) and the oracle resolution (which went NO).
-- **Post-event:** the case became a public reference for the "this isn't decentralised" critique of Polymarket's oracle layer. CoinDesk's follow-up "This Isn't Decentralized" piece quoted Polymarket power users describing the resolution as captured.
+## Root-cause evidence
 
-## What this example tells contributors
-
-Contributors writing v0.x OAK-T9.006.002 (resolution-spec ambiguity exploitation) should use Zelenskyy-suit as the T9.006.002 case alongside the alleged, disputed Ukraine mineral deal vote capture (T9.006.001) and the Iran-strike journalist coercion (T9.006.003).
-
-The mitigation surface is structurally limited:
-
-- **Machine-checkable resolution criteria** — markets resolving on cryptographically-verifiable inputs (block-height events, on-chain state, signed oracle attestations) are not exposed to T9.006.002. Markets resolving on language are.
-- **Oracle-weight floor relative to adjudicated volume** — a UMA-class oracle should refuse to adjudicate markets whose volume exceeds some fraction of the oracle token's market cap. This is a structural change to UMA, not a Polymarket-side mitigation.
-- **Voter-position disclosure with conflict-of-interest slashing** — voters with positions in the adjudicated market should be excluded or slashable. UMA does not currently enforce this.
+- **Technique:** OAK-T9.006.002
+- **Source:** <https://decrypt.co/329210/polymarket-rules-no-237m-bet-zelenskyys>; <https://www.coindesk.com/markets/2025/07/07/polymarket-embroiled-in-usd160m-controversy-over-whether-zelensky-wore-a-suit-at-nato>; <https://www.coindesk.com/markets/2025/07/09/this-isnt-decentralized-says-polymarket-power-user-as-zelenskyys-suit-controversy-unfolds>
+- **Source type:** news
+- **Confidence:** reported
+- **Evidence:** Three news pages describe the rule, the outfit and the resolution. They do not show who voted or on what basis, so a market-design failure rather than deliberate manipulation is all that is established.
 
 ## Public references
 
-- [Decrypt — Polymarket Rules No on $237 Million Bet on Zelensky's Suit](https://decrypt.co/329210/polymarket-rules-no-237m-bet-zelenskyys)
-- [CoinDesk — Polymarket Embroiled in $160M Controversy Over Whether Zelensky Wore a Suit at NATO](https://www.coindesk.com/markets/2025/07/07/polymarket-embroiled-in-usd160m-controversy-over-whether-zelensky-wore-a-suit-at-nato)
-- [CoinDesk — "This Isn't Decentralized" Says Polymarket Power User As Zelenskyy's Suit Controversy Unfolds](https://www.coindesk.com/markets/2025/07/09/this-isnt-decentralized-says-polymarket-power-user-as-zelenskyys-suit-controversy-unfolds)
-- [The Defiant — UMA Token Holders Vote on Polymarket Zelensky Suit Market](https://thedefiant.io/) — secondary coverage.
+- Decrypt, [Polymarket Rules No on $237 Million Bet on Zelensky's Suit](https://decrypt.co/329210/polymarket-rules-no-237m-bet-zelenskyys) (2025-07-09).
+- CoinDesk, [Polymarket Embroiled in $160M Controversy Over Whether Zelensky Wore a Suit at NATO](https://www.coindesk.com/markets/2025/07/07/polymarket-embroiled-in-usd160m-controversy-over-whether-zelensky-wore-a-suit-at-nato) (2025-07-07, updated 2025-07-09).
+- CoinDesk, ["This Isn't Decentralized" Says Polymarket Power User](https://www.coindesk.com/markets/2025/07/09/this-isnt-decentralized-says-polymarket-power-user-as-zelenskyys-suit-controversy-unfolds) (2025-07-09).

@@ -15,7 +15,7 @@ The novelty of the Frosties case is not the on-chain pattern — NFT rug-pulls o
 
 Both defendants pleaded guilty. Sentencing concluded in 2024 with prison terms and financial restitution orders. The case established a working US prosecutorial template for NFT rug-pulls that subsequent indictments (the Mutant Ape Planet case in 2022 was a contemporaneous parallel prosecution) have built on.
 
-For OAK's purposes the case sits at the centre of the **NFT rug-pull sub-class of T12** that the T12 Tactic page flags as a v0.x expansion target. The current v0.1 T12 set (T12.001 wash-trade, T12.002 fake-mint, T12.003 royalty-bypass) does not cover NFT mint-proceeds rug-pulls of the Frosties shape; they are absorbed for now under the Tactic's general scope statement and into the soft-rug discussion at T5.005. Frosties is the example that anchors the case for a dedicated T12.NN sub-Technique in a future update.
+For OAK's purposes the case sits at the centre of the **NFT rug-pull sub-class of T12** that the T12 Tactic page flags as a v0.x expansion target. The v0.1 T12 set (wash-trade and fake-mint) does not cover NFT mint-proceeds rug-pulls of the Frosties shape; they are absorbed for now under the Tactic's general scope statement and into the soft-rug discussion at T5.005. Frosties is the example that anchors the case for a dedicated T12.NN sub-Technique in a future update.
 
 ## Timeline (UTC)
 

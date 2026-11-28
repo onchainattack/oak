@@ -30,7 +30,7 @@
 
 ## Coverage note
 
-These 12 incidents are the landmark ransomware cases whose on-chain payment footprint is either publicly confirmed (ransom payment acknowledged by the victim), law-enforcement-disclosed (FBI seizure, DOJ indictment), or industry-report-confirmed (blockchain-intelligence firm attribution). They complement the existing individual OAK ransomware examples (Change Healthcare, Caesars Entertainment, MGM Resorts, MOVEit/Cl0p, LockBit Operation Cronos, Ethereum Validator DDoS Extortion) which document the operational-chronology, laundering-chain, and attribution details of each specific incident.
+These 12 incidents are the landmark ransomware cases whose on-chain payment footprint is either publicly confirmed (ransom payment acknowledged by the victim), law-enforcement-disclosed (FBI seizure, DOJ indictment), or industry-report-confirmed (blockchain-intelligence firm attribution). They complement the existing individual OAK ransomware examples (Change Healthcare, Caesars Entertainment, MOVEit/Cl0p, LockBit Operation Cronos, Ethereum Validator DDoS Extortion) which document the operational-chronology, laundering-chain, and attribution details of each specific incident.
 
 Ransomware payments are systematically undercounted: many victims pay without public disclosure, and attribution of on-chain payments to specific ransomware incidents depends on victim cooperation with blockchain-intelligence firms. The size of the gap between publicly-confirmed and total payments is not quantified here. OAK's T5.008 coverage is therefore a **documented-floor** rather than a comprehensive enumeration.
 

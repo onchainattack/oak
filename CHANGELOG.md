@@ -10,6 +10,10 @@ All notable changes to OAK are documented here. The format follows [Keep a Chang
 
 Recorded here rather than held to the next version bump because one item is a **reclassification consumers may have stored** — the same reasoning `VERSIONING.md` applies to deprecations.
 
+### Changed — OAK-T12.003 deprecated (2026-11-28)
+
+**`OAK-T12.003` (Royalty Bypass / Marketplace Manipulation) is deprecated** (tombstone kept, ID never reused): a marketplace's royalty policy is not an attack and no incident of a circumvented enforcement mechanism is documented. There is no successor ID; consumers should drop the mapping. `OAK-M13` now maps to `OAK-T9.006.002`. Active Techniques 146 → 145.
+
 ### Changed — OAK-T10.006 deprecated (2026-11-27)
 
 **`OAK-T10.006` (Cross-Chain Governance Relay Attack) is deprecated** (tombstone kept, ID never reused): no documented incident has a governance action executing on a destination chain without source-chain approval. Consumers holding it for Stake DAO vsdCRV (2026-05) or The Sandbox SAND (2026-08) should use `OAK-T10.009`. `OAK-T9.006.001` and `OAK-T3.006` stay, each now marked as resting on one alleged incident. Eight Techniques were deprecated on this date in all; active Techniques 153 → 146.

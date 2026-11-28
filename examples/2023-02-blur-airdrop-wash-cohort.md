@@ -14,7 +14,7 @@ Blur's BLUR token went live on 2023-02-14 with an airdrop ([NFT Plazas](https://
 
 On OpenSea, CryptoSlam counted about $6.6 million of wash trades out of over $249 million from 2023-02-14 to early the following Monday, about 2.5% ([Decrypt](https://decrypt.co/122369/wash-trading-blur-ethereum-nfts)). Decrypt mentions X2Y2 only as an earlier marketplace with wash trading tied to token rewards and gives no X2Y2 figures.
 
-Earlier reward-driven wash waves have their own files: [`2022-01-looksrare-x2y2-wash-trading-cohort.md`](2022-01-looksrare-x2y2-wash-trading-cohort.md), [`2022-02-x2y2-marketplace-incentive-wash-cohort.md`](2022-02-x2y2-marketplace-incentive-wash-cohort.md).
+Earlier reward-driven wash waves have their own files: [`2022-01-looksrare-wash-trading-launch.md`](2022-01-looksrare-wash-trading-launch.md), [`2022-07-x2y2-fee-rebate-wash-trading.md`](2022-07-x2y2-fee-rebate-wash-trading.md).
 
 ## Timeline (UTC)
 

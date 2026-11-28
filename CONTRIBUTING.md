@@ -49,7 +49,7 @@ Every worked example dated 2026-10 or later must carry a `## Root-cause evidence
 
 ## Quotes and citations on worked examples
 
-Two rules, both from the 2026-11 quality review ([`QUALITY-REVIEW.md`](QUALITY-REVIEW.md)).
+Two rules, both from the 2026-11 quality review ([`QUALITY-REVIEW.md`](https://github.com/onchainattack/oak/blob/main/QUALITY-REVIEW.md)).
 
 - **Quotation marks mean the source's exact words.** A quote is copied character for character from text the author read. Anything else is a paraphrase and carries no quotation marks. A summarising fetch returns a paraphrase, so text read that way is relayed, not quoted. Check with `npm run check:quotes -- examples/<file>.md` before committing; it fetches the cited sources and lists every quoted string it cannot find.
 - **A citation points at the page that carries the claim.** The post, the article, the advisory, the filing. A site's home page, a blog index, an account's profile or a placeholder is not a citation, in the file or in `citations.bib`. Each post of an X thread is cited by its own URL. When the source is a page that gets updated (an advisory, a tracker), say which date's version the figure comes from. `python3 tools/check_sourcing.py` enforces this for examples dated 2026-09 or later (tier `refs-unpinned`); in `citations.bib` such an entry is noted `url-not-pinned`, never `verified`.

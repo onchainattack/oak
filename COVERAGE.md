@@ -29,10 +29,10 @@ This document covers the **Techniques axis** specifically. The other v0.1 axes �
 | OAK-T9 — Smart-Contract Exploit | 5 | 0 | 0 | 5 |
 | OAK-T10 — Bridge and Cross-Chain | 5 | 0 | 0 | 5 |
 | OAK-T11 — Custody and Signing Infrastructure | 3 | 0 | 0 | 3 |
-| OAK-T12 — NFT-Specific Patterns | 3 | 0 | 0 | 3 |
+| OAK-T12 — NFT-Specific Patterns | 2 | 0 | 0 | 2 |
 | OAK-T13 — Account Abstraction Attacks | 3 | 0 | 0 | 3 |
 | OAK-T14 — Validator/Staking/Restaking Attacks | 3 | 0 | 0 | 3 |
-| **Total** | **58** | **11** | **6** | **41** |
+| **Total** | **57** | **11** | **6** | **40** |
 
 T6 (Defense Evasion) is intentionally not populated with standalone Techniques in v0.1; evasion patterns are listed as parent tactics on the Technique they modify (e.g., OAK-T2.002 lists T2 + T6 as parents). Standalone T6 entries are scheduled for a v0.x update.
 
@@ -95,7 +95,6 @@ T9 (Smart-Contract Exploit) and T10 (Bridge and Cross-Chain) are uniformly gap a
 | OAK-T11.003 — In-Use Multisig Smart-Contract Manipulation | gap | out of MG scope | Custodial-multisig modification monitoring + change-control delay between proposal and execution is the canonical mitigation. |
 | OAK-T12.001 — NFT Wash-Trade Volume Inflation | gap | NFT-marketplace layer, out of MG scope | Per-collection same-buyer-same-seller patterns + per-cluster wash-trade rate caps; marketplace-side moderation. |
 | OAK-T12.002 — Fake-Mint / Counterfeit Collection | gap | NFT-marketplace-moderation layer, out of MG scope | Canonical-contract-allowlist enforcement + image-perceptual-hash / metadata-similarity scoring; verified-creator badges. |
-| OAK-T12.003 — Royalty Bypass / Marketplace Manipulation | gap | out of MG scope | Marketplace-side royalty enforcement (Operator Filter Registry-style allowlists); EIP-7572 / cross-marketplace policy alignment. |
 
 ---
 

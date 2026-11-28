@@ -7,13 +7,12 @@
 
 NFT-Specific Patterns covers attack classes that are structurally tied to non-fungible token semantics — per-token-id ownership rather than fungible balances, marketplace-mediated trade flows, on-chain royalty-payment infrastructure, scarcity-of-edition as the primary bait surface, and Discord-server-driven community structure as the social-engineering surface. These attack classes do not cleanly fit under T1–T11 because the detection signals, the artefact set, and the mitigation surface differ from their fungible-token equivalents in ways that matter to defenders.
 
-T12 in v0.1 is intentionally narrow. The 2021–2022 NFT bubble produced a forensic record (canonically `[chainalysis2022nft]`) that supports three Technique classes with strong public evidence: NFT wash-trade volume inflation, fake-mint / counterfeit collections, and royalty bypass via marketplace-flow manipulation. The broader NFT-specific risk surface — NFT-specific phishing flows, OpenSea / Blur marketplace-flow-specific patterns, and NFT-collateral-lending exploits — is targeted for v0.x updates as the public forensic record matures.
+T12 in v0.1 is intentionally narrow. The 2021–2022 NFT bubble produced a forensic record (canonically `[chainalysis2022nft]`) that supports two Technique classes with strong public evidence: NFT wash-trade volume inflation and fake-mint / counterfeit collections. A third, royalty bypass (OAK-T12.003), was deprecated on 2026-11-28: a marketplace's royalty policy is not an attack. The broader NFT-specific risk surface — NFT-specific phishing flows, OpenSea / Blur marketplace-flow-specific patterns, and NFT-collateral-lending exploits — is targeted for v0.x updates as the public forensic record matures.
 
 ## What defenders observe
 
 - Repeated transfers of the same `tokenId` between a small set of related addresses at monotonically rising prices, where the buyer-side and seller-side wallets share funder ancestry — the per-NFT signature of T12.001.
 - Collection-deployment events that mirror the artefact set of a higher-profile collection (name, ticker / symbol, off-chain metadata, art) but originate from an unrelated deployer address, paired with mint-page promotion through Discord / X channels not affiliated with the genuine project — the T12.002 signature.
-- Marketplace orders routed through low-royalty or zero-royalty venues, custom-router contracts, or order-book primitives that bypass the royalty-payment hook embedded in the collection's standard transfer path — the T12.003 signature.
 - Discord-server compromise events at the collection's official server (admin-account takeover, webhook-injection) whose timing precedes a spike in mint-page traffic to a counterfeit collection (T12.002 antecedent).
 - Floor-price moves that are driven by intra-cluster trades rather than by external market participation — a holder-protection signal at the collection level rather than at the token level.
 
@@ -35,12 +34,12 @@ The boundary rule for contributors: if the attack *targets* an NFT collection, i
 
 - OAK-T12.001 — NFT Wash-Trade Volume Inflation
 - OAK-T12.002 — Fake-Mint / Counterfeit Collection
-- OAK-T12.003 — Royalty Bypass / Marketplace Manipulation
+- OAK-T12.003 — Royalty Bypass / Marketplace Manipulation (deprecated 2026-11-28)
 - OAK-T12.006 — NFT-Collateral Lending Manipulation *(added 2026-08; anchors XCarnival 2022-06, Omni Protocol 2022-07)*
 - OAK-T12.007 — Mint-Outcome Reroll (Revert-Until-Rare) *(added 2026-08; anchor Meebits 2021-05)*
 - OAK-T12.008 — Hybrid Fungible / Non-Fungible Standard Accounting Divergence *(added 2026-08; anchor Flooring Protocol / BitmapPunks 2026-06)*
 
-`OAK-T12.004` and `OAK-T12.005` are **deprecated tombstones**, not live Techniques: both were misfiled governance classes and were superseded on 2026-07-17 by `OAK-T16.006` and `OAK-T16.001` respectively. Per `CONTRIBUTING.md` the IDs are retained and never reused, which is why this Tactic's live Techniques run T12.001–T12.003 then resume at T12.006.
+`OAK-T12.004` and `OAK-T12.005` are **deprecated tombstones**, not live Techniques: both were misfiled governance classes and were superseded on 2026-07-17 by `OAK-T16.006` and `OAK-T16.001` respectively. Per `CONTRIBUTING.md` the IDs are retained and never reused, and `OAK-T12.003` was deprecated on 2026-11-28, which is why this Tactic's live Techniques are T12.001 and T12.002 and then resume at T12.006.
 
 ## Maintainer notes
 
